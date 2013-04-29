@@ -1,0 +1,11 @@
+Flask
+SQLAlchemy
+Flask-SQLAlchemy
+wtforms
+Flask-WTF
+Flask-Admin
+Flask-BabelEx
+Flask-Login
+#thrift
+#twisted
+mysql-python
