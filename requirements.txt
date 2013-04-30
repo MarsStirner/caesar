@@ -1,5 +1,6 @@
 Flask
 SQLAlchemy
+alembic
 Flask-SQLAlchemy
 wtforms
 Flask-WTF
