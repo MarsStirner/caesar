@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import exceptions
 import datetime
 import calendar
-import base64
-import logging
 from urlparse import urlparse
 
-from thrift.transport import TTransport, TSocket, THttpClient
-from thrift.protocol import TCompactProtocol, TProtocol
+from thrift.transport import TTransport, TSocket
+from thrift.protocol import TCompactProtocol
 
 from thrift_service.TFOMSService import Client
 from thrift_service.ttypes import Patient, PatientOptionalFields, Sluch, SluchOptionalFields, Usl, Spokesman
@@ -79,3 +76,18 @@ class TFOMSClient(object):
         except TException, e:
             raise e
         return self.__unicode_result(result)
+
+    def prepare_tables(self):
+        """Запускает процесс обновления данных во временной таблице на сервере"""
+        result = None
+        try:
+            result = self.client.prepareTables()
+        except InvalidArgumentException, e:
+            print e
+        except SQLException, e:
+            print e
+        except NotFoundException, e:
+            raise e
+        except TException, e:
+            raise e
+        return result
