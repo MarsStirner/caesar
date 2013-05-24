@@ -7,6 +7,6 @@ Flask-WTF
 Flask-Admin
 Flask-BabelEx
 Flask-Login
-#thrift
+thrift
 #twisted
 mysql-python

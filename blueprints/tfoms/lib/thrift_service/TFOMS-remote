@@ -15,8 +15,7 @@ from thrift.transport import TSocket
 from thrift.transport import THttpClient
 from thrift.protocol import TBinaryProtocol
 
-import TFOMS
-from ttypes import *
+from blueprints.tfoms.lib.thrift_service import TFOMS
 
 if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print ''
