@@ -16,65 +16,579 @@ except:
   fastbinary = None
 
 
+class PatientOptionalFields:
+  SNILS = 0
+  MR = 1
+  OKATOG = 2
+  OKATOP = 3
+  DOCTYPE = 4
+  DOCSER = 5
+  DOCNUM = 6
+  SPOLIS = 7
+  SMO_OGRN = 8
+  SMO_NAM = 9
+  SMO_OK = 10
+  FAM_P = 11
+  IM_P = 12
+  OT_P = 13
+  DR_P = 14
+  W_P = 15
 
-class USL:
+  _VALUES_TO_NAMES = {
+    0: "SNILS",
+    1: "MR",
+    2: "OKATOG",
+    3: "OKATOP",
+    4: "DOCTYPE",
+    5: "DOCSER",
+    6: "DOCNUM",
+    7: "SPOLIS",
+    8: "SMO_OGRN",
+    9: "SMO_NAM",
+    10: "SMO_OK",
+    11: "FAM_P",
+    12: "IM_P",
+    13: "OT_P",
+    14: "DR_P",
+    15: "W_P",
+  }
+
+  _NAMES_TO_VALUES = {
+    "SNILS": 0,
+    "MR": 1,
+    "OKATOG": 2,
+    "OKATOP": 3,
+    "DOCTYPE": 4,
+    "DOCSER": 5,
+    "DOCNUM": 6,
+    "SPOLIS": 7,
+    "SMO_OGRN": 8,
+    "SMO_NAM": 9,
+    "SMO_OK": 10,
+    "FAM_P": 11,
+    "IM_P": 12,
+    "OT_P": 13,
+    "DR_P": 14,
+    "W_P": 15,
+  }
+
+class SluchOptionalFields:
+  NPR_MO = 0
+  EXTR = 1
+  LPU_1 = 2
+  PODR = 3
+  DET = 4
+  DS0 = 5
+  DS2 = 6
+  CODE_MES1 = 7
+  CODE_MES2 = 8
+  OPLATA = 9
+
+  _VALUES_TO_NAMES = {
+    0: "NPR_MO",
+    1: "EXTR",
+    2: "LPU_1",
+    3: "PODR",
+    4: "DET",
+    5: "DS0",
+    6: "DS2",
+    7: "CODE_MES1",
+    8: "CODE_MES2",
+    9: "OPLATA",
+  }
+
+  _NAMES_TO_VALUES = {
+    "NPR_MO": 0,
+    "EXTR": 1,
+    "LPU_1": 2,
+    "PODR": 3,
+    "DET": 4,
+    "DS0": 5,
+    "DS2": 6,
+    "CODE_MES1": 7,
+    "CODE_MES2": 8,
+    "OPLATA": 9,
+  }
+
+
+class Spokesman:
+  """
+  Attributes:
+   - patientId
+   - FAM_P
+   - IM_P
+   - OT_P
+   - DR_P
+   - W_P
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'patientId', None, None, ), # 1
+    (2, TType.STRING, 'FAM_P', None, None, ), # 2
+    (3, TType.STRING, 'IM_P', None, None, ), # 3
+    (4, TType.STRING, 'OT_P', None, None, ), # 4
+    (5, TType.I64, 'DR_P', None, None, ), # 5
+    (6, TType.I16, 'W_P', None, None, ), # 6
+  )
+
+  def __init__(self, patientId=None, FAM_P=None, IM_P=None, OT_P=None, DR_P=None, W_P=None,):
+    self.patientId = patientId
+    self.FAM_P = FAM_P
+    self.IM_P = IM_P
+    self.OT_P = OT_P
+    self.DR_P = DR_P
+    self.W_P = W_P
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.patientId = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.FAM_P = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.IM_P = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.OT_P = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.I64:
+          self.DR_P = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.I16:
+          self.W_P = iprot.readI16();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('Spokesman')
+    if self.patientId is not None:
+      oprot.writeFieldBegin('patientId', TType.I32, 1)
+      oprot.writeI32(self.patientId)
+      oprot.writeFieldEnd()
+    if self.FAM_P is not None:
+      oprot.writeFieldBegin('FAM_P', TType.STRING, 2)
+      oprot.writeString(self.FAM_P)
+      oprot.writeFieldEnd()
+    if self.IM_P is not None:
+      oprot.writeFieldBegin('IM_P', TType.STRING, 3)
+      oprot.writeString(self.IM_P)
+      oprot.writeFieldEnd()
+    if self.OT_P is not None:
+      oprot.writeFieldBegin('OT_P', TType.STRING, 4)
+      oprot.writeString(self.OT_P)
+      oprot.writeFieldEnd()
+    if self.DR_P is not None:
+      oprot.writeFieldBegin('DR_P', TType.I64, 5)
+      oprot.writeI64(self.DR_P)
+      oprot.writeFieldEnd()
+    if self.W_P is not None:
+      oprot.writeFieldBegin('W_P', TType.I16, 6)
+      oprot.writeI16(self.W_P)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class Patient:
+  """
+  Attributes:
+   - patientId
+   - FAM
+   - IM
+   - OT
+   - DR
+   - W
+   - SNILS
+   - MR
+   - OKATOG
+   - OKATOP
+   - spokesman
+   - DOCTYPE
+   - DOCSER
+   - DOCNUM
+   - VPOLIS
+   - SPOLIS
+   - NPOLIS
+   - SMO
+   - SMO_OGRN
+   - SMO_NAM
+   - SMO_OK
+   - NOVOR
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'patientId', None, None, ), # 1
+    (2, TType.STRING, 'FAM', None, None, ), # 2
+    (3, TType.STRING, 'IM', None, None, ), # 3
+    (4, TType.STRING, 'OT', None, None, ), # 4
+    (5, TType.I64, 'DR', None, None, ), # 5
+    (6, TType.I16, 'W', None, None, ), # 6
+    (7, TType.STRING, 'SNILS', None, None, ), # 7
+    (8, TType.STRING, 'MR', None, None, ), # 8
+    (9, TType.STRING, 'OKATOG', None, None, ), # 9
+    (10, TType.STRING, 'OKATOP', None, None, ), # 10
+    (11, TType.STRUCT, 'spokesman', (Spokesman, Spokesman.thrift_spec), None, ), # 11
+    (12, TType.STRING, 'DOCTYPE', None, None, ), # 12
+    (13, TType.STRING, 'DOCSER', None, None, ), # 13
+    (14, TType.STRING, 'DOCNUM', None, None, ), # 14
+    (15, TType.I16, 'VPOLIS', None, None, ), # 15
+    (16, TType.STRING, 'SPOLIS', None, None, ), # 16
+    (17, TType.STRING, 'NPOLIS', None, None, ), # 17
+    (18, TType.STRING, 'SMO', None, None, ), # 18
+    (19, TType.STRING, 'SMO_OGRN', None, None, ), # 19
+    (20, TType.STRING, 'SMO_NAM', None, None, ), # 20
+    (21, TType.STRING, 'SMO_OK', None, None, ), # 21
+    (22, TType.STRING, 'NOVOR', None, None, ), # 22
+  )
+
+  def __init__(self, patientId=None, FAM=None, IM=None, OT=None, DR=None, W=None, SNILS=None, MR=None, OKATOG=None, OKATOP=None, spokesman=None, DOCTYPE=None, DOCSER=None, DOCNUM=None, VPOLIS=None, SPOLIS=None, NPOLIS=None, SMO=None, SMO_OGRN=None, SMO_NAM=None, SMO_OK=None, NOVOR=None,):
+    self.patientId = patientId
+    self.FAM = FAM
+    self.IM = IM
+    self.OT = OT
+    self.DR = DR
+    self.W = W
+    self.SNILS = SNILS
+    self.MR = MR
+    self.OKATOG = OKATOG
+    self.OKATOP = OKATOP
+    self.spokesman = spokesman
+    self.DOCTYPE = DOCTYPE
+    self.DOCSER = DOCSER
+    self.DOCNUM = DOCNUM
+    self.VPOLIS = VPOLIS
+    self.SPOLIS = SPOLIS
+    self.NPOLIS = NPOLIS
+    self.SMO = SMO
+    self.SMO_OGRN = SMO_OGRN
+    self.SMO_NAM = SMO_NAM
+    self.SMO_OK = SMO_OK
+    self.NOVOR = NOVOR
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.patientId = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.FAM = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.IM = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.OT = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.I64:
+          self.DR = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.I16:
+          self.W = iprot.readI16();
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.STRING:
+          self.SNILS = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 8:
+        if ftype == TType.STRING:
+          self.MR = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 9:
+        if ftype == TType.STRING:
+          self.OKATOG = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 10:
+        if ftype == TType.STRING:
+          self.OKATOP = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 11:
+        if ftype == TType.STRUCT:
+          self.spokesman = Spokesman()
+          self.spokesman.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 12:
+        if ftype == TType.STRING:
+          self.DOCTYPE = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 13:
+        if ftype == TType.STRING:
+          self.DOCSER = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 14:
+        if ftype == TType.STRING:
+          self.DOCNUM = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 15:
+        if ftype == TType.I16:
+          self.VPOLIS = iprot.readI16();
+        else:
+          iprot.skip(ftype)
+      elif fid == 16:
+        if ftype == TType.STRING:
+          self.SPOLIS = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 17:
+        if ftype == TType.STRING:
+          self.NPOLIS = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 18:
+        if ftype == TType.STRING:
+          self.SMO = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 19:
+        if ftype == TType.STRING:
+          self.SMO_OGRN = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 20:
+        if ftype == TType.STRING:
+          self.SMO_NAM = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 21:
+        if ftype == TType.STRING:
+          self.SMO_OK = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 22:
+        if ftype == TType.STRING:
+          self.NOVOR = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('Patient')
+    if self.patientId is not None:
+      oprot.writeFieldBegin('patientId', TType.I32, 1)
+      oprot.writeI32(self.patientId)
+      oprot.writeFieldEnd()
+    if self.FAM is not None:
+      oprot.writeFieldBegin('FAM', TType.STRING, 2)
+      oprot.writeString(self.FAM)
+      oprot.writeFieldEnd()
+    if self.IM is not None:
+      oprot.writeFieldBegin('IM', TType.STRING, 3)
+      oprot.writeString(self.IM)
+      oprot.writeFieldEnd()
+    if self.OT is not None:
+      oprot.writeFieldBegin('OT', TType.STRING, 4)
+      oprot.writeString(self.OT)
+      oprot.writeFieldEnd()
+    if self.DR is not None:
+      oprot.writeFieldBegin('DR', TType.I64, 5)
+      oprot.writeI64(self.DR)
+      oprot.writeFieldEnd()
+    if self.W is not None:
+      oprot.writeFieldBegin('W', TType.I16, 6)
+      oprot.writeI16(self.W)
+      oprot.writeFieldEnd()
+    if self.SNILS is not None:
+      oprot.writeFieldBegin('SNILS', TType.STRING, 7)
+      oprot.writeString(self.SNILS)
+      oprot.writeFieldEnd()
+    if self.MR is not None:
+      oprot.writeFieldBegin('MR', TType.STRING, 8)
+      oprot.writeString(self.MR)
+      oprot.writeFieldEnd()
+    if self.OKATOG is not None:
+      oprot.writeFieldBegin('OKATOG', TType.STRING, 9)
+      oprot.writeString(self.OKATOG)
+      oprot.writeFieldEnd()
+    if self.OKATOP is not None:
+      oprot.writeFieldBegin('OKATOP', TType.STRING, 10)
+      oprot.writeString(self.OKATOP)
+      oprot.writeFieldEnd()
+    if self.spokesman is not None:
+      oprot.writeFieldBegin('spokesman', TType.STRUCT, 11)
+      self.spokesman.write(oprot)
+      oprot.writeFieldEnd()
+    if self.DOCTYPE is not None:
+      oprot.writeFieldBegin('DOCTYPE', TType.STRING, 12)
+      oprot.writeString(self.DOCTYPE)
+      oprot.writeFieldEnd()
+    if self.DOCSER is not None:
+      oprot.writeFieldBegin('DOCSER', TType.STRING, 13)
+      oprot.writeString(self.DOCSER)
+      oprot.writeFieldEnd()
+    if self.DOCNUM is not None:
+      oprot.writeFieldBegin('DOCNUM', TType.STRING, 14)
+      oprot.writeString(self.DOCNUM)
+      oprot.writeFieldEnd()
+    if self.VPOLIS is not None:
+      oprot.writeFieldBegin('VPOLIS', TType.I16, 15)
+      oprot.writeI16(self.VPOLIS)
+      oprot.writeFieldEnd()
+    if self.SPOLIS is not None:
+      oprot.writeFieldBegin('SPOLIS', TType.STRING, 16)
+      oprot.writeString(self.SPOLIS)
+      oprot.writeFieldEnd()
+    if self.NPOLIS is not None:
+      oprot.writeFieldBegin('NPOLIS', TType.STRING, 17)
+      oprot.writeString(self.NPOLIS)
+      oprot.writeFieldEnd()
+    if self.SMO is not None:
+      oprot.writeFieldBegin('SMO', TType.STRING, 18)
+      oprot.writeString(self.SMO)
+      oprot.writeFieldEnd()
+    if self.SMO_OGRN is not None:
+      oprot.writeFieldBegin('SMO_OGRN', TType.STRING, 19)
+      oprot.writeString(self.SMO_OGRN)
+      oprot.writeFieldEnd()
+    if self.SMO_NAM is not None:
+      oprot.writeFieldBegin('SMO_NAM', TType.STRING, 20)
+      oprot.writeString(self.SMO_NAM)
+      oprot.writeFieldEnd()
+    if self.SMO_OK is not None:
+      oprot.writeFieldBegin('SMO_OK', TType.STRING, 21)
+      oprot.writeString(self.SMO_OK)
+      oprot.writeFieldEnd()
+    if self.NOVOR is not None:
+      oprot.writeFieldBegin('NOVOR', TType.STRING, 22)
+      oprot.writeString(self.NOVOR)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.patientId is None:
+      raise TProtocol.TProtocolException(message='Required field patientId is unset!')
+    if self.FAM is None:
+      raise TProtocol.TProtocolException(message='Required field FAM is unset!')
+    if self.IM is None:
+      raise TProtocol.TProtocolException(message='Required field IM is unset!')
+    if self.OT is None:
+      raise TProtocol.TProtocolException(message='Required field OT is unset!')
+    if self.DR is None:
+      raise TProtocol.TProtocolException(message='Required field DR is unset!')
+    if self.W is None:
+      raise TProtocol.TProtocolException(message='Required field W is unset!')
+    if self.VPOLIS is None:
+      raise TProtocol.TProtocolException(message='Required field VPOLIS is unset!')
+    if self.NPOLIS is None:
+      raise TProtocol.TProtocolException(message='Required field NPOLIS is unset!')
+    if self.SMO is None:
+      raise TProtocol.TProtocolException(message='Required field SMO is unset!')
+    if self.NOVOR is None:
+      raise TProtocol.TProtocolException(message='Required field NOVOR is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class Usl:
   """
   Attributes:
    - IDSERV
-   - LPU
-   - LPU_1
-   - PODR
-   - PROFIL
-   - DET
-   - DATE_IN
-   - DATE_OUT
-   - DS
    - CODE_USL
+   - DS
    - KOL_USL
    - TARIF
-   - SUMV_USL
-   - PRVS
-   - CODE_MD
-   - COMENTU
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.I32, 'IDSERV', None, None, ), # 1
-    (2, TType.STRING, 'LPU', None, None, ), # 2
-    (3, TType.STRING, 'LPU_1', None, None, ), # 3
-    (4, TType.I32, 'PODR', None, None, ), # 4
-    (5, TType.I32, 'PROFIL', None, None, ), # 5
-    (6, TType.BOOL, 'DET', None, None, ), # 6
-    (7, TType.I64, 'DATE_IN', None, None, ), # 7
-    (8, TType.I64, 'DATE_OUT', None, None, ), # 8
-    (9, TType.STRING, 'DS', None, None, ), # 9
-    (10, TType.STRING, 'CODE_USL', None, None, ), # 10
-    (11, TType.DOUBLE, 'KOL_USL', None, None, ), # 11
-    (12, TType.DOUBLE, 'TARIF', None, None, ), # 12
-    (13, TType.DOUBLE, 'SUMV_USL', None, None, ), # 13
-    (14, TType.I32, 'PRVS', None, None, ), # 14
-    (15, TType.STRING, 'CODE_MD', None, None, ), # 15
-    (16, TType.STRING, 'COMENTU', None, None, ), # 16
+    (2, TType.STRING, 'CODE_USL', None, None, ), # 2
+    (3, TType.STRING, 'DS', None, None, ), # 3
+    (4, TType.DOUBLE, 'KOL_USL', None, None, ), # 4
+    (5, TType.DOUBLE, 'TARIF', None, None, ), # 5
   )
 
-  def __init__(self, IDSERV=None, LPU=None, LPU_1=None, PODR=None, PROFIL=None, DET=None, DATE_IN=None, DATE_OUT=None, DS=None, CODE_USL=None, KOL_USL=None, TARIF=None, SUMV_USL=None, PRVS=None, CODE_MD=None, COMENTU=None,):
+  def __init__(self, IDSERV=None, CODE_USL=None, DS=None, KOL_USL=None, TARIF=None,):
     self.IDSERV = IDSERV
-    self.LPU = LPU
-    self.LPU_1 = LPU_1
-    self.PODR = PODR
-    self.PROFIL = PROFIL
-    self.DET = DET
-    self.DATE_IN = DATE_IN
-    self.DATE_OUT = DATE_OUT
-    self.DS = DS
     self.CODE_USL = CODE_USL
+    self.DS = DS
     self.KOL_USL = KOL_USL
     self.TARIF = TARIF
-    self.SUMV_USL = SUMV_USL
-    self.PRVS = PRVS
-    self.CODE_MD = CODE_MD
-    self.COMENTU = COMENTU
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -92,77 +606,22 @@ class USL:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.STRING:
-          self.LPU = iprot.readString();
+          self.CODE_USL = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.STRING:
-          self.LPU_1 = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 4:
-        if ftype == TType.I32:
-          self.PODR = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 5:
-        if ftype == TType.I32:
-          self.PROFIL = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 6:
-        if ftype == TType.BOOL:
-          self.DET = iprot.readBool();
-        else:
-          iprot.skip(ftype)
-      elif fid == 7:
-        if ftype == TType.I64:
-          self.DATE_IN = iprot.readI64();
-        else:
-          iprot.skip(ftype)
-      elif fid == 8:
-        if ftype == TType.I64:
-          self.DATE_OUT = iprot.readI64();
-        else:
-          iprot.skip(ftype)
-      elif fid == 9:
-        if ftype == TType.STRING:
           self.DS = iprot.readString();
         else:
           iprot.skip(ftype)
-      elif fid == 10:
-        if ftype == TType.STRING:
-          self.CODE_USL = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 11:
+      elif fid == 4:
         if ftype == TType.DOUBLE:
           self.KOL_USL = iprot.readDouble();
         else:
           iprot.skip(ftype)
-      elif fid == 12:
+      elif fid == 5:
         if ftype == TType.DOUBLE:
           self.TARIF = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      elif fid == 13:
-        if ftype == TType.DOUBLE:
-          self.SUMV_USL = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      elif fid == 14:
-        if ftype == TType.I32:
-          self.PRVS = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 15:
-        if ftype == TType.STRING:
-          self.CODE_MD = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 16:
-        if ftype == TType.STRING:
-          self.COMENTU = iprot.readString();
         else:
           iprot.skip(ftype)
       else:
@@ -174,70 +633,26 @@ class USL:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('USL')
+    oprot.writeStructBegin('Usl')
     if self.IDSERV is not None:
       oprot.writeFieldBegin('IDSERV', TType.I32, 1)
       oprot.writeI32(self.IDSERV)
       oprot.writeFieldEnd()
-    if self.LPU is not None:
-      oprot.writeFieldBegin('LPU', TType.STRING, 2)
-      oprot.writeString(self.LPU)
-      oprot.writeFieldEnd()
-    if self.LPU_1 is not None:
-      oprot.writeFieldBegin('LPU_1', TType.STRING, 3)
-      oprot.writeString(self.LPU_1)
-      oprot.writeFieldEnd()
-    if self.PODR is not None:
-      oprot.writeFieldBegin('PODR', TType.I32, 4)
-      oprot.writeI32(self.PODR)
-      oprot.writeFieldEnd()
-    if self.PROFIL is not None:
-      oprot.writeFieldBegin('PROFIL', TType.I32, 5)
-      oprot.writeI32(self.PROFIL)
-      oprot.writeFieldEnd()
-    if self.DET is not None:
-      oprot.writeFieldBegin('DET', TType.BOOL, 6)
-      oprot.writeBool(self.DET)
-      oprot.writeFieldEnd()
-    if self.DATE_IN is not None:
-      oprot.writeFieldBegin('DATE_IN', TType.I64, 7)
-      oprot.writeI64(self.DATE_IN)
-      oprot.writeFieldEnd()
-    if self.DATE_OUT is not None:
-      oprot.writeFieldBegin('DATE_OUT', TType.I64, 8)
-      oprot.writeI64(self.DATE_OUT)
-      oprot.writeFieldEnd()
-    if self.DS is not None:
-      oprot.writeFieldBegin('DS', TType.STRING, 9)
-      oprot.writeString(self.DS)
-      oprot.writeFieldEnd()
     if self.CODE_USL is not None:
-      oprot.writeFieldBegin('CODE_USL', TType.STRING, 10)
+      oprot.writeFieldBegin('CODE_USL', TType.STRING, 2)
       oprot.writeString(self.CODE_USL)
       oprot.writeFieldEnd()
+    if self.DS is not None:
+      oprot.writeFieldBegin('DS', TType.STRING, 3)
+      oprot.writeString(self.DS)
+      oprot.writeFieldEnd()
     if self.KOL_USL is not None:
-      oprot.writeFieldBegin('KOL_USL', TType.DOUBLE, 11)
+      oprot.writeFieldBegin('KOL_USL', TType.DOUBLE, 4)
       oprot.writeDouble(self.KOL_USL)
       oprot.writeFieldEnd()
     if self.TARIF is not None:
-      oprot.writeFieldBegin('TARIF', TType.DOUBLE, 12)
+      oprot.writeFieldBegin('TARIF', TType.DOUBLE, 5)
       oprot.writeDouble(self.TARIF)
-      oprot.writeFieldEnd()
-    if self.SUMV_USL is not None:
-      oprot.writeFieldBegin('SUMV_USL', TType.DOUBLE, 13)
-      oprot.writeDouble(self.SUMV_USL)
-      oprot.writeFieldEnd()
-    if self.PRVS is not None:
-      oprot.writeFieldBegin('PRVS', TType.I32, 14)
-      oprot.writeI32(self.PRVS)
-      oprot.writeFieldEnd()
-    if self.CODE_MD is not None:
-      oprot.writeFieldBegin('CODE_MD', TType.STRING, 15)
-      oprot.writeString(self.CODE_MD)
-      oprot.writeFieldEnd()
-    if self.COMENTU is not None:
-      oprot.writeFieldBegin('COMENTU', TType.STRING, 16)
-      oprot.writeString(self.COMENTU)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -245,28 +660,14 @@ class USL:
   def validate(self):
     if self.IDSERV is None:
       raise TProtocol.TProtocolException(message='Required field IDSERV is unset!')
-    if self.LPU is None:
-      raise TProtocol.TProtocolException(message='Required field LPU is unset!')
-    if self.PROFIL is None:
-      raise TProtocol.TProtocolException(message='Required field PROFIL is unset!')
-    if self.DATE_IN is None:
-      raise TProtocol.TProtocolException(message='Required field DATE_IN is unset!')
-    if self.DATE_OUT is None:
-      raise TProtocol.TProtocolException(message='Required field DATE_OUT is unset!')
-    if self.DS is None:
-      raise TProtocol.TProtocolException(message='Required field DS is unset!')
     if self.CODE_USL is None:
       raise TProtocol.TProtocolException(message='Required field CODE_USL is unset!')
+    if self.DS is None:
+      raise TProtocol.TProtocolException(message='Required field DS is unset!')
     if self.KOL_USL is None:
       raise TProtocol.TProtocolException(message='Required field KOL_USL is unset!')
     if self.TARIF is None:
       raise TProtocol.TProtocolException(message='Required field TARIF is unset!')
-    if self.SUMV_USL is None:
-      raise TProtocol.TProtocolException(message='Required field SUMV_USL is unset!')
-    if self.PRVS is None:
-      raise TProtocol.TProtocolException(message='Required field PRVS is unset!')
-    if self.CODE_MD is None:
-      raise TProtocol.TProtocolException(message='Required field CODE_MD is unset!')
     return
 
 
@@ -281,7 +682,7 @@ class USL:
   def __ne__(self, other):
     return not (self == other)
 
-class SLUCH:
+class Sluch:
   """
   Attributes:
    - IDCASE
@@ -308,28 +709,22 @@ class SLUCH:
    - IDDOKT
    - IDSP
    - ED_COL
-   - TARIF
    - SUMV
    - OPLATA
-   - SUMP
-   - SANK_MEK
-   - SANK_MEE
-   - SANK_EKMP
-   - usl
-   - COMENTSL
+   - USL
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.I32, 'IDCASE', None, None, ), # 1
-    (2, TType.I32, 'USL_OK', None, None, ), # 2
-    (3, TType.I32, 'VIDPOM', None, None, ), # 3
+    (2, TType.I16, 'USL_OK', None, None, ), # 2
+    (3, TType.I16, 'VIDPOM', None, None, ), # 3
     (4, TType.STRING, 'NPR_MO', None, None, ), # 4
-    (5, TType.I32, 'EXTR', None, None, ), # 5
+    (5, TType.I16, 'EXTR', None, None, ), # 5
     (6, TType.STRING, 'LPU', None, None, ), # 6
     (7, TType.STRING, 'LPU_1', None, None, ), # 7
-    (8, TType.I32, 'PODR', None, None, ), # 8
-    (9, TType.I32, 'PROFIL', None, None, ), # 9
+    (8, TType.STRING, 'PODR', None, None, ), # 8
+    (9, TType.I16, 'PROFIL', None, None, ), # 9
     (10, TType.BOOL, 'DET', None, None, ), # 10
     (11, TType.STRING, 'NHISTORY', None, None, ), # 11
     (12, TType.I64, 'DATE_1', None, None, ), # 12
@@ -339,24 +734,18 @@ class SLUCH:
     (16, TType.STRING, 'DS2', None, None, ), # 16
     (17, TType.STRING, 'CODE_MES1', None, None, ), # 17
     (18, TType.STRING, 'CODE_MES2', None, None, ), # 18
-    (19, TType.I32, 'RSLT', None, None, ), # 19
-    (20, TType.I32, 'ISHOD', None, None, ), # 20
+    (19, TType.I16, 'RSLT', None, None, ), # 19
+    (20, TType.I16, 'ISHOD', None, None, ), # 20
     (21, TType.I32, 'PRVS', None, None, ), # 21
     (22, TType.STRING, 'IDDOKT', None, None, ), # 22
-    (23, TType.I32, 'IDSP', None, None, ), # 23
+    (23, TType.I16, 'IDSP', None, None, ), # 23
     (24, TType.DOUBLE, 'ED_COL', None, None, ), # 24
-    (25, TType.DOUBLE, 'TARIF', None, None, ), # 25
-    (26, TType.DOUBLE, 'SUMV', None, None, ), # 26
-    (27, TType.I32, 'OPLATA', None, None, ), # 27
-    (28, TType.DOUBLE, 'SUMP', None, None, ), # 28
-    (29, TType.DOUBLE, 'SANK_MEK', None, None, ), # 29
-    (30, TType.DOUBLE, 'SANK_MEE', None, None, ), # 30
-    (31, TType.DOUBLE, 'SANK_EKMP', None, None, ), # 31
-    (32, TType.LIST, 'usl', (TType.STRUCT,(USL, USL.thrift_spec)), None, ), # 32
-    (33, TType.STRING, 'COMENTSL', None, None, ), # 33
+    (25, TType.DOUBLE, 'SUMV', None, None, ), # 25
+    (26, TType.I16, 'OPLATA', None, None, ), # 26
+    (27, TType.LIST, 'USL', (TType.STRUCT,(Usl, Usl.thrift_spec)), None, ), # 27
   )
 
-  def __init__(self, IDCASE=None, USL_OK=None, VIDPOM=None, NPR_MO=None, EXTR=None, LPU=None, LPU_1=None, PODR=None, PROFIL=None, DET=None, NHISTORY=None, DATE_1=None, DATE_2=None, DS0=None, DS1=None, DS2=None, CODE_MES1=None, CODE_MES2=None, RSLT=None, ISHOD=None, PRVS=None, IDDOKT=None, IDSP=None, ED_COL=None, TARIF=None, SUMV=None, OPLATA=None, SUMP=None, SANK_MEK=None, SANK_MEE=None, SANK_EKMP=None, usl=None, COMENTSL=None,):
+  def __init__(self, IDCASE=None, USL_OK=None, VIDPOM=None, NPR_MO=None, EXTR=None, LPU=None, LPU_1=None, PODR=None, PROFIL=None, DET=None, NHISTORY=None, DATE_1=None, DATE_2=None, DS0=None, DS1=None, DS2=None, CODE_MES1=None, CODE_MES2=None, RSLT=None, ISHOD=None, PRVS=None, IDDOKT=None, IDSP=None, ED_COL=None, SUMV=None, OPLATA=None, USL=None,):
     self.IDCASE = IDCASE
     self.USL_OK = USL_OK
     self.VIDPOM = VIDPOM
@@ -381,15 +770,9 @@ class SLUCH:
     self.IDDOKT = IDDOKT
     self.IDSP = IDSP
     self.ED_COL = ED_COL
-    self.TARIF = TARIF
     self.SUMV = SUMV
     self.OPLATA = OPLATA
-    self.SUMP = SUMP
-    self.SANK_MEK = SANK_MEK
-    self.SANK_MEE = SANK_MEE
-    self.SANK_EKMP = SANK_EKMP
-    self.usl = usl
-    self.COMENTSL = COMENTSL
+    self.USL = USL
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -406,13 +789,13 @@ class SLUCH:
         else:
           iprot.skip(ftype)
       elif fid == 2:
-        if ftype == TType.I32:
-          self.USL_OK = iprot.readI32();
+        if ftype == TType.I16:
+          self.USL_OK = iprot.readI16();
         else:
           iprot.skip(ftype)
       elif fid == 3:
-        if ftype == TType.I32:
-          self.VIDPOM = iprot.readI32();
+        if ftype == TType.I16:
+          self.VIDPOM = iprot.readI16();
         else:
           iprot.skip(ftype)
       elif fid == 4:
@@ -421,8 +804,8 @@ class SLUCH:
         else:
           iprot.skip(ftype)
       elif fid == 5:
-        if ftype == TType.I32:
-          self.EXTR = iprot.readI32();
+        if ftype == TType.I16:
+          self.EXTR = iprot.readI16();
         else:
           iprot.skip(ftype)
       elif fid == 6:
@@ -436,13 +819,13 @@ class SLUCH:
         else:
           iprot.skip(ftype)
       elif fid == 8:
-        if ftype == TType.I32:
-          self.PODR = iprot.readI32();
+        if ftype == TType.STRING:
+          self.PODR = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 9:
-        if ftype == TType.I32:
-          self.PROFIL = iprot.readI32();
+        if ftype == TType.I16:
+          self.PROFIL = iprot.readI16();
         else:
           iprot.skip(ftype)
       elif fid == 10:
@@ -491,13 +874,13 @@ class SLUCH:
         else:
           iprot.skip(ftype)
       elif fid == 19:
-        if ftype == TType.I32:
-          self.RSLT = iprot.readI32();
+        if ftype == TType.I16:
+          self.RSLT = iprot.readI16();
         else:
           iprot.skip(ftype)
       elif fid == 20:
-        if ftype == TType.I32:
-          self.ISHOD = iprot.readI32();
+        if ftype == TType.I16:
+          self.ISHOD = iprot.readI16();
         else:
           iprot.skip(ftype)
       elif fid == 21:
@@ -511,8 +894,8 @@ class SLUCH:
         else:
           iprot.skip(ftype)
       elif fid == 23:
-        if ftype == TType.I32:
-          self.IDSP = iprot.readI32();
+        if ftype == TType.I16:
+          self.IDSP = iprot.readI16();
         else:
           iprot.skip(ftype)
       elif fid == 24:
@@ -522,53 +905,23 @@ class SLUCH:
           iprot.skip(ftype)
       elif fid == 25:
         if ftype == TType.DOUBLE:
-          self.TARIF = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      elif fid == 26:
-        if ftype == TType.DOUBLE:
           self.SUMV = iprot.readDouble();
         else:
           iprot.skip(ftype)
+      elif fid == 26:
+        if ftype == TType.I16:
+          self.OPLATA = iprot.readI16();
+        else:
+          iprot.skip(ftype)
       elif fid == 27:
-        if ftype == TType.I32:
-          self.OPLATA = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 28:
-        if ftype == TType.DOUBLE:
-          self.SUMP = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      elif fid == 29:
-        if ftype == TType.DOUBLE:
-          self.SANK_MEK = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      elif fid == 30:
-        if ftype == TType.DOUBLE:
-          self.SANK_MEE = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      elif fid == 31:
-        if ftype == TType.DOUBLE:
-          self.SANK_EKMP = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      elif fid == 32:
         if ftype == TType.LIST:
-          self.usl = []
+          self.USL = []
           (_etype3, _size0) = iprot.readListBegin()
           for _i4 in xrange(_size0):
-            _elem5 = USL()
+            _elem5 = Usl()
             _elem5.read(iprot)
-            self.usl.append(_elem5)
+            self.USL.append(_elem5)
           iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 33:
-        if ftype == TType.STRING:
-          self.COMENTSL = iprot.readString();
         else:
           iprot.skip(ftype)
       else:
@@ -580,26 +933,26 @@ class SLUCH:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('SLUCH')
+    oprot.writeStructBegin('Sluch')
     if self.IDCASE is not None:
       oprot.writeFieldBegin('IDCASE', TType.I32, 1)
       oprot.writeI32(self.IDCASE)
       oprot.writeFieldEnd()
     if self.USL_OK is not None:
-      oprot.writeFieldBegin('USL_OK', TType.I32, 2)
-      oprot.writeI32(self.USL_OK)
+      oprot.writeFieldBegin('USL_OK', TType.I16, 2)
+      oprot.writeI16(self.USL_OK)
       oprot.writeFieldEnd()
     if self.VIDPOM is not None:
-      oprot.writeFieldBegin('VIDPOM', TType.I32, 3)
-      oprot.writeI32(self.VIDPOM)
+      oprot.writeFieldBegin('VIDPOM', TType.I16, 3)
+      oprot.writeI16(self.VIDPOM)
       oprot.writeFieldEnd()
     if self.NPR_MO is not None:
       oprot.writeFieldBegin('NPR_MO', TType.STRING, 4)
       oprot.writeString(self.NPR_MO)
       oprot.writeFieldEnd()
     if self.EXTR is not None:
-      oprot.writeFieldBegin('EXTR', TType.I32, 5)
-      oprot.writeI32(self.EXTR)
+      oprot.writeFieldBegin('EXTR', TType.I16, 5)
+      oprot.writeI16(self.EXTR)
       oprot.writeFieldEnd()
     if self.LPU is not None:
       oprot.writeFieldBegin('LPU', TType.STRING, 6)
@@ -610,12 +963,12 @@ class SLUCH:
       oprot.writeString(self.LPU_1)
       oprot.writeFieldEnd()
     if self.PODR is not None:
-      oprot.writeFieldBegin('PODR', TType.I32, 8)
-      oprot.writeI32(self.PODR)
+      oprot.writeFieldBegin('PODR', TType.STRING, 8)
+      oprot.writeString(self.PODR)
       oprot.writeFieldEnd()
     if self.PROFIL is not None:
-      oprot.writeFieldBegin('PROFIL', TType.I32, 9)
-      oprot.writeI32(self.PROFIL)
+      oprot.writeFieldBegin('PROFIL', TType.I16, 9)
+      oprot.writeI16(self.PROFIL)
       oprot.writeFieldEnd()
     if self.DET is not None:
       oprot.writeFieldBegin('DET', TType.BOOL, 10)
@@ -654,12 +1007,12 @@ class SLUCH:
       oprot.writeString(self.CODE_MES2)
       oprot.writeFieldEnd()
     if self.RSLT is not None:
-      oprot.writeFieldBegin('RSLT', TType.I32, 19)
-      oprot.writeI32(self.RSLT)
+      oprot.writeFieldBegin('RSLT', TType.I16, 19)
+      oprot.writeI16(self.RSLT)
       oprot.writeFieldEnd()
     if self.ISHOD is not None:
-      oprot.writeFieldBegin('ISHOD', TType.I32, 20)
-      oprot.writeI32(self.ISHOD)
+      oprot.writeFieldBegin('ISHOD', TType.I16, 20)
+      oprot.writeI16(self.ISHOD)
       oprot.writeFieldEnd()
     if self.PRVS is not None:
       oprot.writeFieldBegin('PRVS', TType.I32, 21)
@@ -670,51 +1023,27 @@ class SLUCH:
       oprot.writeString(self.IDDOKT)
       oprot.writeFieldEnd()
     if self.IDSP is not None:
-      oprot.writeFieldBegin('IDSP', TType.I32, 23)
-      oprot.writeI32(self.IDSP)
+      oprot.writeFieldBegin('IDSP', TType.I16, 23)
+      oprot.writeI16(self.IDSP)
       oprot.writeFieldEnd()
     if self.ED_COL is not None:
       oprot.writeFieldBegin('ED_COL', TType.DOUBLE, 24)
       oprot.writeDouble(self.ED_COL)
       oprot.writeFieldEnd()
-    if self.TARIF is not None:
-      oprot.writeFieldBegin('TARIF', TType.DOUBLE, 25)
-      oprot.writeDouble(self.TARIF)
-      oprot.writeFieldEnd()
     if self.SUMV is not None:
-      oprot.writeFieldBegin('SUMV', TType.DOUBLE, 26)
+      oprot.writeFieldBegin('SUMV', TType.DOUBLE, 25)
       oprot.writeDouble(self.SUMV)
       oprot.writeFieldEnd()
     if self.OPLATA is not None:
-      oprot.writeFieldBegin('OPLATA', TType.I32, 27)
-      oprot.writeI32(self.OPLATA)
+      oprot.writeFieldBegin('OPLATA', TType.I16, 26)
+      oprot.writeI16(self.OPLATA)
       oprot.writeFieldEnd()
-    if self.SUMP is not None:
-      oprot.writeFieldBegin('SUMP', TType.DOUBLE, 28)
-      oprot.writeDouble(self.SUMP)
-      oprot.writeFieldEnd()
-    if self.SANK_MEK is not None:
-      oprot.writeFieldBegin('SANK_MEK', TType.DOUBLE, 29)
-      oprot.writeDouble(self.SANK_MEK)
-      oprot.writeFieldEnd()
-    if self.SANK_MEE is not None:
-      oprot.writeFieldBegin('SANK_MEE', TType.DOUBLE, 30)
-      oprot.writeDouble(self.SANK_MEE)
-      oprot.writeFieldEnd()
-    if self.SANK_EKMP is not None:
-      oprot.writeFieldBegin('SANK_EKMP', TType.DOUBLE, 31)
-      oprot.writeDouble(self.SANK_EKMP)
-      oprot.writeFieldEnd()
-    if self.usl is not None:
-      oprot.writeFieldBegin('usl', TType.LIST, 32)
-      oprot.writeListBegin(TType.STRUCT, len(self.usl))
-      for iter6 in self.usl:
+    if self.USL is not None:
+      oprot.writeFieldBegin('USL', TType.LIST, 27)
+      oprot.writeListBegin(TType.STRUCT, len(self.USL))
+      for iter6 in self.USL:
         iter6.write(oprot)
       oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.COMENTSL is not None:
-      oprot.writeFieldBegin('COMENTSL', TType.STRING, 33)
-      oprot.writeString(self.COMENTSL)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -748,1031 +1077,10 @@ class SLUCH:
       raise TProtocol.TProtocolException(message='Required field IDDOKT is unset!')
     if self.IDSP is None:
       raise TProtocol.TProtocolException(message='Required field IDSP is unset!')
+    if self.ED_COL is None:
+      raise TProtocol.TProtocolException(message='Required field ED_COL is unset!')
     if self.SUMV is None:
       raise TProtocol.TProtocolException(message='Required field SUMV is unset!')
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class PACIENT:
-  """
-  Attributes:
-   - ID_PAC
-   - VPOLIS
-   - SPOLIS
-   - NPOLIS
-   - SMO
-   - SMO_OGRN
-   - SMO_OK
-   - SMO_NAM
-   - NOVOR
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.I32, 'ID_PAC', None, None, ), # 1
-    (2, TType.I32, 'VPOLIS', None, None, ), # 2
-    (3, TType.STRING, 'SPOLIS', None, None, ), # 3
-    (4, TType.STRING, 'NPOLIS', None, None, ), # 4
-    (5, TType.STRING, 'SMO', None, None, ), # 5
-    (6, TType.STRING, 'SMO_OGRN', None, None, ), # 6
-    (7, TType.STRING, 'SMO_OK', None, None, ), # 7
-    (8, TType.STRING, 'SMO_NAM', None, None, ), # 8
-    (9, TType.STRING, 'NOVOR', None, "0", ), # 9
-  )
-
-  def __init__(self, ID_PAC=None, VPOLIS=None, SPOLIS=None, NPOLIS=None, SMO=None, SMO_OGRN=None, SMO_OK=None, SMO_NAM=None, NOVOR=thrift_spec[9][4],):
-    self.ID_PAC = ID_PAC
-    self.VPOLIS = VPOLIS
-    self.SPOLIS = SPOLIS
-    self.NPOLIS = NPOLIS
-    self.SMO = SMO
-    self.SMO_OGRN = SMO_OGRN
-    self.SMO_OK = SMO_OK
-    self.SMO_NAM = SMO_NAM
-    self.NOVOR = NOVOR
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.I32:
-          self.ID_PAC = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.I32:
-          self.VPOLIS = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.STRING:
-          self.SPOLIS = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 4:
-        if ftype == TType.STRING:
-          self.NPOLIS = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 5:
-        if ftype == TType.STRING:
-          self.SMO = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 6:
-        if ftype == TType.STRING:
-          self.SMO_OGRN = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 7:
-        if ftype == TType.STRING:
-          self.SMO_OK = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 8:
-        if ftype == TType.STRING:
-          self.SMO_NAM = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 9:
-        if ftype == TType.STRING:
-          self.NOVOR = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('PACIENT')
-    if self.ID_PAC is not None:
-      oprot.writeFieldBegin('ID_PAC', TType.I32, 1)
-      oprot.writeI32(self.ID_PAC)
-      oprot.writeFieldEnd()
-    if self.VPOLIS is not None:
-      oprot.writeFieldBegin('VPOLIS', TType.I32, 2)
-      oprot.writeI32(self.VPOLIS)
-      oprot.writeFieldEnd()
-    if self.SPOLIS is not None:
-      oprot.writeFieldBegin('SPOLIS', TType.STRING, 3)
-      oprot.writeString(self.SPOLIS)
-      oprot.writeFieldEnd()
-    if self.NPOLIS is not None:
-      oprot.writeFieldBegin('NPOLIS', TType.STRING, 4)
-      oprot.writeString(self.NPOLIS)
-      oprot.writeFieldEnd()
-    if self.SMO is not None:
-      oprot.writeFieldBegin('SMO', TType.STRING, 5)
-      oprot.writeString(self.SMO)
-      oprot.writeFieldEnd()
-    if self.SMO_OGRN is not None:
-      oprot.writeFieldBegin('SMO_OGRN', TType.STRING, 6)
-      oprot.writeString(self.SMO_OGRN)
-      oprot.writeFieldEnd()
-    if self.SMO_OK is not None:
-      oprot.writeFieldBegin('SMO_OK', TType.STRING, 7)
-      oprot.writeString(self.SMO_OK)
-      oprot.writeFieldEnd()
-    if self.SMO_NAM is not None:
-      oprot.writeFieldBegin('SMO_NAM', TType.STRING, 8)
-      oprot.writeString(self.SMO_NAM)
-      oprot.writeFieldEnd()
-    if self.NOVOR is not None:
-      oprot.writeFieldBegin('NOVOR', TType.STRING, 9)
-      oprot.writeString(self.NOVOR)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    if self.ID_PAC is None:
-      raise TProtocol.TProtocolException(message='Required field ID_PAC is unset!')
-    if self.VPOLIS is None:
-      raise TProtocol.TProtocolException(message='Required field VPOLIS is unset!')
-    if self.NPOLIS is None:
-      raise TProtocol.TProtocolException(message='Required field NPOLIS is unset!')
-    if self.SMO is None:
-      raise TProtocol.TProtocolException(message='Required field SMO is unset!')
-    if self.NOVOR is None:
-      raise TProtocol.TProtocolException(message='Required field NOVOR is unset!')
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class SCHET:
-  """
-  Attributes:
-   - CODE_MO
-   - YEAR
-   - MONTH
-   - NSCHET
-   - DSCHET
-   - PLAT
-   - SUMMAV
-   - COMENTS
-   - SUMMAP
-   - SANK_MEK
-   - SANK_MEE
-   - SANK_EKMP
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'CODE_MO', None, None, ), # 1
-    (2, TType.I32, 'YEAR', None, None, ), # 2
-    (3, TType.I32, 'MONTH', None, None, ), # 3
-    (4, TType.STRING, 'NSCHET', None, "YYMM-N/Ni", ), # 4
-    (5, TType.I64, 'DSCHET', None, None, ), # 5
-    (6, TType.STRING, 'PLAT', None, "58000", ), # 6
-    (7, TType.DOUBLE, 'SUMMAV', None, 0, ), # 7
-    (8, TType.STRING, 'COMENTS', None, None, ), # 8
-    (9, TType.DOUBLE, 'SUMMAP', None, None, ), # 9
-    (10, TType.DOUBLE, 'SANK_MEK', None, None, ), # 10
-    (11, TType.DOUBLE, 'SANK_MEE', None, None, ), # 11
-    (12, TType.DOUBLE, 'SANK_EKMP', None, None, ), # 12
-  )
-
-  def __init__(self, CODE_MO=None, YEAR=None, MONTH=None, NSCHET=thrift_spec[4][4], DSCHET=None, PLAT=thrift_spec[6][4], SUMMAV=thrift_spec[7][4], COMENTS=None, SUMMAP=None, SANK_MEK=None, SANK_MEE=None, SANK_EKMP=None,):
-    self.CODE_MO = CODE_MO
-    self.YEAR = YEAR
-    self.MONTH = MONTH
-    self.NSCHET = NSCHET
-    self.DSCHET = DSCHET
-    self.PLAT = PLAT
-    self.SUMMAV = SUMMAV
-    self.COMENTS = COMENTS
-    self.SUMMAP = SUMMAP
-    self.SANK_MEK = SANK_MEK
-    self.SANK_MEE = SANK_MEE
-    self.SANK_EKMP = SANK_EKMP
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.CODE_MO = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.I32:
-          self.YEAR = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.I32:
-          self.MONTH = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 4:
-        if ftype == TType.STRING:
-          self.NSCHET = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 5:
-        if ftype == TType.I64:
-          self.DSCHET = iprot.readI64();
-        else:
-          iprot.skip(ftype)
-      elif fid == 6:
-        if ftype == TType.STRING:
-          self.PLAT = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 7:
-        if ftype == TType.DOUBLE:
-          self.SUMMAV = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      elif fid == 8:
-        if ftype == TType.STRING:
-          self.COMENTS = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 9:
-        if ftype == TType.DOUBLE:
-          self.SUMMAP = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      elif fid == 10:
-        if ftype == TType.DOUBLE:
-          self.SANK_MEK = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      elif fid == 11:
-        if ftype == TType.DOUBLE:
-          self.SANK_MEE = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      elif fid == 12:
-        if ftype == TType.DOUBLE:
-          self.SANK_EKMP = iprot.readDouble();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('SCHET')
-    if self.CODE_MO is not None:
-      oprot.writeFieldBegin('CODE_MO', TType.STRING, 1)
-      oprot.writeString(self.CODE_MO)
-      oprot.writeFieldEnd()
-    if self.YEAR is not None:
-      oprot.writeFieldBegin('YEAR', TType.I32, 2)
-      oprot.writeI32(self.YEAR)
-      oprot.writeFieldEnd()
-    if self.MONTH is not None:
-      oprot.writeFieldBegin('MONTH', TType.I32, 3)
-      oprot.writeI32(self.MONTH)
-      oprot.writeFieldEnd()
-    if self.NSCHET is not None:
-      oprot.writeFieldBegin('NSCHET', TType.STRING, 4)
-      oprot.writeString(self.NSCHET)
-      oprot.writeFieldEnd()
-    if self.DSCHET is not None:
-      oprot.writeFieldBegin('DSCHET', TType.I64, 5)
-      oprot.writeI64(self.DSCHET)
-      oprot.writeFieldEnd()
-    if self.PLAT is not None:
-      oprot.writeFieldBegin('PLAT', TType.STRING, 6)
-      oprot.writeString(self.PLAT)
-      oprot.writeFieldEnd()
-    if self.SUMMAV is not None:
-      oprot.writeFieldBegin('SUMMAV', TType.DOUBLE, 7)
-      oprot.writeDouble(self.SUMMAV)
-      oprot.writeFieldEnd()
-    if self.COMENTS is not None:
-      oprot.writeFieldBegin('COMENTS', TType.STRING, 8)
-      oprot.writeString(self.COMENTS)
-      oprot.writeFieldEnd()
-    if self.SUMMAP is not None:
-      oprot.writeFieldBegin('SUMMAP', TType.DOUBLE, 9)
-      oprot.writeDouble(self.SUMMAP)
-      oprot.writeFieldEnd()
-    if self.SANK_MEK is not None:
-      oprot.writeFieldBegin('SANK_MEK', TType.DOUBLE, 10)
-      oprot.writeDouble(self.SANK_MEK)
-      oprot.writeFieldEnd()
-    if self.SANK_MEE is not None:
-      oprot.writeFieldBegin('SANK_MEE', TType.DOUBLE, 11)
-      oprot.writeDouble(self.SANK_MEE)
-      oprot.writeFieldEnd()
-    if self.SANK_EKMP is not None:
-      oprot.writeFieldBegin('SANK_EKMP', TType.DOUBLE, 12)
-      oprot.writeDouble(self.SANK_EKMP)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    if self.CODE_MO is None:
-      raise TProtocol.TProtocolException(message='Required field CODE_MO is unset!')
-    if self.YEAR is None:
-      raise TProtocol.TProtocolException(message='Required field YEAR is unset!')
-    if self.MONTH is None:
-      raise TProtocol.TProtocolException(message='Required field MONTH is unset!')
-    if self.NSCHET is None:
-      raise TProtocol.TProtocolException(message='Required field NSCHET is unset!')
-    if self.DSCHET is None:
-      raise TProtocol.TProtocolException(message='Required field DSCHET is unset!')
-    if self.SUMMAV is None:
-      raise TProtocol.TProtocolException(message='Required field SUMMAV is unset!')
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class ZAP:
-  """
-  Attributes:
-   - PR_NOV
-   - patient
-   - sluch
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.I32, 'PR_NOV', None, 0, ), # 1
-    (2, TType.STRUCT, 'patient', (PACIENT, PACIENT.thrift_spec), None, ), # 2
-    (3, TType.LIST, 'sluch', (TType.STRUCT,(SLUCH, SLUCH.thrift_spec)), None, ), # 3
-  )
-
-  def __init__(self, PR_NOV=thrift_spec[1][4], patient=None, sluch=None,):
-    if PR_NOV is self.thrift_spec[1][4]:
-      PR_NOV = 0
-    self.PR_NOV = PR_NOV
-    self.patient = patient
-    self.sluch = sluch
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.I32:
-          self.PR_NOV = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRUCT:
-          self.patient = PACIENT()
-          self.patient.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.LIST:
-          self.sluch = []
-          (_etype10, _size7) = iprot.readListBegin()
-          for _i11 in xrange(_size7):
-            _elem12 = SLUCH()
-            _elem12.read(iprot)
-            self.sluch.append(_elem12)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('ZAP')
-    if self.PR_NOV is not None:
-      oprot.writeFieldBegin('PR_NOV', TType.I32, 1)
-      oprot.writeI32(self.PR_NOV)
-      oprot.writeFieldEnd()
-    if self.patient is not None:
-      oprot.writeFieldBegin('patient', TType.STRUCT, 2)
-      self.patient.write(oprot)
-      oprot.writeFieldEnd()
-    if self.sluch is not None:
-      oprot.writeFieldBegin('sluch', TType.LIST, 3)
-      oprot.writeListBegin(TType.STRUCT, len(self.sluch))
-      for iter13 in self.sluch:
-        iter13.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    if self.PR_NOV is None:
-      raise TProtocol.TProtocolException(message='Required field PR_NOV is unset!')
-    if self.patient is None:
-      raise TProtocol.TProtocolException(message='Required field patient is unset!')
-    if self.sluch is None:
-      raise TProtocol.TProtocolException(message='Required field sluch is unset!')
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class ServiceRegistry:
-  """
-  Attributes:
-   - schet
-   - zap
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'schet', (SCHET, SCHET.thrift_spec), None, ), # 1
-    (2, TType.LIST, 'zap', (TType.STRUCT,(ZAP, ZAP.thrift_spec)), None, ), # 2
-  )
-
-  def __init__(self, schet=None, zap=None,):
-    self.schet = schet
-    self.zap = zap
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.schet = SCHET()
-          self.schet.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.LIST:
-          self.zap = []
-          (_etype17, _size14) = iprot.readListBegin()
-          for _i18 in xrange(_size14):
-            _elem19 = ZAP()
-            _elem19.read(iprot)
-            self.zap.append(_elem19)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('ServiceRegistry')
-    if self.schet is not None:
-      oprot.writeFieldBegin('schet', TType.STRUCT, 1)
-      self.schet.write(oprot)
-      oprot.writeFieldEnd()
-    if self.zap is not None:
-      oprot.writeFieldBegin('zap', TType.LIST, 2)
-      oprot.writeListBegin(TType.STRUCT, len(self.zap))
-      for iter20 in self.zap:
-        iter20.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    if self.schet is None:
-      raise TProtocol.TProtocolException(message='Required field schet is unset!')
-    if self.zap is None:
-      raise TProtocol.TProtocolException(message='Required field zap is unset!')
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class PERS:
-  """
-  Attributes:
-   - ID_PAC
-   - FAM
-   - IM
-   - OT
-   - W
-   - DR
-   - FAM_P
-   - IM_P
-   - OT_P
-   - W_P
-   - DR_P
-   - MR
-   - DOCTYPE
-   - DOCSER
-   - DOCNUM
-   - SNILS
-   - OKATOG
-   - OKATOP
-   - COMMENTP
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.I32, 'ID_PAC', None, None, ), # 1
-    (2, TType.STRING, 'FAM', None, None, ), # 2
-    (3, TType.STRING, 'IM', None, None, ), # 3
-    (4, TType.STRING, 'OT', None, None, ), # 4
-    (5, TType.I32, 'W', None, None, ), # 5
-    (6, TType.I64, 'DR', None, None, ), # 6
-    (7, TType.STRING, 'FAM_P', None, None, ), # 7
-    (8, TType.STRING, 'IM_P', None, None, ), # 8
-    (9, TType.STRING, 'OT_P', None, None, ), # 9
-    (10, TType.I32, 'W_P', None, None, ), # 10
-    (11, TType.I64, 'DR_P', None, None, ), # 11
-    (12, TType.STRING, 'MR', None, None, ), # 12
-    (13, TType.STRING, 'DOCTYPE', None, None, ), # 13
-    (14, TType.STRING, 'DOCSER', None, None, ), # 14
-    (15, TType.STRING, 'DOCNUM', None, None, ), # 15
-    (16, TType.STRING, 'SNILS', None, None, ), # 16
-    (17, TType.STRING, 'OKATOG', None, None, ), # 17
-    (18, TType.STRING, 'OKATOP', None, None, ), # 18
-    (19, TType.STRING, 'COMMENTP', None, None, ), # 19
-  )
-
-  def __init__(self, ID_PAC=None, FAM=None, IM=None, OT=None, W=None, DR=None, FAM_P=None, IM_P=None, OT_P=None, W_P=None, DR_P=None, MR=None, DOCTYPE=None, DOCSER=None, DOCNUM=None, SNILS=None, OKATOG=None, OKATOP=None, COMMENTP=None,):
-    self.ID_PAC = ID_PAC
-    self.FAM = FAM
-    self.IM = IM
-    self.OT = OT
-    self.W = W
-    self.DR = DR
-    self.FAM_P = FAM_P
-    self.IM_P = IM_P
-    self.OT_P = OT_P
-    self.W_P = W_P
-    self.DR_P = DR_P
-    self.MR = MR
-    self.DOCTYPE = DOCTYPE
-    self.DOCSER = DOCSER
-    self.DOCNUM = DOCNUM
-    self.SNILS = SNILS
-    self.OKATOG = OKATOG
-    self.OKATOP = OKATOP
-    self.COMMENTP = COMMENTP
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.I32:
-          self.ID_PAC = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRING:
-          self.FAM = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.STRING:
-          self.IM = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 4:
-        if ftype == TType.STRING:
-          self.OT = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 5:
-        if ftype == TType.I32:
-          self.W = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 6:
-        if ftype == TType.I64:
-          self.DR = iprot.readI64();
-        else:
-          iprot.skip(ftype)
-      elif fid == 7:
-        if ftype == TType.STRING:
-          self.FAM_P = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 8:
-        if ftype == TType.STRING:
-          self.IM_P = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 9:
-        if ftype == TType.STRING:
-          self.OT_P = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 10:
-        if ftype == TType.I32:
-          self.W_P = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 11:
-        if ftype == TType.I64:
-          self.DR_P = iprot.readI64();
-        else:
-          iprot.skip(ftype)
-      elif fid == 12:
-        if ftype == TType.STRING:
-          self.MR = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 13:
-        if ftype == TType.STRING:
-          self.DOCTYPE = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 14:
-        if ftype == TType.STRING:
-          self.DOCSER = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 15:
-        if ftype == TType.STRING:
-          self.DOCNUM = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 16:
-        if ftype == TType.STRING:
-          self.SNILS = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 17:
-        if ftype == TType.STRING:
-          self.OKATOG = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 18:
-        if ftype == TType.STRING:
-          self.OKATOP = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 19:
-        if ftype == TType.STRING:
-          self.COMMENTP = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('PERS')
-    if self.ID_PAC is not None:
-      oprot.writeFieldBegin('ID_PAC', TType.I32, 1)
-      oprot.writeI32(self.ID_PAC)
-      oprot.writeFieldEnd()
-    if self.FAM is not None:
-      oprot.writeFieldBegin('FAM', TType.STRING, 2)
-      oprot.writeString(self.FAM)
-      oprot.writeFieldEnd()
-    if self.IM is not None:
-      oprot.writeFieldBegin('IM', TType.STRING, 3)
-      oprot.writeString(self.IM)
-      oprot.writeFieldEnd()
-    if self.OT is not None:
-      oprot.writeFieldBegin('OT', TType.STRING, 4)
-      oprot.writeString(self.OT)
-      oprot.writeFieldEnd()
-    if self.W is not None:
-      oprot.writeFieldBegin('W', TType.I32, 5)
-      oprot.writeI32(self.W)
-      oprot.writeFieldEnd()
-    if self.DR is not None:
-      oprot.writeFieldBegin('DR', TType.I64, 6)
-      oprot.writeI64(self.DR)
-      oprot.writeFieldEnd()
-    if self.FAM_P is not None:
-      oprot.writeFieldBegin('FAM_P', TType.STRING, 7)
-      oprot.writeString(self.FAM_P)
-      oprot.writeFieldEnd()
-    if self.IM_P is not None:
-      oprot.writeFieldBegin('IM_P', TType.STRING, 8)
-      oprot.writeString(self.IM_P)
-      oprot.writeFieldEnd()
-    if self.OT_P is not None:
-      oprot.writeFieldBegin('OT_P', TType.STRING, 9)
-      oprot.writeString(self.OT_P)
-      oprot.writeFieldEnd()
-    if self.W_P is not None:
-      oprot.writeFieldBegin('W_P', TType.I32, 10)
-      oprot.writeI32(self.W_P)
-      oprot.writeFieldEnd()
-    if self.DR_P is not None:
-      oprot.writeFieldBegin('DR_P', TType.I64, 11)
-      oprot.writeI64(self.DR_P)
-      oprot.writeFieldEnd()
-    if self.MR is not None:
-      oprot.writeFieldBegin('MR', TType.STRING, 12)
-      oprot.writeString(self.MR)
-      oprot.writeFieldEnd()
-    if self.DOCTYPE is not None:
-      oprot.writeFieldBegin('DOCTYPE', TType.STRING, 13)
-      oprot.writeString(self.DOCTYPE)
-      oprot.writeFieldEnd()
-    if self.DOCSER is not None:
-      oprot.writeFieldBegin('DOCSER', TType.STRING, 14)
-      oprot.writeString(self.DOCSER)
-      oprot.writeFieldEnd()
-    if self.DOCNUM is not None:
-      oprot.writeFieldBegin('DOCNUM', TType.STRING, 15)
-      oprot.writeString(self.DOCNUM)
-      oprot.writeFieldEnd()
-    if self.SNILS is not None:
-      oprot.writeFieldBegin('SNILS', TType.STRING, 16)
-      oprot.writeString(self.SNILS)
-      oprot.writeFieldEnd()
-    if self.OKATOG is not None:
-      oprot.writeFieldBegin('OKATOG', TType.STRING, 17)
-      oprot.writeString(self.OKATOG)
-      oprot.writeFieldEnd()
-    if self.OKATOP is not None:
-      oprot.writeFieldBegin('OKATOP', TType.STRING, 18)
-      oprot.writeString(self.OKATOP)
-      oprot.writeFieldEnd()
-    if self.COMMENTP is not None:
-      oprot.writeFieldBegin('COMMENTP', TType.STRING, 19)
-      oprot.writeString(self.COMMENTP)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    if self.ID_PAC is None:
-      raise TProtocol.TProtocolException(message='Required field ID_PAC is unset!')
-    if self.FAM is None:
-      raise TProtocol.TProtocolException(message='Required field FAM is unset!')
-    if self.IM is None:
-      raise TProtocol.TProtocolException(message='Required field IM is unset!')
-    if self.OT is None:
-      raise TProtocol.TProtocolException(message='Required field OT is unset!')
-    if self.W is None:
-      raise TProtocol.TProtocolException(message='Required field W is unset!')
-    if self.DR is None:
-      raise TProtocol.TProtocolException(message='Required field DR is unset!')
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class PatientRegistry:
-  """
-  Attributes:
-   - clients
-   - version
-   - DATA
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.LIST, 'clients', (TType.STRUCT,(PERS, PERS.thrift_spec)), None, ), # 1
-    (2, TType.STRING, 'version', None, "1.0", ), # 2
-    (3, TType.I64, 'DATA', None, None, ), # 3
-  )
-
-  def __init__(self, clients=None, version=thrift_spec[2][4], DATA=None,):
-    self.clients = clients
-    self.version = version
-    self.DATA = DATA
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.LIST:
-          self.clients = []
-          (_etype24, _size21) = iprot.readListBegin()
-          for _i25 in xrange(_size21):
-            _elem26 = PERS()
-            _elem26.read(iprot)
-            self.clients.append(_elem26)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRING:
-          self.version = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.I64:
-          self.DATA = iprot.readI64();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('PatientRegistry')
-    if self.clients is not None:
-      oprot.writeFieldBegin('clients', TType.LIST, 1)
-      oprot.writeListBegin(TType.STRUCT, len(self.clients))
-      for iter27 in self.clients:
-        iter27.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.version is not None:
-      oprot.writeFieldBegin('version', TType.STRING, 2)
-      oprot.writeString(self.version)
-      oprot.writeFieldEnd()
-    if self.DATA is not None:
-      oprot.writeFieldBegin('DATA', TType.I64, 3)
-      oprot.writeI64(self.DATA)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    if self.clients is None:
-      raise TProtocol.TProtocolException(message='Required field clients is unset!')
-    if self.version is None:
-      raise TProtocol.TProtocolException(message='Required field version is unset!')
-    if self.DATA is None:
-      raise TProtocol.TProtocolException(message='Required field DATA is unset!')
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class ServiceAndPatientRegistry:
-  """
-  Attributes:
-   - services
-   - patients
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'services', (ServiceRegistry, ServiceRegistry.thrift_spec), None, ), # 1
-    (2, TType.STRUCT, 'patients', (PatientRegistry, PatientRegistry.thrift_spec), None, ), # 2
-  )
-
-  def __init__(self, services=None, patients=None,):
-    self.services = services
-    self.patients = patients
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.services = ServiceRegistry()
-          self.services.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRUCT:
-          self.patients = PatientRegistry()
-          self.patients.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('ServiceAndPatientRegistry')
-    if self.services is not None:
-      oprot.writeFieldBegin('services', TType.STRUCT, 1)
-      self.services.write(oprot)
-      oprot.writeFieldEnd()
-    if self.patients is not None:
-      oprot.writeFieldBegin('patients', TType.STRUCT, 2)
-      self.patients.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    if self.services is None:
-      raise TProtocol.TProtocolException(message='Required field services is unset!')
-    if self.patients is None:
-      raise TProtocol.TProtocolException(message='Required field patients is unset!')
     return
 
 
