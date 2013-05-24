@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+import os
 from flask import Flask, request, session
 from flask.ext.babelex import Babel
 from models import db
-from autoload import register_blueprints
+from autoload import load_blueprints
 
 app = Flask(__name__)
 app.config.from_object('config')
@@ -10,7 +11,8 @@ app.config.from_object('config')
 db.init_app(app)
 
 #Register blueprints
-register_blueprints(app, apps_package="blueprints", module_name="app", blueprint_name="module")
+blueprints_path = os.path.abspath(os.path.join('..', 'blueprints'))
+load_blueprints(app, apps_path=blueprints_path)
 
 
 # Initialize babel
