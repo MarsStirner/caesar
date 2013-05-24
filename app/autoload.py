@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 from flask import Blueprint, Markup, request, render_template
 from itertools import chain
 from os import path
@@ -8,17 +9,25 @@ from werkzeug.utils import import_string
 from werkzeug.exceptions import default_exceptions, HTTPException
 
 
-def register_blueprints(app, apps_package="blueprints", module_name="app", blueprint_name="module", on_error=None):
-    """Automatically load Blueprints from the specified package and registers them with Flask."""
+def load_blueprints(app, apps_path):
+    pkg_list = os.listdir(apps_path)
+    base_pkg = os.path.basename(apps_path)
+    if pkg_list:
+        for pkg_path in pkg_list:
+            if os.path.isdir(os.path.join(apps_path, pkg_path)):
+                register_blueprint(app, '%s.%s' % (base_pkg, pkg_path), module_name="app", blueprint_name="module")
 
-    #TODO: use module name as url_prefix
+
+def register_blueprint(app, app_package, module_name="app", blueprint_name="module", on_error=None):
+    """Automatically load Blueprint from the specified package and registers them with Flask."""
+
     #TODO: simplify for our case
 
-    if not apps_package:
+    if not app_package:
         raise ValueError("No apps package provided - unable to begin autoload")
 
-    if isinstance(apps_package, basestring):
-        package_code = import_string(apps_package)
+    if isinstance(app_package, basestring):
+        package_code = import_string(app_package)
     else:
         #: `apps_package` can be the already imported parent package
         #: (i.e. the following is a licit pattern)::
@@ -26,14 +35,14 @@ def register_blueprints(app, apps_package="blueprints", module_name="app", bluep
         #:      import app_package
         #:      # do something else with app_package
         #:      autoload(app, app_package)
-        package_code = apps_package
-        apps_package = apps_package.__name__
+        package_code = app_package
+        app_package = app_package.__name__
 
     package_paths = package_code.__path__
 
     package_paths = [path.join(path.dirname(app.root_path), p) for p in package_paths]
-    root = apps_package
-    apps_package = apps_package + u"." if not apps_package.endswith(".") else apps_package
+    root = app_package
+    app_package = app_package + u"." if not app_package.endswith(".") else app_package
 
     if on_error is None:
         on_error = lambda name: app.logger.warn("Unable to import {name}.".format(name=name))
@@ -46,7 +55,7 @@ def register_blueprints(app, apps_package="blueprints", module_name="app", bluep
     #: Autoloaded apps must be Python packages
     #: The root of the package is also inspected for a routing file
     package_contents = chain([[None, root, True]],
-                             walk_packages(path=package_paths, prefix=apps_package, onerror=on_error))
+                             walk_packages(path=package_paths, prefix=app_package, onerror=on_error))
     for _, sub_app_name, is_pkg in package_contents:
 
         if not is_pkg:
@@ -56,7 +65,7 @@ def register_blueprints(app, apps_package="blueprints", module_name="app", bluep
         sub_app = import_string(sub_app_import_path)
 
         if isinstance(sub_app, Blueprint):
-            app.register_blueprint(sub_app)
+            app.register_blueprint(sub_app, url_prefix='/%s' % sub_app_name)
         else:
             app.logger.warn(("Failed to register {name} - "
                              "it does not match the registration pattern.").format(name=sub_app_name))
