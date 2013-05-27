@@ -4,6 +4,7 @@ from flask import Flask, request, session
 from flask.ext.babelex import Babel
 from models import db
 from autoload import load_blueprints
+from config import BLUEPRINTS_PATH
 
 app = Flask(__name__)
 app.config.from_object('config')
@@ -11,7 +12,7 @@ app.config.from_object('config')
 db.init_app(app)
 
 #Register blueprints
-blueprints_path = os.path.abspath(os.path.join('..', 'blueprints'))
+blueprints_path = os.path.abspath(os.path.join('..', BLUEPRINTS_PATH))
 load_blueprints(app, apps_path=blueprints_path)
 
 
