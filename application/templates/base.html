@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    {% include '_header.html' %}
+    {% block modules_css %}{% endblock %}
+  </head>
+  <body>
+  {% include '_top.html' %}
+
+  <div class="container">
+
+  {% block content %}
+
+      <!-- Jumbotron -->
+      <div class="jumbotron">
+        <h1>Самая главная страница</h1>
+        <p class="lead">Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
+      </div>
+
+      {% endblock %}
+
+      <hr>
+
+      {% include '_bottom.html' %}
+
+    </div> <!-- /container -->
+
+      {% include '_footer.html' %}
+      {% block modules_js %}{% endblock %}
+
+  </body>
+</html>

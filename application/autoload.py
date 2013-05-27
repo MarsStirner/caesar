@@ -65,7 +65,7 @@ def register_blueprint(app, app_package, module_name="app", blueprint_name="modu
         sub_app = import_string(sub_app_import_path)
 
         if isinstance(sub_app, Blueprint):
-            app.register_blueprint(sub_app, url_prefix='/%s' % sub_app_name)
+            app.register_blueprint(sub_app, url_prefix='/%s' % sub_app.name)
         else:
             app.logger.warn(("Failed to register {name} - "
                              "it does not match the registration pattern.").format(name=sub_app_name))

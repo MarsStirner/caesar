@@ -16,7 +16,7 @@ SYSTEM_USER = ''
 CSRF_ENABLED = True
 SECRET_KEY = ''
 
-BLUEPRINTS_PATH = 'blueprints'
+BLUEPRINTS_DIR = 'blueprints'
 
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_migrations')
 
