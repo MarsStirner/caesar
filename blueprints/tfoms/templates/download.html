@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block modules_css %}
+<link href="{{ url_for('.static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+    {% include '_nav_menu.html' %}
+
+
+        <form class="form-horizontal">
+            <legend>Выгрузка в ТФОМС</legend>
+            <div class="control-group">
+                <label class="control-label">Формат</label>
+                <div class="controls">
+                    <label class="radio">
+                        <input type="radio" name="format" value="XML" checked="checked">XML
+                    </label>
+                    <label class="radio">
+                        <input type="radio" name="format" value="DBF">DBF
+                    </label>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Тип выгрузки</label>
+                <div class="controls">
+                    <select name="type" class="span3">
+                        <option value="0">- выберите тип выгрузки -</option>
+                        <option value="1">Выгрузка пациентов</option>
+                        <option value="2">Выгрузка счетов</option>
+                    </select>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Шаблон</label>
+                <div class="controls">
+                    <select name="template" class="span3">
+                        <option value="0">- выберите шаблон -</option>
+                        <option value="1">Шаблон выгрузки пациентов №1</option>
+                        <option value="2">Шаблон выгрузки пациентов №2</option>
+                        <option value="3">Шаблон выгрузки пациентов №3</option>
+                        <option value="4">Шаблон выгрузки пациентов №4</option>
+                    </select>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" class="btn btn-primary">Сделать выгрузку</button>
+                </div>
+            </div>
+        </form>
+{% endblock %}

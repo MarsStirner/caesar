@@ -4,28 +4,9 @@
 <link href="{{ url_for('.static', filename='css/style.css') }}" rel="stylesheet">
 {% endblock %}
 
-
 {% block content %}
-        <div class="application_menu">
-            <div class="navbar">
-              <div class="navbar-inner">
-                <div class="container">
-                  <ul class="nav">
-                    <li class="active"><a href="index.html">Главная</a></li>
-                    <li><a href="download.html">Выгрузка</a></li>
-                    <li><a href="upload.html">Загрузка</a></li>
-                    <li><a href="reports.html">Отчёты</a></li>
-                    <li><a class="dropdown-toggle" data-toggle="dropdown" href="#">Настройка <b class="caret"></b></a>
-                        <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
-                          <li><a href="settings_template.html">Шаблоны</a></li>
-                          <li><a href="settings.html">Общие настройки</a></li>
-                        </ul>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-          </div>
-        </div><!-- /.navbar -->
+
+    {% include '_nav_menu.html' %}
 
       <!-- Jumbotron -->
       <div class="jumbotron">

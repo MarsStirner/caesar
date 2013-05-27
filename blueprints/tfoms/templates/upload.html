@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block modules_css %}
+<link href="{{ url_for('.static', filename='css/style.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+    {% include '_nav_menu.html' %}
+
+        <form class="form-horizontal">
+            <legend>Загрузка из ТФОМС</legend>
+            <div class="alert">
+              <button type="button" class="close" data-dismiss="alert">&times;</button>
+              <strong>Обратите внимание!</strong> К загрузке принимаем только XML.
+            </div>
+            <div class="control-group">
+                <label class="control-label">Файл для загрузки</label>
+                <div class="controls">
+                    <input type="file" name="upload_file">
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" class="btn btn-primary">Загрузить данные</button>
+                </div>
+            </div>
+        </form>
+
+      <hr>
+
+      <div class="footer">
+        <p>&copy; Корус Консалтинг ИТ 2013</p>
+      </div>
+
+{% endblock %}

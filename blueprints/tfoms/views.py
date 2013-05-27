@@ -10,4 +10,11 @@ def index():
         return render_template('index.html')
     except TemplateNotFound:
         abort(404)
-    return render_template('index.html')
+
+
+@module.route('/<string:page>.html')
+def show_page(page):
+    try:
+        return render_template('/%s.html' % page)
+    except TemplateNotFound:
+        abort(404)
