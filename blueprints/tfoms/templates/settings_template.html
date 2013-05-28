@@ -4,8 +4,10 @@
 <link href="{{ url_for('.static', filename='css/style.css') }}" rel="stylesheet">
 <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/humanity/jquery-ui.css" />
   <style>
-  .tags ul { list-style-type: none; margin: 0; padding: 0; margin-bottom: 10px; }
-  .tags li { margin: 5px; padding: 5px; width: 200px; }
+	  .tags ul { list-style-type: none; margin: 0px 0px 0px 0px; padding: 0; margin-bottom: 10px; }
+	  .tags li { margin: 5px 0px 0px 0px 0px; padding: 0;}
+	  .ui-state-highlight { background-color: #CCCCCC; height: 1.5em; line-height: 1.2em; border: dashed 1px gray; }
+	  .sortable ul {margin:0px 0px 0px 25px; padding:0;  }
   </style>
 {% endblock %}
 
@@ -49,31 +51,111 @@
                   <div class="span6 well">
                       <legend>Используемые тэги</legend>
                       <ul id="sortable" class=" sortable">
-                          <li class="ui-state-default">Название 1 (CODE)</li>
-                          <li class="ui-state-default">Название 2 (CODE)</li>
-                          <li class="ui-state-default">Название 3 (CODE)</li>
-                          <li class="ui-state-default">Название 4 (CODE)</li>
-                          <li class="ui-state-default">Название 5 (CODE)</li>
-                          <li class="ui-state-default">Название 11 (CODE)</li>
-                          <li class="ui-state-default">Название 12 (CODE)</li>
-                          <li class="ui-state-default">Название 13 (CODE)</li>
-                          <li class="ui-state-default">Название 14 (CODE)</li>
-                          <li class="ui-state-default">Название 15 (CODE)</li>
-                          <li class="ui-state-default">Название 21 (CODE)</li>
-                          <li class="ui-state-default">Название 22 (CODE)</li>
-                          <li class="ui-state-default">Название 23 (CODE)</li>
-                          <li class="ui-state-default">Название 24 (CODE)</li>
-                          <li class="ui-state-default">Название 25 (CODE)</li>
+                          <li >
+                          		Название 1 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                          		
+                          </li>
+                          <li >
+                          		Название 2 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 3 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 4 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 5 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 11 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 12 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 13 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 14 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 15 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 21 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 22 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 23 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 24 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 25 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
                         </ul>
                   </div>
                   <div class="span6 well">
                       <legend>Неиспользуемые тэги</legend>
                       <ul id="sortable2" class=" sortable">
-                          <li class="ui-state-default">Название 31 (CODE)</li>
-                          <li class="ui-state-default">Название 32 (CODE)</li>
-                          <li class="ui-state-default">Название 33 (CODE)</li>
-                          <li class="ui-state-default">Название 34 (CODE)</li>
-                          <li class="ui-state-default">Название 35 (CODE)</li>
+                          <li >
+                          		Название 31 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 32 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 33 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 34 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 35 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
                         </ul>
                   </div>
                   </div>
@@ -96,10 +178,11 @@
     $( ".sortable" ).sortable({
         connectWith: 'ul.sortable',
         opacity: 0.6,
-        cursor: "move"
+        cursor: "move",
+        placeholder: "ui-state-highlight"
     });
     $( "ul, li" ).disableSelection();
-    $("#sortable, #sortable2").css('minHeight',$("#sortable").height()+"px");
+    $("#sortable, #sortable2").css('minHeight',"12px");
   });
   </script>
 {% endblock %}
