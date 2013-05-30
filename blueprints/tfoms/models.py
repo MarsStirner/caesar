@@ -13,11 +13,11 @@ class DownloadType(db.Model):
     code = db.Column(db.String(10), unique=True, nullable=False)
     name = db.Column(db.Unicode(10), unique=True)
 
-    def __init__(self, code):
-        self.code = code
-
     def __repr__(self):
         return '<DownloadType %r>' % self.code
+
+    def __unicode__(self):
+        return u'%s (%s)' % (self.name, self.code)
 
 
 class TemplateType(db.Model):
@@ -28,15 +28,13 @@ class TemplateType(db.Model):
     name = db.Column(db.String(10), unique=True, nullable=False)
     
     download_type_id = db.Column(db.Integer, db.ForeignKey('%s_download_type.id' % TABLE_PREFIX), index=True)
-    
-    #templated_type = db.relationship('DownloadType', backref=backref('template_type', order_by=id))  
-
-    def __init__(self, type_name, download_type_id):
-        self.name = type_name
-        self.download_type_id = download_type_id
+    download_type = db.relationship(DownloadType)
 
     def __repr__(self):
         return '<TemplateType %r>' % self.name
+
+    def __unicode__(self):
+        return self.name
 
     
 class Template(db.Model):
@@ -50,13 +48,7 @@ class Template(db.Model):
     #user = db.Column(db.Integer, db.ForeignKey('.id'))
     type_id = db.Column(db.Integer, db.ForeignKey('%s_template_type.id' % TABLE_PREFIX), index=True)
 
-    #template = db.relationship('TemplateType', backref=backref('templates', order_by=id)) 
-    
-    def __init__(self, code, name, archive, type_id):
-        self.code = code
-        self.name = name
-        self.archive = archive
-        self.type_id = type_id
+    #template = db.relationship('TemplateType', backref=backref('templates', order_by=id))
 
     def __repr__(self):
         return '<Template %r>' % self.name
@@ -84,10 +76,15 @@ class Tag(db.Model):
     download_type_id = db.Column(db.Integer, db.ForeignKey('%s_download_type.id' % TABLE_PREFIX), index=True)
     
     # many to many TemplateType<->Tag
-    template_types = db.relationship('TemplateType', secondary='TagTemplateType', backref='tags')
+    template_types = db.relationship(TemplateType,
+                                     secondary='%s_tag_template_type' % TABLE_PREFIX,
+                                     backref='tags')
 
     def __repr__(self):
-        return '<Tag %r>' % self.name
+        return '<Tag %r>' % self.code
+
+    def __unicode__(self):
+        return self.code
 
  
 class StandartTree(db.Model):
@@ -96,10 +93,17 @@ class StandartTree(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     tag_id = db.Column(db.Integer, db.ForeignKey('%s_tag.id' % TABLE_PREFIX), index=True)
-    parent_id = db.Column(db.Integer, db.ForeignKey('%s_tags_tree.id' % TABLE_PREFIX), index=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey('%s_standart_tree.id' % TABLE_PREFIX), index=True)
     template_type_id = db.Column(db.Integer, db.ForeignKey('%s_template_type.id' % TABLE_PREFIX), index=True)
     is_necessary = db.Column(db.Boolean)
-    
+
+    tag = db.relationship(Tag)
+    parent = db.relationship('StandartTree', remote_side=[id])
+    template_type = db.relationship(TemplateType)
+
+    def __unicode__(self):
+        return self.name
+
     
 class TagsTree(db.Model): 
     """Древовидная структура тегов"""
@@ -108,10 +112,8 @@ class TagsTree(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     tag_id = db.Column(db.Integer, db.ForeignKey('%s_tag.id' % TABLE_PREFIX), nullable=False, index=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('%s.id' % __tablename__), index=True)
-    
     template_id = db.Column(db.Integer, db.ForeignKey('%s_template.id' % TABLE_PREFIX), nullable=False, index=True)
 
-    def __init__(self, tag_name, parent_tag, template_id):
-        self.tag_id = tag_name
-        self.parent_id = parent_tag
-        self.template_id = template_id
+    tag = db.relationship(Tag)
+    parent = db.relationship('TagsTree', remote_side=[id])
+    template = db.relationship(Template)
