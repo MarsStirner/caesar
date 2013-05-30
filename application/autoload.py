@@ -65,10 +65,18 @@ def register_blueprint(app, app_package, module_name="app", blueprint_name="modu
         sub_app = import_string(sub_app_import_path)
 
         if isinstance(sub_app, Blueprint):
-            app.register_blueprint(sub_app, url_prefix='/%s' % sub_app_name)
+            app.register_blueprint(sub_app, url_prefix='/%s' % sub_app.name)
+            import_models(app, sub_app_name)
         else:
             app.logger.warn(("Failed to register {name} - "
                              "it does not match the registration pattern.").format(name=sub_app_name))
+
+
+def import_models(app, blueprint_package_path):
+    try:
+        import_string('%s.models' % blueprint_package_path)
+    except ImportError:
+        app.logger.warn("Failed to %s.models" % blueprint_package_path)
 
 
 def setup_errors(app, error_template="errors.html"):

@@ -2,5 +2,5 @@
 
 #TODO: Add Migrations
 #TODO: Add Auto Creation blueprints Tables
-from app.app import db
+from application.app import db
 db.create_all()

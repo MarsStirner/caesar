@@ -26,11 +26,6 @@
         margin-top: 28px;
       }
 
-      .application_menu{
-          margin-top: 41px;
-          padding-top: 20px;
-      }
-
       /* Customize the navbar links to be fill the entire space of the .navbar */
       .application_menu .navbar .navbar-inner {
         padding: 0;

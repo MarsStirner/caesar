@@ -16,9 +16,7 @@ SYSTEM_USER = ''
 CSRF_ENABLED = True
 SECRET_KEY = ''
 
-BLUEPRINTS_PATH = 'blueprints'
-
-SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_migrations')
+BLUEPRINTS_DIR = 'blueprints'
 
 try:
     from config_local import *

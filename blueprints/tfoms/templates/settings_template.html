@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block modules_css %}
+<link href="{{ url_for('.static', filename='css/style.css') }}" rel="stylesheet">
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/humanity/jquery-ui.css" />
+  <style>
+	  .tags ul { list-style-type: none; margin: 0px 0px 0px 0px; padding: 0; margin-bottom: 10px; }
+	  .tags li { margin: 5px 0px 0px 0px 0px; padding: 0;}
+	  .ui-state-highlight { background-color: #CCCCCC; height: 1.5em; line-height: 1.2em; border: dashed 1px gray; }
+	  .sortable ul {margin:0px 0px 0px 25px; padding:0;  }
+  </style>
+{% endblock %}
+
+{% block content %}
+
+    {% include '_nav_menu.html' %}
+
+        <legend>Настройка шаблонов</legend>
+        <div class="container-fluid">
+        <div class="row-fluid">
+          <div class="span4">
+              <ul class="nav nav-list nav-stacked">
+                  <li class="nav-header">Шаблоны</li>
+                  <li><a href="#">Шаблон 1</a></li>
+                  <li><a href="#">Шаблон 2</a></li>
+                  <li class="active"><a href="#">Шаблон 3</a></li>
+                  <li><a href="#">Шаблон 4</a></li>
+                  <li><a href="#">Шаблон 5</a></li>
+                  <li><a href="#">Шаблон 6</a></li>
+                  <li class="divider"></li>
+                  <li><a href="#"><i class=" icon-plus-sign"></i>Добавить новый</a></li>
+                </ul>
+
+          </div>
+          <div class="span8">
+              <form class="form-inline">
+                    <label class="radio">
+                        <input type="radio" name="format" value="XML" checked="checked">XML
+                    </label>
+                    <label class="radio">
+                        <input type="radio" name="format" value="DBF">DBF
+                    </label>
+                  <select name="type" class="span4">
+                        <option value="0">- тип выгрузки -</option>
+                        <option value="1" selected="selected">Выгрузка пациентов</option>
+                        <option value="2">Выгрузка счетов</option>
+                    </select>
+                  <input type="text" placeholder="Название шаблона" value="Шаблон 3">
+                  <hr>
+                  <div class="row-fluid tags">
+                  <div class="span6 well">
+                      <legend>Используемые тэги</legend>
+                      <ul id="sortable" class=" sortable">
+                          <li >
+                          		Название 1 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                          		
+                          </li>
+                          <li >
+                          		Название 2 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 3 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 4 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 5 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 11 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 12 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 13 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 14 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 15 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 21 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 22 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 23 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 24 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 25 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                        </ul>
+                  </div>
+                  <div class="span6 well">
+                      <legend>Неиспользуемые тэги</legend>
+                      <ul id="sortable2" class=" sortable">
+                          <li >
+                          		Название 31 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 32 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 33 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 34 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                          <li >
+                          		Название 35 (CODE)
+                          		<ul id="sortable" class=" sortable">                          		
+                          		</ul>                           		
+                          </li>
+                        </ul>
+                  </div>
+                  </div>
+                  <hr>
+                <div class="control-group">
+                    <div class="controls pull-right">
+                        <button type="submit" class="btn btn-primary btn-large">Сохранить</button>
+                    </div>
+                </div>
+        </form>
+          </div>
+        </div>
+        </div>
+{% endblock %}
+{% block modules_js %}
+  <script src="{{ url_for('static', filename='jquery-ui/js/jquery-1.9.1.js') }}"></script>
+  <script src="{{ url_for('static', filename='jquery-ui/js/jquery-ui-1.10.2.custom.min.js') }}"></script>
+  <script>
+  $(function() {
+    $( ".sortable" ).sortable({
+        connectWith: 'ul.sortable',
+        opacity: 0.6,
+        cursor: "move",
+        placeholder: "ui-state-highlight"
+    });
+    $( "ul, li" ).disableSelection();
+    $("#sortable, #sortable2").css('minHeight',"12px");
+  });
+  </script>
+{% endblock %}
