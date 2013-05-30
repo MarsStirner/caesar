@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from application.database import db
+from .app import module
 
-TABLE_PREFIX = __package__
+TABLE_PREFIX = module.name
 
 
 class DownloadType(db.Model):
