@@ -4,9 +4,10 @@ from flask import Flask, request, session
 from flask.ext.babelex import Babel
 from database import db
 from autoload import load_blueprints
+import config
 
 app = Flask(__name__)
-app.config.from_object('config')
+app.config.from_object(config)
 
 db.init_app(app)
 

@@ -18,8 +18,6 @@ SECRET_KEY = ''
 
 BLUEPRINTS_DIR = 'blueprints'
 
-SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_migrations')
-
 try:
     from config_local import *
 except ImportError:
