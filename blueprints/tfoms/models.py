@@ -1,30 +1,32 @@
 # -*- coding: utf-8 -*-
-from flask.ext.sqlalchemy import SQLAlchemy
+from application.database import db
 
-db = SQLAlchemy(app)
+TABLE_PREFIX = __package__
+
 
 class DownloadType(db.Model):
-    '''
-        Тип выгрузки
-    '''
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(10), unique=True)
-   
-    def __init__(self, download_type_name):
-        self.name = download_type_name
+    """Тип выгрузки"""
+    __tablename__ = '%s_download_type' % TABLE_PREFIX
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    code = db.Column(db.String(10), unique=True, nullable=False)
+    name = db.Column(db.Unicode(10), unique=True)
+
+    def __init__(self, code):
+        self.code = code
 
     def __repr__(self):
-        return '<DownloadType %r>' % self.name
+        return '<DownloadType %r>' % self.code
+
 
 class TemplateType(db.Model):
-    '''
-        Тип шаблона
-    '''
+    """Тип шаблона"""
+    __tablename__ = '%s_template_type' % TABLE_PREFIX
     
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(10), unique=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(10), unique=True, nullable=False)
     
-    download_type_id = db.Column(db.Integer, db.ForeignKey('download_type.id'))
+    download_type_id = db.Column(db.Integer, db.ForeignKey('%s_download_type.id' % TABLE_PREFIX), index=True)
     
     #templated_type = db.relationship('DownloadType', backref=backref('template_type', order_by=id))  
 
@@ -37,85 +39,78 @@ class TemplateType(db.Model):
 
     
 class Template(db.Model):
-    '''
-        Шаблоны
-    '''
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True)
-    archive = db.Column(db.Bool)
+    """Шаблоны"""
+    __tablename__ = '%s_template' % TABLE_PREFIX
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(80), unique=True, nullable=False)
+    archive = db.Column(db.Boolean, default=False)
     
     #user = db.Column(db.Integer, db.ForeignKey('.id'))
-    type = db.Column(db.Integer, db.ForeignKey('template_type.id'))
+    type_id = db.Column(db.Integer, db.ForeignKey('%s_template_type.id' % TABLE_PREFIX), index=True)
 
     #template = db.relationship('TemplateType', backref=backref('templates', order_by=id)) 
     
-    def __init__(self, name, archive, type):
+    def __init__(self, code, name, archive, type_id):
+        self.code = code
         self.name = name
         self.archive = archive
-        self.type = type
+        self.type_id = type_id
 
     def __repr__(self):
         return '<Template %r>' % self.name
 
 
-tags_template_types = db.Table('tags_template_types',
-    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id')),
-    db.Column('template_type_id', db.Integer, db.ForeignKey('template_type.id'))
-)
+class TagTemplateType(db.Model):
+    __tablename__ = '%s_tag_template_type' % TABLE_PREFIX
+
+    tag_id = db.Column(db.Integer, db.ForeignKey('%s_tag.id' % TABLE_PREFIX), primary_key=True, nullable=False)
+    template_type_id = db.Column(db.Integer,
+                                 db.ForeignKey('%s_template_type.id' % TABLE_PREFIX),
+                                 primary_key=True,
+                                 nullable=False)
+
+    # db.UniqueConstraint(tag_id, template_type_id)
+
 
 class Tag(db.Model):
-    '''
-        Теги 
-    '''
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True)
-    
-    download_type = db.Column(db.Integer, db.ForeignKey('download_type.id'))
+    """Теги"""
+    __tablename__ = '%s_tag' % TABLE_PREFIX
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    code = db.Column(db.String(80), unique=True, nullable=False)
+    name = db.Column(db.Unicode(80))
+    download_type_id = db.Column(db.Integer, db.ForeignKey('%s_download_type.id' % TABLE_PREFIX), index=True)
     
     # many to many TemplateType<->Tag
-    template_types = relationship('TemplateType', secondary=tags_template_types, backref='tags')
-
-    def __init__(self, name, download_type, tag_group):
-        self.name = name
-        self.download_type = download_Type
-        self.template_type = template_type
+    template_types = db.relationship('TemplateType', secondary='TagTemplateType', backref='tags')
 
     def __repr__(self):
-        return '<Tag %r>' % self.name    
- 
-class EtalonTree(db.Model):
-    '''
-        Эталонная структура дерева для каждого из типов шаблонов, с использованием
-        всех тегов
-    '''
-    id = db.Column(db.Integer, primary_key=True)
-    tag_name = db.Column(db.Integer, db.ForeignKey('tag.id'))
-    parent_tag =  db.Column(db.Integer, db.ForeignKey('tags_tree.id'))
-    necessary = db.Column(db.Bool)
-    
-    template_type = db.Column(db.Integer, db.ForeignKey('template_type.id'))
+        return '<Tag %r>' % self.name
 
-    def __init__(self, tag_name, parent_tag, template):
-        self.tag_name = tag_name
-        self.parent_tag = parent_tag
-        self.template_type = template_type   
+ 
+class StandartTree(db.Model):
+    """Эталонная структура дерева для каждого из типов шаблонов, с использованием всех тегов"""
+    __tablename__ = '%s_standart_tree' % TABLE_PREFIX
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    tag_id = db.Column(db.Integer, db.ForeignKey('%s_tag.id' % TABLE_PREFIX), index=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey('%s_tags_tree.id' % TABLE_PREFIX), index=True)
+    template_type_id = db.Column(db.Integer, db.ForeignKey('%s_template_type.id' % TABLE_PREFIX), index=True)
+    is_necessary = db.Column(db.Boolean)
     
     
 class TagsTree(db.Model): 
-    '''
-        Древовидная структура тегов
-    '''
-    id = db.Column(db.Integer, primary_key=True)
-    tag_name = db.Column(db.Integer, db.ForeignKey('tag.id'))
-    parent_tag =  db.Column(db.Integer, db.ForeignKey('tags_tree.id'))
-    
-    template = db.Column(db.Integer, db.ForeignKey('template.id'))
+    """Древовидная структура тегов"""
+    __tablename__ = '%s_tags_tree' % TABLE_PREFIX
 
-    def __init__(self, tag_name, parent_tag, template):
-        self.tag_name = tag_name
-        self.parent_tag = parent_tag
-        self.template = template
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    tag_id = db.Column(db.Integer, db.ForeignKey('%s_tag.id' % TABLE_PREFIX), nullable=False, index=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey('%s.id' % __tablename__), index=True)
+    
+    template_id = db.Column(db.Integer, db.ForeignKey('%s_template.id' % TABLE_PREFIX), nullable=False, index=True)
 
-    
-    
-    
+    def __init__(self, tag_name, parent_tag, template_id):
+        self.tag_id = tag_name
+        self.parent_id = parent_tag
+        self.template_id = template_id

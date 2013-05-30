@@ -2,7 +2,7 @@
 import os
 from flask import Flask, request, session
 from flask.ext.babelex import Babel
-from models import db
+from database import db
 from autoload import load_blueprints
 
 app = Flask(__name__)
