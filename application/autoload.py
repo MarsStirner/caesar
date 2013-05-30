@@ -53,9 +53,8 @@ def register_blueprint(app, app_package, module_name="app", blueprint_name="modu
                                                      symbol=blueprint_name)
 
     #: Autoloaded apps must be Python packages
-    #: The root of the package is also inspected for a routing file
-    package_contents = chain([[None, root, True]],
-                             walk_packages(path=package_paths, prefix=app_package, onerror=on_error))
+    #: The root of the package is ONLY inspected for a routing file
+    package_contents = [[None, root, True]]
     for _, sub_app_name, is_pkg in package_contents:
 
         if not is_pkg:
