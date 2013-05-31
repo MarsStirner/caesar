@@ -4,11 +4,11 @@
       <div class="nav-collapse collapse">
         <ul class="nav">
           <li>
-            <a href="/"><i class="icon-home icon-white"></i></a>
+            <a href="/" title="Главная страница"><i class="icon-home icon-white"></i></a>
           </li>
           {% for item in main_menu %}
-          <li>
-            <a href="/{{ item.url }}/">{{ item.name }}</a>
+          <li{% if request.blueprint == item.module %} class="active"{% endif %}>
+            <a href="{{ url_for(item.module + '.index') }}" title="{{ item.name }}">{{ item.name }}</a>
           </li>
           {% endfor %}
         </ul>

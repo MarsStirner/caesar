@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-import sys
 from application.app import app
 from werkzeug.utils import import_string
 
 
 @app.context_processor
 def general_menu():
-    mod_names = list()
+    menu_items = list()
     blueprints = app.blueprints
     for k, v in blueprints.items():
         try:
@@ -15,8 +14,8 @@ def general_menu():
             print e
         else:
             if hasattr(config, 'RUS_NAME'):
-                mod_names.append(dict(url=v.name, name=config.RUS_NAME))
+                menu_items.append(dict(module=v.name, name=config.RUS_NAME))
             else:
-                mod_names.append(dict(url=v.name, name=v.name))
+                menu_items.append(dict(module=v.name, name=v.name))
 
-    return dict(main_menu=mod_names)
+    return dict(main_menu=menu_items)

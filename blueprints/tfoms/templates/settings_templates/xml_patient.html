@@ -15,7 +15,10 @@
 
     {% include '_nav_menu.html' %}
 
-        <legend>Настройка шаблонов {{ test }}</legend>
+        <legend>Настройка шаблонов</legend>
+
+        {% include 'settings_templates/_sub_menu.html' %}
+
         <div class="container-fluid">
         <div class="row-fluid">
           <div class="span4">
@@ -27,24 +30,25 @@
                   <li><a href="#">Шаблон 4</a></li>
                   <li><a href="#">Шаблон 5</a></li>
                   <li><a href="#">Шаблон 6</a></li>
-                   {% for name in templates_names %}
-                   		{% set id = templates_ids[loop.index - 1]%}
-                   		{% if id == current_id %}
-                   			<li class="active"><a href="/tfoms/settings_template/{{id}}/">name</a></li>
-                   		{% else %}
-                  			<li><a href="/tfoms/settings_template/{{id}}/">name</a></li>
-                  		{% endif %}
-                   {% endfor%}                      
                   <li class="divider"></li>
                   <li><a href="#"><i class=" icon-plus-sign"></i>Добавить новый</a></li>
-
                 </ul>
 
           </div>
           <div class="span8">
-              <form class="form-inline" name="create_template" method="post">
-                  {{ form.name(size = 30, maxlength = 140) }} 
-                  <!--<input type="text" placeholder="Название шаблона" value="Шаблон 3">-->
+              <form class="form-inline">
+                    <label class="radio">
+                        <input type="radio" name="format" value="XML" checked="checked">XML
+                    </label>
+                    <label class="radio">
+                        <input type="radio" name="format" value="DBF">DBF
+                    </label>
+                  <select name="type" class="span4">
+                        <option value="0">- тип выгрузки -</option>
+                        <option value="1" selected="selected">Выгрузка пациентов</option>
+                        <option value="2">Выгрузка счетов</option>
+                    </select>
+                  <input type="text" placeholder="Название шаблона" value="Шаблон 3">
                   <hr>
                   <div class="row-fluid tags">
                   <div class="span6 well">
@@ -157,38 +161,6 @@
                           </li>
                         </ul>
                   </div>
-                  <div>
-                      <legend>Дерево тэги</legend>
-                      <ul id="sortable2" class=" sortable">
-                    	
-                       {% for tag in tag_tree %}
-                       		{% if loop.index == 0 %}
-			                          <li >
-			                          		Название tag[0][0]
-			                          		<ul id="sortable" class=" sortable">
-			                {% else %}
-			                	k = tag_tree[loop.index - 1][1]-tag[1]
-			                	{% if k == 0 %}
-			                          </li>
-			                        </ul>			                		
-			                	{% endif %}
-			                	{% if k < 0 %}
-			                          <li >
-			                          		Название tag[0][0]
-			                          		<ul id="sortable" class=" sortable">			                		
-			                	{% endif %}
-			                	{% if k > 0 %}
-			                		{% for i in range(k) %}
-				                          </li>
-				                        </ul>			                			
-			                		{% endfor%}			                		
-			                	{% endif %}			                				                	
-                       		{% endif %}					
-                       {% endfor %}
-                  		
-                  	  </ul>
-                  </div>
-                  
                   </div>
                   <hr>
                 <div class="control-group">
