@@ -96,10 +96,13 @@ class StandartTree(db.Model):
     parent_id = db.Column(db.Integer, db.ForeignKey('%s_standart_tree.id' % TABLE_PREFIX), index=True)
     template_type_id = db.Column(db.Integer, db.ForeignKey('%s_template_type.id' % TABLE_PREFIX), index=True)
     is_necessary = db.Column(db.Boolean)
+    ordernum = db.Column(db.Integer, doc=u'Поле для сортировки тегов')
 
     tag = db.relationship(Tag)
     parent = db.relationship('StandartTree', remote_side=[id])
     template_type = db.relationship(TemplateType)
+
+    __table_args__ = {'order_by': ordernum}
 
     def __unicode__(self):
         return self.name
@@ -113,7 +116,10 @@ class TagsTree(db.Model):
     tag_id = db.Column(db.Integer, db.ForeignKey('%s_tag.id' % TABLE_PREFIX), nullable=False, index=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('%s.id' % __tablename__), index=True)
     template_id = db.Column(db.Integer, db.ForeignKey('%s_template.id' % TABLE_PREFIX), nullable=False, index=True)
+    ordernum = db.Column(db.Integer, doc=u'Поле для сортировки тегов')
 
     tag = db.relationship(Tag)
     parent = db.relationship('TagsTree', remote_side=[id])
     template = db.relationship(Template)
+
+    __table_args__ = {'order_by': ordernum}
