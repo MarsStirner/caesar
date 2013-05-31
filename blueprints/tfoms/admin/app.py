@@ -31,6 +31,7 @@ def get_locale():
 
 admin.add_view(ModelView(DownloadType, db.session, name=u'Тип выгрузки'))
 admin.add_view(views.TemplateTypeView(db.session, name=u'Тип шаблона'))
+admin.add_view(views.TemplateView(db.session, name=u'Шаблоны'))
 admin.add_view(ModelView(Tag, db.session, name=u'Тэги'))
 admin.add_view(views.StandartTreeView(db.session, name=u'StandartTree'))
 admin.add_view(views.TagsTreeView(db.session, name=u'TagsTree'))

@@ -47,8 +47,7 @@ class Template(db.Model):
     
     #user = db.Column(db.Integer, db.ForeignKey('.id'))
     type_id = db.Column(db.Integer, db.ForeignKey('%s_template_type.id' % TABLE_PREFIX), index=True)
-
-    #template = db.relationship('TemplateType', backref=backref('templates', order_by=id))
+    type = db.relation(TemplateType)
 
     def __repr__(self):
         return '<Template %r>' % self.name

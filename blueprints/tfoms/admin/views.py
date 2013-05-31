@@ -19,11 +19,21 @@ class TemplateTypeView(ModelView):
         super(TemplateTypeView, self).__init__(TemplateType, session, **kwargs)
 
 
+class TemplateView(ModelView):
+    column_labels = dict(name=u'Наименование', type=u'Тип шаблона', archive=u'Архивировать')
+    form_columns = ('name', 'type', 'archive')
+    column_list = ('name', 'type', 'archive')
+
+    def __init__(self, session, **kwargs):
+        super(TemplateView, self).__init__(Template, session, **kwargs)
+
+
 class StandartTreeView(ModelView):
-    form_columns = ('template_type', 'parent', 'tag', 'is_necessary')
+    form_columns = ('template_type', 'parent', 'tag', 'ordernum', 'is_necessary')
     column_labels = dict(tag=u'Тэг',
                          parent=u'Родительский тэг',
                          template_type=u'Тип шаблона',
+                         ordernum=u'Поле сортировки',
                          is_necessary=u'Обязательный')
 
     def __init__(self, session, **kwargs):
@@ -31,9 +41,10 @@ class StandartTreeView(ModelView):
 
 
 class TagsTreeView(ModelView):
-    form_columns = ('template', 'parent', 'tag')
+    form_columns = ('template', 'parent', 'tag', 'ordernum')
     column_labels = dict(tag=u'Тэг',
                          parent=u'Родительский тэг',
+                         ordernum=u'Поле сортировки',
                          template=u'Шаблон',)
 
     def __init__(self, session, **kwargs):
