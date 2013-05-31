@@ -52,6 +52,9 @@ class Template(db.Model):
     def __repr__(self):
         return '<Template %r>' % self.name
 
+    def __unicode__(self):
+        return self.name
+
 
 class TagTemplateType(db.Model):
     __tablename__ = '%s_tag_template_type' % TABLE_PREFIX
@@ -72,7 +75,6 @@ class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     code = db.Column(db.String(80), unique=True, nullable=False)
     name = db.Column(db.Unicode(80))
-    download_type_id = db.Column(db.Integer, db.ForeignKey('%s_download_type.id' % TABLE_PREFIX), index=True)
     
     # many to many TemplateType<->Tag
     template_types = db.relationship(TemplateType,
