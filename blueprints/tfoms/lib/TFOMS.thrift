@@ -6,7 +6,7 @@ typedef i64 timestamp
 typedef i16 tinyint
 
 //OUTPUT STRUCTS
-//Представитель пациента
+//РџСЂРµРґСЃС‚Р°РІРёС‚РµР»СЊ РїР°С†РёРµРЅС‚Р°
 struct Spokesman{
 	1:optional int patientId;
 	2:optional string FAM_P;
@@ -16,15 +16,15 @@ struct Spokesman{
 	6:optional tinyint W_P;
 }
 
-//Данные о пациенте
+//Р”Р°РЅРЅС‹Рµ Рѕ РїР°С†РёРµРЅС‚Рµ
 struct Patient{
-	//Данные для тега PERS
-	1:required int patientId;
-	2:required string FAM;
-	3:required string IM;
-	4:required string OT;
-	5:required timestamp DR;
-	6:required tinyint W;
+	//Р”Р°РЅРЅС‹Рµ РґР»СЏ С‚РµРіР° PERS
+	1:required int patientId = -1;
+	2:required string FAM = "";
+	3:required string IM = "";
+	4:required string OT = "";
+	5:required timestamp DR = -1;
+	6:required tinyint W = -1;
 	7:optional string SNILS;
 	8:optional string MR;
 	9:optional string OKATOG;
@@ -33,58 +33,58 @@ struct Patient{
 	12:optional string DOCTYPE;
 	13:optional string DOCSER;
 	14:optional string DOCNUM;
-	// Данные для тега PATIENT
-	15:required tinyint VPOLIS;
+	// Р”Р°РЅРЅС‹Рµ РґР»СЏ С‚РµРіР° PATIENT
+	15:required tinyint VPOLIS  = -1;
 	16:optional string SPOLIS;
-	17:required string NPOLIS;
-	18:required string SMO;
+	17:required string NPOLIS = "";
+	18:required string SMO = "";
 	19:optional string SMO_OGRN;
 	20:optional string SMO_NAM;
 	21:optional string SMO_OK;
-	22:required string NOVOR;
+	22:required string NOVOR = "";
 }
 
-//Данные о услуге
+//Р”Р°РЅРЅС‹Рµ Рѕ СѓСЃР»СѓРіРµ
 struct Usl{
-	1:required int IDSERV;
-	2:required string CODE_USL;
-	3:required string DS;
-	4:required double KOL_USL;
-	5:required double TARIF;
+	1:required int IDSERV = -1;
+	2:required string CODE_USL = "";
+	3:required string DS = "";
+	4:required double KOL_USL = -1.0;
+	5:required double TARIF = -1.0;
 	//SUM_USL = KOL_USL*TARIF
 	
 }
 
 struct Sluch{
-	1:required int IDCASE;
-	2:required tinyint USL_OK;
-	3:required tinyint VIDPOM;
+	1:required int IDCASE = -1;
+	2:required tinyint USL_OK = -1;
+	3:required tinyint VIDPOM = -1;
 	4:optional string NPR_MO;
 	5:optional tinyint EXTR;
-	6:required string LPU;
+	6:required string LPU = "";
 	7:optional string LPU_1;
 	8:optional string PODR;
-	9:required tinyint PROFIL;
+	9:required tinyint PROFIL = -1;
 	10:optional bool DET;
-	11:required string NHISTORY;
-	12:required timestamp DATE_1;
-	13:required timestamp DATE_2;
+	11:required string NHISTORY = "";
+	12:required timestamp DATE_1 = -1;
+	13:required timestamp DATE_2 = -1;
 	14:optional string DS0;
-	15:required string DS1;
+	15:required string DS1 = "";
 	16:optional string DS2;
 	17:optional string CODE_MES1;
 	18:optional string CODE_MES2;
-	19:required tinyint RSLT;
-	20:required tinyint ISHOD;
-	21:required int PRVS;
-	22:required string IDDOKT;
-	23:required tinyint IDSP;
-	24:required double ED_COL;
-	25:required double SUMV;
+	19:required tinyint RSLT = -1;
+	20:required tinyint ISHOD = -1;
+	21:required int PRVS = -1;
+	22:required string IDDOKT = "";
+	23:required tinyint IDSP = -1;
+	24:required double ED_COL = -1.0;
+	25:required double SUMV = -1.0;
 	26:optional tinyint OPLATA;
 	27:optional list<Usl> USL;
 }
-//Перечисление с названиями требуемых опциональных полей
+//РџРµСЂРµС‡РёСЃР»РµРЅРёРµ СЃ РЅР°Р·РІР°РЅРёСЏРјРё С‚СЂРµР±СѓРµРјС‹С… РѕРїС†РёРѕРЅР°Р»СЊРЅС‹С… РїРѕР»РµР№
 enum PatientOptionalFields{
 	SNILS,
 	MR,
@@ -145,14 +145,13 @@ service TFOMSService{
 								) 
 						throws (1:InvalidArgumentException argExc, 2:SQLException sqlExc, 3:NotFoundException exc);
 	
-	list<Sluch> getSluchByPatient(
-									1:int patientId,
-									2:timestamp beginDate,
-									3:timestamp endDate,
-									4:string infisCode,
-									5:list<SluchOptionalFields> optionalFields
-									)	
-						throws (1:InvalidArgumentException argExc, 2:SQLException sqlExc, 3:NotFoundException exc);									
-	
+	map<int, list<Sluch>> getSluchByPatients(
+             1:list<int> patientId,
+             2:timestamp beginDate,
+             3:timestamp endDate,
+             4:string infisCode,
+             5:list<SluchOptionalFields> optionalFields
+             )
+          throws (1:InvalidArgumentException argExc, 2:SQLException sqlExc, 3:NotFoundException exc);
 	
 }

@@ -260,12 +260,12 @@ class Patient:
 
   thrift_spec = (
     None, # 0
-    (1, TType.I32, 'patientId', None, None, ), # 1
-    (2, TType.STRING, 'FAM', None, None, ), # 2
-    (3, TType.STRING, 'IM', None, None, ), # 3
-    (4, TType.STRING, 'OT', None, None, ), # 4
-    (5, TType.I64, 'DR', None, None, ), # 5
-    (6, TType.I16, 'W', None, None, ), # 6
+    (1, TType.I32, 'patientId', None, -1, ), # 1
+    (2, TType.STRING, 'FAM', None, "", ), # 2
+    (3, TType.STRING, 'IM', None, "", ), # 3
+    (4, TType.STRING, 'OT', None, "", ), # 4
+    (5, TType.I64, 'DR', None, -1, ), # 5
+    (6, TType.I16, 'W', None, -1, ), # 6
     (7, TType.STRING, 'SNILS', None, None, ), # 7
     (8, TType.STRING, 'MR', None, None, ), # 8
     (9, TType.STRING, 'OKATOG', None, None, ), # 9
@@ -274,22 +274,28 @@ class Patient:
     (12, TType.STRING, 'DOCTYPE', None, None, ), # 12
     (13, TType.STRING, 'DOCSER', None, None, ), # 13
     (14, TType.STRING, 'DOCNUM', None, None, ), # 14
-    (15, TType.I16, 'VPOLIS', None, None, ), # 15
+    (15, TType.I16, 'VPOLIS', None, -1, ), # 15
     (16, TType.STRING, 'SPOLIS', None, None, ), # 16
-    (17, TType.STRING, 'NPOLIS', None, None, ), # 17
-    (18, TType.STRING, 'SMO', None, None, ), # 18
+    (17, TType.STRING, 'NPOLIS', None, "", ), # 17
+    (18, TType.STRING, 'SMO', None, "", ), # 18
     (19, TType.STRING, 'SMO_OGRN', None, None, ), # 19
     (20, TType.STRING, 'SMO_NAM', None, None, ), # 20
     (21, TType.STRING, 'SMO_OK', None, None, ), # 21
-    (22, TType.STRING, 'NOVOR', None, None, ), # 22
+    (22, TType.STRING, 'NOVOR', None, "", ), # 22
   )
 
-  def __init__(self, patientId=None, FAM=None, IM=None, OT=None, DR=None, W=None, SNILS=None, MR=None, OKATOG=None, OKATOP=None, spokesman=None, DOCTYPE=None, DOCSER=None, DOCNUM=None, VPOLIS=None, SPOLIS=None, NPOLIS=None, SMO=None, SMO_OGRN=None, SMO_NAM=None, SMO_OK=None, NOVOR=None,):
+  def __init__(self, patientId=thrift_spec[1][4], FAM=thrift_spec[2][4], IM=thrift_spec[3][4], OT=thrift_spec[4][4], DR=thrift_spec[5][4], W=thrift_spec[6][4], SNILS=None, MR=None, OKATOG=None, OKATOP=None, spokesman=None, DOCTYPE=None, DOCSER=None, DOCNUM=None, VPOLIS=thrift_spec[15][4], SPOLIS=None, NPOLIS=thrift_spec[17][4], SMO=thrift_spec[18][4], SMO_OGRN=None, SMO_NAM=None, SMO_OK=None, NOVOR=thrift_spec[22][4],):
+    if patientId is self.thrift_spec[1][4]:
+      patientId = -1
     self.patientId = patientId
     self.FAM = FAM
     self.IM = IM
     self.OT = OT
+    if DR is self.thrift_spec[5][4]:
+      DR = -1
     self.DR = DR
+    if W is self.thrift_spec[6][4]:
+      W = -1
     self.W = W
     self.SNILS = SNILS
     self.MR = MR
@@ -299,6 +305,8 @@ class Patient:
     self.DOCTYPE = DOCTYPE
     self.DOCSER = DOCSER
     self.DOCNUM = DOCNUM
+    if VPOLIS is self.thrift_spec[15][4]:
+      VPOLIS = -1
     self.VPOLIS = VPOLIS
     self.SPOLIS = SPOLIS
     self.NPOLIS = NPOLIS
@@ -576,14 +584,16 @@ class Usl:
 
   thrift_spec = (
     None, # 0
-    (1, TType.I32, 'IDSERV', None, None, ), # 1
-    (2, TType.STRING, 'CODE_USL', None, None, ), # 2
-    (3, TType.STRING, 'DS', None, None, ), # 3
-    (4, TType.DOUBLE, 'KOL_USL', None, None, ), # 4
-    (5, TType.DOUBLE, 'TARIF', None, None, ), # 5
+    (1, TType.I32, 'IDSERV', None, -1, ), # 1
+    (2, TType.STRING, 'CODE_USL', None, "", ), # 2
+    (3, TType.STRING, 'DS', None, "", ), # 3
+    (4, TType.DOUBLE, 'KOL_USL', None, -1, ), # 4
+    (5, TType.DOUBLE, 'TARIF', None, -1, ), # 5
   )
 
-  def __init__(self, IDSERV=None, CODE_USL=None, DS=None, KOL_USL=None, TARIF=None,):
+  def __init__(self, IDSERV=thrift_spec[1][4], CODE_USL=thrift_spec[2][4], DS=thrift_spec[3][4], KOL_USL=thrift_spec[4][4], TARIF=thrift_spec[5][4],):
+    if IDSERV is self.thrift_spec[1][4]:
+      IDSERV = -1
     self.IDSERV = IDSERV
     self.CODE_USL = CODE_USL
     self.DS = DS
@@ -716,58 +726,78 @@ class Sluch:
 
   thrift_spec = (
     None, # 0
-    (1, TType.I32, 'IDCASE', None, None, ), # 1
-    (2, TType.I16, 'USL_OK', None, None, ), # 2
-    (3, TType.I16, 'VIDPOM', None, None, ), # 3
+    (1, TType.I32, 'IDCASE', None, -1, ), # 1
+    (2, TType.I16, 'USL_OK', None, -1, ), # 2
+    (3, TType.I16, 'VIDPOM', None, -1, ), # 3
     (4, TType.STRING, 'NPR_MO', None, None, ), # 4
     (5, TType.I16, 'EXTR', None, None, ), # 5
-    (6, TType.STRING, 'LPU', None, None, ), # 6
+    (6, TType.STRING, 'LPU', None, "", ), # 6
     (7, TType.STRING, 'LPU_1', None, None, ), # 7
     (8, TType.STRING, 'PODR', None, None, ), # 8
-    (9, TType.I16, 'PROFIL', None, None, ), # 9
+    (9, TType.I16, 'PROFIL', None, -1, ), # 9
     (10, TType.BOOL, 'DET', None, None, ), # 10
-    (11, TType.STRING, 'NHISTORY', None, None, ), # 11
-    (12, TType.I64, 'DATE_1', None, None, ), # 12
-    (13, TType.I64, 'DATE_2', None, None, ), # 13
+    (11, TType.STRING, 'NHISTORY', None, "", ), # 11
+    (12, TType.I64, 'DATE_1', None, -1, ), # 12
+    (13, TType.I64, 'DATE_2', None, -1, ), # 13
     (14, TType.STRING, 'DS0', None, None, ), # 14
-    (15, TType.STRING, 'DS1', None, None, ), # 15
+    (15, TType.STRING, 'DS1', None, "", ), # 15
     (16, TType.STRING, 'DS2', None, None, ), # 16
     (17, TType.STRING, 'CODE_MES1', None, None, ), # 17
     (18, TType.STRING, 'CODE_MES2', None, None, ), # 18
-    (19, TType.I16, 'RSLT', None, None, ), # 19
-    (20, TType.I16, 'ISHOD', None, None, ), # 20
-    (21, TType.I32, 'PRVS', None, None, ), # 21
-    (22, TType.STRING, 'IDDOKT', None, None, ), # 22
-    (23, TType.I16, 'IDSP', None, None, ), # 23
-    (24, TType.DOUBLE, 'ED_COL', None, None, ), # 24
-    (25, TType.DOUBLE, 'SUMV', None, None, ), # 25
+    (19, TType.I16, 'RSLT', None, -1, ), # 19
+    (20, TType.I16, 'ISHOD', None, -1, ), # 20
+    (21, TType.I32, 'PRVS', None, -1, ), # 21
+    (22, TType.STRING, 'IDDOKT', None, "", ), # 22
+    (23, TType.I16, 'IDSP', None, -1, ), # 23
+    (24, TType.DOUBLE, 'ED_COL', None, -1, ), # 24
+    (25, TType.DOUBLE, 'SUMV', None, -1, ), # 25
     (26, TType.I16, 'OPLATA', None, None, ), # 26
     (27, TType.LIST, 'USL', (TType.STRUCT,(Usl, Usl.thrift_spec)), None, ), # 27
   )
 
-  def __init__(self, IDCASE=None, USL_OK=None, VIDPOM=None, NPR_MO=None, EXTR=None, LPU=None, LPU_1=None, PODR=None, PROFIL=None, DET=None, NHISTORY=None, DATE_1=None, DATE_2=None, DS0=None, DS1=None, DS2=None, CODE_MES1=None, CODE_MES2=None, RSLT=None, ISHOD=None, PRVS=None, IDDOKT=None, IDSP=None, ED_COL=None, SUMV=None, OPLATA=None, USL=None,):
+  def __init__(self, IDCASE=thrift_spec[1][4], USL_OK=thrift_spec[2][4], VIDPOM=thrift_spec[3][4], NPR_MO=None, EXTR=None, LPU=thrift_spec[6][4], LPU_1=None, PODR=None, PROFIL=thrift_spec[9][4], DET=None, NHISTORY=thrift_spec[11][4], DATE_1=thrift_spec[12][4], DATE_2=thrift_spec[13][4], DS0=None, DS1=thrift_spec[15][4], DS2=None, CODE_MES1=None, CODE_MES2=None, RSLT=thrift_spec[19][4], ISHOD=thrift_spec[20][4], PRVS=thrift_spec[21][4], IDDOKT=thrift_spec[22][4], IDSP=thrift_spec[23][4], ED_COL=thrift_spec[24][4], SUMV=thrift_spec[25][4], OPLATA=None, USL=None,):
+    if IDCASE is self.thrift_spec[1][4]:
+      IDCASE = -1
     self.IDCASE = IDCASE
+    if USL_OK is self.thrift_spec[2][4]:
+      USL_OK = -1
     self.USL_OK = USL_OK
+    if VIDPOM is self.thrift_spec[3][4]:
+      VIDPOM = -1
     self.VIDPOM = VIDPOM
     self.NPR_MO = NPR_MO
     self.EXTR = EXTR
     self.LPU = LPU
     self.LPU_1 = LPU_1
     self.PODR = PODR
+    if PROFIL is self.thrift_spec[9][4]:
+      PROFIL = -1
     self.PROFIL = PROFIL
     self.DET = DET
     self.NHISTORY = NHISTORY
+    if DATE_1 is self.thrift_spec[12][4]:
+      DATE_1 = -1
     self.DATE_1 = DATE_1
+    if DATE_2 is self.thrift_spec[13][4]:
+      DATE_2 = -1
     self.DATE_2 = DATE_2
     self.DS0 = DS0
     self.DS1 = DS1
     self.DS2 = DS2
     self.CODE_MES1 = CODE_MES1
     self.CODE_MES2 = CODE_MES2
+    if RSLT is self.thrift_spec[19][4]:
+      RSLT = -1
     self.RSLT = RSLT
+    if ISHOD is self.thrift_spec[20][4]:
+      ISHOD = -1
     self.ISHOD = ISHOD
+    if PRVS is self.thrift_spec[21][4]:
+      PRVS = -1
     self.PRVS = PRVS
     self.IDDOKT = IDDOKT
+    if IDSP is self.thrift_spec[23][4]:
+      IDSP = -1
     self.IDSP = IDSP
     self.ED_COL = ED_COL
     self.SUMV = SUMV

@@ -25,7 +25,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print 'Functions:'
   print '  int prepareTables()'
   print '   getPatients(timestamp beginDate, timestamp endDate, string infisCode,  optionalFields)'
-  print '   getSluchByPatient(int patientId, timestamp beginDate, timestamp endDate, string infisCode,  optionalFields)'
+  print '   getSluchByPatients( patientId, timestamp beginDate, timestamp endDate, string infisCode,  optionalFields)'
   print ''
   sys.exit(0)
 
@@ -89,11 +89,11 @@ elif cmd == 'getPatients':
     sys.exit(1)
   pp.pprint(client.getPatients(eval(args[0]),eval(args[1]),args[2],eval(args[3]),))
 
-elif cmd == 'getSluchByPatient':
+elif cmd == 'getSluchByPatients':
   if len(args) != 5:
-    print 'getSluchByPatient requires 5 args'
+    print 'getSluchByPatients requires 5 args'
     sys.exit(1)
-  pp.pprint(client.getSluchByPatient(eval(args[0]),eval(args[1]),eval(args[2]),args[3],eval(args[4]),))
+  pp.pprint(client.getSluchByPatients(eval(args[0]),eval(args[1]),eval(args[2]),args[3],eval(args[4]),))
 
 else:
   print 'Unrecognized method %s' % cmd

@@ -6,13 +6,11 @@
 #  options string: py
 #
 
-from thrift.Thrift import TType, TMessageType, TApplicationException
+from thrift.Thrift import TType, TMessageType, TException, TApplicationException
+from ttypes import *
 from thrift.Thrift import TProcessor
 from thrift.transport import TTransport
-from thrift.protocol import TBinaryProtocol
-
-from blueprints.tfoms.lib.thrift_service.ttypes import *
-
+from thrift.protocol import TBinaryProtocol, TProtocol
 try:
   from thrift.protocol import fastbinary
 except:
@@ -33,7 +31,7 @@ class Iface:
     """
     pass
 
-  def getSluchByPatient(self, patientId, beginDate, endDate, infisCode, optionalFields):
+  def getSluchByPatients(self, patientId, beginDate, endDate, infisCode, optionalFields):
     """
     Parameters:
      - patientId
@@ -119,7 +117,7 @@ class Client(Iface):
       raise result.exc
     raise TApplicationException(TApplicationException.MISSING_RESULT, "getPatients failed: unknown result");
 
-  def getSluchByPatient(self, patientId, beginDate, endDate, infisCode, optionalFields):
+  def getSluchByPatients(self, patientId, beginDate, endDate, infisCode, optionalFields):
     """
     Parameters:
      - patientId
@@ -128,12 +126,12 @@ class Client(Iface):
      - infisCode
      - optionalFields
     """
-    self.send_getSluchByPatient(patientId, beginDate, endDate, infisCode, optionalFields)
-    return self.recv_getSluchByPatient()
+    self.send_getSluchByPatients(patientId, beginDate, endDate, infisCode, optionalFields)
+    return self.recv_getSluchByPatients()
 
-  def send_getSluchByPatient(self, patientId, beginDate, endDate, infisCode, optionalFields):
-    self._oprot.writeMessageBegin('getSluchByPatient', TMessageType.CALL, self._seqid)
-    args = getSluchByPatient_args()
+  def send_getSluchByPatients(self, patientId, beginDate, endDate, infisCode, optionalFields):
+    self._oprot.writeMessageBegin('getSluchByPatients', TMessageType.CALL, self._seqid)
+    args = getSluchByPatients_args()
     args.patientId = patientId
     args.beginDate = beginDate
     args.endDate = endDate
@@ -143,14 +141,14 @@ class Client(Iface):
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_getSluchByPatient(self, ):
+  def recv_getSluchByPatients(self, ):
     (fname, mtype, rseqid) = self._iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
       x.read(self._iprot)
       self._iprot.readMessageEnd()
       raise x
-    result = getSluchByPatient_result()
+    result = getSluchByPatients_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
     if result.success is not None:
@@ -161,7 +159,7 @@ class Client(Iface):
       raise result.sqlExc
     if result.exc is not None:
       raise result.exc
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "getSluchByPatient failed: unknown result");
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getSluchByPatients failed: unknown result");
 
 
 class Processor(Iface, TProcessor):
@@ -170,7 +168,7 @@ class Processor(Iface, TProcessor):
     self._processMap = {}
     self._processMap["prepareTables"] = Processor.process_prepareTables
     self._processMap["getPatients"] = Processor.process_getPatients
-    self._processMap["getSluchByPatient"] = Processor.process_getSluchByPatient
+    self._processMap["getSluchByPatients"] = Processor.process_getSluchByPatients
 
   def process(self, iprot, oprot):
     (name, type, seqid) = iprot.readMessageBegin()
@@ -216,20 +214,20 @@ class Processor(Iface, TProcessor):
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
-  def process_getSluchByPatient(self, seqid, iprot, oprot):
-    args = getSluchByPatient_args()
+  def process_getSluchByPatients(self, seqid, iprot, oprot):
+    args = getSluchByPatients_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = getSluchByPatient_result()
+    result = getSluchByPatients_result()
     try:
-      result.success = self._handler.getSluchByPatient(args.patientId, args.beginDate, args.endDate, args.infisCode, args.optionalFields)
+      result.success = self._handler.getSluchByPatients(args.patientId, args.beginDate, args.endDate, args.infisCode, args.optionalFields)
     except InvalidArgumentException as argExc:
       result.argExc = argExc
     except SQLException as sqlExc:
       result.sqlExc = sqlExc
     except NotFoundException as exc:
       result.exc = exc
-    oprot.writeMessageBegin("getSluchByPatient", TMessageType.REPLY, seqid)
+    oprot.writeMessageBegin("getSluchByPatients", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -549,7 +547,7 @@ class getPatients_result:
   def __ne__(self, other):
     return not (self == other)
 
-class getSluchByPatient_args:
+class getSluchByPatients_args:
   """
   Attributes:
    - patientId
@@ -561,7 +559,7 @@ class getSluchByPatient_args:
 
   thrift_spec = (
     None, # 0
-    (1, TType.I32, 'patientId', None, None, ), # 1
+    (1, TType.LIST, 'patientId', (TType.I32,None), None, ), # 1
     (2, TType.I64, 'beginDate', None, None, ), # 2
     (3, TType.I64, 'endDate', None, None, ), # 3
     (4, TType.STRING, 'infisCode', None, None, ), # 4
@@ -585,8 +583,13 @@ class getSluchByPatient_args:
       if ftype == TType.STOP:
         break
       if fid == 1:
-        if ftype == TType.I32:
-          self.patientId = iprot.readI32();
+        if ftype == TType.LIST:
+          self.patientId = []
+          (_etype24, _size21) = iprot.readListBegin()
+          for _i25 in xrange(_size21):
+            _elem26 = iprot.readI32();
+            self.patientId.append(_elem26)
+          iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 2:
@@ -607,10 +610,10 @@ class getSluchByPatient_args:
       elif fid == 5:
         if ftype == TType.LIST:
           self.optionalFields = []
-          (_etype24, _size21) = iprot.readListBegin()
-          for _i25 in xrange(_size21):
-            _elem26 = iprot.readI32();
-            self.optionalFields.append(_elem26)
+          (_etype30, _size27) = iprot.readListBegin()
+          for _i31 in xrange(_size27):
+            _elem32 = iprot.readI32();
+            self.optionalFields.append(_elem32)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -623,10 +626,13 @@ class getSluchByPatient_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('getSluchByPatient_args')
+    oprot.writeStructBegin('getSluchByPatients_args')
     if self.patientId is not None:
-      oprot.writeFieldBegin('patientId', TType.I32, 1)
-      oprot.writeI32(self.patientId)
+      oprot.writeFieldBegin('patientId', TType.LIST, 1)
+      oprot.writeListBegin(TType.I32, len(self.patientId))
+      for iter33 in self.patientId:
+        oprot.writeI32(iter33)
+      oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.beginDate is not None:
       oprot.writeFieldBegin('beginDate', TType.I64, 2)
@@ -643,8 +649,8 @@ class getSluchByPatient_args:
     if self.optionalFields is not None:
       oprot.writeFieldBegin('optionalFields', TType.LIST, 5)
       oprot.writeListBegin(TType.I32, len(self.optionalFields))
-      for iter27 in self.optionalFields:
-        oprot.writeI32(iter27)
+      for iter34 in self.optionalFields:
+        oprot.writeI32(iter34)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -665,7 +671,7 @@ class getSluchByPatient_args:
   def __ne__(self, other):
     return not (self == other)
 
-class getSluchByPatient_result:
+class getSluchByPatients_result:
   """
   Attributes:
    - success
@@ -675,7 +681,7 @@ class getSluchByPatient_result:
   """
 
   thrift_spec = (
-    (0, TType.LIST, 'success', (TType.STRUCT,(Sluch, Sluch.thrift_spec)), None, ), # 0
+    (0, TType.MAP, 'success', (TType.I32,None,TType.LIST,(TType.STRUCT,(Sluch, Sluch.thrift_spec))), None, ), # 0
     (1, TType.STRUCT, 'argExc', (InvalidArgumentException, InvalidArgumentException.thrift_spec), None, ), # 1
     (2, TType.STRUCT, 'sqlExc', (SQLException, SQLException.thrift_spec), None, ), # 2
     (3, TType.STRUCT, 'exc', (NotFoundException, NotFoundException.thrift_spec), None, ), # 3
@@ -697,14 +703,20 @@ class getSluchByPatient_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype31, _size28) = iprot.readListBegin()
-          for _i32 in xrange(_size28):
-            _elem33 = Sluch()
-            _elem33.read(iprot)
-            self.success.append(_elem33)
-          iprot.readListEnd()
+        if ftype == TType.MAP:
+          self.success = {}
+          (_ktype36, _vtype37, _size35 ) = iprot.readMapBegin() 
+          for _i39 in xrange(_size35):
+            _key40 = iprot.readI32();
+            _val41 = []
+            (_etype45, _size42) = iprot.readListBegin()
+            for _i46 in xrange(_size42):
+              _elem47 = Sluch()
+              _elem47.read(iprot)
+              _val41.append(_elem47)
+            iprot.readListEnd()
+            self.success[_key40] = _val41
+          iprot.readMapEnd()
         else:
           iprot.skip(ftype)
       elif fid == 1:
@@ -734,13 +746,17 @@ class getSluchByPatient_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('getSluchByPatient_result')
+    oprot.writeStructBegin('getSluchByPatients_result')
     if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter34 in self.success:
-        iter34.write(oprot)
-      oprot.writeListEnd()
+      oprot.writeFieldBegin('success', TType.MAP, 0)
+      oprot.writeMapBegin(TType.I32, TType.LIST, len(self.success))
+      for kiter48,viter49 in self.success.items():
+        oprot.writeI32(kiter48)
+        oprot.writeListBegin(TType.STRUCT, len(viter49))
+        for iter50 in viter49:
+          iter50.write(oprot)
+        oprot.writeListEnd()
+      oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.argExc is not None:
       oprot.writeFieldBegin('argExc', TType.STRUCT, 1)
