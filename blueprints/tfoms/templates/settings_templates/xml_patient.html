@@ -26,10 +26,26 @@
                   <li class="nav-header">Шаблоны</li>
                   <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 1</a></li>
                   <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 2</a></li>
-                  <li class="active"><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 2</a></li>
+                  <li class="active"><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 3</a></li>
                   <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 4</a></li>
                   <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 5</a></li>
                   <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 6</a></li>
+                   {% for name in templates_names %}
+                   		{% set id = templates_ids[loop.index - 1]%}
+                   		{% if id == current_id %}
+                   		  <form class="form-inline" class="active">
+                   			<li class="active"><span class="pull-right"><input type="checkbox"></span><a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{name}}</a>
+                   			</li>
+                   		  </form>
+                   		{% else %}
+                  			<li >
+                  			   <form class="form-inline">
+                                 <span class="pull-right"><input type="checkbox"></span>
+                  				 <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}> {{ name }} </a>
+							   </form>
+                  			</li>
+                  		{% endif %}
+                   {% endfor%}                     
                   <li class="divider"></li>
                   <li><a href="#"><i class=" icon-plus-sign"></i>Добавить новый</a></li>
                 </ul>
@@ -41,114 +57,54 @@
                   <hr>
                   <div class="row-fluid tags">
                   <div class="span7 well">
-                      <ul id="sortable" class=" sortable">
-                          <li >
-                          		Название 1 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                          		
-                          </li>
-                          <li >
-                          		Название 2 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 3 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 4 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 5 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 11 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 12 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 13 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 14 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 15 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 21 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 22 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 23 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 24 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 25 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                        </ul>
+                      <ul id="sortable2" class=" sortable">
+                       {% for tag in tag_tree %}
+                       		{% if loop.index0 == 0 %}
+			                          <li>
+			                          		 Название ({{tag[0].tag.code}})
+			                          		<ul id="sortable" class=" sortable" >
+			                {% else %}
+			                	{% set k = tag_tree[loop.index0 - 1][1]-tag[1] %}
+			                	{% if k == 0 %}
+			                        </ul>			                	
+			                          </li>
+
+			                          <li>			                        
+			                          		 Название ({{tag[0].tag.code}})
+			                          		<ul id="sortable" class=" sortable" >			                        			                		
+			                	{% endif %}
+			                	{% if k < 0 %}
+			                          <li>
+			                          		 Название ({{tag[0].tag.code}})
+			                          		<ul  id="sortable" class=" sortable" >			                		
+			                	{% endif %}
+			                	{% if k > 0 %}
+			                		{% for i in range(k+1) %}
+				                        </ul>			                		
+				                         </li>		                			
+			                		{% endfor%}
+			                          <li>
+			                          		 Название ({{tag[0].tag.code}})
+			                          		<ul id="sortable" class=" sortable" >			                						                					                		
+			                	{% endif %}			                				                	
+                       		{% endif %}					
+                       {% endfor %}
+			                        </ul>			                	
+			                          </li>	                                       		
+                  	  </ul>
                   </div>
                   <div class="span5 well">
                       <legend>Неиспользуемые теги</legend>
                       <ul id="sortable2" class=" sortable">
+                      {% for tag in unused_tags%}
                           <li >
-                          		Название 31 (CODE)
+                          		Название ({{ tag.code }})
                           		<ul id="sortable" class=" sortable">                          		
                           		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 32 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 33 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 34 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 35 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
+                          </li>                      	
+                      {% endfor %}
                         </ul>
-                  </div>
+                  </div>                
                   </div>
                   <hr>
                 <div class="control-group">
