@@ -54,16 +54,10 @@
           </div>
           <div class="span8">
               <form class="form-inline">
-                  <select name="type" class="span4">
-                        <option value="0">- тип выгрузки -</option>
-                        <option value="1" selected="selected">Выгрузка пациентов</option>
-                        <option value="2">Выгрузка счетов</option>
-                    </select>
-                  <input type="text" placeholder="Название шаблона" value="Шаблон 3">
+                  <input type="text" placeholder="Название шаблона" value="Шаблон 3" class="span12">
                   <hr>
                   <div class="row-fluid tags">
-                  <div class="span6 well">
-                      <legend>Используемые тэги</legend>
+                  <div class="span7 well">
                       <ul id="sortable2" class=" sortable">
                        {% for tag in tag_tree %}
                        		{% if loop.index0 == 0 %}
@@ -100,8 +94,8 @@
 			                          </li>	                                       		
                   	  </ul>
                   </div>
-                  <div class="span6 well">
-                      <legend>Неиспользуемые тэги</legend>
+                  <div class="span5 well">
+                      <legend>Неиспользуемые теги</legend>
                       <ul id="sortable2" class=" sortable">
                       {% for tag in unused_tags%}
                           <li >
