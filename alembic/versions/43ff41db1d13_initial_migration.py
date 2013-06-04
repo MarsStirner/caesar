@@ -72,7 +72,7 @@ def upgrade():
     sa.Column('parent_id', sa.Integer(), nullable=True),
     sa.Column('template_type_id', sa.Integer(), nullable=True),
     sa.Column('is_necessary', sa.Boolean(), nullable=True),
-    sa.ForeignKeyConstraint(['parent_id'], ['tfoms_tags_tree.id'], ),
+    sa.ForeignKeyConstraint(['parent_id'], ['tfoms_standart_tags_tree.id'], ),
     sa.ForeignKeyConstraint(['tag_id'], ['tfoms_tag.id'], ),
     sa.ForeignKeyConstraint(['template_type_id'], ['tfoms_template_type.id'], ),
     sa.PrimaryKeyConstraint('id')
