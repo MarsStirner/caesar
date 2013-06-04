@@ -86,7 +86,6 @@ class Tag(db.Model):
 
     def __unicode__(self):
         return self.code
-    
 
  
 class StandartTree(db.Model):

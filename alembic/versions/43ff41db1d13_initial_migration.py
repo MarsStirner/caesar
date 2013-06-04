@@ -12,6 +12,7 @@ down_revision = None
 
 from alembic import op
 import sqlalchemy as sa
+from restore import restore
 
 
 def upgrade():
@@ -28,8 +29,6 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('code', sa.String(length=80), nullable=False),
     sa.Column('name', sa.Unicode(length=80), nullable=True),
-    sa.Column('download_type_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['download_type_id'], ['tfoms_download_type.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('code')
     )
@@ -78,6 +77,8 @@ def upgrade():
     sa.ForeignKeyConstraint(['template_type_id'], ['tfoms_template_type.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+
+    restore()
     ### end Alembic commands ###
 
 
