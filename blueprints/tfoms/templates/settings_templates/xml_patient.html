@@ -26,56 +26,61 @@
                   <li class="nav-header">Шаблоны</li>
                   <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 1</a></li>
                   <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 2</a></li>
-                  <li class="active"><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 3</a></li>
+                  <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 3</a></li>
                   <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 4</a></li>
                   <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 5</a></li>
                   <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 6</a></li>
                    {% for name in templates_names %}
-                   		{% set id = templates_ids[loop.index - 1]%}
+                   		{% set id = templates_ids[loop.index0]%}
                    		{% if id == current_id %}
                    		  <form class="form-inline" class="active">
-                   			<li class="active"><span class="pull-right"><input type="checkbox"></span><a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{name}}</a>
+                   			<li class="active"><span class="pull-right"><input type="checkbox"></span><a href={{ url_for('.save_template', template_type='xml_patient', id=id) }}>act{{name}}</a>
                    			</li>
                    		  </form>
                    		{% else %}
                   			<li >
                   			   <form class="form-inline">
                                  <span class="pull-right"><input type="checkbox"></span>
-                  				 <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}> {{ name }} </a>
+                  				 <a href={{ url_for('.save_template', template_type='xml_patient', id=id) }}> {{ name }} </a>
 							   </form>
                   			</li>
                   		{% endif %}
                    {% endfor%}                     
                   <li class="divider"></li>
-                  <li><a href="#"><i class=" icon-plus-sign"></i>Добавить новый</a></li>
+                  <li><a href={{ url_for('.add_new_template',template_type='xml_patient', action='add_new') }}><i class=" icon-plus-sign"></i>Добавить новый</a></li>
                 </ul>
 
           </div>
           <div class="span8">
               <form class="form-inline">
                   <input type="text" placeholder="Название шаблона" value="Шаблон 3" class="span12">
+                  
+                  <label class="checkbox" class="span12" style="margin-top:15px;"> 
+                  		<input type="checkbox">  Архивировать
+                  </label>
                   <hr>
+                  
                   <div class="row-fluid tags">
                   <div class="span7 well">
                       <ul id="sortable2" class=" sortable">
                        {% for tag in tag_tree %}
                        		{% if loop.index0 == 0 %}
 			                          <li>
-			                          		 Название ({{tag[0].tag.code}})
+			                          		 Название ({{tag.value.tag.code}})
 			                          		<ul id="sortable" class=" sortable" >
 			                {% else %}
-			                	{% set k = tag_tree[loop.index0 - 1][1]-tag[1] %}
+			                	{% set k = tag_tree[loop.index0 - 1].level-tag.level %}
 			                	{% if k == 0 %}
 			                        </ul>			                	
 			                          </li>
 
 			                          <li>			                        
-			                          		 Название ({{tag[0].tag.code}})
+			                          		 Название ({{tag.value.tag.code}})
 			                          		<ul id="sortable" class=" sortable" >			                        			                		
 			                	{% endif %}
 			                	{% if k < 0 %}
 			                          <li>
-			                          		 Название ({{tag[0].tag.code}})
+			                          		 Название ({{tag.value.tag.code}})
 			                          		<ul  id="sortable" class=" sortable" >			                		
 			                	{% endif %}
 			                	{% if k > 0 %}
@@ -84,7 +89,7 @@
 				                         </li>		                			
 			                		{% endfor%}
 			                          <li>
-			                          		 Название ({{tag[0].tag.code}})
+			                          		 Название ({{tag.value.tag.code}})
 			                          		<ul id="sortable" class=" sortable" >			                						                					                		
 			                	{% endif %}			                				                	
                        		{% endif %}					

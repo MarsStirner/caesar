@@ -86,6 +86,7 @@ class Tag(db.Model):
 
     def __unicode__(self):
         return self.code
+    
 
  
 class StandartTree(db.Model):
@@ -124,3 +125,6 @@ class TagsTree(db.Model):
     template = db.relationship(Template)
 
     __table_args__ = {'order_by': ordernum}
+
+    def __unicode__(self):
+        return self.tag.code
