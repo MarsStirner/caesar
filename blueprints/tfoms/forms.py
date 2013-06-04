@@ -1,4 +1,5 @@
-from flask.ext.wtf import Form, TextField, Required 
+# -*- coding: utf-8 -*-
+from flask.ext.wtf import Form, TextField, Required
 
 
 class CreateTemplateForm(Form):
