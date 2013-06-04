@@ -1,14 +1,18 @@
 # -*- encoding: utf-8 -*-
 
-from service_client import TFOMSClient
+from service_client import TFOMSClient as Client
 
 
 class XML_Data(object):
-    pass
+
+    def generate_file(self):
+        pass
 
 
 class DBF_Data(object):
-    pass
+
+    def generate_file(self):
+        pass
 
 
 class Utility(object):

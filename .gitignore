@@ -38,3 +38,4 @@ nosetests.xml
 config_local.py
 #forms_prototype
 .fuse_*
+gen-py
