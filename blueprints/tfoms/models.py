@@ -107,7 +107,7 @@ class StandartTree(db.Model):
     __table_args__ = {'order_by': ordernum}
 
     def __unicode__(self):
-        return self.name
+        return self.tag.code
 
     
 class TagsTree(db.Model): 
