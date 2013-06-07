@@ -1,5 +1,8 @@
 <ul class="nav nav-tabs">
-    <li{% if request.path == url_for('.settings_template', template_type='xml_patient')  or request.path == url_for('.settings_template') or request.path == url_for('.save_template', template_type='xml_patient', id=1 ) %} class="active"{% endif %}><a href="{{ url_for('.settings_template', template_type='xml_patient') }}">XML (пациенты)</a></li>
-    <li{% if request.path == url_for('.settings_template', template_type='xml_service') %} class="active"{% endif %}><a href="{{ url_for('.settings_template', template_type='xml_service') }}">XML (услуги)</a></li>
-    <li{% if request.path == url_for('.settings_template', template_type='dbf') %} class="active"{% endif %}><a href="{{ url_for('.settings_template', template_type='dbf') }}">DBF</a></li>
+    <li{% if request.path == url_for('.settings_template', template_type='xml_patient')  or request.path == url_for('.settings_template') or request.path == url_for('.save_template', template_type='xml_patient', id=1 ) %} class="active"{% endif %}><a href="{{ url_for('.settings_template', template_type='xml_patient') }}">
+        Сведения о персональных данных (XML)</a></li>
+    <li{% if request.path == url_for('.settings_template', template_type='xml_service') %} class="active"{% endif %}><a href="{{ url_for('.settings_template', template_type='xml_service') }}">
+        Сведения об оказанной мед.помощи (XML)</a></li>
+    <li{% if request.path == url_for('.settings_template', template_type='dbf') %} class="active"{% endif %}><a href="{{ url_for('.settings_template', template_type='dbf') }}">
+        Выгрузка в формате DBF</a></li>
 </ul>

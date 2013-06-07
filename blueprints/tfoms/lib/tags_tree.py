@@ -10,7 +10,7 @@ class TagTree():
 
     def get_node_children(self, node):
         children_values = TagsTree.query.filter_by(template_id=self.template_id).\
-            filter_by(parent_id=node.value.tag_id).join(TagsTree.tag).all()
+            filter_by(parent_id=node.value.id).order_by(TagsTree.ordernum).join(TagsTree.tag).all()
         return [TagTreeNode(value, node.level + 1) for value in children_values]
 
     def load_tree(self, root, tree):
