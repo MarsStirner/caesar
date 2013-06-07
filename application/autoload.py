@@ -65,6 +65,7 @@ def register_blueprint(app, app_package, module_name="app", blueprint_name="modu
 
         if isinstance(sub_app, Blueprint):
             app.register_blueprint(sub_app, url_prefix='/%s' % sub_app.name)
+            # TODO: Check if it's necessary to import_models
             import_models(app, sub_app_name)
         else:
             app.logger.warn(("Failed to register {name} - "
@@ -75,7 +76,18 @@ def import_models(app, blueprint_package_path):
     try:
         import_string('%s.models' % blueprint_package_path)
     except ImportError:
-        app.logger.warn("Failed to %s.models" % blueprint_package_path)
+        app.logger.warn("Failed to import %s.models" % blueprint_package_path)
+
+
+def import_tests(apps_path):
+    pkg_list = os.listdir(apps_path)
+    base_pkg = os.path.basename(apps_path)
+    test_pkgs = list()
+    if pkg_list:
+        for pkg_path in pkg_list:
+            if os.path.isdir(os.path.join(apps_path, pkg_path)):
+                test_pkgs.append(import_string('%s.%s.tests' % (base_pkg, pkg_path)))
+    return test_pkgs
 
 
 def setup_errors(app, error_template="errors.html"):

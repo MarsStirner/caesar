@@ -114,7 +114,7 @@ class TagsTree(db.Model):
     __tablename__ = '%s_tags_tree' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    tag_id = db.Column(db.Integer, db.ForeignKey('%s_tag.id' % TABLE_PREFIX), nullable=False, index=True)
+    tag_id = db.Column(db.Integer, db.ForeignKey('%s_tag.id' % TABLE_PREFIX), index=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('%s.id' % __tablename__), index=True)
     template_id = db.Column(db.Integer, db.ForeignKey('%s_template.id' % TABLE_PREFIX), nullable=False, index=True)
     ordernum = db.Column(db.Integer, doc=u'Поле для сортировки тегов')

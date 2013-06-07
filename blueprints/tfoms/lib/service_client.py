@@ -57,16 +57,16 @@ class TFOMSClient(object):
             raise e
         return self.__unicode_result(result)
 
-    def get_patient_events(self, patient_id, start, end, infis_code, **kwargs):
+    def get_patient_events(self, patients, start, end, infis_code, **kwargs):
         """Получает список событий и услуг, оказанных пациенту в указанный промежуток времени"""
         result = None
         try:
             optional = kwargs.get('optional', list())
-            result = self.client.getSluchByPatient(patientId=patient_id,
-                                                   beginDate=calendar.timegm(start.timetuple()) * 1000,
-                                                   endDate=calendar.timegm(end.timetuple()) * 1000,
-                                                   infisCode=infis_code,
-                                                   optionalFields=optional)
+            result = self.client.getSluchByPatients(patientId=patients,
+                                                    beginDate=calendar.timegm(start.timetuple()) * 1000,
+                                                    endDate=calendar.timegm(end.timetuple()) * 1000,
+                                                    infisCode=infis_code,
+                                                    optionalFields=optional)
         except InvalidArgumentException, e:
             print e
         except SQLException, e:
