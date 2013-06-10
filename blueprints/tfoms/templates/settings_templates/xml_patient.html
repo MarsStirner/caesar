@@ -4,10 +4,10 @@
 <link href="{{ url_for('.static', filename='css/style.css') }}" rel="stylesheet">
 <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/humanity/jquery-ui.css" />
   <style>
-	  .tags ul { list-style-type: none; margin: 0px 0px 0px 0px; padding: 0; margin-bottom: 10px; }
-	  .tags li { margin: 5px 0px 0px 0px 0px; padding: 0;}
+	  .tags ul { list-style-type: none; margin: 0px; padding: 0; margin-bottom: 0px; }
+	  .tags li { margin: 0px; padding: 0px;}
 	  .ui-state-highlight { background-color: #CCCCCC; height: 1.5em; line-height: 1.2em; border: dashed 1px gray; }
-	  .sortable ul {margin:0px 0px 0px 25px; padding:0;  }
+	  .sortable ul {margin:0px 0px 0px 25px; padding: 8px 0px 0px 0px; }
 
   </style>
 {% endblock %}
@@ -16,7 +16,6 @@
 
     {% include '_nav_menu.html' %}
         <legend>Настройка шаблонов реестров для выгрузки в ТФОМС</legend>
-
         {% include 'settings_templates/_sub_menu.html' %}
 
         <div class="container-fluid">
@@ -30,12 +29,12 @@
                    		{% if id == current_id %}
                    			<li class="active">
                                 <span class="pull-right"><input type="checkbox"></span>
-                                <a href={{ url_for('.save_template', template_type='xml_patient', id=id) }}>{{name}}</a>
+                                <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{name}}</a>
                    			</li>
                    		{% else %}
                   			<li >
                                  <span class="pull-right"><input type="checkbox"></span>
-                  				 <a href={{ url_for('.save_template', template_type='xml_patient', id=id) }}>{{name}}</a>
+                  				 <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{name}}</a>
                   			</li>
                   		{% endif %}
                    {% endfor%}                     
@@ -82,7 +81,7 @@
 			                          		<ul id="sortable" class=" sortable" >			                        			                		
 			                	{% endif %}
 			                	{% if k < 0 %}
-			                          <li id="node_{{tag.value.id}}">
+			                          <li>
 			                          		 {{tag.value.tag.name}} ({{tag.value.tag.code}})
                                             <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
 			                          		<ul  id="sortable" class=" sortable" >			                		
@@ -172,7 +171,7 @@
                 descendants.each(function(index, el){
                     descendant = $(this);
                     new_name = descendant.attr('name').replace(/unused/,"");
-                    new_name = new_name.replace(/unused/,"");
+                    new_name = new_name.replace(/removed/,"");
                     descendant.attr('name', new_name);
                 });
                 console.log('unused')
@@ -198,7 +197,7 @@
         }
     });
     $( "ul, li" ).disableSelection();
-    $("#sortable, #sortable2").css('minHeight',"12px");
+    //$("#sortable, #sortable2").css('minHeight',"0px");
   });
   </script>
 {% endblock %}
