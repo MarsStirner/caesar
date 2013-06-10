@@ -25,8 +25,9 @@ class TemplateType(db.Model):
     __tablename__ = '%s_template_type' % TABLE_PREFIX
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(10), unique=True, nullable=False)
-    
+    code = db.Column(db.String(20), unique=True, nullable=False)
+    name = db.Column(db.String(45), unique=True, nullable=False)
+
     download_type_id = db.Column(db.Integer, db.ForeignKey('%s_download_type.id' % TABLE_PREFIX), index=True)
     download_type = db.relationship(DownloadType)
 
@@ -120,7 +121,7 @@ class TagsTree(db.Model):
     ordernum = db.Column(db.Integer, doc=u'Поле для сортировки тегов')
 
     tag = db.relationship(Tag)
-    parent = db.relationship('TagsTree', remote_side=[id])
+    parent = db.relationship('TagsTree', remote_side=[id], backref=db.backref('children', order_by=ordernum))
     template = db.relationship(Template)
 
     __table_args__ = {'order_by': ordernum}

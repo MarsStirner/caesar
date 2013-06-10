@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+{%- for item in tags_tree recursive -%}
+<{{ item.tag.code }}>
+    {%- if item.children -%}
+        {{ loop(item.children) }}
+    {%- else -%}
+        {%- if item.parent.tag.code == 'ZGLV' -%}
+        {{ head[item.tag.code] }}
+        {%- elif item.parent.tag.code == 'PERS' and loop.first -%}
+            {%- for person in data -%}
+                {%- for node in item.parent.children -%}
+                    <{{ node.tag.code }}>
+                        {%- if person|attr(node.tag.code) -%}
+                            {{ person|attr(node.tag.code) }}
+                        {%- endif -%}
+                    </{{ node.tag.code }}>
+                {%- endfor -%}
+            {%- endfor -%}
+        {%- endif -%}
+    {%- endif -%}
+</{{ item.tag.code }}>
+{%- endfor %}

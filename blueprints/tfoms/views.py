@@ -10,7 +10,7 @@ from app import module
 from .forms import CreateTemplateForm
 from blueprints.tfoms.lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
 from models import Template, TagsTree, StandartTree, Tag
-from application.database import db
+from application.app import db
 
 @module.route('/')
 def index():
