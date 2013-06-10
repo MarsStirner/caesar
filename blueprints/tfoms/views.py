@@ -53,14 +53,14 @@ def settings():
 
 
 @module.route('/settings_template/', methods=['GET', 'POST'])
-@module.route('/settings_template/<string:template_type>/', methods=['GET', 'POST'])
+#@module.route('/settings_template/<string:template_type>/', methods=['GET', 'POST'])
 def settings_template(template_type='xml_patient'):
     try:
         form = CreateTemplateForm()
 
         templates = Template.query.all()
         templates_ids = [template.id for template in templates]
-        templates_names = [template.name for template in templates]        
+        templates_names = [template.name for template in templates]
 
         root = TagTreeNode(StandartTree.query.filter_by(template_type_id=1).filter_by(parent_id=None).
                            join(TagsTree.tag).first(), 0)
@@ -73,94 +73,117 @@ def settings_template(template_type='xml_patient'):
     except TemplateNotFound:
         abort(404)
 
-@module.route('/settings_template/<string:template_type>/<int:id>', methods=['GET', 'POST'])
-def save_template(id=1, template_type='xml_patient'):
+@module.route('/settings_template/<string:template_type>/', methods=['GET', 'POST'])
+def settings_template(template_type='xml_patient'):
     try:
+        if not request.args.get('id'):
+            form = CreateTemplateForm()
 
-        templates = Template.query.all()
-        templates_ids = [template.id for template in templates]
-        templates_names = [template.name for template in templates]
+            templates = Template.query.all()
+            templates_ids = [template.id for template in templates]
+            templates_names = [template.name for template in templates]
 
-        current_template = filter(lambda x: x.id == id, templates)
+            root = TagTreeNode(StandartTree.query.filter_by(template_type_id=1).filter_by(parent_id=None).
+                               join(TagsTree.tag).first(), 0)
+            tree = StandartTagTree(root, 1)
+            unused_tags = []
 
-        if current_template[0].archive:
-            archive = 1
+            return render_template('settings_templates/%s.html' % template_type, form=form, templates_ids=templates_ids,
+                                   templates_names=templates_names, tag_tree=tree.load_tree(root, [root]),
+                                   unused_tags=unused_tags)
         else:
-            archive = 0
+            id = int(request.args.get('id'))
+            templates = Template.query.all()
+            templates_ids = [template.id for template in templates]
+            templates_names = [template.name for template in templates]
 
-        form = CreateTemplateForm(name=current_template[0].name, archive=archive)
+            current_template = filter(lambda x: x.id == id, templates)
 
-        root = TagTreeNode(TagsTree.query.filter_by(template_id=id).filter_by(parent_id=None).
-                           join(TagsTree.tag).first(), 0)
-        tree = TagTree(root, id)
-        tree_tags = [tag.tag_id for tag in TagsTree.query.filter_by(template_id=1)]
-        unused_tags = filter(lambda x: x.id not in tree_tags, Tag.query.all())
-
-        if form.is_submitted():
-            data = request.form.items()
-            new_tags = {}
-            for item in data:
-                match = re.match(r'tag\[(\d+),(\d+)\]', item[0])
-                if match:
-                    parent_id, ordernum = item[1].split(',')
-                    tag_id = match.group(1)
-                    if parent_id != u'None':# корневой элемент не меняем
-                        tag_tree_item = TagsTree.query.filter_by(id=int(tag_id)).first()
-                        tag_tree_item.parent_id = int(parent_id)
-                        tag_tree_item.ordernum = int(ordernum)
-
-                match = re.match(r'tag\[None,(\d+)\]', item[0])
-                if match:
-                    parent_id, ordernum = item[1].split(',')
-                    parent_id_t = re.match(r't(\d+)', parent_id)
-                    if parent_id_t:
-                        if parent_id_t.group(1) not in new_tags:
-                            new_tag_tree_item = TagsTree(tag_id=int(parent_id_t.group(1)),
-                                                         parent_id=1,#parent_id=None
-                                                         template_id=current_template[0].id, ordernum=ordernum)
-                            db.session.add(new_tag_tree_item)
-                            db.session.commit()
-                            new_tags[parent_id_t.group(1)] = new_tag_tree_item.id
-
-                        if match.group(1) not in new_tags:
-                            new_tag_tree_item = TagsTree(tag_id=int(match.group(1)),
-                                                         parent_id=new_tags[parent_id_t.group(1)],
-                                                         template_id=current_template[0].id, ordernum=ordernum)
-                            db.session.add(new_tag_tree_item)
-                            db.session.commit()
-                            new_tags[match.group(1)] = new_tag_tree_item.id
-                        else:
-                            new_tag_tree_item = TagsTree.query.filter_by(id=new_tags[match.group(1)]).first()
-                            new_tag_tree_item.parent_id = new_tags[parent_id_t.group(1)]
-                            db.session.commit()
-
-                    else:
-                        if match.group(1) not in new_tags:
-                            new_tag_tree_item = TagsTree(tag_id=int(match.group(1)), parent_id=int(parent_id),
-                                                         template_id=current_template[0].id, ordernum=ordernum)
-                            db.session.add(new_tag_tree_item)
-                            db.session.commit()
-                            new_tags[match.group(1)] = new_tag_tree_item.id
-                        else:
-                            new_tag_tree_item = TagsTree.query.filter_by(id=new_tags[match.group(1)]).first()
-                            new_tag_tree_item.parent_id = int(parent_id)
-                            db.session.commit()
-
-            current_template[0].name = request.form['name']
-
-            if 'archive' in request.form:
-                current_template[0].archive = 1
+            if current_template[0].archive:
+                archive = 1
             else:
-                current_template[0].archive = 0
+                archive = 0
 
-            db.session.commit()
+            form = CreateTemplateForm(name=current_template[0].name, archive=archive)
+
+            root = TagTreeNode(TagsTree.query.filter_by(template_id=id).filter_by(parent_id=None).
+                               join(TagsTree.tag).first(), 0)
+            tree = TagTree(root, id)
+            tree_tags = [tag.tag_id for tag in TagsTree.query.filter_by(template_id=id)]
+            unused_tags = filter(lambda x: x.tag_id not in tree_tags, StandartTree.query.filter_by(template_type_id=1))
+
+            if form.is_submitted():
+                data = request.form.items()
+                new_tags = {}
+                for item in data:
+                    match = re.match(r'tag\[(\d+),(\d+)\]', item[0])
+                    if match:
+                        parent_id, ordernum = item[1].split(',')
+                        tag_id = match.group(1)
+                        if parent_id != u'None':# корневой элемент не меняем
+                            tag_tree_item = TagsTree.query.filter_by(id=int(tag_id)).first()
+                            tag_tree_item.parent_id = int(parent_id)
+                            tag_tree_item.ordernum = int(ordernum)
+
+                    match = re.match(r'tag\[None,(\d+)\]', item[0])
+                    if match:
+                        parent_id, ordernum = item[1].split(',')
+                        parent_id_t = re.match(r't(\d+)', parent_id)
+                        if parent_id_t:
+                            if parent_id_t.group(1) not in new_tags:
+                                new_tag_tree_item = TagsTree(tag_id=int(parent_id_t.group(1)),
+                                                             parent_id=1,#parent_id=None
+                                                             template_id=current_template[0].id, ordernum=ordernum)
+                                db.session.add(new_tag_tree_item)
+                                db.session.commit()
+                                new_tags[parent_id_t.group(1)] = new_tag_tree_item.id
+
+                            if match.group(1) not in new_tags:
+                                new_tag_tree_item = TagsTree(tag_id=int(match.group(1)),
+                                                             parent_id=new_tags[parent_id_t.group(1)],
+                                                             template_id=current_template[0].id, ordernum=ordernum)
+                                db.session.add(new_tag_tree_item)
+                                db.session.commit()
+                                new_tags[match.group(1)] = new_tag_tree_item.id
+                            else:
+                                new_tag_tree_item = TagsTree.query.filter_by(id=new_tags[match.group(1)]).first()
+                                new_tag_tree_item.parent_id = new_tags[parent_id_t.group(1)]
+                                db.session.commit()
+
+                        else:
+                            if match.group(1) not in new_tags:
+                                new_tag_tree_item = TagsTree(tag_id=int(match.group(1)), parent_id=int(parent_id),
+                                                             template_id=current_template[0].id, ordernum=ordernum)
+                                db.session.add(new_tag_tree_item)
+                                db.session.commit()
+                                new_tags[match.group(1)] = new_tag_tree_item.id
+                            else:
+                                new_tag_tree_item = TagsTree.query.filter_by(id=new_tags[match.group(1)]).first()
+                                new_tag_tree_item.parent_id = int(parent_id)
+                                db.session.commit()
+
+                    match = re.match(r'removedtag\[(\d+),(\d+)\]', item[0])
+                    if match:
+                        removed_tag_tree_item = TagsTree.query.filter_by(id=match.group(1)).first()
+                        db.session.delete(removed_tag_tree_item)
+                        db.session.commit()
+
+
+                current_template[0].name = request.form['name']
+
+                if 'archive' in request.form:
+                    current_template[0].archive = 1
+                else:
+                    current_template[0].archive = 0
+
+                db.session.commit()
+                return render_template('settings_templates/%s.html' % template_type, form=form, current_id=id,
+                                       templates_ids=templates_ids, templates_names=templates_names,
+                                       tag_tree=tree.load_tree(root, [root]), unused_tags=unused_tags)
+
             return render_template('settings_templates/%s.html' % template_type, form=form, current_id=id,
                                    templates_ids=templates_ids, templates_names=templates_names,
-                                   tag_tree=tree.load_tree(root, [root]), unused_tags=unused_tags, test="456", data=data)
-
-        return render_template('settings_templates/%s.html' % template_type, form=form, current_id=id,
-                               templates_ids=templates_ids, templates_names=templates_names,
-                               tag_tree=tree.load_tree(root, [root]), unused_tags=unused_tags)
+                                   tag_tree=tree.load_tree(root, [root]), unused_tags=unused_tags)
     except TemplateNotFound:
         abort(404)    
         
@@ -225,7 +248,7 @@ def add_new_template(action='add_new', template_type='xml_patient'):
                         db.session.commit()
             return render_template('settings_templates/%s.html' % template_type, form=form, current_id=id,
                                    templates_ids=templates_ids, templates_names=templates_names,
-                                   tag_tree=tree.load_tree(root, [root]), unused_tags=unused_tags, test=existing_tags)
+                                   tag_tree=tree.load_tree(root, [root]), unused_tags=unused_tags)
         return render_template('settings_templates/%s.html' % template_type, form=form, current_id=id,
                                templates_ids=templates_ids, templates_names=templates_names,
                                tag_tree=tree.load_tree(root, [root]), unused_tags=unused_tags)
