@@ -108,8 +108,8 @@
                       <ul id="sortable2" class=" sortable">
                       {% for tag in unused_tags%}
                           <li>
-                          		{{ tag.name }} ({{ tag.code }})
-                                <input type="hidden" id="hid_{{tag.id}}" name="unusedtag[None,{{ tag.id }}]" value="None,1">
+                          		{{ tag.tag.name }} ({{ tag.tag.code }})
+                                <input type="hidden" id="hid_{{tag.id}}" name="unusedtag[None,{{ tag.tag_id }}]" value="None,1">
                           		<ul id="sortable" class=" sortable">                          		
                           		</ul>                           		
                           </li>                      	
@@ -172,6 +172,7 @@
                 descendants.each(function(index, el){
                     descendant = $(this);
                     new_name = descendant.attr('name').replace(/unused/,"");
+                    new_name = new_name.replace(/unused/,"");
                     descendant.attr('name', new_name);
                 });
                 console.log('unused')
@@ -180,7 +181,7 @@
                 descendants.each(function(index, el){
                     descendant = $(this);
                     old_name = descendant.attr('name')
-                    descendant .attr('name', 'unused'+old_name)
+                    descendant .attr('name', 'removed'+old_name)
                 });
                 console.log('now unused')
             }

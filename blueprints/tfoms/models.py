@@ -120,7 +120,7 @@ class TagsTree(db.Model):
     ordernum = db.Column(db.Integer, doc=u'Поле для сортировки тегов')
 
     tag = db.relationship(Tag)
-    parent = db.relationship('TagsTree', remote_side=[id])
+    parent = db.relationship('TagsTree', remote_side=[id], backref='children')
     template = db.relationship(Template)
 
     __table_args__ = {'order_by': ordernum}

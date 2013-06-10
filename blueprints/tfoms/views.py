@@ -93,8 +93,8 @@ def save_template(id=1, template_type='xml_patient'):
         root = TagTreeNode(TagsTree.query.filter_by(template_id=id).filter_by(parent_id=None).
                            join(TagsTree.tag).first(), 0)
         tree = TagTree(root, id)
-        tree_tags = [tag.tag_id for tag in TagsTree.query.filter_by(template_id=1)]
-        unused_tags = filter(lambda x: x.id not in tree_tags, Tag.query.all())
+        tree_tags = [tag.tag_id for tag in TagsTree.query.filter_by(template_id=id)]
+        unused_tags = filter(lambda x: x.tag_id not in tree_tags, StandartTree.query.filter_by(template_type_id=1))
 
         if form.is_submitted():
             data = request.form.items()
@@ -146,6 +146,13 @@ def save_template(id=1, template_type='xml_patient'):
                             new_tag_tree_item.parent_id = int(parent_id)
                             db.session.commit()
 
+                match = re.match(r'removedtag\[(\d+),(\d+)\]', item[0])
+                if match:
+                    removed_tag_tree_item = TagsTree.query.filter_by(id=match.group(1)).first()
+                    db.session.delete(removed_tag_tree_item)
+                    db.session.commit()
+
+
             current_template[0].name = request.form['name']
 
             if 'archive' in request.form:
@@ -160,7 +167,7 @@ def save_template(id=1, template_type='xml_patient'):
 
         return render_template('settings_templates/%s.html' % template_type, form=form, current_id=id,
                                templates_ids=templates_ids, templates_names=templates_names,
-                               tag_tree=tree.load_tree(root, [root]), unused_tags=unused_tags)
+                               tag_tree=tree.load_tree(root, [root]), unused_tags=unused_tags, test=id)
     except TemplateNotFound:
         abort(404)    
         
