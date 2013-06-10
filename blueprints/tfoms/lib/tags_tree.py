@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-from blueprints.tfoms.models import TagsTree, StandartTree
+from ..models import TagsTree, StandartTree
 
 
 class TagTree():

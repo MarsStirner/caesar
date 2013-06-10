@@ -58,7 +58,7 @@ def upgrade():
     )
     op.create_table('tfoms_tags_tree',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('tag_id', sa.Integer(), nullable=False),
+    sa.Column('tag_id', sa.Integer(), nullable=True),
     sa.Column('parent_id', sa.Integer(), nullable=True),
     sa.Column('template_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['parent_id'], ['tfoms_tags_tree.id'], ),
@@ -68,9 +68,9 @@ def upgrade():
     )
     op.create_table('tfoms_standart_tree',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('tag_id', sa.Integer(), nullable=True),
+    sa.Column('tag_id', sa.Integer(), nullable=False),
     sa.Column('parent_id', sa.Integer(), nullable=True),
-    sa.Column('template_type_id', sa.Integer(), nullable=True),
+    sa.Column('template_type_id', sa.Integer(), nullable=False),
     sa.Column('is_necessary', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['parent_id'], ['tfoms_standart_tags_tree.id'], ),
     sa.ForeignKeyConstraint(['tag_id'], ['tfoms_tag.id'], ),
