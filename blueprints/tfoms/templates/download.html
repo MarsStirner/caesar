@@ -7,41 +7,20 @@
 {% block content %}
 
     {% include '_nav_menu.html' %}
-
-
-        <form class="form-horizontal">
-            <legend>Выгрузка в ТФОМС</legend>
-            <div class="control-group">
-                <label class="control-label">Формат</label>
-                <div class="controls">
-                    <label class="radio">
-                        <input type="radio" name="format" value="XML" checked="checked">XML
-                    </label>
-                    <label class="radio">
-                        <input type="radio" name="format" value="DBF">DBF
-                    </label>
-                </div>
-            </div>
-            <div class="control-group">
-                <label class="control-label">Тип выгрузки</label>
-                <div class="controls">
-                    <select name="type" class="span3">
-                        <option value="0">- выберите тип выгрузки -</option>
-                        <option value="1">Выгрузка пациентов</option>
-                        <option value="2">Выгрузка счетов</option>
-                    </select>
-                </div>
-            </div>
+        <legend>Выгрузка в ТФОМС</legend>
+        <ul class="nav nav-tabs">
+            <li{% if request.path == url_for('.download', template_type='xml') or request.path == url_for('.download') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='xml') }}">Выгрузка XML</a></li>
+            <li{% if request.path == url_for('.download', template_type='dbf') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='dbf') }}">Выгрузка DBF</a></li>
+        </ul>
+        <form class="form-horizontal" id="download_form">
             <div class="control-group">
                 <label class="control-label">Шаблон</label>
                 <div class="controls">
-                    <select name="template" class="span3">
-                        <option value="0">- выберите шаблон -</option>
-                        <option value="1">Шаблон выгрузки пациентов №1</option>
-                        <option value="2">Шаблон выгрузки пациентов №2</option>
-                        <option value="3">Шаблон выгрузки пациентов №3</option>
-                        <option value="4">Шаблон выгрузки пациентов №4</option>
-                    </select>
+                    {% for template in templates %}
+                        <label class="checkbox">
+                            <input type="checkbox" class="templates" required name="templates[]" value="{{ template.id }}"> {{ template.name }}
+                        </label>
+                    {% endfor %}
                 </div>
             </div>
             <div class="control-group">
@@ -50,4 +29,33 @@
                 </div>
             </div>
         </form>
+<div id="result"></div>
+<div class="loader"></div>
+{% endblock %}
+{% block modules_js %}
+<script type="text/javascript">
+$(document).ready(function(){
+    $(document).on({
+        ajaxStart: function() {
+            $('body').addClass("loading");
+        },
+        ajaxStop: function() {
+            $('body').removeClass("loading");
+        }
+    });
+    $('#download_form').submit(function(){
+        var $this = $(this);
+        $this.hide();
+        $('#result').html('Подождите, идёт генерация файла...');
+        var data = [];
+        $this.find('input:checkbox').each(function(){
+            data = data.push($(this).val());
+        });
+        $.post("{{ url_for('.ajax_download') }}", {data:data}, function(res) {
+            $('#result').html(res);
+        });
+        return false;
+    });
+});
+</script>
 {% endblock %}

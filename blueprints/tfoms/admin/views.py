@@ -11,9 +11,9 @@ from blueprints.tfoms.models import *
 class TemplateTypeView(ModelView):
     column_exclude_list = ('tags', )
     form_excluded_columns = ('tags', )
-    column_labels = dict(name=u'Наименование', download_type=u'Тип выгрузки')
-    form_columns = ('name', 'download_type')
-    column_list = ('name', 'download_type')
+    column_labels = dict(code=u'Код', name=u'Наименование', download_type=u'Тип выгрузки')
+    form_columns = ('code', 'name', 'download_type')
+    column_list = ('code', 'name', 'download_type')
 
     def __init__(self, session, **kwargs):
         super(TemplateTypeView, self).__init__(TemplateType, session, **kwargs)

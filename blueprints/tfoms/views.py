@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 import re
+from datetime import datetime
 
 from flask import render_template, abort, request, jsonify
 
@@ -11,6 +12,8 @@ from blueprints.tfoms.lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
 from models import Template, TagsTree, StandartTree
 from utils import template_types
 from application.database import db
+from .lib.data import DownloadWorker
+from config import LPU_INFIS_CODE
 
 @module.route('/')
 def index():
@@ -20,10 +23,27 @@ def index():
         abort(404)
 
 
+@module.route('/ajax_download/', methods=['GET', 'POST'])
+def ajax_download():
+    result = list()
+    data = [request.form['data']]
+    for template_id in data:
+        template_id = 16
+        start = datetime(2013, 01, 01)
+        end = datetime(2013, 06, 01)
+        worker = DownloadWorker()
+        file_name, file_url = worker.do_download(template_id, start, end, LPU_INFIS_CODE)
+        result.append(dict(name=file_name, url=file_url))
+    return render_template('download_result.html', files=result)
+
+
 @module.route('/download/')
-def download():
+@module.route('/download/<string:template_type>/')
+def download(template_type='xml'):
     try:
-        return render_template('download.html')
+        # templates = db.session.query(Template).filter(Template.type.code == template_type, Template.id == 16).all()
+        templates = db.session.query(Template).filter(Template.id == 16).all()
+        return render_template('download.html', templates=templates)
     except TemplateNotFound:
         abort(404)
 
