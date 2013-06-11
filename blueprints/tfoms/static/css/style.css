@@ -89,10 +89,14 @@
           margin: 1px 0px 0px 0px;
 
           /**margin-right: .3em;*/
-          line-height: 14px;
+          line-height: 13px;
           vertical-align: text-top;
-          background-image: url('../download.png');
+          background-image: url('../i/download.png');
           background-position: -45px -3px;
           background-repeat: no-repeat;
           display: inline-block;
+      }
+
+      .tags {
+            font-size: 13px;
       }

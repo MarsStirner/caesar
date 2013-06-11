@@ -17,14 +17,14 @@
 {% block content %}
 
     {% include '_nav_menu.html' %}
-        <legend>Настройка шаблонов реестров для выгрузки в ТФОМС</legend>
+        <legend>Настройка шаблонов реестров для выгрузки в ТФОМС{{ test }}</legend>
         {% include 'settings_templates/_sub_menu.html' %}
 
         <div class="container-fluid">
         <div class="row-fluid">
           <div class="span4">
               <ul class="nav nav-list nav-stacked">
-                  <li class="nav-header">Созданные шаблоны</li>
+                   <li class="nav-header">Созданные шаблоны</li>
                    {% for template in templates %}
                    		{% set id = template.id %}
                    		{% if id == current_id %}
@@ -39,13 +39,12 @@
                   			</li>
                   		{% endif %}
                    {% endfor%}                     
-                  <li class="divider"></li>
-                  <li>
-                  <span class="pull-left"><a href={{ url_for('.add_new_template',template_type='xml_patient', action='add_new') }}><i class=" icon-plus-sign"></i>Добавить новый</a></span>
-                  <span class="pull-right"><a href={{ url_for('.add_new_template',template_type='xml_patient', action='add_new') }}><i class=" icon-minus-sign"></i>Удалить шаблон</a></span>
-                  </li>
-                </ul>
-
+                   <li class="divider"></li>
+                   <li>
+                        <span class="pull-left"><a href={{ url_for('.add_new_template', template_type='xml_patient', action='add_new') }}><i class=" icon-plus-sign"></i>Добавить новый</a></span>
+                        <span class="pull-right"><a href=""><i class=" icon-minus-sign"></i>Удалить шаблон</a></span>
+                   </li>
+              </ul>
           </div>
           <div class="span8">
               <legend>Параметры шаблона:</legend>
@@ -63,6 +62,7 @@
                   <!--<div class="span3 ">Архивировать файл:</div><div class="span9 "><input name="archive" type="checkbox" checked="true"></div></div>-->
                   <div class="span3 ">Архивировать файл:</div><div class="span9 ">{{ form.archive }}</div></div>
                   <legend style="font-size:14px;">Состав и порядок размещения данных в шаблоне:</legend>
+
                   <div class="row-fluid tags">
                   <div class="span7 well" id="used">
                        <legend >Попадают в реестр</legend>
@@ -76,7 +76,7 @@
 			                {% else %}
 			                	{% set k = tag_tree[loop.index0 - 1].level-tag.level %}
 			                	{% if k == 0 %}
-			                        </ul>			                	
+			                        </ul>
 			                          </li>
 
 			                          <li class="children">
@@ -92,15 +92,15 @@
 			                	{% endif %}
 			                	{% if k > 0 %}
 			                		{% for i in range(k+1) %}
-				                        </ul>			                		
-				                         </li>		                			
+				                        </ul>
+				                         </li>
 			                		{% endfor%}
 			                          <li class="children">
                                             <i class="tree"></i>{{tag.value.tag.name}} ({{tag.value.tag.code}})
                                             <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
 			                          		<ul id="sortable" class=" sortable">
-			                	{% endif %}			                				                	
-                       		{% endif %}					
+			                	{% endif %}
+                       		{% endif %}
                        {% endfor %}
 			                        </ul>			                	
 			                          </li>	                                       		

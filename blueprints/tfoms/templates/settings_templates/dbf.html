@@ -8,6 +8,7 @@
 	  .tags li { margin: 5px 0px 0px 0px 0px; padding: 0;}
 	  .ui-state-highlight { background-color: #CCCCCC; height: 1.5em; line-height: 1.2em; border: dashed 1px gray; }
 	  .sortable ul {margin:0px 0px 0px 25px; padding:0;  }
+      #root {padding: 8px 0px 0px 0px; height:1000px;}
   </style>
 {% endblock %}
 
@@ -23,28 +24,43 @@
         <div class="row-fluid">
           <div class="span4">
               <ul class="nav nav-list nav-stacked">
-                  <li class="nav-header">Шаблоны</li>
-                  <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 1</a></li>
-                  <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 2</a></li>
-                  <li class="active"><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 3</a></li>
-                  <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 4</a></li>
-                  <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 5</a></li>
-                  <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 6</a></li>
-                  <li class="divider"></li>
-                  <li><a href="#"><i class=" icon-plus-sign"></i>Добавить новый</a></li>
+                   <li class="nav-header">Созданные шаблоны</li>
+                   {% for template in templates %}
+                   		{% set id = template.id %}
+                   		{% if id == current_id %}
+                   			<li class="active">
+                                <span class="pull-right"><input type="checkbox"></span>
+                                <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{template.name}}</a>
+                   			</li>
+                   		{% else %}
+                  			<li>
+                                <span class="pull-right"><input type="checkbox"></span>
+                  				<a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{template.name}}</a>
+                  			</li>
+                  		{% endif %}
+                   {% endfor%}
+                   <li class="divider"></li>
+                   <li>
+                        <span class="pull-left"><a href={{ url_for('.add_new_template',template_type='dbf', action='add_new') }}><i class=" icon-plus-sign"></i>Добавить новый</a></span>
+                        <span class="pull-right"><a href=""><i class=" icon-minus-sign"></i>Удалить шаблон</a></span>
+                   </li>
                 </ul>
 
           </div>
           <div class="span8">
+              <legend>Параметры шаблона:</legend>
               <form class="form-inline">
-                  <input type="text" placeholder="Название шаблона" value="Шаблон 3" class="span12">
-                  <label class="checkbox" class="span12" style="margin-top:15px;"> 
-                  		<input type="checkbox">  Архивировать
-                  </label>                  
-                  <hr>
+                  <div class="row-fluid tags">
+                  <div class="span3 ">Наименование шаблона:</div><div class="span9 ">{{ form.name }}</div></div>
+                  <div class="row-fluid tags">
+                  <!--<div class="span3 ">Архивировать файл:</div><div class="span9 "><input name="archive" type="checkbox" checked="true"></div></div>-->
+                  <div class="span3 ">Архивировать файл:</div><div class="span9 ">{{ form.archive }}</div></div>
+                  <legend style="font-size:14px;">Состав и порядок размещения данных в шаблоне:</legend>
+
                   <div class="row-fluid tags">
                   <div class="span7 well">
-                      <ul id="sortable" class=" sortable">
+                      <legend >Попадают в реестр</legend>
+                      <ul id="root" class=" sortable">
                           <li >
                           		Название 1 (CODE)
                           		<ul id="sortable" class=" sortable">                          		
@@ -55,76 +71,11 @@
                           		<ul id="sortable" class=" sortable">                          		
                           		</ul>                           		
                           </li>
-                          <li >
-                          		Название 3 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 4 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 5 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 11 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 12 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 13 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 14 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 15 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 21 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 22 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 23 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 24 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 25 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
                         </ul>
                   </div>
                   <div class="span5 well">
                       <legend>Неиспользуемые тэги</legend>
-                      <ul id="sortable2" class=" sortable">
+                      <ul id="root" class=" sortable">
                           <li >
                           		Название 31 (CODE)
                           		<ul id="sortable" class=" sortable">                          		
@@ -132,21 +83,6 @@
                           </li>
                           <li >
                           		Название 32 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 33 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 34 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 35 (CODE)
                           		<ul id="sortable" class=" sortable">                          		
                           		</ul>                           		
                           </li>
