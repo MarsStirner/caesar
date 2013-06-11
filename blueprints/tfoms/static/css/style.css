@@ -55,6 +55,7 @@
         border-right: 0;
         border-radius: 0 3px 3px 0;
       }
+
       .loader {
             display:    none;
             position:   fixed;
@@ -80,3 +81,21 @@
         body.loading .loader {
             display: block;
         }
+
+      .tree {
+          width: 10px;
+          height: 10px;
+          padding: 0;
+          margin: 1px 0px 0px 0px;
+
+          /**margin-right: .3em;*/
+          line-height: 14px;
+          vertical-align: text-top;
+          background-image: url('../download.png');
+          background-position: -45px -3px;
+          background-repeat: no-repeat;
+          display: inline-block;
+      }
+      blockquote {
+          border-color: #B94A48;
+      }

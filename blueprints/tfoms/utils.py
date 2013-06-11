@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 from models import TagsTree
 
+template_types = {'xml_patient': 1, 'xml_service': 2, 'dbf': 3}
 
 def get_tree(template_id, root, level, tree):
     """Построение дерева по корню"""
