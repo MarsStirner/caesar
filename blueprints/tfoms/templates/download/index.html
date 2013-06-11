@@ -29,12 +29,18 @@
                 </div>
             </div>
         </form>
+<div id="download_result">
+<blockquote>
+  <p>Скачивание файлов</p>
+</blockquote>
 <div id="result"></div>
+</div>
 <div class="loader"></div>
 {% endblock %}
 {% block modules_js %}
 <script type="text/javascript">
 $(document).ready(function(){
+    $('#download_result').hide();
     $(document).on({
         ajaxStart: function() {
             $('body').addClass("loading");
@@ -46,7 +52,8 @@ $(document).ready(function(){
     $('#download_form').submit(function(){
         var $this = $(this);
         $this.hide();
-        $('#result').html('Подождите, идёт генерация файла...');
+        $('#download_result').show();
+        $('#result').html('Подождите, идёт генерация файлов...');
         var data = [];
         $this.find('input:checkbox').each(function(){
             data = data.push($(this).val());

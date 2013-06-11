@@ -2,7 +2,7 @@
 import re
 from datetime import datetime
 
-from flask import render_template, abort, request, jsonify
+from flask import render_template, abort, request, jsonify, send_from_directory
 from flask.ext.wtf import Form, TextField, Required, IntegerField
 
 from jinja2 import TemplateNotFound
@@ -12,7 +12,7 @@ from .forms import CreateTemplateForm
 from blueprints.tfoms.lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
 from models import Template, TagsTree, StandartTree, Tag
 from application.database import db
-from .lib.data import DownloadWorker
+from .lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR
 from config import LPU_INFIS_CODE
 
 @module.route('/')
@@ -34,7 +34,7 @@ def ajax_download():
         worker = DownloadWorker()
         file_name, file_url = worker.do_download(template_id, start, end, LPU_INFIS_CODE)
         result.append(dict(name=file_name, url=file_url))
-    return render_template('download_result.html', files=result)
+    return render_template('download/result.html', files=result)
 
 
 @module.route('/download/')
@@ -43,9 +43,16 @@ def download(template_type='xml'):
     try:
         # templates = db.session.query(Template).filter(Template.type.code == template_type, Template.id == 16).all()
         templates = db.session.query(Template).filter(Template.id == 16).all()
-        return render_template('download.html', templates=templates)
+        return render_template('download/index.html', templates=templates)
     except TemplateNotFound:
         abort(404)
+
+
+@module.route('/download_file/<string:filename>')
+def download_file(filename):
+    """Выдаёт файлы на скачивание"""
+    if filename:
+        return send_from_directory(DOWNLOADS_DIR, filename, as_attachment=True)
 
 
 @module.route('/upload/')
