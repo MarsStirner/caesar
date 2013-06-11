@@ -5,9 +5,11 @@
 <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/humanity/jquery-ui.css" />
   <style>
 	  .tags ul { list-style-type: none; margin: 0px; padding: 0; margin-bottom: 0px; }
-	  .tags li { margin: 0px; padding: 0px;}
+	  .tags li { margin: 0px; padding: 0;}
 	  .ui-state-highlight { background-color: #CCCCCC; height: 1.5em; line-height: 1.2em; border: dashed 1px gray; }
-	  .sortable ul {margin:0px 0px 0px 25px; padding: 8px 0px 0px 0px; }
+	  .sortable ul {margin:0px 0px 0px 25px; padding: 8px 0px 0px 0px;}
+      .children {border-left:1px dotted; }
+      #root {padding: 8px 0px 0px 0px; height:1000px;}
 
   </style>
 {% endblock %}
@@ -23,23 +25,25 @@
           <div class="span4">
               <ul class="nav nav-list nav-stacked">
                   <li class="nav-header">Созданные шаблоны</li>
-
-                   {% for name in templates_names %}
-                   		{% set id = templates_ids[loop.index0]%}
+                   {% for template in templates %}
+                   		{% set id = template.id %}
                    		{% if id == current_id %}
                    			<li class="active">
                                 <span class="pull-right"><input type="checkbox"></span>
-                                <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{name}}</a>
+                                <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{template.name}}</a>
                    			</li>
                    		{% else %}
-                  			<li >
-                                 <span class="pull-right"><input type="checkbox"></span>
-                  				 <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{name}}</a>
+                  			<li>
+                                <span class="pull-right"><input type="checkbox"></span>
+                  				<a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{template.name}}</a>
                   			</li>
                   		{% endif %}
                    {% endfor%}                     
                   <li class="divider"></li>
-                  <li><a href={{ url_for('.add_new_template',template_type='xml_patient', action='add_new') }}><i class=" icon-plus-sign"></i>Добавить новый</a></li>
+                  <li>
+                  <span class="pull-left"><a href={{ url_for('.add_new_template',template_type='xml_patient', action='add_new') }}><i class=" icon-plus-sign"></i>Добавить новый</a></span>
+                  <span class="pull-right"><a href={{ url_for('.add_new_template',template_type='xml_patient', action='add_new') }}><i class=" icon-minus-sign"></i>Удалить шаблон</a></span>
+                  </li>
                 </ul>
 
           </div>
@@ -61,40 +65,40 @@
                   <legend style="font-size:14px;">Состав и порядок размещения данных в шаблоне:</legend>
                   <div class="row-fluid tags">
                   <div class="span7 well" id="used">
-                       <legend>Попадают в реестр</legend>
-                       <ul id="root" class=" sortable unselectable">
+                       <legend >Попадают в реестр</legend>
+                       <ul id="root" class="sortable">
                        {% for tag in tag_tree %}
                        		{% if loop.index0 == 0 %}
-			                          <li>
-			                          		{{tag.value.tag.name}}  ({{tag.value.tag.code}})
+			                          <li >
+                                            {{tag.value.tag.name}}  ({{tag.value.tag.code}})
                                             <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
-			                          		<ul id="sortable" class=" sortable" >
+			                          		<ul id="sortable" class=" sortable">
 			                {% else %}
 			                	{% set k = tag_tree[loop.index0 - 1].level-tag.level %}
 			                	{% if k == 0 %}
 			                        </ul>			                	
 			                          </li>
 
-			                          <li>
-			                          		 {{tag.value.tag.name}} ({{tag.value.tag.code}})
+			                          <li class="children">
+                                            <i class="tree"></i>{{tag.value.tag.name}} ({{tag.value.tag.code}})
                                             <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
-			                          		<ul id="sortable" class=" sortable" >			                        			                		
+			                          		<ul id="sortable" class=" sortable">
 			                	{% endif %}
 			                	{% if k < 0 %}
-			                          <li>
-			                          		 {{tag.value.tag.name}} ({{tag.value.tag.code}})
+			                          <li class="children">
+                                            <i class="tree"></i>{{tag.value.tag.name}} ({{tag.value.tag.code}})
                                             <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
-			                          		<ul  id="sortable" class=" sortable" >			                		
+			                          		<ul  id="sortable" class=" sortable">
 			                	{% endif %}
 			                	{% if k > 0 %}
 			                		{% for i in range(k+1) %}
 				                        </ul>			                		
 				                         </li>		                			
 			                		{% endfor%}
-			                          <li>
-			                          		 {{tag.value.tag.name}} ({{tag.value.tag.code}})
+			                          <li class="children">
+                                            <i class="tree"></i>{{tag.value.tag.name}} ({{tag.value.tag.code}})
                                             <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
-			                          		<ul id="sortable" class=" sortable" >			                						                					                		
+			                          		<ul id="sortable" class=" sortable">
 			                	{% endif %}			                				                	
                        		{% endif %}					
                        {% endfor %}
@@ -104,16 +108,16 @@
                   </div>
                   <div class="span5 well" id="unused">
                       <legend>Не используются</legend>
-                      <ul id="sortable2" class=" sortable">
+                      <ul id="root" class="sortable">
                       {% for tag in unused_tags%}
                           <li>
                           		{{ tag.tag.name }} ({{ tag.tag.code }})
                                 <input type="hidden" id="hid_{{tag.id}}" name="unusedtag[None,{{ tag.tag_id }}]" value="None,1">
-                          		<ul id="sortable" class=" sortable">                          		
+                          		<ul id="sortable" class="sortable">
                           		</ul>                           		
                           </li>                      	
                       {% endfor %}
-                        </ul>
+                      </ul>
                   </div>                
                   </div>
                   <hr>
@@ -126,6 +130,7 @@
           </div>
         </div>
         </div>
+
 {% endblock %}
 {% block modules_js %}
   <script src="{{ url_for('static', filename='jquery-ui/js/jquery-1.9.1.js') }}"></script>
