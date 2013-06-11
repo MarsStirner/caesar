@@ -104,7 +104,7 @@ class DownloadWorker(object):
                              # conditions=conditions)
         file_obj = self.__get_file_object(template_type, end=end)
         file_url = file_obj.save_file(tree, data)
-        return file_url
+        return file_obj.file_name, file_url
 
 
 class UploadWorker(object):
