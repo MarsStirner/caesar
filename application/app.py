@@ -9,6 +9,8 @@ import config
 app = Flask(__name__)
 app.config.from_object(config)
 
+db.init_app(app)
+
 #Register blueprints
 blueprints_path = os.path.abspath(app.config['BLUEPRINTS_DIR'])
 load_blueprints(app, apps_path=blueprints_path)
@@ -29,5 +31,3 @@ def get_locale():
 
 # Import all views
 from views import *
-
-db.init_app(app)

@@ -10,10 +10,9 @@ from ..app import module
 from ..models import Template, TagsTree, Tag
 from ..config import CORE_SERVICE_URL, OLD_LPU_INFIS_CODE, SMO_NUMBER
 
-DOWNLOADS_URL = os.path.join('static', 'downloads')
-DOWNLOADS_DIR = os.path.join(module.root_path, DOWNLOADS_URL)
-UPLOADS_URL = os.path.join('static', 'uploads')
-UPLOADS_DIR = os.path.join(module.root_path, UPLOADS_URL)
+
+DOWNLOADS_DIR = os.path.join(module.static_folder, 'downloads')
+UPLOADS_DIR = os.path.join(module.static_folder, 'uploads')
 
 
 class Patients(object):
@@ -54,7 +53,9 @@ class DownloadWorker(object):
         return db.session.query(Template).get(id)
 
     def __get_template_tree(self, template_id):
-        root = db.session.query(TagsTree).filter(TagsTree.template_id == template_id, TagsTree.parent_id == None).first()
+        root = (db.session.query(TagsTree)
+                .filter(TagsTree.template_id == template_id, TagsTree.parent_id == None)
+                .first())
         # tree = TagTree(template_id=template_id, root=0)
         # return tree.load_tree(0, [])
         return [root]
@@ -157,10 +158,9 @@ class XML(object):
         linked_file = XML(data_type='xml_services', end=self.end)
         linked_file.generate_filename()
         head = dict(VERSION='1.0',
-                    DATA=date.today().strftime('%y-%m-%d'),
+                    DATA=date.today().strftime('%Y-%m-%d'),
                     FILENAME=self.file_name,
-                    FILENAME1=linked_file.file_name,
-                    )
+                    FILENAME1=linked_file.file_name)
         return template.render(head=head, tags_tree=tags_tree, data=data)
 
     def save_file(self, tags_tree, data):
@@ -169,7 +169,7 @@ class XML(object):
         f = open(os.path.join(DOWNLOADS_DIR, '%s.xml' % self.file_name), 'w')
         f.write(content.encode('utf-8'))
         f.close()
-        return os.path.join(DOWNLOADS_URL, '%s.xml' % self.file_name)
+        return '%s.xml' % self.file_name
 
 
 class DBF(object):

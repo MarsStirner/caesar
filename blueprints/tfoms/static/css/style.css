@@ -100,3 +100,7 @@
       .tags {
             font-size: 13px;
       }
+
+      blockquote {
+          border-color: #B94A48;
+      }
