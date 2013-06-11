@@ -14,7 +14,7 @@ db.app = app
 
 
 def backup(model):
-    serialized_data = dumps(db.session.query(model))
+    serialized_data = dumps(db.session.query(model).all())
     f = open(os.path.join(backups_dir, model.name), 'wb')
     f.write(serialized_data)
     f.close()
