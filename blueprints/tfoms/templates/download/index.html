@@ -2,6 +2,8 @@
 
 {% block modules_css %}
 <link href="{{ url_for('.static', filename='css/style.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='jquery-ui/css/cupertino/jquery-ui-1.10.2.custom.min.css') }}" rel="stylesheet">
+{#<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/flick/jquery-ui.css" />#}
 {% endblock %}
 
 {% block content %}
@@ -12,17 +14,42 @@
             <li{% if request.path == url_for('.download', template_type='xml') or request.path == url_for('.download') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='xml') }}">Выгрузка XML</a></li>
             <li{% if request.path == url_for('.download', template_type='dbf') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='dbf') }}">Выгрузка DBF</a></li>
         </ul>
-        <blockquote><p>Выберите шаблоны для выгрузки</p></blockquote>
         <form class="form-horizontal" id="download_form">
-            <div class="control-group">
-                    {% for template in templates %}
-                        <label class="checkbox">
-                            <input type="checkbox" class="templates" required name="templates[]" value="{{ template.id }}"> {{ template.name }}
-                        </label>
-                    {% endfor %}
-            </div>
-            <div class="control-group">
-                    <button type="submit" class="btn btn-primary">Сделать выгрузку</button>
+            <legend>Укажите параметры выгрузки</legend>
+            <div class="row">
+                <div class="span6">
+                <div class="control-group">
+                    <label class="control-label">Даты:</label>
+                    <div class="controls">
+                        <div class="input-prepend">
+                            <span class="add-on">с</span>
+                            <input type="text" id="from" name="start" required class="input-small" />
+                        </div>
+                        <div class="input-prepend">
+                            <span class="add-on">по</span>
+                            <input type="text" id="to" name="end" required class="input-small" />
+                        </div>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="alert alert-error hidden">
+                      <strong>Внимание!</strong> Не выбран ни один шаблон для выгрузки.
+                    </div>
+                    <label class="control-label">Шаблоны:</label>
+                    <div class="controls well well-small">
+                        {% for template in templates %}
+                            <label class="checkbox">
+                                <input type="checkbox" class="templates" checked="checked" name="templates[]" value="{{ template.id }}"> {{ template.name }}
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <button type="submit" class="btn btn-primary">Сделать выгрузку</button>
+                    </div>
+                </div>
+                </div>
             </div>
         </form>
 <div id="download_result">
@@ -34,6 +61,8 @@
 <div class="loader"></div>
 {% endblock %}
 {% block modules_js %}
+<script src="{{ url_for('static', filename="jquery-ui/js/jquery-ui-1.10.2.custom.min.js") }}"></script>
+<script src="{{ url_for('static', filename='jquery-ui/js/i18n/jquery.ui.datepicker-ru.js') }}"></script>
 <script type="text/javascript">
 $(document).ready(function(){
     $('#download_result').hide();
@@ -47,17 +76,41 @@ $(document).ready(function(){
     });
     $('#download_form').submit(function(){
         var $this = $(this);
+        var templates = [];
+        $this.find('input:checkbox').each(function(){
+            if ($(this).is(':checked')){
+                templates.push($(this).val());
+            }
+        });
+        if (!templates.length){
+            $(".alert").removeClass('hidden');
+            return false;
+        }
         $this.hide();
         $('#download_result').show();
         $('#result').html('Подождите, идёт генерация файлов...');
-        var data = [];
-        $this.find('input:checkbox').each(function(){
-            data = data.push($(this).val());
-        });
-        $.post("{{ url_for('.ajax_download') }}", {data:data}, function(res) {
-            $('#result').html(res);
-        });
+        $.post("{{ url_for('.ajax_download') }}",
+                { templates: templates, start: $('#from').val(), end: $('#to').val() },
+                function(res) {
+                    $('#result').html(res);
+                }
+        );
         return false;
+    });
+});
+$(function() {
+    $( "#from" ).datepicker({
+      changeMonth: true,
+      onClose: function( selectedDate ) {
+        $( "#to" ).datepicker( "option", "minDate", selectedDate );
+      }
+    });
+    $( "#to" ).datepicker({
+      defaultDate: "+1w",
+      changeMonth: true,
+      onClose: function( selectedDate ) {
+        $( "#from" ).datepicker( "option", "maxDate", selectedDate );
+      }
     });
 });
 </script>

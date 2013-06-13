@@ -8,8 +8,8 @@ from jinja2 import TemplateNotFound
 from app import module
 
 from .forms import CreateTemplateForm
-from blueprints.tfoms.lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
-from models import Template, TagsTree, StandartTree
+from .lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
+from models import Template, TagsTree, StandartTree, TemplateType, DownloadType
 from utils import template_types
 from application.database import db
 from .lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR
@@ -26,14 +26,13 @@ def index():
 @module.route('/ajax_download/', methods=['GET', 'POST'])
 def ajax_download():
     result = list()
-    data = [request.form['data']]
-    for template_id in data:
-        template_id = 16
-        start = datetime(2013, 01, 01)
-        end = datetime(2013, 06, 01)
+    templates = request.form.getlist('templates[]')
+    start = datetime.strptime(request.form['start'], '%d.%m.%Y')
+    end = datetime.strptime(request.form['end'], '%d.%m.%Y')
+    for template_id in templates:
         worker = DownloadWorker()
-        file_name, file_url = worker.do_download(template_id, start, end, LPU_INFIS_CODE)
-        result.append(dict(name=file_name, url=file_url))
+        file_url = worker.do_download(template_id, start, end, LPU_INFIS_CODE)
+        result.append(dict(url=file_url))
     return render_template('download/result.html', files=result)
 
 
@@ -41,8 +40,10 @@ def ajax_download():
 @module.route('/download/<string:template_type>/')
 def download(template_type='xml'):
     try:
-        # templates = db.session.query(Template).filter(Template.type.code == template_type, Template.id == 16).all()
-        templates = db.session.query(Template).filter(Template.id == 16).all()
+        #TODO: add is_active filter
+        templates = (db.session.query(Template)
+                     .filter(Template.type.has(TemplateType.download_type.has(DownloadType.code == template_type)))
+                     .all())
         return render_template('download/index.html', templates=templates)
     except TemplateNotFound:
         abort(404)

@@ -2,6 +2,7 @@
 import os
 import exceptions
 from datetime import date
+from zipfile import ZipFile
 from jinja2 import Environment, PackageLoader
 from application.database import db
 from service_client import TFOMSClient as Client
@@ -105,7 +106,9 @@ class DownloadWorker(object):
                              # conditions=conditions)
         file_obj = self.__get_file_object(template_type, end=end)
         file_url = file_obj.save_file(tree, data)
-        return file_obj.file_name, file_url
+        if template.archive:
+            file_url = file_obj.archive_file()
+        return file_url
 
 
 class UploadWorker(object):
@@ -170,6 +173,11 @@ class XML(object):
         f.write(content.encode('utf-8'))
         f.close()
         return '%s.xml' % self.file_name
+
+    def archive_file(self):
+        with ZipFile(os.path.join(DOWNLOADS_DIR, '%s.xml.zip' % self.file_name), 'w') as archive:
+            archive.write(os.path.join(DOWNLOADS_DIR, '%s.xml' % self.file_name), '%s.xml' % self.file_name)
+        return '%s.xml.zip' % self.file_name
 
 
 class DBF(object):
