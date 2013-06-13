@@ -12,21 +12,17 @@
             <li{% if request.path == url_for('.download', template_type='xml') or request.path == url_for('.download') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='xml') }}">Выгрузка XML</a></li>
             <li{% if request.path == url_for('.download', template_type='dbf') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='dbf') }}">Выгрузка DBF</a></li>
         </ul>
+        <blockquote><p>Выберите шаблоны для выгрузки</p></blockquote>
         <form class="form-horizontal" id="download_form">
             <div class="control-group">
-                <label class="control-label">Шаблон</label>
-                <div class="controls">
                     {% for template in templates %}
                         <label class="checkbox">
                             <input type="checkbox" class="templates" required name="templates[]" value="{{ template.id }}"> {{ template.name }}
                         </label>
                     {% endfor %}
-                </div>
             </div>
             <div class="control-group">
-                <div class="controls">
                     <button type="submit" class="btn btn-primary">Сделать выгрузку</button>
-                </div>
             </div>
         </form>
 <div id="download_result">

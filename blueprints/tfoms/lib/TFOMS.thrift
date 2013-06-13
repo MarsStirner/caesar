@@ -48,11 +48,8 @@ struct Patient{
 struct Usl{
 	1:required int IDSERV = -1;
 	2:required string CODE_USL = "";
-	3:required string DS = "";
-	4:required double KOL_USL = -1.0;
-	5:required double TARIF = -1.0;
-	//SUM_USL = KOL_USL*TARIF
-	
+	3:required double KOL_USL = -1.0;
+	4:required double TARIF = -1.0;
 }
 
 struct Sluch{
