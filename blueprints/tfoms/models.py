@@ -50,6 +50,8 @@ class Template(db.Model):
     type_id = db.Column(db.Integer, db.ForeignKey('%s_template_type.id' % TABLE_PREFIX), index=True)
     type = db.relation(TemplateType)
 
+    tag_tree = db.relationship('TagsTree', backref='template', cascade="all, delete, delete-orphan")
+
     def __repr__(self):
         return '<Template %r>' % self.name
 
@@ -122,7 +124,7 @@ class TagsTree(db.Model):
 
     tag = db.relationship(Tag)
     parent = db.relationship('TagsTree', remote_side=[id], backref=db.backref('children', order_by=ordernum))
-    template = db.relationship(Template)
+    # template = db.relationship(Template)
 
     __table_args__ = {'order_by': ordernum}
 

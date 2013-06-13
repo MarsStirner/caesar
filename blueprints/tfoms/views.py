@@ -147,23 +147,24 @@ def settings():
 @module.route('/settings_template/<string:template_type>/', methods=['GET', 'POST'])
 def settings_template(template_type='xml_patient', id=0):
     try:
-
+        template_type_id = template_types[template_type]
         if not request.args.get('id'):
-            form = CreateTemplateForm()
-            templates = Template.query.all()
 
-            root = TagTreeNode(StandartTree.query.filter_by(template_type_id=1).filter_by(parent_id=None).
-                               join(TagsTree.tag).first(), 0)
-            tree = StandartTagTree(root, 1)
+            form = CreateTemplateForm()
+            templates = Template.query.filter_by(type_id=template_type_id).all()
             unused_tags = []
 
+            root = TagTreeNode(StandartTree.query.filter_by(template_type_id=template_type_id).
+                               filter_by(parent_id=None).join(TagsTree.tag).first(), 0)
+
+            tree = StandartTagTree(root, template_type_id)
+            tags_tree = tree.load_tree(root, [root])
+
             return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates,
-                                   tag_tree=tree.load_tree(root, [root]), unused_tags=unused_tags, test=id)
+                                   current_id=id, tag_tree=tags_tree, unused_tags=unused_tags, test="")
         else:
             id = int(request.args.get('id'))
-            templates = Template.query.all()
-            templates_ids = [template.id for template in templates]
-            templates_names = [template.name for template in templates]
+            templates = Template.query.filter_by(type_id=template_type_id).all()
 
             current_template = filter(lambda x: x.id == id, templates)
 
@@ -178,7 +179,7 @@ def settings_template(template_type='xml_patient', id=0):
                                join(TagsTree.tag).first(), 0)
             tree = TagTree(root, id)
             tree_tags = [tag.tag_id for tag in TagsTree.query.filter_by(template_id=id)]
-            unused_tags = filter(lambda x: x.tag_id not in tree_tags, StandartTree.query.filter_by(template_type_id=1))
+            unused_tags = filter(lambda x: x.tag_id not in tree_tags, StandartTree.query.filter_by(template_type_id=template_type_id))
 
             if form.is_submitted():
                 data = request.form.items()
@@ -245,13 +246,11 @@ def settings_template(template_type='xml_patient', id=0):
                     current_template[0].archive = 0
 
                 db.session.commit()
-                return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates, current_id=id,
-                                       templates_ids=templates_ids, templates_names=templates_names,
-                                       tag_tree=tree.load_tree(root, [root]), unused_tags=unused_tags, test="333")
+                return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates,
+                                       current_id=id, tag_tree=tree.load_tree(root, [root]), unused_tags=unused_tags)
 
-            return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates, current_id=id,
-                                   templates_ids=templates_ids, templates_names=templates_names,
-                                   tag_tree=tree.load_tree(root, [root]), unused_tags=unused_tags, test="222")
+            return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates,
+                                   current_id=id, tag_tree=tree.load_tree(root, [root]), unused_tags=unused_tags)
     except TemplateNotFound:
         abort(404)    
 
@@ -259,22 +258,26 @@ def settings_template(template_type='xml_patient', id=0):
 @module.route('/settings_template/<string:template_type>/<string:action>', methods=['POST', 'GET'])
 def add_new_template(action='add_new', template_type='xml_patient'):
     try:
+        template_type_id = template_types[template_type]
         form = CreateTemplateForm()
-        templates = Template.query.all()
 
-        root = TagTreeNode(StandartTree.query.filter_by(template_type_id=1).filter_by(parent_id=None).
-                           join(TagsTree.tag).first(), 0)
-        tree = StandartTagTree(root, 1)
+        templates = Template.query.filter_by(type_id=template_type_id).all()
         unused_tags = []
 
+        root = TagTreeNode(StandartTree.query.filter_by(template_type_id=template_type_id).
+                           filter_by(parent_id=None).join(TagsTree.tag).first(), 0)
+
+        tree = StandartTagTree(root, template_type_id)
+        tags_tree = tree.load_tree(root, [root])
+        test = ""
         if form.is_submitted():
 
             if 'archive' in request.form:
                 archive = 1
             else:
                 archive = 0
-
-            new_template = Template(name=request.form['name'], archive=archive, type_id=1)
+            test = "save"
+            new_template = Template(name=request.form['name'], archive=archive, type_id=template_type_id)
             db.session.add(new_template)
             db.session.commit()
             new_id = new_template.id
@@ -313,9 +316,35 @@ def add_new_template(action='add_new', template_type='xml_patient'):
                         new_tag_tree_item.ordernum = ordernum
                         db.session.commit()
             return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates,
-                                   current_id=id, tag_tree=tree.load_tree(root, [root]), unused_tags=unused_tags)
+                                   current_id=id, tag_tree=tags_tree, unused_tags=unused_tags, test=test)
         return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates,
-                               current_id=id, tag_tree=tree.load_tree(root, [root]), unused_tags=unused_tags, test="444")
+                               current_id=id, tag_tree=tags_tree, unused_tags=unused_tags, test=test)
+    except TemplateNotFound:
+        abort(404)
+
+
+@module.route('/settings_template/<string:template_type>/<string:action>/<int:id>', methods=['POST', 'GET'])
+def delete_template(action='delete_template', template_type='xml_patient', id=id):
+    try:
+        current_template = Template.query.filter_by(id=id).first()
+        db.session.delete(current_template)
+        db.session.commit()
+
+        template_type_id = template_types[template_type]
+        form = CreateTemplateForm()
+
+        templates = Template.query.filter_by(type_id=template_type_id).all()
+        unused_tags = []
+
+        root = TagTreeNode(StandartTree.query.filter_by(template_type_id=template_type_id).
+                           filter_by(parent_id=None).join(TagsTree.tag).first(), 0)
+
+        tree = StandartTagTree(root, template_type_id)
+        tags_tree = tree.load_tree(root, [root])
+        id = 0
+
+        return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates,
+                               current_id=id, tag_tree=tags_tree, unused_tags=unused_tags, test=id)
     except TemplateNotFound:
         abort(404)
 

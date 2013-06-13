@@ -4,10 +4,13 @@
 <link href="{{ url_for('.static', filename='css/style.css') }}" rel="stylesheet">
 <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/humanity/jquery-ui.css" />
   <style>
-	  .tags ul { list-style-type: none; margin: 0px 0px 0px 0px; padding: 0; margin-bottom: 10px; }
-	  .tags li { margin: 5px 0px 0px 0px 0px; padding: 0;}
+	  .tags ul { list-style-type: none; margin: 0px; padding: 0; margin-bottom: 0px; }
+	  .tags li { margin: 0px; padding: 0;}
 	  .ui-state-highlight { background-color: #CCCCCC; height: 1.5em; line-height: 1.2em; border: dashed 1px gray; }
-	  .sortable ul {margin:0px 0px 0px 25px; padding:0;  }
+	  .sortable ul {margin:0px 0px 0px 25px; padding: 8px 0px 0px 0px;}
+      .children {border-left:1px dotted; }
+      #root {padding: 8px 0px 0px 0px; height:4000px;}
+
   </style>
 {% endblock %}
 
@@ -15,7 +18,7 @@
 
     {% include '_nav_menu.html' %}
 
-        <legend>Настройка шаблонов реестров для выгрузки в ТФОМС{{ test }}</legend>
+        <legend>Настройка шаблонов реестров для выгрузки в ТФОМС</legend>
 
         {% include 'settings_templates/_sub_menu.html' %}
 
@@ -23,133 +26,101 @@
         <div class="row-fluid">
           <div class="span4">
               <ul class="nav nav-list nav-stacked">
-                  <li class="nav-header">Шаблоны</li>
-                  <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 1</a></li>
-                  <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 2</a></li>
-                  <li class="active"><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 3</a></li>
-                  <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 4</a></li>
-                  <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 5</a></li>
-                  <li><span class="pull-right"><input type="checkbox"></span><a href="#">Шаблон 6</a></li>
-                  <li class="divider"></li>
-                  <li><a href="#"><i class=" icon-plus-sign"></i>Добавить новый</a></li>
-                </ul>
-
+                  <li class="nav-header">Созданные шаблоны</li>
+                   {% for template in templates %}
+                   		{% set id = template.id %}
+                   		{% if id == current_id %}
+                   			<li class="active">
+                                <span class="pull-right"><input type="checkbox"></span>
+                                <a href={{ url_for('.settings_template', template_type='xml_service', id=id) }}>{{template.name}}</a>
+                   			</li>
+                   		{% else %}
+                  			<li>
+                                <span class="pull-right"><input type="checkbox"></span>
+                  				<a href={{ url_for('.settings_template', template_type='xml_service', id=id) }}>{{template.name}}</a>
+                  			</li>
+                  		{% endif %}
+                   {% endfor%}
+                   <li class="divider"></li>
+                   <li>
+                        <span class="pull-left"><a href={{ url_for('.add_new_template', template_type='xml_service', action='add_new') }}><i class=" icon-plus-sign"></i>Добавить новый</a></span>
+                        <span class="pull-right">
+                            <a href={{ url_for('.delete_template', template_type='xml_service', action='delete_template') }}>
+                                <i class=" icon-minus-sign"></i>Удалить шаблон
+                            </a>
+                        </span>
+                   </li>
+              </ul>
           </div>
           <div class="span8">
-              <form class="form-inline">
-                  <input type="text" placeholder="Название шаблона" value="Шаблон 3" class="span12">
-                  <label class="checkbox" class="span12" style="margin-top:15px;"> 
-                  		<input type="checkbox">  Архивировать
-                  </label>                  
-                  <hr>
+              <legend>Параметры шаблона:</legend>
+              <form class="form-inline" method=post>
+{#                <input type="text" placeholder="Название шаблона" value="Шаблон 3" class="span12">
+                  <label class="checkbox" class="span12" style="margin-top:15px;">
+                 		<input type="checkbox">  Архивировать
+                  </label>                  #}
+
                   <div class="row-fluid tags">
-                  <div class="span7 well">
-                      <ul id="sortable" class=" sortable">
-                          <li >
-                          		Название 1 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                          		
-                          </li>
-                          <li >
-                          		Название 2 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 3 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 4 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 5 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 11 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 12 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 13 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 14 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 15 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 21 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 22 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 23 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 24 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 25 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
+                  <div class="span3 ">Наименование шаблона:</div><div class="span9 ">{{ form.name }}</div></div>
+                  <div class="row-fluid tags">
+                  <!--<div class="span3 ">Архивировать файл:</div><div class="span9 "><input name="archive" type="checkbox" checked="true"></div></div>-->
+                  <div class="span3 ">Архивировать файл:</div><div class="span9 ">{{ form.archive }}</div></div>
+                  <legend style="font-size:14px;">Состав и порядок размещения данных в шаблоне:</legend>
+
+                  <div class="row-fluid tags">
+                  <div class="span7 well" id="used">
+                       <legend >Попадают в реестр</legend>
+                       <ul id="root" class=" sortable">
+                       {% for tag in tag_tree %}
+                       		{% if loop.index0 == 0 %}
+			                          <li >
+                                            {{tag.value.tag.name}}  ({{tag.value.tag.code}})
+                                            <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
+			                          		<ul id="sortable" class=" sortable">
+			                {% else %}
+			                	{% set k = tag_tree[loop.index0 - 1].level-tag.level %}
+			                	{% if k == 0 %}
+			                        </ul>
+			                          </li>
+
+			                          <li class="children">
+                                            <i class="tree"></i>{{tag.value.tag.name}} ({{tag.value.tag.code}})
+                                            <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
+			                          		<ul id="sortable" class=" sortable">
+			                	{% endif %}
+			                	{% if k < 0 %}
+			                          <li class="children">
+                                            <i class="tree"></i>{{tag.value.tag.name}} ({{tag.value.tag.code}})
+                                            <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
+			                          		<ul  id="sortable" class=" sortable">
+			                	{% endif %}
+			                	{% if k > 0 %}
+			                		{% for i in range(k+1) %}
+				                        </ul>
+				                         </li>
+			                		{% endfor%}
+			                          <li class="children">
+                                            <i class="tree"></i>{{tag.value.tag.name}} ({{tag.value.tag.code}})
+                                            <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
+			                          		<ul id="sortable" class=" sortable">
+			                	{% endif %}
+                       		{% endif %}
+                       {% endfor %}
+			                        </ul>
+			                          </li>
                         </ul>
                   </div>
-                  <div class="span5 well">
-                      <legend>Неиспользуемые тэги</legend>
-                      <ul id="sortable2" class=" sortable">
-                          <li >
-                          		Название 31 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
+                  <div class="span5 well" id="unused">
+                      <legend>Не используются</legend>
+                      <ul id="root" class=" sortable">
+                      {% for tag in unused_tags%}
+                          <li>
+                          		{{ tag.tag.name }} ({{ tag.tag.code }})
+                                <input type="hidden" id="hid_{{tag.id}}" name="unusedtag[None,{{ tag.tag_id }}]" value="None,1">
+                          		<ul id="sortable" class="sortable">
+                          		</ul>
                           </li>
-                          <li >
-                          		Название 32 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 33 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 34 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
-                          <li >
-                          		Название 35 (CODE)
-                          		<ul id="sortable" class=" sortable">                          		
-                          		</ul>                           		
-                          </li>
+                      {% endfor %}
                         </ul>
                   </div>
                   </div>
@@ -173,10 +144,68 @@
         connectWith: 'ul.sortable',
         opacity: 0.6,
         cursor: "move",
-        placeholder: "ui-state-highlight"
+        placeholder: "ui-state-highlight",
+
+        stop: function (event, ui) {
+            var item = ui.item;
+            var isused = item.closest('div').attr('id')
+            //var item_parent_input = ui.item.children('input');
+            var descendants = item.find('input');
+            var siblings = ui.item.parent().children();
+            var parent_input = item.parent().parent().children('input');
+            number_of_children = parent_input.length
+
+            var parent_id = 'None';
+            if(number_of_children>0){
+                var name_parent = parent_input.attr('name');
+                var re = /tag\[(\d+),\d+\]/i;
+                var re1 = /tag\[None,(\d+)\]/i
+                parent_id = name_parent.match(re);
+                if (parent_id){
+                    parent_id = parent_id[1];
+                }
+                else{
+                    parent_id = name_parent.match(re1);
+                    if (parent_id){
+                        parent_id = 't'+parent_id[1];
+                    }
+                    else{
+                       parent_id = 'None';
+                    }
+                }
+            }
+
+            if(isused === 'used'){
+                descendants.each(function(index, el){
+                    descendant = $(this);
+                    new_name = descendant.attr('name').replace(/unused/,"");
+                    new_name = new_name.replace(/removed/,"");
+                    descendant.attr('name', new_name);
+                });
+                console.log('unused')
+            }
+            else{
+                descendants.each(function(index, el){
+                    descendant = $(this);
+                    old_name = descendant.attr('name')
+                    descendant .attr('name', 'removed'+old_name)
+                });
+                console.log('now unused')
+            }
+
+            if (isused === 'used'){
+                siblings.each(function(index, el){
+                    item = $(this).children('input');
+                    ordernum_value = index+1
+                    item.val(parent_id+','+ordernum_value);
+                });
+
+            }
+
+        }
     });
     $( "ul, li" ).disableSelection();
-    $("#sortable, #sortable2").css('minHeight',"12px");
+    //$("#sortable, #sortable2").css('minHeight',"0px");
   });
   </script>
 {% endblock %}
