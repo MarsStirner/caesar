@@ -161,7 +161,7 @@ def settings_template(template_type='xml_patient', id=0):
             tags_tree = tree.load_tree(root, [root])
 
             return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates,
-                                   tag_tree=tags_tree, unused_tags=unused_tags, test="")
+                                   current_id=id, tag_tree=tags_tree, unused_tags=unused_tags, test="")
         else:
             id = int(request.args.get('id'))
             templates = Template.query.filter_by(type_id=template_type_id).all()
@@ -319,6 +319,32 @@ def add_new_template(action='add_new', template_type='xml_patient'):
                                    current_id=id, tag_tree=tags_tree, unused_tags=unused_tags, test=test)
         return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates,
                                current_id=id, tag_tree=tags_tree, unused_tags=unused_tags, test=test)
+    except TemplateNotFound:
+        abort(404)
+
+
+@module.route('/settings_template/<string:template_type>/<string:action>/<int:id>', methods=['POST', 'GET'])
+def delete_template(action='delete_template', template_type='xml_patient', id=id):
+    try:
+        current_template = Template.query.filter_by(id=id).first()
+        db.session.delete(current_template)
+        db.session.commit()
+
+        template_type_id = template_types[template_type]
+        form = CreateTemplateForm()
+
+        templates = Template.query.filter_by(type_id=template_type_id).all()
+        unused_tags = []
+
+        root = TagTreeNode(StandartTree.query.filter_by(template_type_id=template_type_id).
+                           filter_by(parent_id=None).join(TagsTree.tag).first(), 0)
+
+        tree = StandartTagTree(root, template_type_id)
+        tags_tree = tree.load_tree(root, [root])
+        id = 0
+
+        return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates,
+                               current_id=id, tag_tree=tags_tree, unused_tags=unused_tags, test=id)
     except TemplateNotFound:
         abort(404)
 

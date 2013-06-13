@@ -17,7 +17,7 @@
 {% block content %}
 
     {% include '_nav_menu.html' %}
-        <legend>Настройка шаблонов реестров для выгрузки в ТФОМС{{ test }}</legend>
+        <legend>Настройка шаблонов реестров для выгрузки в ТФОМС</legend>
         {% include 'settings_templates/_sub_menu.html' %}
 
         <div class="container-fluid">
@@ -42,7 +42,11 @@
                    <li class="divider"></li>
                    <li>
                         <span class="pull-left"><a href={{ url_for('.add_new_template', template_type='xml_patient', action='add_new') }}><i class=" icon-plus-sign"></i>Добавить новый</a></span>
-                        <span class="pull-right"><a href=""><i class=" icon-minus-sign"></i>Удалить шаблон</a></span>
+                        <span class="pull-right">
+                            <a href={{ url_for('.delete_template', template_type='xml_patient', action='delete_template', id=current_id) }}>
+                                <i class=" icon-minus-sign"></i>Удалить шаблон
+                            </a>
+                        </span>
                    </li>
               </ul>
           </div>
@@ -95,7 +99,7 @@
 				                        </ul>
 				                         </li>
 			                		{% endfor%}
-			                          <li class="children">
+			                            <li class="children">
                                             <i class="tree"></i>{{tag.value.tag.name}} ({{tag.value.tag.code}})
                                             <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
 			                          		<ul id="sortable" class=" sortable">

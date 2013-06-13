@@ -18,7 +18,7 @@
 
     {% include '_nav_menu.html' %}
 
-        <legend>Настройка шаблонов реестров для выгрузки в ТФОМС{{ test }}</legend>
+        <legend>Настройка шаблонов реестров для выгрузки в ТФОМС</legend>
 
         {% include 'settings_templates/_sub_menu.html' %}
 
@@ -44,7 +44,11 @@
                    <li class="divider"></li>
                    <li>
                         <span class="pull-left"><a href={{ url_for('.add_new_template', template_type='xml_service', action='add_new') }}><i class=" icon-plus-sign"></i>Добавить новый</a></span>
-                        <span class="pull-right"><a href=""><i class=" icon-minus-sign"></i>Удалить шаблон</a></span>
+                        <span class="pull-right">
+                            <a href={{ url_for('.delete_template', template_type='xml_service', action='delete_template') }}>
+                                <i class=" icon-minus-sign"></i>Удалить шаблон
+                            </a>
+                        </span>
                    </li>
               </ul>
           </div>
