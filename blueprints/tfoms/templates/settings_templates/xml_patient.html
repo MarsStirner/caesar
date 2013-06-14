@@ -144,7 +144,9 @@
                     <hr>
                     <div class="row-fluid">
                         <div class="span6">
-                            <input type="button" name="btn" class="btn btn-danger btn-large pull-left" value="Удалить шаблон" onclick="document.location='{{ url_for('.delete_template', template_type='xml_patient', action='delete_template', id=current_id)}}';">
+                            {% if current_id %}
+                                <a class="btn btn-danger btn-large" href="{{ url_for('.delete_template', template_type='xml_patient', action='delete_template', id=current_id)}}">Удалить шаблон</a>
+                            {% endif %}
                         </div>
                         <div class="span6 pull-right">
                             {% if current_id %}
