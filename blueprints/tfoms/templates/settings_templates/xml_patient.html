@@ -35,9 +35,9 @@
                                 <li class="active">
                                     <span class="pull-right">
                                         {% if template.is_active %}
-                                            <input class="is_active" type="checkbox" name="is_active{{ id }}" value="{{ id }}" checked/>
+                                            <input class="is_active" type="checkbox" value="{{ id }}" checked/>
                                         {% else %}
-                                            <input class="is_active" type="checkbox" name="is_active{{ id }}" value="{{ id }}"/>
+                                            <input class="is_active" type="checkbox" value="{{ id }}" />
                                         {% endif %}
                                     </span>
                                     <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{template.name}}</a>
@@ -46,9 +46,9 @@
                                 <li>
                                     <span class="pull-right">
                                         {% if template.is_active %}
-                                            <input class="is_active" type="checkbox" name="is_active{{ id }}" value="{{ id }}" checked/>
+                                            <input class="is_active" type="checkbox" value="{{ id }}" checked/>
                                         {% else %}
-                                            <input class="is_active" type="checkbox" name="is_active{{ id }}" value="{{ id }}" />
+                                            <input class="is_active" type="checkbox" value="{{ id }}"  />
                                         {% endif %}
                                     </span>
                                     <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{template.name}}</a>
@@ -116,7 +116,7 @@
                                                 <ul  id="sortable" class=" sortable">
                                     {% endif %}
                                     {% if k > 0 %}
-                                        {% for i in range(k+1) %}
+                                        {% for i in range(k + 1) %}
                                             </ul>
                                              </li>
                                         {% endfor%}
@@ -151,8 +151,10 @@
                     <div class="controls pull-right">
                         <div class="row-fluid tags">
                             <div class="row">
-                                <button type="submit" class="btn btn-large">Сохранить как новый</button>
-                                <button type="submit" class="btn btn-primary btn-large">Сохранить</button>
+                                {% if current_id %}
+                                    <button name="btn" value="Save_as_new" type="submit" class="btn btn-large">Сохранить как новый</button>
+                                {% endif %}
+                                <button name="btn" value="Save" type="submit" class="btn btn-primary btn-large">Сохранить</button>
                             </div>
                         </div>
                     </div>
@@ -160,7 +162,7 @@
                              <input type="button" name="btn" class="btn btn-danger btn-large" value="Удалить шаблон" onclick="document.location='{{ url_for('.delete_template', template_type='xml_patient', action='delete_template', id=current_id)}}';">
                          </div>
                 </div>
-              </form>
+            </form>
           </div>
         </div>
         </div>

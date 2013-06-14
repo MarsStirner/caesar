@@ -26,12 +26,12 @@ class TagTree():
 
 class StandartTagTree():
 
-    def __init__(self, root, template_id):
+    def __init__(self, root, template_type_id):
         self.root = root
-        self.template_id = template_id
+        self.template_type_id = template_type_id
 
     def get_node_children(self, node):
-        children_values = StandartTree.query.filter_by(template_type_id=self.template_id).\
+        children_values = StandartTree.query.filter_by(template_type_id=self.template_type_id).\
             filter_by(parent_id=node.value.id).join(StandartTree.tag).all()
         return [TagTreeNode(value, node.level + 1) for value in children_values]
 

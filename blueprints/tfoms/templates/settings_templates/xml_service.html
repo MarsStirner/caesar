@@ -102,7 +102,7 @@
 			                          		<ul  id="sortable" class=" sortable">
 			                	{% endif %}
 			                	{% if k > 0 %}
-			                		{% for i in range(k+1) %}
+			                		{% for i in range(k + 1) %}
 				                        </ul>
 				                         </li>
 			                		{% endfor%}
@@ -136,8 +136,10 @@
                     <div class="controls pull-right">
                         <div class="row-fluid tags">
                             <div class="row">
-                                <button type="submit" class="btn btn-large">Сохранить как новый</button>
-                                <button type="submit" class="btn btn-primary btn-large">Сохранить</button>
+                                {% if current_id %}
+                                    <button name="btn" value="Save_as_new" type="submit" class="btn btn-large">Сохранить как новый</button>
+                                {% endif %}
+                                <button name="btn" value="Save" type="submit" class="btn btn-primary btn-large">Сохранить</button>
                             </div>
                         </div>
                     </div>

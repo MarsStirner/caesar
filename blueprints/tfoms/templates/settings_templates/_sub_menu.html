@@ -3,7 +3,8 @@
     request.path == url_for('.settings_template') or
     request.path == url_for('.add_new_template', template_type='xml_patient', action='add_new' ) %} class="active"{% endif %}><a href="{{ url_for('.settings_template', template_type='xml_patient') }}">
         Сведения о персональных данных (XML)</a></li>
-    <li{% if request.path == url_for('.settings_template', template_type='xml_service') %} class="active"{% endif %}><a href="{{ url_for('.settings_template', template_type='xml_service') }}">
+    <li{% if request.path == url_for('.settings_template', template_type='xml_service') or
+            request.path == url_for('.add_new_template', template_type='xml_service', action='add_new' )%} class="active"{% endif %}><a href="{{ url_for('.settings_template', template_type='xml_service') }}">
         Сведения об оказанной мед.помощи (XML)</a></li>
     <li{% if request.path == url_for('.settings_template', template_type='dbf') %} class="active"{% endif %}><a href="{{ url_for('.settings_template', template_type='dbf') }}">
         Выгрузка в формате DBF</a></li>
