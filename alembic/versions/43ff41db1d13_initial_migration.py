@@ -46,6 +46,7 @@ def upgrade():
     sa.Column('name', sa.String(length=80), nullable=False),
     sa.Column('archive', sa.Boolean(), nullable=True),
     sa.Column('type_id', sa.Integer(), nullable=True),
+    sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['type_id'], ['tfoms_template_type.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
