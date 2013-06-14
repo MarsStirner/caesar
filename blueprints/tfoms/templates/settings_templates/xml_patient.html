@@ -32,9 +32,9 @@
                                 <li class="active">
                                     <span class="pull-right">
                                         {% if template.is_active %}
-                                            <input class="is_active" type="checkbox" value="{{ id }}" checked/>
+                                            <input class="is_active" type="radio" name="is_active" value="{{ id }}" checked/>
                                         {% else %}
-                                            <input class="is_active" type="checkbox" value="{{ id }}" />
+                                            <input class="is_active" type="radio" name="is_active" value="{{ id }}" />
                                         {% endif %}
                                     </span>
                                     <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{template.name}}</a>
@@ -43,9 +43,9 @@
                                 <li>
                                     <span class="pull-right">
                                         {% if template.is_active %}
-                                            <input class="is_active" type="checkbox" value="{{ id }}" checked/>
+                                            <input class="is_active" type="radio" name="is_active" value="{{ id }}" checked/>
                                         {% else %}
-                                            <input class="is_active" type="checkbox" value="{{ id }}"  />
+                                            <input class="is_active" type="radio" name="is_active" value="{{ id }}"  />
                                         {% endif %}
                                     </span>
                                     <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{template.name}}</a>
@@ -165,7 +165,7 @@
 
   $(function() {
 
-    $(".is_active").change(
+    $("input[name=is_active]:radio").change(
             function(){
                 var item = $(this);
                 if ($(this).is(':checked')){
