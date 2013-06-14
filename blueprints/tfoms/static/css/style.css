@@ -106,11 +106,14 @@
       }
 
       .col-wrap{
-                overflow: hidden;
+            overflow: hidden;
       }
 
       .col{
-        margin-bottom: -99999px;
-        padding-bottom: 99999px;
-
+        margin-bottom: -9999px !important;
+        padding-bottom: 9999px !important;
       }
+
+    .col-base{
+        margin-top: -15px; /* cut off top portion of bottom wells */
+    }
