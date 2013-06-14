@@ -104,3 +104,13 @@
       blockquote {
           border-color: #B94A48;
       }
+
+      .col-wrap{
+                overflow: hidden;
+      }
+
+      .col{
+        margin-bottom: -99999px;
+        padding-bottom: 99999px;
+
+      }

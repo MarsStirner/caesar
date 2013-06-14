@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from application.database import db
-from .config import MODULE_NAME
+from config import MODULE_NAME
 
 TABLE_PREFIX = MODULE_NAME
 
@@ -45,6 +45,7 @@ class Template(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
     archive = db.Column(db.Boolean, default=False)
+    is_active = db.Column(db.Boolean, default=False)
     
     #user = db.Column(db.Integer, db.ForeignKey('.id'))
     type_id = db.Column(db.Integer, db.ForeignKey('%s_template_type.id' % TABLE_PREFIX), index=True)
