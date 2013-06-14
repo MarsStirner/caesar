@@ -127,7 +127,7 @@
                           <ul id="root" class="sortable col">
                           {%- for tag in unused_tags -%}
                               <li>
-                                {{ tag.tag.name }} ({{ tag.tag.code }})
+                                {{ tag.tag.code }} <small class="text-info">{{ tag.tag.name }}</small>
                                 <input type="hidden" id="hid_{{tag.id}}" name="unusedtag[None,{{ tag.tag_id }}]" value="None,1">
                                 <ul id="sortable" class="sortable">
                                 </ul>

@@ -84,7 +84,7 @@
                        {%- for tag in tag_tree -%}
                        		{%- if loop.index0 == 0 -%}
 			                          <li >
-                                            {{tag.value.tag.name}}  ({{tag.value.tag.code}})
+                                            {{tag.value.tag.code}} <small class="text-info">{{tag.value.tag.name}}</small>
                                             <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
 			                          		<ul id="sortable" class=" sortable">
 			                {%- else -%}
@@ -93,13 +93,13 @@
 			                        </ul>
 			                          </li>
 			                          <li class="children">
-                                            <i class="tree"></i>{{tag.value.tag.name}} ({{tag.value.tag.code}})
+                                            <i class="tree"></i>{{tag.value.tag.code}} <small class="text-info">{{tag.value.tag.name}}</small>
                                             <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
 			                          		<ul id="sortable" class=" sortable">
 			                	{%- endif -%}
 			                	{%- if k < 0 -%}
 			                          <li class="children">
-                                            <i class="tree"></i>{{tag.value.tag.name}} ({{tag.value.tag.code}})
+                                            <i class="tree"></i>{{tag.value.tag.code}} <small class="text-info">{{tag.value.tag.name}}</small>
                                             <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
 			                          		<ul  id="sortable" class=" sortable">
 			                	{%- endif -%}
@@ -109,7 +109,7 @@
 				                         </li>
 			                		{%- endfor -%}
 			                          <li class="children">
-                                            <i class="tree"></i>{{tag.value.tag.name}} ({{tag.value.tag.code}})
+                                            <i class="tree"></i>{{tag.value.tag.code}} <small class="text-info">{{tag.value.tag.name}}</small>
                                             <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
 			                          		<ul id="sortable" class=" sortable">
 			                	{%- endif -%}
@@ -124,7 +124,7 @@
                       <ul id="root" class="sortable col">
                       {%- for tag in unused_tags -%}
                           <li>
-                          		{{ tag.tag.name }} ({{ tag.tag.code }})
+                          		{{ tag.tag.code }} <small class="text-info">{{ tag.tag.name }}</small>
                                 <input type="hidden" id="hid_{{tag.id}}" name="unusedtag[None,{{ tag.tag_id }}]" value="None,1">
                           		<ul id="sortable" class="sortable">
                           		</ul>
