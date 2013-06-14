@@ -34,9 +34,9 @@
                    			<li class="active">
                                 <span class="pull-right">
                                     {% if template.is_active %}
-                                        <input class="is_active" type="checkbox" name="is_active{{ id }}" value="{{ id }}" checked/>
+                                        <input class="is_active" type="radio" name="is_active" value="{{ id }}" checked/>
                                     {% else %}
-                                        <input class="is_active" type="checkbox" name="is_active{{ id }}" value="{{ id }}"/>
+                                        <input class="is_active" type="radio" name="is_active" value="{{ id }}"/>
                                     {% endif %}
                                 </span>
                                 <a href={{ url_for('.settings_template', template_type='xml_service', id=id) }}>{{template.name}}</a>
@@ -45,9 +45,9 @@
                   			<li>
                                 <span class="pull-right">
                                         {% if template.is_active %}
-                                            <input class="is_active" type="checkbox" name="is_active{{ id }}" value="{{ id }}" checked/>
+                                            <input class="is_active" type="radio" name="is_active" value="{{ id }}" checked/>
                                         {% else %}
-                                            <input class="is_active" type="checkbox" name="is_active{{ id }}" value="{{ id }}" />
+                                            <input class="is_active" type="radio" name="is_active" value="{{ id }}" />
                                         {% endif %}
                                 </span>
                   				<a href={{ url_for('.settings_template', template_type='xml_service', id=id) }}>{{template.name}}</a>

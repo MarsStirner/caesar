@@ -9,8 +9,8 @@ from app import module
 
 
 from forms import CreateTemplateForm
-from .lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
-from .lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR
+from lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
+from lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR
 from models import Template, TagsTree, StandartTree, TemplateType, DownloadType
 from utils import template_types, save_template_tag_tree, save_new_template_tree
 from application.database import db
@@ -152,8 +152,13 @@ def settings_template(template_type='xml_patient', id=0):
 
         if request.form:
             if 'activate' in request.form:
-                active_template_id = request.form['activate']
-                template = Template.query.filter_by(id=active_template_id).first()
+                id = request.form['activate']
+                template = Template.query.filter_by(id=id).first()
+                type = int(template.type_id)
+                deactivated = Template.query.filter_by(type_id=type).all()
+                for item in deactivated:
+                    if item.id != id:
+                        item.is_active = 0
                 template.is_active = 1
                 db.session.commit()
             elif 'deactivate' in request.form:
@@ -226,19 +231,6 @@ def settings_template(template_type='xml_patient', id=0):
 @module.route('/settings_template/<string:template_type>/<string:action>', methods=['POST', 'GET'])
 def add_new_template(action='add_new_template', template_type='xml_patient'):
     try:
-
-        if request.form:
-            if 'activate' in request.form:
-                id = request.form['activate']
-                template = Template.query.filter_by(id=id).first()
-                template.is_active = 1
-                db.session.commit()
-            elif 'deactivate' in request.form:
-                id = request.form['deactivate']
-                template = Template.query.filter_by(id=id).first()
-                template.is_active = 0
-                db.session.commit()
-
         template_type_id = template_types[template_type]
         form = CreateTemplateForm()
 
@@ -260,15 +252,18 @@ def add_new_template(action='add_new_template', template_type='xml_patient'):
             root = TagTreeNode(TagsTree.query.filter_by(template_id=new_id).filter_by(parent_id=None).
                                join(TagsTree.tag).first(), 0)
             tree = TagTree(root, new_id)
+            tree_tags = [tag.tag_id for tag in TagsTree.query.filter_by(template_id=new_id)]
+            unused_tags = filter(lambda x: x.tag_id not in tree_tags,
+                                 StandartTree.query.filter_by(template_type_id=template_type_id))
         else:
             root = TagTreeNode(StandartTree.query.filter_by(template_type_id=template_type_id).
                                filter_by(parent_id=None).join(TagsTree.tag).first(), 0)
 
             tree = StandartTagTree(root, template_type_id)
+            unused_tags = []
         tags_tree = tree.load_tree(root, [root])
 
         templates = Template.query.filter_by(type_id=template_type_id).all()
-        unused_tags = []
 
         return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates,
                                current_id=0, tag_tree=tags_tree, unused_tags=unused_tags)
