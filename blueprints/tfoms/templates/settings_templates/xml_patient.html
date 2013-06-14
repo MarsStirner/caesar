@@ -24,7 +24,7 @@
         <div class="row-fluid">
             <div class="span4">
                   <ul class="nav nav-list nav-stacked">
-                       <li class="">Созданные шаблоны <span class="pull-right">Участвует в выгрузке</span></li>
+                       <li><strong>Созданные шаблоны <span class="pull-right">Участвует в выгрузке</span></strong></li>
                        <li class="divider"></li>
                        {% for template in templates %}
                             {% set id = template.id %}
@@ -54,9 +54,9 @@
                        {% endfor%}
                        <li class="divider"></li>
                        <li>
-                            <span class="pull-left">
-                                <a href={{ url_for('.add_new_template', template_type='xml_patient', action='add_new') }}>
-                                    <i class=" icon-plus-sign"></i>Добавить новый
+                            <span>
+                                <a href="/tfoms/settings_template/xml_patient/add_new" class="btn btn-primary" title="Добавить новый шаблон">
+                                    <i class="icon-plus icon-white"></i>Создать
                                 </a>
                             </span>
                        </li>
@@ -69,7 +69,7 @@
                     <div class="control-group">
                         <label class="control-label">Название шаблона:</label>
                         <div class="controls">
-                            {{ form.name(class='span') }}
+                            {{ form.name(class='input-xlarge') }}
                         </div>
                     </div>
                     <div class="control-group">
@@ -79,10 +79,10 @@
                         </div>
                     </div>
 
-                    <legend style="font-size:14px;">Состав и порядок размещения данных в шаблоне:</legend>
+                    <p class="lead"><small>Состав и порядок размещения данных в шаблоне:</small></p>
                     <div class="row-fluid col-wrap tags">
                         <div class="span7 well col" id="used">
-                           <legend >Попадают в реестр</legend>
+                           <legend>Попадают в реестр</legend>
                            <ul id="root" class="sortable">
                            {%- for tag in tag_tree -%}
                                 {%- if loop.index0 == 0 -%}
@@ -127,7 +127,7 @@
                           <ul id="root" class="sortable col">
                           {%- for tag in unused_tags -%}
                               <li>
-                                {{ tag.tag.name }} ({{ tag.tag.code }})
+                                {{ tag.tag.code }} <small class="text-info">{{ tag.tag.name }}</small>
                                 <input type="hidden" id="hid_{{tag.id}}" name="unusedtag[None,{{ tag.tag_id }}]" value="None,1">
                                 <ul id="sortable" class="sortable">
                                 </ul>
