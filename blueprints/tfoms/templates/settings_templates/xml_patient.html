@@ -26,32 +26,32 @@
                   <ul class="nav nav-list nav-stacked">
                        <li class="">Созданные шаблоны <span class="pull-right">Участвует в выгрузке</span></li>
                        <li class="divider"></li>
-                       {% for template in templates %}
-                            {% set id = template.id %}
-                            {% if id == current_id %}
+                       {%- for template in templates -%}
+                            {%- set id = template.id -%}
+                            {%- if id == current_id -%}
                                 <li class="active">
                                     <span class="pull-right">
-                                        {% if template.is_active %}
+                                        {%- if template.is_active -%}
                                             <input class="is_active" type="radio" name="is_active" value="{{ id }}" checked/>
-                                        {% else %}
+                                        {%- else -%}
                                             <input class="is_active" type="radio" name="is_active" value="{{ id }}" />
-                                        {% endif %}
+                                        {%- endif -%}
                                     </span>
                                     <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{template.name}}</a>
                                 </li>
-                            {% else %}
+                            {%- else -%}
                                 <li>
                                     <span class="pull-right">
-                                        {% if template.is_active %}
+                                        {%- if template.is_active -%}
                                             <input class="is_active" type="radio" name="is_active" value="{{ id }}" checked/>
-                                        {% else %}
+                                        {%- else -%}
                                             <input class="is_active" type="radio" name="is_active" value="{{ id }}"  />
-                                        {% endif %}
+                                        {%- endif -%}
                                     </span>
                                     <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{template.name}}</a>
                                 </li>
-                            {% endif %}
-                       {% endfor%}
+                            {%- endif -%}
+                       {%- endfor -%}
                        <li class="divider"></li>
                        <li>
                             <span class="pull-left">
@@ -60,7 +60,7 @@
                                 </a>
                             </span>
                        </li>
-                </ul>
+                  </ul>
             </div>
             <div class="span8">
                 <form class="form-horizontal" method=post>
@@ -69,7 +69,7 @@
                     <div class="control-group">
                         <label class="control-label">Название шаблона:</label>
                         <div class="controls">
-                            {{ form.name(class='span') }}
+                            {{ form.name(class='span6') }}
                         </div>
                     </div>
                     <div class="control-group">
@@ -171,7 +171,6 @@
             function(){
                 var item = $(this);
                 if ($(this).is(':checked')){
-                    console.log(item.attr('value'))
                     $.ajax({
                             url : '.',
                             type : 'POST',

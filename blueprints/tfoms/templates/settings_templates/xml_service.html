@@ -28,32 +28,32 @@
               <ul class="nav nav-list nav-stacked">
                    <li class="">Созданные шаблоны <span class="pull-right">Участвует в выгрузке</span></li>
                    <li class="divider"></li>
-                   {% for template in templates %}
-                   		{% set id = template.id %}
-                   		{% if id == current_id %}
+                   {%- for template in templates -%}
+                   		{%- set id = template.id -%}
+                   		{%- if id == current_id -%}
                    			<li class="active">
                                 <span class="pull-right">
-                                    {% if template.is_active %}
+                                    {%- if template.is_active -%}
                                         <input class="is_active" type="radio" name="is_active" value="{{ id }}" checked/>
-                                    {% else %}
+                                    {%- else -%}
                                         <input class="is_active" type="radio" name="is_active" value="{{ id }}"/>
-                                    {% endif %}
+                                    {%- endif -%}
                                 </span>
                                 <a href={{ url_for('.settings_template', template_type='xml_service', id=id) }}>{{template.name}}</a>
                    			</li>
-                   		{% else %}
+                   		{%- else -%}
                   			<li>
                                 <span class="pull-right">
-                                        {% if template.is_active %}
+                                        {%- if template.is_active -%}
                                             <input class="is_active" type="radio" name="is_active" value="{{ id }}" checked/>
-                                        {% else %}
+                                        {%- else -%}
                                             <input class="is_active" type="radio" name="is_active" value="{{ id }}" />
-                                        {% endif %}
+                                        {%- endif -%}
                                 </span>
                   				<a href={{ url_for('.settings_template', template_type='xml_service', id=id) }}>{{template.name}}</a>
                   			</li>
-                  		{% endif %}
-                   {% endfor%}
+                  		{%- endif -%}
+                   {%- endfor -%}
                    <li class="divider"></li>
                    <li>
                         <span class="pull-left"><a href={{ url_for('.add_new_template', template_type='xml_service', action='add_new') }}><i class=" icon-plus-sign"></i>Добавить новый</a></span>
@@ -61,91 +61,96 @@
               </ul>
           </div>
           <div class="span8">
+              <form class="form-horizontal" method=post>
               <legend>Параметры шаблона:</legend>
-              <form class="form-inline" method=post>
-{#                <input type="text" placeholder="Название шаблона" value="Шаблон 3" class="span12">
-                  <label class="checkbox" class="span12" style="margin-top:15px;">
-                 		<input type="checkbox">  Архивировать
-                  </label>                  #}
+                    <div class="control-group">
+                        <label class="control-label">Название шаблона:</label>
+                        <div class="controls">
+                            {{ form.name(class='span6') }}
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Архивировать файл:</label>
+                        <div class="controls">
+                            {{ form.archive }}
+                        </div>
+                    </div>
 
-                  <div class="row-fluid tags">
-                  <div class="span3 ">Наименование шаблона:</div><div class="span9 ">{{ form.name }}</div></div>
-                  <div class="row-fluid tags">
-                  <div class="span3 ">Архивировать файл:</div><div class="span9 ">{{ form.archive }}</div></div>
                   <legend style="font-size:14px;">Состав и порядок размещения данных в шаблоне:</legend>
-
                   <div class="row-fluid col-wrap tags">
                   <div class="span7 well col" id="used">
                        <legend >Попадают в реестр</legend>
                        <ul id="root" class=" sortable">
-                       {% for tag in tag_tree %}
-                       		{% if loop.index0 == 0 %}
+                       {%- for tag in tag_tree -%}
+                       		{%- if loop.index0 == 0 -%}
 			                          <li >
                                             {{tag.value.tag.name}}  ({{tag.value.tag.code}})
                                             <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
 			                          		<ul id="sortable" class=" sortable">
-			                {% else %}
-			                	{% set k = tag_tree[loop.index0 - 1].level-tag.level %}
-			                	{% if k == 0 %}
+			                {%- else -%}
+			                	{%- set k = tag_tree[loop.index0 - 1].level-tag.level -%}
+			                	{%- if k == 0 -%}
 			                        </ul>
 			                          </li>
-
 			                          <li class="children">
                                             <i class="tree"></i>{{tag.value.tag.name}} ({{tag.value.tag.code}})
                                             <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
 			                          		<ul id="sortable" class=" sortable">
-			                	{% endif %}
-			                	{% if k < 0 %}
+			                	{%- endif -%}
+			                	{%- if k < 0 -%}
 			                          <li class="children">
                                             <i class="tree"></i>{{tag.value.tag.name}} ({{tag.value.tag.code}})
                                             <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
 			                          		<ul  id="sortable" class=" sortable">
-			                	{% endif %}
-			                	{% if k > 0 %}
-			                		{% for i in range(k + 1) %}
+			                	{%- endif -%}
+			                	{%- if k > 0 -%}
+			                		{%- for i in range(k + 1) -%}
 				                        </ul>
 				                         </li>
-			                		{% endfor%}
+			                		{%- endfor -%}
 			                          <li class="children">
                                             <i class="tree"></i>{{tag.value.tag.name}} ({{tag.value.tag.code}})
                                             <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
 			                          		<ul id="sortable" class=" sortable">
-			                	{% endif %}
-                       		{% endif %}
-                       {% endfor %}
+			                	{%- endif -%}
+                       		{%- endif -%}
+                       {%- endfor -%}
 			                        </ul>
 			                          </li>
                         </ul>
                   </div>
                   <div class="span5 well col" id="unused">
                       <legend>Не используются</legend>
-                      <ul id="root" class=" sortable">
-                      {% for tag in unused_tags%}
+                      <ul id="root" class="sortable col">
+                      {%- for tag in unused_tags -%}
                           <li>
                           		{{ tag.tag.name }} ({{ tag.tag.code }})
                                 <input type="hidden" id="hid_{{tag.id}}" name="unusedtag[None,{{ tag.tag_id }}]" value="None,1">
                           		<ul id="sortable" class="sortable">
                           		</ul>
                           </li>
-                      {% endfor %}
+                      {%- endfor -%}
                         </ul>
                   </div>
                   </div>
-                  <hr>
-                <div class="control-group">
-                    <div class="controls pull-right">
-                        <div class="row-fluid tags">
-                            <div class="row">
-                                {% if current_id %}
-                                    <button name="btn" value="Save_as_new" type="submit" class="btn btn-large">Сохранить как новый</button>
-                                {% endif %}
-                                <button name="btn" value="Save" type="submit" class="btn btn-primary btn-large">Сохранить</button>
-                            </div>
-                        </div>
+                    <div class="row-fluid col-wrap">
+                        <!-- add a second row of wells or rounded corner divs immeadiately underneath-->
+                        <div class="span7 col-base well"></div>
+                        <div class="span5 col-base well"></div>
                     </div>
-                         <div class="span3 ">
-                             <input type="button" name="btn" class="btn btn-danger btn-large" value="Удалить шаблон" onclick="document.location='{{ url_for('.delete_template', template_type='xml_patient', action='delete_template', id=current_id)}}';">
-                         </div>
+                  <hr>
+                <div class="row-fluid">
+                        <div class="span6 ">
+                            {% if current_id %}
+                                <a class="btn btn-danger btn-large" href="{{ url_for('.delete_template', template_type='xml_patient', action='delete_template', id=current_id)}}">Удалить шаблон</a>
+                            {% endif %}
+                        </div>
+                        <div class="span6 pull-right">
+                            {%- if current_id -%}
+                            <button name="btn" value="Save_as_new" type="submit" class="btn btn-large">Сохранить как новый</button>
+                            {%- endif -%}
+                            <button name="btn" value="Save" type="submit" class="pull-right btn btn-success btn-large">Сохранить</button>
+                        </div>
                 </div>
         </form>
           </div>
@@ -158,11 +163,10 @@
   <script>
   $(function() {
 
-    $(".is_active").change(
+    $("input[name=is_active]:radio").change(
             function(){
                 var item = $(this);
                 if ($(this).is(':checked')){
-                    console.log(item.attr('value'))
                     $.ajax({
                             url : '.',
                             type : 'POST',
@@ -180,7 +184,6 @@
             }
     );
 
-
     $( ".sortable" ).sortable({
         connectWith: 'ul.sortable',
         opacity: 0.6,
@@ -189,12 +192,12 @@
 
         stop: function (event, ui) {
             var item = ui.item;
-            var isused = item.closest('div').attr('id')
+            var isused = item.closest('div').attr('id');
             //var item_parent_input = ui.item.children('input');
             var descendants = item.find('input');
             var siblings = ui.item.parent().children();
             var parent_input = item.parent().parent().children('input');
-            number_of_children = parent_input.length
+            var number_of_children = parent_input.length;
 
             var parent_id = 'None';
             if(number_of_children>0){
@@ -218,8 +221,8 @@
 
             if(isused === 'used'){
                 descendants.each(function(index, el){
-                    descendant = $(this);
-                    new_name = descendant.attr('name').replace(/unused/,"");
+                    var descendant = $(this);
+                    var new_name = descendant.attr('name').replace(/unused/,"");
                     new_name = new_name.replace(/removed/,"");
                     descendant.attr('name', new_name);
                 });
@@ -227,9 +230,9 @@
             }
             else{
                 descendants.each(function(index, el){
-                    descendant = $(this);
-                    old_name = descendant.attr('name')
-                    descendant .attr('name', 'removed'+old_name)
+                    var descendant = $(this);
+                    var old_name = descendant.attr('name');
+                    descendant.attr('name', 'removed'+old_name);
                 });
                 console.log('now unused')
             }
@@ -237,7 +240,7 @@
             if (isused === 'used'){
                 siblings.each(function(index, el){
                     item = $(this).children('input');
-                    ordernum_value = index+1
+                    var ordernum_value = index+1;
                     item.val(parent_id+','+ordernum_value);
                 });
 
