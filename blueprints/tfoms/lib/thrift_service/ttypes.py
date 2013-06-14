@@ -577,7 +577,6 @@ class Usl:
   Attributes:
    - IDSERV
    - CODE_USL
-   - DS
    - KOL_USL
    - TARIF
   """
@@ -586,17 +585,15 @@ class Usl:
     None, # 0
     (1, TType.I32, 'IDSERV', None, -1, ), # 1
     (2, TType.STRING, 'CODE_USL', None, "", ), # 2
-    (3, TType.STRING, 'DS', None, "", ), # 3
-    (4, TType.DOUBLE, 'KOL_USL', None, -1, ), # 4
-    (5, TType.DOUBLE, 'TARIF', None, -1, ), # 5
+    (3, TType.DOUBLE, 'KOL_USL', None, -1, ), # 3
+    (4, TType.DOUBLE, 'TARIF', None, -1, ), # 4
   )
 
-  def __init__(self, IDSERV=thrift_spec[1][4], CODE_USL=thrift_spec[2][4], DS=thrift_spec[3][4], KOL_USL=thrift_spec[4][4], TARIF=thrift_spec[5][4],):
+  def __init__(self, IDSERV=thrift_spec[1][4], CODE_USL=thrift_spec[2][4], KOL_USL=thrift_spec[3][4], TARIF=thrift_spec[4][4],):
     if IDSERV is self.thrift_spec[1][4]:
       IDSERV = -1
     self.IDSERV = IDSERV
     self.CODE_USL = CODE_USL
-    self.DS = DS
     self.KOL_USL = KOL_USL
     self.TARIF = TARIF
 
@@ -620,16 +617,11 @@ class Usl:
         else:
           iprot.skip(ftype)
       elif fid == 3:
-        if ftype == TType.STRING:
-          self.DS = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 4:
         if ftype == TType.DOUBLE:
           self.KOL_USL = iprot.readDouble();
         else:
           iprot.skip(ftype)
-      elif fid == 5:
+      elif fid == 4:
         if ftype == TType.DOUBLE:
           self.TARIF = iprot.readDouble();
         else:
@@ -652,16 +644,12 @@ class Usl:
       oprot.writeFieldBegin('CODE_USL', TType.STRING, 2)
       oprot.writeString(self.CODE_USL)
       oprot.writeFieldEnd()
-    if self.DS is not None:
-      oprot.writeFieldBegin('DS', TType.STRING, 3)
-      oprot.writeString(self.DS)
-      oprot.writeFieldEnd()
     if self.KOL_USL is not None:
-      oprot.writeFieldBegin('KOL_USL', TType.DOUBLE, 4)
+      oprot.writeFieldBegin('KOL_USL', TType.DOUBLE, 3)
       oprot.writeDouble(self.KOL_USL)
       oprot.writeFieldEnd()
     if self.TARIF is not None:
-      oprot.writeFieldBegin('TARIF', TType.DOUBLE, 5)
+      oprot.writeFieldBegin('TARIF', TType.DOUBLE, 4)
       oprot.writeDouble(self.TARIF)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -672,8 +660,6 @@ class Usl:
       raise TProtocol.TProtocolException(message='Required field IDSERV is unset!')
     if self.CODE_USL is None:
       raise TProtocol.TProtocolException(message='Required field CODE_USL is unset!')
-    if self.DS is None:
-      raise TProtocol.TProtocolException(message='Required field DS is unset!')
     if self.KOL_USL is None:
       raise TProtocol.TProtocolException(message='Required field KOL_USL is unset!')
     if self.TARIF is None:
