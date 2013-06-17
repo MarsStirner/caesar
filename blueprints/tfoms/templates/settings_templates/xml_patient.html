@@ -4,12 +4,12 @@
 <link href="{{ url_for('.static', filename='css/style.css') }}" rel="stylesheet">
 <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/humanity/jquery-ui.css" />
   <style>
-	  .tags ul { list-style-type: none; margin: 0px; padding: 0; margin-bottom: 0px; }
+	  .tags ul { list-style-type: none; margin: 0px; padding: 0; margin-bottom: 0px;}
 	  .tags li { margin: 0px; padding: 0;}
-	  .ui-state-highlight { background-color: #CCCCCC; height: 1.5em; line-height: 1.2em; border: dashed 1px gray; }
-	  .sortable ul, .unused ul, .necessary ul{margin:0px 0px 0px 25px; padding: 8px 0px 0px 0px;}
-      .children {border-left:1px dotted; }
-      #root {padding: 8px 0px 0px 0px;}
+	  .ui-state-highlight { background-color: #CCCCCC; height: 1.5em; line-height: 1.2em; border: dashed 1px gray;}
+	  .sortable ul, .unused ul, .necessary ul{ margin:0px 0px 0px 25px; padding: 8px 0px 0px 0px;}
+      .children { border-left:1px dotted;}
+      #root { padding: 8px 0px 0px 0px;}
   </style>
 {% endblock %}
 
@@ -126,8 +126,8 @@
                           <legend>Не используются</legend>
                           <ul id="root" class="unused col">
                           {%- for tag in unused_tags -%}
-                              <li>
-                                {{ tag.tag.code }} <small class="text-info">{{ tag.tag.name }}</small>
+                              <li class="children">
+                                <i class="tree"></i>{{ tag.tag.code }} <small class="text-info">{{ tag.tag.name }}</small>
                                 <input type="hidden" id="hid_{{tag.id}}" name="unusedtag[None,{{ tag.tag_id }}]" value="None,1">
                                 <ul id="sortable" class="unused">
                                 </ul>

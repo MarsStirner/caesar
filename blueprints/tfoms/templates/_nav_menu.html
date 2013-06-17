@@ -10,7 +10,7 @@
             <li{% if request.path == url_for('.reports') %} class="active"{% endif %}><a href="{{ url_for('.reports') }}">Отчёты</a></li>
             <li><a class="dropdown-toggle" data-toggle="dropdown" href="#">Настройка <b class="caret"></b></a>
                 <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
-                  <li{% if request.path == url_for('.settings_template') %} class="active"{% endif %}><a href="{{ url_for('.settings_template') }}">Шаблоны</a></li>
+                  <li{% if request.path == url_for('.add_new_template') %} class="active"{% endif %}><a href="{{ url_for('.add_new_template') }}">Шаблоны</a></li>
                   <li{% if request.path == url_for('.settings') %} class="active"{% endif %}><a href="{{ url_for('.settings') }}">Общие настройки</a></li>
                 </ul>
             </li>
