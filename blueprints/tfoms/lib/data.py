@@ -26,6 +26,7 @@ class Patients(object):
         self.tags = tags
 
     def get_data(self):
+        #TODO: use optionalFields
         data = self.client.get_patients(infis_code=self.infis_code, start=self.start, end=self.end)
         return data
 
@@ -38,9 +39,12 @@ class Services(object):
         self.end = end
         self.infis_code = infis_code
         self.tags = tags
-        self.patients = patients
 
     def get_data(self):
+        patients = Patients(self.start, self.end, self.infis_code, [])
+        patients_data = patients.get_data()
+        self.patients = [patient.patientId for patient in patients_data]
+
         data = self.client.get_patient_events(infis_code=self.infis_code,
                                               start=self.start,
                                               end=self.end,
