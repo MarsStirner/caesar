@@ -168,11 +168,37 @@
 
   $(function() {
 
-        function funcname(event, ui) {
+        function distinguish_used_unused_tags(event, ui) {
+            var item = ui.item;
+            var isused = item.closest('div').attr('id');
+            var descendants = item.find('input');
+
+            if(isused === 'used'){
+                descendants.each(function(index, el){
+                    var descendant = $(this);
+                    var new_name = descendant.attr('name').replace(/unused/,"");
+                    new_name = new_name.replace(/removed/,"");
+                    descendant.attr('name', new_name);
+                });
+                console.log('unused')
+            }
+            else{
+                descendants.each(function(index, el){
+                    var descendant = $(this);
+                    var old_name = descendant.attr('name');
+                    descendant.attr('name', 'removed'+old_name);
+                });
+                console.log('now unused')
+            }
+
+
+        }
+
+        function find_parent_ordernum(event, ui) {
             var item = ui.item;
             var isused = item.closest('div').attr('id');
             //var item_parent_input = ui.item.children('input');
-            var descendants = item.find('input');
+            //var descendants = item.find('input');
             var siblings = ui.item.parent().children();
             var parent_input = item.parent().parent().children('input');
             var number_of_children = parent_input.length;
@@ -195,24 +221,6 @@
                        parent_id = 'None';
                     }
                 }
-            }
-
-            if(isused === 'used'){
-                descendants.each(function(index, el){
-                    var descendant = $(this);
-                    var new_name = descendant.attr('name').replace(/unused/,"");
-                    new_name = new_name.replace(/removed/,"");
-                    descendant.attr('name', new_name);
-                });
-                console.log('unused')
-            }
-            else{
-                descendants.each(function(index, el){
-                    var descendant = $(this);
-                    var old_name = descendant.attr('name');
-                    descendant.attr('name', 'removed'+old_name);
-                });
-                console.log('now unused')
             }
 
             if (isused === 'used'){
@@ -262,7 +270,8 @@
         placeholder: "ui-state-highlight",
 
         stop:function(event, ui) {
-        funcname(event, ui);
+        distinguish_used_unused_tags(event, ui);
+        find_parent_ordernum(event, ui);
         }
 
      });
@@ -274,7 +283,8 @@
         placeholder: "ui-state-highlight",
 
         stop:function(event, ui) {
-        funcname(event, ui);
+        distinguish_used_unused_tags(event, ui);
+        find_parent_ordernum(event, ui);
         }
     });
     $( "ul, li" ).disableSelection();
