@@ -41,9 +41,9 @@ def ajax_download():
 @module.route('/download/<string:template_type>/')
 def download(template_type='xml'):
     try:
-        #TODO: add is_active filter
         templates = (db.session.query(Template)
-                     .filter(Template.type.has(TemplateType.download_type.has(DownloadType.code == template_type)))
+                     .filter(Template.is_active == True,
+                             Template.type.has(TemplateType.download_type.has(DownloadType.code == template_type)))
                      .all())
         return render_template('download/index.html', templates=templates)
     except TemplateNotFound:
