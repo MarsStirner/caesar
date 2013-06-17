@@ -26,32 +26,32 @@
                   <ul class="nav nav-list nav-stacked">
                        <li><strong>Созданные шаблоны <span class="pull-right">Участвует в выгрузке</span></strong></li>
                        <li class="divider"></li>
-                       {% for template in templates %}
+                       {%- for template in templates -%}
                             {% set id = template.id %}
-                            {% if id == current_id %}
+                            {%- if id == current_id -%}
                                 <li class="active">
                                     <span class="pull-right">
-                                        {% if template.is_active %}
+                                        {%- if template.is_active -%}
                                             <input class="is_active" type="radio" name="is_active" value="{{ id }}" checked/>
-                                        {% else %}
+                                        {%- else -%}
                                             <input class="is_active" type="radio" name="is_active" value="{{ id }}" />
-                                        {% endif %}
+                                        {%- endif -%}
                                     </span>
                                     <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{template.name}}</a>
                                 </li>
-                            {% else %}
+                            {%- else -%}
                                 <li>
                                     <span class="pull-right">
-                                        {% if template.is_active %}
+                                        {%- if template.is_active -%}
                                             <input class="is_active" type="radio" name="is_active" value="{{ id }}" checked/>
-                                        {% else %}
+                                        {%- else -%}
                                             <input class="is_active" type="radio" name="is_active" value="{{ id }}"  />
-                                        {% endif %}
+                                        {%- endif -%}
                                     </span>
                                     <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{template.name}}</a>
                                 </li>
-                            {% endif %}
-                       {% endfor%}
+                            {%- endif -%}
+                       {%- endfor -%}
                        <li class="divider"></li>
                        <li>
                             <span>
@@ -82,9 +82,9 @@
                     <p class="lead"><small>Состав и порядок размещения данных в шаблоне:</small></p>
                     <div class="row-fluid col-wrap tags">
                         <div class="span7 well col" id="used">
-                           <legend>Попадают в реестр</legend>
-                           <ul id="root" class="sortable">
-                           {%- for tag in tag_tree -%}
+                            <legend>Попадают в реестр</legend>
+                            <ul id="root" class="sortable">
+                            {%- for tag in tag_tree -%}
                                 {%- if loop.index0 == 0 -%}
                                   <li>
                                         {{tag.value.tag.code}} <small class="text-info">{{tag.value.tag.name}}</small>
@@ -92,30 +92,32 @@
                                         <ul id="sortable" class=" sortable">
                                 {%- else -%}
                                     {% set k = tag_tree[loop.index0 - 1].level-tag.level %}
-                                    {%- if k == 0 -%}
-                                        </ul>
-                                        </li>
-                                        <li class="children">
-                                            <i class="tree"></i>{{tag.value.tag.code}} <small class="text-info">{{tag.value.tag.name}}</small>
-                                            <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
-                                            <ul id="sortable" class=" sortable">
-                                    {%- endif -%}
-                                    {%- if k < 0 -%}
-                                          <li class="children">
-                                                <i class="tree"></i>{{tag.value.tag.code}} <small class="text-info">{{tag.value.tag.name}}</small>
-                                                <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
-                                                <ul  id="sortable" class=" sortable">
-                                    {%- endif -%}
-                                    {%- if k > 0 -%}
-                                        {%- for i in range(k + 1) -%}
-                                            </ul>
-                                             </li>
-                                        {%- endfor -%}
+                                        {%- if k == 0 -%}
+                                            {%- if not tag_tree[loop.index0 - 1].value.tag.is_leaf -%}</ul>{%- endif -%}
+                                            </li>
                                             <li class="children">
-                                                <i class="tree"></i>{{tag.value.tag.code}} <small class="text-info">{{tag.value.tag.name}}</small>
+                                                <i class="tree"></i>{{tag.value.tag.code}}<small class="text-info">{{tag.value.tag.name}}</small>
                                                 <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
-                                                <ul id="sortable" class=" sortable">
-                                    {%- endif -%}
+                                                {%- if not tag.value.tag.is_leaf -%}<ul id="sortable" class=" sortable">{%- endif -%}
+                                        {%- endif -%}
+                                        {%- if k < 0 -%}
+                                              <li class="children">
+                                                    <i class="tree"></i>{{tag.value.tag.code}}<small class="text-info">{{tag.value.tag.name}}</small>
+                                                    <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
+                                                    {%- if not tag.value.tag.is_leaf -%}<ul  id="sortable" class=" sortable">{%- endif -%}
+                                        {%- endif -%}
+                                        {%- if k > 0 -%}
+                                                {%- if not tag_tree[loop.index0 - 1].value.tag.is_leaf -%}</ul>{%- endif -%}
+                                                 </li>
+                                            {%- for i in range(k) -%}
+                                                </ul>
+                                                 </li>
+                                            {%- endfor -%}
+                                                <li class="children">
+                                                    <i class="tree"></i>{{tag.value.tag.code}}<small class="text-info">{{tag.value.tag.name}}</small>
+                                                    <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
+                                                    {%- if not tag.value.tag.is_leaf -%} <ul id="sortable" class=" sortable"> {%- endif -%}
+                                        {%- endif -%}
                                 {%- endif -%}
                            {%- endfor -%}
                             </ul>

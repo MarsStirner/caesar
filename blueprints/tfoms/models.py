@@ -79,6 +79,7 @@ class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     code = db.Column(db.String(80), unique=True, nullable=False)
     name = db.Column(db.Unicode(80))
+    is_leaf = db.Column(db.Boolean, default=False)
     
     # many to many TemplateType<->Tag
     template_types = db.relationship(TemplateType,
