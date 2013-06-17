@@ -29,6 +29,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('code', sa.String(length=80), nullable=False),
     sa.Column('name', sa.Unicode(length=80), nullable=True),
+    sa.Column('is_leaf', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('code')
     )
