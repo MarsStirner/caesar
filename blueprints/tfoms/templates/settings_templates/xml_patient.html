@@ -7,11 +7,9 @@
 	  .tags ul { list-style-type: none; margin: 0px; padding: 0; margin-bottom: 0px; }
 	  .tags li { margin: 0px; padding: 0;}
 	  .ui-state-highlight { background-color: #CCCCCC; height: 1.5em; line-height: 1.2em; border: dashed 1px gray; }
-	  .sortable ul {margin:0px 0px 0px 25px; padding: 8px 0px 0px 0px;}
+	  .sortable ul, .unused ul, .necessary ul{margin:0px 0px 0px 25px; padding: 8px 0px 0px 0px;}
       .children {border-left:1px dotted; }
       #root {padding: 8px 0px 0px 0px;}
-
-
   </style>
 {% endblock %}
 
@@ -69,7 +67,7 @@
                     <div class="control-group">
                         <label class="control-label">Название шаблона:</label>
                         <div class="controls">
-                            {{ form.name(class='input-xlarge') }}
+                            {{ form.name(class='input-xlarge', placeholder="Введите наименование шаблона") }}
                         </div>
                     </div>
                     <div class="control-group">
@@ -83,26 +81,26 @@
                     <div class="row-fluid col-wrap tags">
                         <div class="span7 well col" id="used">
                             <legend>Попадают в реестр</legend>
-                            <ul id="root" class="sortable">
+                            <ul id="root" class="necessary">
                             {%- for tag in tag_tree -%}
                                 {%- if loop.index0 == 0 -%}
                                   <li>
                                         {{tag.value.tag.code}} <small class="text-info">{{tag.value.tag.name}}</small>
                                         <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
-                                        <ul id="sortable" class=" sortable">
+                                        <ul id="necessary" class="necessary">
                                 {%- else -%}
                                     {% set k = tag_tree[loop.index0 - 1].level-tag.level %}
                                         {%- if k == 0 -%}
                                             {%- if not tag_tree[loop.index0 - 1].value.tag.is_leaf -%}</ul>{%- endif -%}
                                             </li>
                                             <li class="children">
-                                                <i class="tree"></i>{{tag.value.tag.code}}<small class="text-info">{{tag.value.tag.name}}</small>
+                                                <i class="tree"></i>{{tag.value.tag.code}} <small class="text-info">{{tag.value.tag.name}}</small>
                                                 <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
                                                 {%- if not tag.value.tag.is_leaf -%}<ul id="sortable" class=" sortable">{%- endif -%}
                                         {%- endif -%}
                                         {%- if k < 0 -%}
                                               <li class="children">
-                                                    <i class="tree"></i>{{tag.value.tag.code}}<small class="text-info">{{tag.value.tag.name}}</small>
+                                                    <i class="tree"></i>{{tag.value.tag.code}} <small class="text-info">{{tag.value.tag.name}}</small>
                                                     <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
                                                     {%- if not tag.value.tag.is_leaf -%}<ul  id="sortable" class=" sortable">{%- endif -%}
                                         {%- endif -%}
@@ -114,7 +112,7 @@
                                                  </li>
                                             {%- endfor -%}
                                                 <li class="children">
-                                                    <i class="tree"></i>{{tag.value.tag.code}}<small class="text-info">{{tag.value.tag.name}}</small>
+                                                    <i class="tree"></i>{{tag.value.tag.code}} <small class="text-info">{{tag.value.tag.name}}</small>
                                                     <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
                                                     {%- if not tag.value.tag.is_leaf -%} <ul id="sortable" class=" sortable"> {%- endif -%}
                                         {%- endif -%}
@@ -126,16 +124,17 @@
                         </div>
                         <div class="span5 well col" id="unused">
                           <legend>Не используются</legend>
-                          <ul id="root" class="sortable col">
+                          <ul id="root" class="unused col">
                           {%- for tag in unused_tags -%}
                               <li>
                                 {{ tag.tag.code }} <small class="text-info">{{ tag.tag.name }}</small>
                                 <input type="hidden" id="hid_{{tag.id}}" name="unusedtag[None,{{ tag.tag_id }}]" value="None,1">
-                                <ul id="sortable" class="sortable">
+                                <ul id="sortable" class="unused">
                                 </ul>
                               </li>
                           {%- endfor -%}
                           </ul>
+
                         </div>
                     </div>
                     <div class="row-fluid col-wrap">
@@ -169,34 +168,7 @@
 
   $(function() {
 
-    $("input[name=is_active]:radio").change(
-            function(){
-                var item = $(this);
-                if ($(this).is(':checked')){
-                    $.ajax({
-                            url : '.',
-                            type : 'POST',
-                            data: {activate:item.attr('value')}
-                    });
-                }
-                else{
-                    $.ajax({
-                            url : '.',
-                            type : 'POST',
-                            data: {deactivate:item.attr('value')}
-                    });
-                }
-
-            }
-    );
-
-    $( ".sortable" ).sortable({
-        connectWith: 'ul.sortable',
-        opacity: 0.6,
-        cursor: "move",
-        placeholder: "ui-state-highlight",
-
-        stop: function (event, ui) {
+        function funcname(event, ui) {
             var item = ui.item;
             var isused = item.closest('div').attr('id');
             //var item_parent_input = ui.item.children('input');
@@ -252,6 +224,57 @@
 
             }
 
+        }
+
+    $("input[name=is_active]:radio").change(
+            function(){
+                var item = $(this);
+                if ($(this).is(':checked')){
+                    $.ajax({
+                            url : '.',
+                            type : 'POST',
+                            data: {activate:item.attr('value')}
+                    });
+                }
+                else{
+                    $.ajax({
+                            url : '.',
+                            type : 'POST',
+                            data: {deactivate:item.attr('value')}
+                    });
+                }
+
+            }
+    );
+
+     $( "#root, #necessary" ).sortable({
+        connectWith: ['.necessary'],
+        opacity: 0.6,
+        cursor: "move",
+        placeholder: "ui-state-highlight"
+
+     });
+
+     $( ".unused" ).sortable({
+        connectWith: ['ul.sortable', 'ul.unused'],
+        opacity: 0.6,
+        cursor: "move",
+        placeholder: "ui-state-highlight",
+
+        stop:function(event, ui) {
+        funcname(event, ui);
+        }
+
+     });
+
+    $( ".sortable" ).sortable({
+        connectWith: ['.sortable', 'ul.unused'],
+        opacity: 0.6,
+        cursor: "move",
+        placeholder: "ui-state-highlight",
+
+        stop:function(event, ui) {
+        funcname(event, ui);
         }
     });
     $( "ul, li" ).disableSelection();
