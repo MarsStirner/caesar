@@ -218,19 +218,19 @@
 
         }
 
-    $("input[name=is_active]:radio").change(
+    $("input[name=is_active]:checkbox").change(
             function(){
                 var item = $(this);
                 if ($(this).is(':checked')){
                     $.ajax({
-                            url : '.',
+                            url : '{{ url_for('.activate') }}',
                             type : 'POST',
                             data: {activate:item.attr('value')}
                     });
                 }
                 else{
                     $.ajax({
-                            url : '.',
+                            url : '{{ url_for('.activate') }}',
                             type : 'POST',
                             data: {deactivate:item.attr('value')}
                     });
