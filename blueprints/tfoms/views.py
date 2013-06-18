@@ -115,12 +115,18 @@ def settings_template(template_type='xml_patient', id=0):
 
         form = CreateTemplateForm(name=current_template[0].name, archive=archive)
 
-        root = TagTreeNode(TagsTree.query.filter_by(template_id=id).filter_by(parent_id=None).
-                           join(TagsTree.tag).first(), 0)
-        tree = TagTree(root, id)
-        tree_tags = [tag.tag_id for tag in TagsTree.query.filter_by(template_id=id)]
-        unused_tags = filter(lambda x: x.tag_id not in tree_tags,
+        tree_tags = [tag for tag in TagsTree.query.order_by(TagsTree.ordernum).filter_by(template_id=id)]
+        tree_tags_ids = [tag.tag_id for tag in tree_tags]
+        unused_tags = filter(lambda x: x.tag_id not in tree_tags_ids,
                              StandartTree.query.filter_by(template_type_id=template_type_id))
+        if template_type == 'dbf':
+            tag_tree = [TagTreeNode(tag, 0) for tag in tree_tags]
+        else:
+            root = TagTreeNode(TagsTree.query.filter_by(template_id=id).filter_by(parent_id=None).
+                           join(TagsTree.tag).first(), 0)
+            tree = TagTree(root, id)
+            tag_tree = tree.load_tree(root, [root])
+
         if form.is_submitted():
             current_template_id = current_template[0].id
             data = request.form.items()
@@ -144,7 +150,7 @@ def settings_template(template_type='xml_patient', id=0):
             db.session.commit()
 
         return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates,
-                               current_id=id, tag_tree=tree.load_tree(root, [root]), unused_tags=unused_tags)
+                               current_id=id, tag_tree=tag_tree, unused_tags=unused_tags)
     except TemplateNotFound:
         abort(404)    
 

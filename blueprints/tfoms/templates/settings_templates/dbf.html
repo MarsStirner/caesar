@@ -37,7 +37,7 @@
                                             <input class="is_active" type="radio" name="is_active" value="{{ id }}" />
                                         {%- endif -%}
                                     </span>
-                                    <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{template.name}}</a>
+                                    <a href={{ url_for('.settings_template', template_type='dbf', id=id) }}>{{template.name}}</a>
                                 </li>
                             {%- else -%}
                                 <li>
@@ -48,7 +48,7 @@
                                             <input class="is_active" type="radio" name="is_active" value="{{ id }}"  />
                                         {%- endif -%}
                                     </span>
-                                    <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{template.name}}</a>
+                                    <a href={{ url_for('.settings_template', template_type='dbf', id=id) }}>{{template.name}}</a>
                                 </li>
                             {%- endif -%}
                        {%- endfor -%}
@@ -87,14 +87,11 @@
                       <legend >Попадают в реестр</legend>
                             <ul id="root" class="sortable">
                                 {%- for tag in tag_tree -%}
-                                    {%- if not tag_tree[loop.index0 - 1].value.tag.is_leaf -%}</ul>{%- endif -%}
                                     </li>
                                     <li class="children">
                                         <i class="tree"></i>{{tag.value.tag.code}} <small class="text-info">{{tag.value.tag.name}}</small>
                                         <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
-                                        {%- if not tag.value.tag.is_leaf -%}<ul id="sortable" class=" sortable">{%- endif -%}
                                 {%- endfor -%}
-                            </ul>
                             </li>
                           </ul>
                   </div>
