@@ -193,7 +193,7 @@ def add_new_template(template_type='xml_patient', action="add_new"):
                 join(StandartTree.tag).all()]
             else:
                 root = TagTreeNode(StandartTree.query.filter_by(template_type_id=template_type_id).
-                                   filter_by(parent_id=None).join(TagsTree.tag).first(), 0)
+                                   filter_by(parent_id=None).first(), 0)
                 tree = StandartTagTree(root, template_type_id)
                 tags_tree = tree.load_tree(root, [root])
 
