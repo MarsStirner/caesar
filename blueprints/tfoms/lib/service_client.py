@@ -75,7 +75,7 @@ class TFOMSClient(object):
             raise e
         except TException, e:
             raise e
-        return self.__unicode_result(result)
+        return result
 
     def prepare_tables(self):
         """Запускает процесс обновления данных во временной таблице на сервере"""
