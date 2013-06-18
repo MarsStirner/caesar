@@ -85,23 +85,6 @@ def settings():
 def settings_template(template_type='xml_patient', id=0):
     try:
 
-        if request.form:
-            if 'activate' in request.form:
-                id = request.form['activate']
-                template = Template.query.filter_by(id=id).first()
-                type = int(template.type_id)
-                deactivated = Template.query.filter_by(type_id=type).all()
-                for item in deactivated:
-                    if item.id != id:
-                        item.is_active = 0
-                template.is_active = 1
-                db.session.commit()
-            elif 'deactivate' in request.form:
-                active_template_id = request.form['deactivate']
-                template = Template.query.filter_by(id=active_template_id).first()
-                template.is_active = 0
-                db.session.commit()
-
         template_type_id = template_types[template_type]
 
         templates = Template.query.filter_by(type_id=template_type_id).all()
@@ -162,6 +145,7 @@ def add_new_template(template_type='xml_patient', action="add_new"):
     try:
         template_type_id = template_types[template_type]
         form = CreateTemplateForm()
+
 
         if form.is_submitted():
 
@@ -227,6 +211,31 @@ def delete_template(action='delete_template', template_type='xml_patient', id=id
 
         return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates,
                                current_id=id, tag_tree=tags_tree, unused_tags=unused_tags)
+    except TemplateNotFound:
+        abort(404)
+
+@module.route('/settings_template/activate/', methods=['POST'])
+def activate():
+    try:
+        if request.form:
+            if 'activate' in request.form:
+                id = request.form['activate']
+                template = Template.query.filter_by(id=id).first()
+                type = int(template.type_id)
+                deactivated = Template.query.filter_by(type_id=type).all()
+                for item in deactivated:
+                    if item.id != id:
+                        item.is_active = 0
+                template.is_active = 1
+                db.session.commit()
+            elif 'deactivate' in request.form:
+                active_template_id = request.form['deactivate']
+                template = Template.query.filter_by(id=active_template_id).first()
+                template.is_active = 0
+                db.session.commit()
+
+        return jsonify()
+
     except TemplateNotFound:
         abort(404)
 

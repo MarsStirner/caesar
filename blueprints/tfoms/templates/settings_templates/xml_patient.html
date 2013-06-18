@@ -170,9 +170,8 @@
                 <p id="debug-url"></p>
             </div>
             <div class="modal-footer">
-                <a href="{{ url_for('.delete_template', template_type='xml_patient', action='delete_template', id=current_id)}}" class="btn danger">Yes</a>
-                <!-- <a href="delete.php?some=param&ref=" class="btn danger">Yes 2</a> -->
-                <a href="javascript:$('#modal-from-dom').modal('hide')" class="btn secondary">No</a>
+                <a href="javascript:$('#modal-from-dom').modal('hide')" class="btn btn-secondary">Нет</a>
+                <a href="{{ url_for('.delete_template', template_type='xml_patient', action='delete_template', id=current_id)}}" class="btn btn-danger">Да</a>
             </div>
         </div>
 {% endblock %}
