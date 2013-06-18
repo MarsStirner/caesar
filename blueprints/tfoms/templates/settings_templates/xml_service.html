@@ -110,7 +110,7 @@
                                     {%- if not tag_tree[loop.index0 - 1].value.tag.is_leaf -%}</ul>{%- endif -%}
                                     </li>
 			                		{%- for i in range(k) -%}
-				                        {%- if not tag_tree[loop.index0 - 1].value.tag.is_leaf -%}</ul>{%- endif -%}
+				                        </ul>
 				                        </li>
 			                		{%- endfor -%}
 			                          <li class="children">
@@ -121,7 +121,7 @@
                        		{%- endif -%}
                        {%- endfor -%}
 			                        </ul>
-			                          </li>
+			                     </li>
                         </ul>
                   </div>
                   <div class="span5 well col" id="unused">

@@ -2,7 +2,7 @@
 import re
 from datetime import datetime
 
-from flask import render_template, abort, request, jsonify, send_from_directory
+from flask import render_template, abort, request, redirect, jsonify, send_from_directory, url_for
 
 from jinja2 import TemplateNotFound
 from app import module
@@ -146,7 +146,6 @@ def add_new_template(template_type='xml_patient', action="add_new"):
         template_type_id = template_types[template_type]
         form = CreateTemplateForm()
 
-
         if form.is_submitted():
 
             if 'archive' in request.form:
@@ -161,14 +160,7 @@ def add_new_template(template_type='xml_patient', action="add_new"):
 
             data = request.form.items()
             save_new_template_tree(new_id, data)
-
-            root = TagTreeNode(TagsTree.query.filter_by(template_id=new_id).filter_by(parent_id=None).
-                               join(TagsTree.tag).first(), 0)
-            tree = TagTree(root, new_id)
-            tree_tags = [tag.tag_id for tag in TagsTree.query.filter_by(template_id=new_id)]
-            unused_tags = filter(lambda x: x.tag_id not in tree_tags,
-                                 StandartTree.query.filter_by(template_type_id=template_type_id))
-            tags_tree = tree.load_tree(root, [root])
+            return redirect(url_for('.settings_template', template_type=template_type, id=new_id))
         else:
             unused_tags = []
             if template_type == 'dbf':
