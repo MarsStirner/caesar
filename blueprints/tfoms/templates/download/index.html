@@ -38,9 +38,7 @@
                     <label class="control-label">Шаблоны:</label>
                     <div class="controls well well-small">
                         {% for template in templates %}
-                            <label class="checkbox">
-                                <input type="checkbox" class="templates" checked="checked" name="templates[]" value="{{ template.id }}"> {{ template.name }}
-                            </label>
+                            <label class="checkbox"><input type="checkbox" class="templates" checked="checked" name="templates[]" value="{{ template.id }}">{{ template.name }}</label>
                         {% endfor %}
                     </div>
                 </div>
