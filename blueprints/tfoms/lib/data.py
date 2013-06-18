@@ -33,7 +33,7 @@ class Patients(object):
 
 class Services(object):
 
-    def __init__(self, start, end, infis_code, tags, patients):
+    def __init__(self, start, end, infis_code, tags):
         self.client = Client(CORE_SERVICE_URL)
         self.start = start
         self.end = end

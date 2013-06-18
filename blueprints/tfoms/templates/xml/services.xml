@@ -2,7 +2,7 @@
 {%- for item in tags_tree recursive -%}
 <{{ item.tag.code }}>
     {%- if item.children -%}
-        {%- if item.tag.code == 'PERS' -%}
+        {%- if item.tag.code == 'ZAP' -%}
             {%- for person in data -%}
                 {%- if not loop.first -%}
                 </{{ item.tag.code }}><{{ item.tag.code }}>
