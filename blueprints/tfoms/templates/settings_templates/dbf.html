@@ -102,8 +102,6 @@
                               <li class="children">
                                 <i class="tree"></i>{{ tag.tag.code }} <small class="text-info">{{ tag.tag.name }}</small>
                                 <input type="hidden" id="hid_{{tag.id}}" name="unusedtag[None,{{ tag.tag_id }}]" value="None,1">
-                                <ul id="sortable" class="unused">
-                                </ul>
                               </li>
                           {%- endfor -%}
                           </ul>
@@ -119,7 +117,7 @@
                     <div class="row-fluid">
                         <div class="span6">
                             {% if current_id %}
-                                <a class="btn btn-danger btn-large" href="{{ url_for('.delete_template', template_type='xml_patient', action='delete_template', id=current_id)}}">Удалить шаблон</a>
+                                <a class="btn btn-danger btn-large" href="{{ url_for('.delete_template', template_type='dbf', action='delete_template', id=current_id)}}">Удалить шаблон</a>
                             {% endif %}
                         </div>
                         <div class="span6 pull-right">
