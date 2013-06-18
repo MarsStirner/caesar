@@ -32,9 +32,9 @@
                                 <li class="active">
                                     <span class="pull-right">
                                         {%- if template.is_active -%}
-                                            <input class="is_active" type="radio" name="is_active" value="{{ id }}" checked/>
+                                            <input class="is_active" type="checkbox" name="is_active" value="{{ id }}" checked/>
                                         {%- else -%}
-                                            <input class="is_active" type="radio" name="is_active" value="{{ id }}" />
+                                            <input class="is_active" type="checkbox" name="is_active" value="{{ id }}" />
                                         {%- endif -%}
                                     </span>
                                     <a href={{ url_for('.settings_template', template_type='dbf', id=id) }}>{{template.name}}</a>
@@ -43,9 +43,9 @@
                                 <li>
                                     <span class="pull-right">
                                         {%- if template.is_active -%}
-                                            <input class="is_active" type="radio" name="is_active" value="{{ id }}" checked/>
+                                            <input class="is_active" type="checkbox"" name="is_active" value="{{ id }}" checked/>
                                         {%- else -%}
-                                            <input class="is_active" type="radio" name="is_active" value="{{ id }}"  />
+                                            <input class="is_active" type="checkbox" name="is_active" value="{{ id }}"  />
                                         {%- endif -%}
                                     </span>
                                     <a href={{ url_for('.settings_template', template_type='dbf', id=id) }}>{{template.name}}</a>
@@ -55,7 +55,7 @@
                    <li class="divider"></li>
                    <li>
                         <span>
-                            <a href="/tfoms/settings_template/xml_patient/add_new" class="btn btn-primary" title="Добавить новый шаблон">
+                            <a href="/tfoms/settings_template/dbf/add_new" class="btn btn-primary" title="Добавить новый шаблон">
                                 <i class="icon-plus icon-white"></i>Создать
                             </a>
                         </span>
@@ -117,7 +117,7 @@
                     <div class="row-fluid">
                         <div class="span6">
                             {% if current_id %}
-                                <a class="btn btn-danger btn-large" href="{{ url_for('.delete_template', template_type='dbf', action='delete_template', id=current_id)}}">Удалить шаблон</a>
+                                <a class="btn btn-danger btn-large confirm-delete" href="#" data-id={{ current_id }}>Удалить шаблон</a>
                             {% endif %}
                         </div>
                         <div class="span6 pull-right">
@@ -130,9 +130,24 @@
         </form>
           </div>
         </div>
+        <!-- Modal -->
+        <div id="modal-from-dom" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <a href="#" class="close">&times;</a>
+                 <h3>Удаление шаблона</h3>
+            </div>
+            <div class="modal-body">
+                <p>Вы действительно хотите удалить шаблон?</p>
+                <p id="debug-url"></p>
+            </div>
+            <div class="modal-footer">
+                <a href="{{ url_for('.delete_template', template_type='xml_patient', action='delete_template', id=current_id)}}" class="btn danger">Yes</a>
+                <!-- <a href="delete.php?some=param&ref=" class="btn danger">Yes 2</a> -->
+                <a href="javascript:$('#modal-from-dom').modal('hide')" class="btn secondary">No</a>
+            </div>
+        </div>
 {% endblock %}
 {% block modules_js %}
-  <script src="{{ url_for('static', filename='jquery-ui/js/jquery-1.9.1.js') }}"></script>
   <script src="{{ url_for('static', filename='jquery-ui/js/jquery-ui-1.10.2.custom.min.js') }}"></script>
   <script>
 
@@ -259,6 +274,12 @@
     });
     $( "ul, li" ).disableSelection();
     //$("#sortable, #sortable2").css('minHeight',"0px");
+    $('.confirm-delete').on('click', function(e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        $('#modal-from-dom').modal('show');
+    });
+
   });
   </script>
 {% endblock %}
