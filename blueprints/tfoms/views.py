@@ -178,13 +178,18 @@ def add_new_template(template_type='xml_patient', action="add_new"):
             tree_tags = [tag.tag_id for tag in TagsTree.query.filter_by(template_id=new_id)]
             unused_tags = filter(lambda x: x.tag_id not in tree_tags,
                                  StandartTree.query.filter_by(template_type_id=template_type_id))
+            tags_tree = tree.load_tree(root, [root])
         else:
-            root = TagTreeNode(StandartTree.query.filter_by(template_type_id=template_type_id).
-                               filter_by(parent_id=None).join(TagsTree.tag).first(), 0)
-
-            tree = StandartTagTree(root, template_type_id)
             unused_tags = []
-        tags_tree = tree.load_tree(root, [root])
+            if template_type == 'dbf':
+                tags_tree = [TagTreeNode(tag, 0) for tag in StandartTree.query.
+                filter_by(template_type_id=template_type_id).order_by(StandartTree.ordernum).
+                join(StandartTree.tag).all()]
+            else:
+                root = TagTreeNode(StandartTree.query.filter_by(template_type_id=template_type_id).
+                                   filter_by(parent_id=None).join(TagsTree.tag).first(), 0)
+                tree = StandartTagTree(root, template_type_id)
+                tags_tree = tree.load_tree(root, [root])
 
         templates = Template.query.filter_by(type_id=template_type_id).all()
 
