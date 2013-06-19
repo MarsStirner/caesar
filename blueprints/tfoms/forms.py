@@ -4,5 +4,5 @@ from flask.ext.wtf import Form, TextField, BooleanField, Required
 
 class CreateTemplateForm(Form):
     name = TextField('name', validators=[Required()], default="")
-    archive = BooleanField('archive')
+    archive = BooleanField('archive', default="true")
 
