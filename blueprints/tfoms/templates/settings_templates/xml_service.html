@@ -38,7 +38,7 @@
                                         <input class="is_active" type="radio" name="is_active" value="{{ id }}"/>
                                     {%- endif -%}
                                 </span>
-                                <a href={{ url_for('.settings_template', template_type='xml_service', id=id) }}>{{template.name}}</a>
+                                <a href="{{ url_for('.settings_template', template_type='xml_service', id=id) }}">{{template.name}}</a>
                    			</li>
                    		{%- else -%}
                   			<li>
@@ -49,14 +49,14 @@
                                             <input class="is_active" type="radio" name="is_active" value="{{ id }}" />
                                         {%- endif -%}
                                 </span>
-                  				<a href={{ url_for('.settings_template', template_type='xml_service', id=id) }}>{{template.name}}</a>
+                  				<a href="{{ url_for('.settings_template', template_type='xml_service', id=id) }}">{{template.name}}</a>
                   			</li>
                   		{%- endif -%}
                    {%- endfor -%}
                    <li class="divider"></li>
                    <li>
                         <span class="pull-left">
-                                <a href={{ url_for('.add_new_template', template_type='xml_service', action="add_new") }} class="btn btn-primary" title="Добавить новый шаблон">
+                                <a href="{{ url_for('.add_new_template', template_type='xml_service', action="add_new") }}" class="btn btn-primary" title="Добавить новый шаблон">
                                     <i class="icon-plus icon-white"></i>Создать
                                 </a>
                         </span>
@@ -231,7 +231,6 @@
                     new_name = new_name.replace(/removed/,"");
                     descendant.attr('name', new_name);
                 });
-                console.log('unused')
             }
             else{
                 descendants.each(function(index, el){
@@ -239,7 +238,6 @@
                     var old_name = descendant.attr('name');
                     descendant.attr('name', 'removed'+old_name);
                 });
-                console.log('now unused')
             }
 
 

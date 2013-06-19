@@ -37,7 +37,7 @@
                                             <input class="is_active" type="checkbox" name="is_active" value="{{ id }}" />
                                         {%- endif -%}
                                     </span>
-                                    <a href={{ url_for('.settings_template', template_type='dbf', id=id) }}>{{template.name}}</a>
+                                    <a href="{{ url_for('.settings_template', template_type='dbf', id=id) }}">{{template.name}}</a>
                                 </li>
                             {%- else -%}
                                 <li>
@@ -48,14 +48,14 @@
                                             <input class="is_active" type="checkbox" name="is_active" value="{{ id }}" />
                                         {%- endif -%}
                                     </span>
-                                    <a href={{ url_for('.settings_template', template_type='dbf', id=id) }}>{{template.name}}</a>
+                                    <a href="{{ url_for('.settings_template', template_type='dbf', id=id) }}">{{template.name}}</a>
                                 </li>
                             {%- endif -%}
                        {%- endfor -%}
                    <li class="divider"></li>
                    <li>
                         <span>
-                            <a href={{ url_for('.add_new_template', template_type='dbf', action="add_new") }} class="btn btn-primary" title="Добавить новый шаблон">
+                            <a href="{{ url_for('.add_new_template', template_type='dbf', action="add_new") }}" class="btn btn-primary" title="Добавить новый шаблон">
                                 <i class="icon-plus icon-white"></i>Создать
                             </a>
                         </span>
@@ -167,12 +167,12 @@
   <script>
 
   $(function() {
-      var number_of_checked = $("input[name=is_active]:checked").length
-        if (number_of_checked===2){
+      var number_of_checked = $("input[name=is_active]:checked").length;
+      if (number_of_checked===2){
             $("input[name=is_active]:not(:checked)").attr({
                               'disabled': 'disabled'
                         });
-        }
+      }
 
       $('#Save_as_new').click(function(){
           $('#btn').val($(this).val());
@@ -196,7 +196,7 @@
           });
       });
 
-        function distinguish_used_unused_tags(event, ui) {
+      function distinguish_used_unused_tags(event, ui) {
             var item = ui.item;
             var isused = item.closest('div').attr('id');
             var descendants = item.find('input');
@@ -208,7 +208,6 @@
                     new_name = new_name.replace(/removed/,"");
                     descendant.attr('name', new_name);
                 });
-                console.log('unused')
             }
             else{
                 descendants.each(function(index, el){
@@ -216,13 +215,10 @@
                     var old_name = descendant.attr('name');
                     descendant.attr('name', 'removed'+old_name);
                 });
-                console.log('now unused')
             }
+      }
 
-
-        }
-
-        function find_parent_ordernum(event, ui) {
+      function find_parent_ordernum(event, ui) {
             var item = ui.item;
             var isused = item.closest('div').attr('id');
             //var item_parent_input = ui.item.children('input');
@@ -259,12 +255,10 @@
                 });
 
             }
-
-        }
+      }
 
     $("input[name=is_active]:checkbox").change(
             function(){
-
                 var item = $(this);
                 if ($(this).is(':checked')){
                     $.ajax({
@@ -272,7 +266,7 @@
                             type : 'POST',
                             data: {activate:item.val()}
                     });
-                    var number_of_checked = $("input[name=is_active]:checked").length
+                    var number_of_checked = $("input[name=is_active]:checked").length;
                     if (number_of_checked===2){
                         $("input[name=is_active]:not(:checked)").attr({
                               'disabled': 'disabled'
@@ -285,12 +279,11 @@
                             type : 'POST',
                             data: {deactivate:item.val()}
                     });
-                    var number_of_checked = $("input[name=is_active]:checked").length
+                    var number_of_checked = $("input[name=is_active]:checked").length;
                     if (number_of_checked<2){
                         $("input[name=is_active]:not(:checked)").removeAttr('disabled');
                     }
                 }
-
             }
     );
 

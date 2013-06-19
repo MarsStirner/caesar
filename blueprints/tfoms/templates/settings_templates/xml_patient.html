@@ -35,7 +35,7 @@
                                             <input class="is_active" type="radio" name="is_active" value="{{ id }}" />
                                         {%- endif -%}
                                     </span>
-                                    <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{template.name}}</a>
+                                    <a href="{{ url_for('.settings_template', template_type='xml_patient', id=id) }}">{{template.name}}</a>
                                 </li>
                             {%- else -%}
                                 <li>
@@ -46,14 +46,14 @@
                                             <input class="is_active" type="radio" name="is_active" value="{{ id }}"  />
                                         {%- endif -%}
                                     </span>
-                                    <a href={{ url_for('.settings_template', template_type='xml_patient', id=id) }}>{{template.name}}</a>
+                                    <a href="{{ url_for('.settings_template', template_type='xml_patient', id=id) }}">{{template.name}}</a>
                                 </li>
                             {%- endif -%}
                        {%- endfor -%}
                        <li class="divider"></li>
                        <li>
                             <span>
-                                <a href={{ url_for('.add_new_template', template_type='xml_patient', action="add_new") }} class="btn btn-primary" title="Добавить новый шаблон">
+                                <a href="{{ url_for('.add_new_template', template_type='xml_patient', action="add_new") }}" class="btn btn-primary" title="Добавить новый шаблон">
                                     <i class="icon-plus icon-white"></i>Создать
                                 </a>
                             </span>
@@ -275,9 +275,7 @@
                     var ordernum_value = index+1;
                     item.val(parent_id+','+ordernum_value);
                 });
-
             }
-
         }
 
     $("input[name=is_active]:radio").change(
