@@ -53,7 +53,7 @@
                        <li class="divider"></li>
                        <li>
                             <span>
-                                <a href="/tfoms/settings_template/xml_patient/add_new" class="btn btn-primary" title="Добавить новый шаблон">
+                                <a href={{ url_for('.add_new_template', template_type='xml_patient', action="add_new") }} class="btn btn-primary" title="Добавить новый шаблон">
                                     <i class="icon-plus icon-white"></i>Создать
                                 </a>
                             </span>
@@ -61,7 +61,7 @@
                 </ul>
             </div>
             <div class="span8">
-                <form class="form-horizontal" method=post>
+                <form id="main_form" class="form-horizontal" method="post">
                     <legend>Параметры шаблона:</legend>
 
                     <div class="control-group">
@@ -146,14 +146,15 @@
                     <div class="row-fluid">
                         <div class="span6">
                             {% if current_id %}
-                                <a class="btn btn-danger btn-large confirm-delete" href="#" data-id={{ current_id }}>Удалить шаблон</a>
+                                <a id="confirm-delete" class="btn btn-danger btn-large" href="#" data-id={{ current_id }}>Удалить шаблон</a>
                             {% endif %}
                         </div>
                         <div class="span6 pull-right">
                             {% if current_id %}
-                            <button name="btn" value="Save_as_new" type="submit" class="btn btn-large">Сохранить как новый</button>
+                            <button id="Save_as_new" value="Save_as_new" type="submit" class="btn btn-large">Сохранить как новый</button>
                             {% endif %}
-                            <button name="btn" value="Save" type="submit" class="pull-right btn btn-success btn-large">Сохранить</button>
+                            <button id="Save" value="Save" type="submit" class="pull-right btn btn-success btn-large">Сохранить</button>
+                            <input id="btn" type="hidden" name="btn" value="Save">
                         </div>
                     </div>
                 </form>
@@ -162,7 +163,7 @@
         <!-- Modal -->
         <div id="modal-from-dom" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-header">
-                <a href="#" class="close">&times;</a>
+                <a href="javascript:$('#modal-from-dom').modal('hide')" class="close">&times;</a>
                  <h3>Удаление шаблона</h3>
             </div>
             <div class="modal-body">
@@ -174,12 +175,48 @@
                 <a href="{{ url_for('.delete_template', template_type='xml_patient', action='delete_template', id=current_id)}}" class="btn btn-danger">Да</a>
             </div>
         </div>
+        <div id="modal-from-dom1" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <a href="javascript:$('#modal-from-dom1').modal('hide')" class="close">&times;</a>
+                 <h3>Сохранение изменений в шаблоне</h3>
+            </div>
+            <div class="modal-body">
+                <p>Вы действительно хотите изменить шаблон?</p>
+                <p id="debug-url"></p>
+            </div>
+            <div class="modal-footer">
+                <a href="javascript:$('#modal-from-dom1').modal('hide');" class="btn btn-secondary">Нет</a>
+                <a id="confirm-save" href="javascript:$('#modal-from-dom1').modal('hide');" class="btn btn-success">Да</a>
+            </div>
+        </div>
 {% endblock %}
 {% block modules_js %}
   <script src="{{ url_for('static', filename='jquery-ui/js/jquery-ui-1.10.2.custom.min.js') }}"></script>
   <script>
 
   $(function() {
+
+      $('#Save_as_new').click(function(){
+          $('#btn').val($(this).val());
+      });
+
+      $('#Save').click(function(){
+          $('#main_form').submit(function(){
+              if({{ current_id }}){
+                  var form = $(this);
+                  $('#modal-from-dom1').modal('show');
+                  $('#confirm-save').click(function(){
+                      form.unbind('submit');
+                        form.submit();
+                  });
+                  return false;
+              }
+              else{
+                  return true;
+              }
+
+          });
+      });
 
         function distinguish_used_unused_tags(event, ui) {
             var item = ui.item;
@@ -193,7 +230,6 @@
                     new_name = new_name.replace(/removed/,"");
                     descendant.attr('name', new_name);
                 });
-                console.log('unused')
             }
             else{
                 descendants.each(function(index, el){
@@ -201,10 +237,7 @@
                     var old_name = descendant.attr('name');
                     descendant.attr('name', 'removed'+old_name);
                 });
-                console.log('now unused')
             }
-
-
         }
 
         function find_parent_ordernum(event, ui) {
@@ -252,19 +285,18 @@
                 var item = $(this);
                 if ($(this).is(':checked')){
                     $.ajax({
-                            url : '{{ url_for('.activate') }}',
+                            url : '{{ url_for('.activate', template_type='xml_patient') }}',
                             type : 'POST',
-                            data: {activate:item.attr('value')}
+                            data: {activate:item.val()}
                     });
                 }
                 else{
                     $.ajax({
-                            url : '{{ url_for('.activate') }}',
+                            url : '{{ url_for('.activate', template_type='xml_patient') }}',
                             type : 'POST',
-                            data: {deactivate:item.attr('value')}
+                            data: {deactivate:item.val()}
                     });
                 }
-
             }
     );
 
@@ -312,11 +344,12 @@
 {#    })#}
 {#    .modal({backdrop: true});#}
 
-    $('.confirm-delete').on('click', function(e) {
+    $('#confirm-delete').on('click', function(e) {
         e.preventDefault();
         var id = $(this).data('id');
         $('#modal-from-dom').modal('show');
     });
+
     //$("#sortable, #sortable2").css('minHeight',"0px");
   });
   </script>
