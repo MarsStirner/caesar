@@ -145,7 +145,7 @@ def add_new_template(template_type='xml_patient', action="add_new"):
     try:
         template_type_id = template_types[template_type]
         form = CreateTemplateForm()
-        
+
         if form.is_submitted():
 
             if 'archive' in request.form:
@@ -188,21 +188,7 @@ def delete_template(action='delete_template', template_type='xml_patient', id=id
         db.session.delete(current_template)
         db.session.commit()
 
-        template_type_id = template_types[template_type]
-        form = CreateTemplateForm()
-
-        templates = Template.query.filter_by(type_id=template_type_id).all()
-        unused_tags = []
-
-        root = TagTreeNode(StandartTree.query.filter_by(template_type_id=template_type_id).
-                           filter_by(parent_id=None).join(TagsTree.tag).first(), 0)
-
-        tree = StandartTagTree(root, template_type_id)
-        tags_tree = tree.load_tree(root, [root])
-        id = 0
-
-        return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates,
-                               current_id=id, tag_tree=tags_tree, unused_tags=unused_tags)
+        return redirect(url_for('.add_new_template', template_type=template_type, action="add_new"))
     except TemplateNotFound:
         abort(404)
 

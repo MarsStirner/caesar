@@ -2,14 +2,17 @@
     <li{% if request.path == url_for('.add_new_template', template_type='xml_patient')  or
     request.path == url_for('.add_new_template') or
     request.path == url_for('.settings_template', template_type='xml_patient', id=request.view_args.get('id', 0)) or
+    request.path == url_for('.delete_template', template_type='xml_patient', action='delete_template', id=request.view_args.get('id', 0)) or
     request.path == url_for('.add_new_template', template_type='xml_patient', action='add_new' ) %} class="active"{% endif %}><a href="{{ url_for('.add_new_template', template_type='xml_patient') }}">
         Сведения о персональных данных (XML)</a></li>
     <li{% if request.path == url_for('.add_new_template', template_type='xml_service') or
             request.path == url_for('.settings_template', template_type='xml_service', id=request.view_args.get('id', 0)) or
+            request.path == url_for('.delete_template', template_type='xml_service', action='delete_template', id=request.view_args.get('id', 0)) or
             request.path == url_for('.add_new_template', template_type='xml_service', action='add_new' )%} class="active"{% endif %}><a href="{{ url_for('.add_new_template', template_type='xml_service') }}">
         Сведения об оказанной мед.помощи (XML)</a></li>
     <li{% if request.path == url_for('.add_new_template', template_type='dbf') or
             request.path == url_for('.settings_template', template_type='dbf', id=request.view_args.get('id', 0)) or
+            request.path == url_for('.delete_template', template_type='dbf', action='delete_template', id=request.view_args.get('id', 0)) or
             request.path == url_for('.add_new_template', template_type='dbf', action='add_new' )%} class="active"{% endif %}><a href="{{ url_for('.add_new_template', template_type='dbf') }}">
         Выгрузка в формате DBF</a></li>
 </ul>
