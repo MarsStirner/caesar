@@ -94,7 +94,13 @@ $(document).ready(function(){
         $.post("{{ url_for('.ajax_download') }}",
                 { templates: templates, start: $('#from').val(), end: $('#to').val() },
                 function(res) {
-                    $('#result').html(res);
+                    if (res.error){
+                        show_error(res.error);
+                        $('#download_result').hide();
+                        $this.show();
+                    }else{
+                        $('#result').html(res);
+                    }
                 }
         );
         return false;
