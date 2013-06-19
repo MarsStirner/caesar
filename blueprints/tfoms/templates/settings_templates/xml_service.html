@@ -290,14 +290,14 @@
                 var item = $(this);
                 if ($(this).is(':checked')){
                     $.ajax({
-                            url : '{{ url_for('.activate') }}',
+                            url : '{{ url_for('.activate', template_type='xml_service') }}',
                             type : 'POST',
                             data: {activate:item.val()}
                     });
                 }
                 else{
                     $.ajax({
-                            url : '{{ url_for('.activate') }}',
+                            url : '{{ url_for('.activate', template_type='xml_service') }}',
                             type : 'POST',
                             data: {deactivate:item.val()}
                     });

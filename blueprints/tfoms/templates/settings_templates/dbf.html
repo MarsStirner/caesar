@@ -143,7 +143,7 @@
             </div>
             <div class="modal-footer">
                 <a href="javascript:$('#modal-from-dom').modal('hide')" class="btn btn-secondary">Нет</a>
-                <a href="{{ url_for('.delete_template', template_type='xml_patient', action='delete_template', id=current_id)}}" class="btn btn-danger">Да</a>
+                <a href="{{ url_for('.delete_template', template_type='dbf', action='delete_template', id=current_id)}}" class="btn btn-danger">Да</a>
             </div>
         </div>
 
@@ -261,14 +261,14 @@
                 var item = $(this);
                 if ($(this).is(':checked')){
                     $.ajax({
-                            url : '{{ url_for('.activate') }}',
+                            url : '{{ url_for('.activate', template_type='dbf') }}',
                             type : 'POST',
                             data: {activate:item.val()}
                     });
                 }
                 else{
                     $.ajax({
-                            url : '{{ url_for('.activate') }}',
+                            url : '{{ url_for('.activate', template_type='dbf') }}',
                             type : 'POST',
                             data: {deactivate:item.val()}
                     });

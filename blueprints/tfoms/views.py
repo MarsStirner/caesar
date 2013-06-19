@@ -206,18 +206,19 @@ def delete_template(action='delete_template', template_type='xml_patient', id=id
     except TemplateNotFound:
         abort(404)
 
-@module.route('/settings_template/activate/', methods=['POST'])
-def activate():
+@module.route('/settings_template/<string:template_type>/activate/', methods=['POST'])
+def activate(template_type):
     try:
         if request.form:
             if 'activate' in request.form:
                 id = request.form['activate']
                 template = Template.query.filter_by(id=id).first()
                 type = int(template.type_id)
-                deactivated = Template.query.filter_by(type_id=type).all()
-                for item in deactivated:
-                    if item.id != id:
-                        item.is_active = 0
+                if template_type != 'dbf':
+                    deactivated = Template.query.filter_by(type_id=type).all()
+                    for item in deactivated:
+                        if item.id != id:
+                            item.is_active = 0
                 template.is_active = 1
                 db.session.commit()
             elif 'deactivate' in request.form:
