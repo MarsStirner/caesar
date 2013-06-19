@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import datetime
+from datetime import datetime
 import calendar
+
 from urlparse import urlparse
 
 from thrift.transport import TTransport, TSocket
@@ -31,14 +32,28 @@ class TFOMSClient(object):
         self.client = Client(protocol)
         self.transport.open()
 
+        self.date_tags = ['DR', 'DATE_1', 'DATE_2', 'DATE_IN', 'DATE_OUT']
+
     def __del__(self):
         self.transport.close()
+
+    def __convert_date(self, timestamp):
+        return datetime.fromtimestamp(timestamp / 1000)
+
+    def __convert_dates(self, data):
+        for element in data:
+            for attr, value in element.__dict__.iteritems():
+                if attr in self.date_tags and isinstance(value, int):
+                    setattr(element, attr, self.__convert_date(value))
+        return data
 
     def __unicode_result(self, data):
         for element in data:
             for attr, value in element.__dict__.iteritems():
                 if isinstance(value, basestring):
                     setattr(element, attr, value.strip().decode('utf8'))
+                elif attr in self.date_tags and isinstance(value, int):
+                    setattr(element, attr, self.__convert_date(value))
         return data
 
     def get_patients(self, infis_code, start, end, **kwargs):
@@ -78,7 +93,7 @@ class TFOMSClient(object):
             raise e
         except TException, e:
             raise e
-        return result
+        return self.__convert_dates(result)
 
     def prepare_tables(self):
         """Запускает процесс обновления данных во временной таблице на сервере"""

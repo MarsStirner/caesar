@@ -12,7 +12,11 @@
                         {%- if node.tag.code == 'ID_PAC' -%}
                             {{ person|attr('patientId') }}
                         {%- elif person|attr(node.tag.code) -%}
-                            {{ person|attr(node.tag.code) }}
+                            {%- if node.tag.code in ['DR'] -%}
+                                {{ person|attr(node.tag.code)|datetimeformat('%Y-%m-%d') }}
+                            {%- else -%}
+                                {{ person|attr(node.tag.code) }}
+                            {%- endif -%}
                         {%- endif -%}
                     </{{ node.tag.code }}>
                 {%- endfor -%}

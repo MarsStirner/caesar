@@ -17,6 +17,10 @@ DOWNLOADS_DIR = os.path.join(module.static_folder, 'downloads')
 UPLOADS_DIR = os.path.join(module.static_folder, 'uploads')
 
 
+def datetimeformat(value, format='%Y-%m-%d'):
+    return value.strftime(format)
+
+
 class Patients(object):
 
     def __init__(self, start, end, infis_code, tags):
@@ -187,6 +191,8 @@ class XML(object):
 
     def generate_file(self, tags_tree, data):
         env = Environment(loader=PackageLoader(module.import_name, module.template_folder))
+        env.filters['datetimeformat'] = datetimeformat
+
         template = env.get_template(self.template)
         linked_file = XML(data_type='xml_services', end=self.end)
         linked_file.generate_filename()
