@@ -5,7 +5,7 @@ import calendar
 from urlparse import urlparse
 
 from thrift.transport import TTransport, TSocket
-from thrift.protocol import TCompactProtocol
+from thrift.protocol import TBinaryProtocol
 
 from thrift_service.TFOMSService import Client
 from thrift_service.ttypes import Patient, PatientOptionalFields, Sluch, SluchOptionalFields, Usl, Spokesman
@@ -26,10 +26,13 @@ class TFOMSClient(object):
         port = url_parsed.port
 
         socket = TSocket.TSocket(host, port)
-        transport = TTransport.TBufferedTransport(socket)
-        protocol = TCompactProtocol.TCompactProtocol(transport)
+        self.transport = TTransport.TBufferedTransport(socket)
+        protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
         self.client = Client(protocol)
-        transport.open()
+        self.transport.open()
+
+    def __del__(self):
+        self.transport.close()
 
     def __unicode_result(self, data):
         for element in data:
