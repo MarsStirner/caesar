@@ -88,7 +88,6 @@ def settings_template(template_type='xml_patient', id=0):
         template_type_id = template_types[template_type]
 
         templates = Template.query.filter_by(type_id=template_type_id).all()
-
         current_template = filter(lambda x: x.id == id, templates)
 
         if current_template[0].archive:
@@ -123,14 +122,15 @@ def settings_template(template_type='xml_patient', id=0):
                 save_template_tag_tree(data, current_template_id)
                 current_template[0].name = request.form['name']
                 current_template[0].archive = archive
+                db.session.commit()
+                return redirect(url_for('.settings_template', template_type=template_type, id=current_template_id))
             if request.form['btn'] == 'Save_as_new':
                 new_template = Template(name=request.form['name'], archive=archive, type_id=template_type_id)
                 db.session.add(new_template)
                 db.session.commit()
                 new_id = new_template.id
                 save_new_template_tree(new_id, data)
-
-            db.session.commit()
+                return redirect(url_for('.settings_template', template_type=template_type, id=new_id))
 
         return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates,
                                current_id=id, tag_tree=tag_tree, unused_tags=unused_tags)
