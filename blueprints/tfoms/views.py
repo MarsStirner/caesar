@@ -145,7 +145,7 @@ def add_new_template(template_type='xml_patient', action="add_new"):
     try:
         template_type_id = template_types[template_type]
         form = CreateTemplateForm()
-        
+
         if form.is_submitted():
 
             if 'archive' in request.form:
