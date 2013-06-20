@@ -10,6 +10,7 @@
 	  .sortable ul, .unused ul, .necessary ul{ margin:0px 0px 0px 25px; padding: 8px 0px 0px 0px;}
       .children { border-left:1px dotted;}
       #root { padding: 8px 0px 0px 0px;}
+      .alert {margin-top:20px; margin-bottom: 0px;}
   </style>
 {% endblock %}
 
@@ -67,7 +68,18 @@
                     <div class="control-group">
                         <label class="control-label">Название шаблона:</label>
                         <div class="controls">
+                            {{ form.hidden_tag() }}
                             {{ form.name(class='input-xlarge', placeholder="Введите наименование шаблона", maxlength=30) }}
+{#                            {% if form.name.errors %}#}
+{#                                <ul class=errors style="color:red">#}
+{#                                {% for error in form.name.errors %}#}
+{#                                  <li>{{ error }}</li>#}
+{#                                {% endfor %}#}
+{#                                </ul>#}
+{#                            {% endif %}#}
+                            <div class="alert alert-error hidden">
+                              <strong>Внимание!</strong> <span id="error_text"></span>
+                            </div>
                         </div>
                     </div>
                     <div class="control-group">
@@ -196,8 +208,27 @@
 
   $(function() {
 
+      var templates = {{ templates_names|tojson|safe }};
+
+      function show_error(text){
+            $('#error_text').text(text);
+            $(".alert").removeClass('hidden');
+      }
+
       $('#Save_as_new').click(function(){
           $('#btn').val($(this).val());
+          $('#main_form').submit(function(){
+              var current_name = $("input[name=name]").val();
+              if (current_name === ""){
+                  show_error('Необходимо указать наименование шаблона!');
+                  return false;
+              }
+              else if (templates.indexOf(current_name) != -1){
+                  show_error('Наименование шаблонов должны быть уникальны!');
+                  return false;
+              }
+              return true;
+          });
       });
 
       $('#Save').click(function(){
@@ -212,6 +243,15 @@
                   return false;
               }
               else{
+                  var current_name = $("input[name=name]").val();
+                  if (current_name === ""){
+                      show_error('Необходимо указать наименование шаблона!');
+                      return false;
+                  }
+                  else if (templates.indexOf(current_name) != -1){
+                      show_error('Наименование шаблонов должны быть уникальны!');
+                      return false;
+                  }
                   return true;
               }
 

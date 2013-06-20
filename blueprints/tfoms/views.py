@@ -2,7 +2,7 @@
 import re
 from datetime import datetime
 
-from flask import render_template, abort, request, redirect, jsonify, send_from_directory, url_for
+from flask import render_template, abort, request, redirect, jsonify, send_from_directory, url_for, json
 
 from jinja2 import TemplateNotFound
 from app import module
@@ -88,6 +88,7 @@ def settings_template(template_type='xml_patient', id=0):
         template_type_id = template_types[template_type]
 
         templates = Template.query.filter_by(type_id=template_type_id).all()
+        templates_names = [template.name for template in templates]
         current_template = filter(lambda x: x.id == id, templates)
 
         if current_template[0].archive:
@@ -133,7 +134,7 @@ def settings_template(template_type='xml_patient', id=0):
                 return redirect(url_for('.settings_template', template_type=template_type, id=new_id))
 
         return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates,
-                               current_id=id, tag_tree=tag_tree, unused_tags=unused_tags)
+                               current_id=id, tag_tree=tag_tree, unused_tags=unused_tags, templates_names=templates_names)
     except TemplateNotFound:
         abort(404)    
 
@@ -147,20 +148,20 @@ def add_new_template(template_type='xml_patient', action="add_new"):
         form = CreateTemplateForm()
 
         if form.is_submitted():
+            if form.validate():
+                if 'archive' in request.form:
+                    archive = 1
+                else:
+                    archive = 0
 
-            if 'archive' in request.form:
-                archive = 1
-            else:
-                archive = 0
+                new_template = Template(name=request.form['name'], archive=archive, type_id=template_type_id)
+                db.session.add(new_template)
+                db.session.commit()
+                new_id = new_template.id
 
-            new_template = Template(name=request.form['name'], archive=archive, type_id=template_type_id)
-            db.session.add(new_template)
-            db.session.commit()
-            new_id = new_template.id
-
-            data = request.form.items()
-            save_new_template_tree(new_id, data)
-            return redirect(url_for('.settings_template', template_type=template_type, id=new_id))
+                data = request.form.items()
+                save_new_template_tree(new_id, data)
+                return redirect(url_for('.settings_template', template_type=template_type, id=new_id))
         else:
             unused_tags = []
             if template_type == 'dbf':
@@ -174,9 +175,11 @@ def add_new_template(template_type='xml_patient', action="add_new"):
                 tags_tree = tree.load_tree(root, [root])
 
         templates = Template.query.filter_by(type_id=template_type_id).all()
+        templates_names = [template.name for template in templates]
 
         return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates,
-                               current_id=0, tag_tree=tags_tree, unused_tags=unused_tags)
+                               current_id=0, tag_tree=tags_tree, unused_tags=unused_tags,
+                               templates_names=json.dumps(templates_names))
     except TemplateNotFound:
         abort(404)
 
