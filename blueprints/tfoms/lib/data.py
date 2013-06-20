@@ -6,6 +6,7 @@ from zipfile import ZipFile
 from jinja2 import Environment, PackageLoader
 from application.database import db
 from service_client import TFOMSClient as Client
+from thrift_service.ttypes import PatientOptionalFields, SluchOptionalFields
 from tags_tree import TagTree
 from ..app import module
 from ..models import Template, TagsTree, Tag
@@ -14,6 +15,10 @@ from ..config import CORE_SERVICE_URL, OLD_LPU_INFIS_CODE, SMO_NUMBER
 
 DOWNLOADS_DIR = os.path.join(module.static_folder, 'downloads')
 UPLOADS_DIR = os.path.join(module.static_folder, 'uploads')
+
+
+def datetimeformat(value, format='%Y-%m-%d'):
+    return value.strftime(format)
 
 
 class Patients(object):
@@ -25,9 +30,22 @@ class Patients(object):
         self.infis_code = infis_code
         self.tags = tags
 
+    def __filter_tags(self, tags):
+        result = []
+        for tag in tags:
+            try:
+                attr = getattr(PatientOptionalFields, tag)
+            except exceptions.AttributeError:
+                pass
+            else:
+                result.append(attr)
+        return result
+
     def get_data(self):
-        #TODO: use optionalFields
-        data = self.client.get_patients(infis_code=self.infis_code, start=self.start, end=self.end)
+        data = self.client.get_patients(infis_code=self.infis_code,
+                                        start=self.start,
+                                        end=self.end,
+                                        optional=self.__filter_tags(self.tags))
         return data
 
 
@@ -40,6 +58,17 @@ class Services(object):
         self.infis_code = infis_code
         self.tags = tags
 
+    def __filter_tags(self, tags):
+        result = []
+        for tag in tags:
+            try:
+                attr = getattr(SluchOptionalFields, tag)
+            except exceptions.AttributeError:
+                pass
+            else:
+                result.append(attr)
+        return result
+
     def get_data(self):
         patients = Patients(self.start, self.end, self.infis_code, [])
         patients_data = patients.get_data()
@@ -48,7 +77,8 @@ class Services(object):
         data = self.client.get_patient_events(infis_code=self.infis_code,
                                               start=self.start,
                                               end=self.end,
-                                              patients=self.patients)
+                                              patients=self.patients,
+                                              optional=self.__filter_tags(self.tags))
         return data
 
 
@@ -161,6 +191,8 @@ class XML(object):
 
     def generate_file(self, tags_tree, data):
         env = Environment(loader=PackageLoader(module.import_name, module.template_folder))
+        env.filters['datetimeformat'] = datetimeformat
+
         template = env.get_template(self.template)
         linked_file = XML(data_type='xml_services', end=self.end)
         linked_file.generate_filename()

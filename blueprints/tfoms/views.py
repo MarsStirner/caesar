@@ -7,6 +7,7 @@ from flask import render_template, abort, request, redirect, jsonify, send_from_
 from jinja2 import TemplateNotFound
 from app import module
 
+from lib.thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException
 
 from forms import CreateTemplateForm
 from lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
@@ -30,11 +31,15 @@ def ajax_download():
     templates = request.form.getlist('templates[]')
     start = datetime.strptime(request.form['start'], '%d.%m.%Y')
     end = datetime.strptime(request.form['end'], '%d.%m.%Y')
-    for template_id in templates:
-        worker = DownloadWorker()
-        file_url = worker.do_download(template_id, start, end, LPU_INFIS_CODE)
-        result.append(dict(url=file_url))
-    return render_template('download/result.html', files=result)
+    #TODO: как-то покрасивее сделать
+    try:
+        for template_id in templates:
+            worker = DownloadWorker()
+            file_url = worker.do_download(template_id, start, end, LPU_INFIS_CODE)
+            result.append(dict(url=file_url))
+        return render_template('download/result.html', files=result)
+    except NotFoundException:
+        return jsonify(error=u'В заданный период данных для выгрузки не найдено')
 
 
 @module.route('/download/')

@@ -18,6 +18,9 @@
             <legend>Укажите параметры выгрузки</legend>
             <div class="row">
                 <div class="span6">
+                <div class="alert alert-error hidden">
+                  <strong>Внимание!</strong> <span id="error_text"></span>
+                </div>
                 <div class="control-group">
                     <label class="control-label">Даты:</label>
                     <div class="controls">
@@ -32,9 +35,6 @@
                     </div>
                 </div>
                 <div class="control-group">
-                    <div class="alert alert-error hidden">
-                      <strong>Внимание!</strong> Не выбран ни один шаблон для выгрузки.
-                    </div>
                     <label class="control-label">Шаблоны:</label>
                     <div class="controls well well-small">
                         {% for template in templates %}
@@ -59,9 +59,13 @@
 <div class="loader"></div>
 {% endblock %}
 {% block modules_js %}
-<script src="{{ url_for('static', filename="jquery-ui/js/jquery-ui-1.10.2.custom.min.js") }}"></script>
+<script src="{{ url_for('static', filename='jquery-ui/js/jquery-ui-1.10.2.custom.min.js') }}"></script>
 <script src="{{ url_for('static', filename='jquery-ui/js/i18n/jquery.ui.datepicker-ru.js') }}"></script>
 <script type="text/javascript">
+function show_error(text){
+    $('#error_text').text(text);
+    $(".alert").removeClass('hidden');
+}
 $(document).ready(function(){
     $('#download_result').hide();
     $(document).on({
@@ -81,7 +85,7 @@ $(document).ready(function(){
             }
         });
         if (!templates.length){
-            $(".alert").removeClass('hidden');
+            show_error('Не выбран ни один шаблон для выгрузки');
             return false;
         }
         $this.hide();
@@ -90,7 +94,13 @@ $(document).ready(function(){
         $.post("{{ url_for('.ajax_download') }}",
                 { templates: templates, start: $('#from').val(), end: $('#to').val() },
                 function(res) {
-                    $('#result').html(res);
+                    if (res.error){
+                        show_error(res.error);
+                        $('#download_result').hide();
+                        $this.show();
+                    }else{
+                        $('#result').html(res);
+                    }
                 }
         );
         return false;
