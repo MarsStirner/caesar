@@ -41,10 +41,13 @@ class TFOMSClient(object):
         return datetime.fromtimestamp(timestamp / 1000)
 
     def __convert_dates(self, data):
-        for element in data:
-            for attr, value in element.__dict__.iteritems():
-                if attr in self.date_tags and isinstance(value, int):
-                    setattr(element, attr, self.__convert_date(value))
+        for item in data:
+            for element in data[item]:
+                for attr, value in element.__dict__.iteritems():
+                    if attr in self.date_tags and isinstance(value, int):
+                        setattr(element, attr, self.__convert_date(value))
+                    elif isinstance(value, basestring):
+                        setattr(element, attr, value.strip().decode('utf8'))
         return data
 
     def __unicode_result(self, data):

@@ -10,7 +10,7 @@ from thrift_service.ttypes import PatientOptionalFields, SluchOptionalFields
 from tags_tree import TagTree
 from ..app import module
 from ..models import Template, TagsTree, Tag
-from ..config import CORE_SERVICE_URL, OLD_LPU_INFIS_CODE, SMO_NUMBER
+from ..config import CORE_SERVICE_URL, OLD_LPU_INFIS_CODE, SMO_NUMBER, LPU_INFIS_CODE, PAYER_CODE
 
 
 DOWNLOADS_DIR = os.path.join(module.static_folder, 'downloads')
@@ -69,17 +69,43 @@ class Services(object):
                 result.append(attr)
         return result
 
+    def __get_ammount(self, services):
+        ammount = 0.0
+        if not services:
+            return ammount
+        for key, event_list in services.iteritems():
+            if event_list:
+                for event in event_list:
+                    ammount += getattr(event, 'SUMV', 0)
+        return ammount
+
+    def __get_bill(self, services):
+        data = dict(CODE=1,
+                    CODE_MO=LPU_INFIS_CODE,
+                    YEAR=self.end.strftime('%Y'),
+                    MONTH=self.end.strftime('%m'),
+                    NSCHET='%s-%s/%s' % (self.end.strftime('%Y%m'), 1, OLD_LPU_INFIS_CODE),
+                    DSCHET=date.today().strftime('%Y-%m-%d'),
+                    PLAT=PAYER_CODE,
+                    SUMMAV=self.__get_ammount(services))
+        return data
+
     def get_data(self):
-        patients = Patients(self.start, self.end, self.infis_code, [])
+        patients = Patients(self.start, self.end, self.infis_code, self.tags)
         patients_data = patients.get_data()
-        self.patients = [patient.patientId for patient in patients_data]
+
+        patient_ids = []
+        patients = dict()
+        for patient in patients_data:
+            patient_ids.append(patient.patientId)
+            patients[patient.patientId] = patient
 
         data = self.client.get_patient_events(infis_code=self.infis_code,
                                               start=self.start,
                                               end=self.end,
-                                              patients=self.patients,
+                                              patients=patient_ids,
                                               optional=self.__filter_tags(self.tags))
-        return data
+        return dict(patients=patients, services=data, bill=self.__get_bill(data))
 
 
 class DownloadWorker(object):
