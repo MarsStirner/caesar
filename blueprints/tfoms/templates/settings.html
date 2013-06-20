@@ -8,29 +8,32 @@
 
     {% include '_nav_menu.html' %}
 
-      <form class="form-horizontal">
+        <form class="form-horizontal" method="post">
+            {{ form.hidden_tag() }}
             <legend>Настройки</legend>
             <div class="control-group">
-                <label class="control-label">Формат по-умолчанию</label>
+                <label class="control-label" >Адрес сервиса в ядре</label>
                 <div class="controls">
-                    <label class="radio">
-                        <input type="radio" name="format" value="XML" checked="checked">XML
-                    </label>
-                    <label class="radio">
-                        <input type="radio" name="format" value="DBF">DBF
-                    </label>
+                        {{ form.core_service_url(placeholder="Введите адрес сервиса", required="required") }}
+
                 </div>
             </div>
             <div class="control-group">
-                <label class="control-label">Ещё настройка</label>
+                <label class="control-label">ИНФИС код ЛПУ</label>
                 <div class="controls">
-                    <select name="type" class="span3">
-                        <option value="0">- выберите значение -</option>
-                        <option value="1">Значение 1</option>
-                        <option value="2">Значение 2</option>
-                        <option value="3">Значение 3</option>
-                        <option value="4">Значение 4</option>
-                    </select>
+                    {{ form.lpu_infis_code(placeholder="Введите ИНФИС код ЛПУ", pattern="\d+", required="required") }}
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">старый ИНФИС код</label>
+                <div class="controls">
+                    {{ form.old_lpu_infis_code(placeholder="Введите старый ИНФИС код", pattern="\d+", required="required") }}
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label"> номер СМО</label>
+                <div class="controls">
+                    {{ form.smo_number(placeholder="Введите номер СМО", pattern="\d+", required="required") }}
                 </div>
             </div>
             <div class="control-group">

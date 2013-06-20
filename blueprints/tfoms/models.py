@@ -132,3 +132,15 @@ class TagsTree(db.Model):
 
     def __unicode__(self):
         return self.tag.code
+
+
+class ConfigVariables(db.Model):
+    __tablename__ = '%s_config_variables' % TABLE_PREFIX
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    code = db.Column(db.String(25), unique=True, nullable=False)
+    name = db.Column(db.String(25), unique=True, nullable=False)
+    value = db.Column(db.String(30))
+
+    def __unicode__(self):
+        return self.tag.code
