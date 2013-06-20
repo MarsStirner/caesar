@@ -11,7 +11,13 @@
         <form class="form-horizontal" method="post">
             {{ form.hidden_tag() }}
             <legend>Настройки</legend>
+            <div class="control-group">
+                <label class="control-label" >Адрес сервиса в ядре</label>
+                <div class="controls">
+                        {{ form.core_service_url(placeholder="Введите адрес сервиса", required="required") }}
 
+                </div>
+            </div>
             <div class="control-group">
                 <label class="control-label">ИНФИС код ЛПУ</label>
                 <div class="controls">
@@ -28,17 +34,6 @@
                 <label class="control-label"> номер СМО</label>
                 <div class="controls">
                     {{ form.smo_number(placeholder="Введите номер СМО", pattern="\d+", required="required") }}
-                </div>
-            </div>
-            <div class="control-group">
-                <label class="control-label">Формат по-умолчанию</label>
-                <div class="controls">
-                    <label class="radio">
-                        <input type="radio" name="format" value="XML" checked="checked">XML
-                    </label>
-                    <label class="radio">
-                        <input type="radio" name="format" value="DBF">DBF
-                    </label>
                 </div>
             </div>
             <div class="control-group">

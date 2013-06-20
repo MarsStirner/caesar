@@ -84,17 +84,16 @@ def settings():
         smo_number = ConfigVariables.query.filter_by(code="smo_number").first()
         lpu_infis_code = ConfigVariables.query.filter_by(code="lpu_infis_code").first()
         old_lpu_infis_code = ConfigVariables.query.filter_by(code="old_lpu_infis_code").first()
+        core_service_url = ConfigVariables.query.filter_by(code="core_service_url").first()
 
         form = ConfigVariablesForm(smo_number=smo_number.value, lpu_infis_code=lpu_infis_code.value,
-                                   old_lpu_infis_code=old_lpu_infis_code.value)
+                                   old_lpu_infis_code=old_lpu_infis_code.value, core_service_url=core_service_url.value)
         if form.validate_on_submit():
 
             smo_number.value = request.form['smo_number']
             lpu_infis_code.value = request.form['lpu_infis_code']
             old_lpu_infis_code.value = request.form['old_lpu_infis_code']
-
-            default_format = ConfigVariables.query.filter_by(code="default_download_type").first()
-            default_format.value = request.form['format']
+            core_service_url.value = request.form['core_service_url']
 
             db.session.commit()
 

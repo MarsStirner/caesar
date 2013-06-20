@@ -25,4 +25,4 @@ class ConfigVariablesForm(Form):
     smo_number = IntegerField('smo_namber', validators=[Required()], default="")
     lpu_infis_code = IntegerField('lpu_infis_code', validators=[Required()], default="")
     old_lpu_infis_code = IntegerField('old_lpu_infis_code', validators=[Required()], default="")
-
+    core_service_url = TextField('core_service_url', validators=[Required()], default="")
