@@ -186,6 +186,7 @@ class XML(object):
         self.file_name += OLD_LPU_INFIS_CODE
         self.file_name += 'T'
         self.file_name += SMO_NUMBER
+        self.file_name += '_'
         self.file_name += '%s' % self.end.strftime("%y%m")
         self.file_name += '1'
 
