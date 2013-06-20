@@ -9,10 +9,10 @@ from app import module
 
 from lib.thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException
 
-from forms import CreateTemplateForm
+from forms import CreateTemplateForm, ConfigVariablesForm
 from lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
 from lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR
-from models import Template, TagsTree, StandartTree, TemplateType, DownloadType
+from models import Template, TagsTree, StandartTree, TemplateType, DownloadType, ConfigVariables
 from utils import template_types, save_template_tag_tree, save_new_template_tree
 from application.database import db
 from config import LPU_INFIS_CODE
@@ -78,10 +78,27 @@ def reports():
         abort(404)
 
 
-@module.route('/settings/')
+@module.route('/settings/', methods=['GET', 'POST'])
 def settings():
     try:
-        return render_template('settings.html')
+        smo_number = ConfigVariables.query.filter_by(code="smo_number").first()
+        lpu_infis_code = ConfigVariables.query.filter_by(code="lpu_infis_code").first()
+        old_lpu_infis_code = ConfigVariables.query.filter_by(code="old_lpu_infis_code").first()
+
+        form = ConfigVariablesForm(smo_number=smo_number.value, lpu_infis_code=lpu_infis_code.value,
+                                   old_lpu_infis_code=old_lpu_infis_code.value)
+        if form.validate_on_submit():
+
+            smo_number.value = request.form['smo_number']
+            lpu_infis_code.value = request.form['lpu_infis_code']
+            old_lpu_infis_code.value = request.form['old_lpu_infis_code']
+
+            default_format = ConfigVariables.query.filter_by(code="default_download_type").first()
+            default_format.value = request.form['format']
+
+            db.session.commit()
+
+        return render_template('settings.html', form=form)
     except TemplateNotFound:
         abort(404)
 
