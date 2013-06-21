@@ -82,6 +82,15 @@ def upgrade():
     sa.ForeignKeyConstraint(['template_type_id'], ['tfoms_template_type.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('tfoms_config_variables',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('code', sa.String(length=25), nullable=False),
+    sa.Column('name', sa.Unicode(length=25), nullable=False),
+    sa.Column('value', sa.Unicode(length=100), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('code'),
+    sa.UniqueConstraint('name')
+    )
 
     restore()
     ### end Alembic commands ###
