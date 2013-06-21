@@ -143,4 +143,4 @@ class ConfigVariables(db.Model):
     value = db.Column(db.String(30))
 
     def __unicode__(self):
-        return self.tag.code
+        return self.name
