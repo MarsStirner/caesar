@@ -10,7 +10,7 @@ from app import module, _config
 
 from lib.thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException
 
-from forms import CreateTemplateForm, ConfigVariablesForm
+from forms import CreateTemplateForm
 from lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
 from lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR
 from models import Template, TagsTree, StandartTree, TemplateType, DownloadType, ConfigVariables
@@ -66,7 +66,8 @@ def download_file(filename):
 @module.route('/upload/')
 def upload():
     try:
-        return render_template('upload.html')
+        # return render_template('upload.html')
+        return render_template('under_construction.html')
     except TemplateNotFound:
         abort(404)
 
@@ -74,7 +75,8 @@ def upload():
 @module.route('/reports/')
 def reports():
     try:
-        return render_template('reports.html')
+        # return render_template('reports.html')
+        return render_template('under_construction.html')
     except TemplateNotFound:
         abort(404)
 
