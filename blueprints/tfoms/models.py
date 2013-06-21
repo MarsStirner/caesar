@@ -139,9 +139,11 @@ class ConfigVariables(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     code = db.Column(db.String(25), unique=True, nullable=False)
-    name = db.Column(db.String(25), unique=True, nullable=False)
-    value = db.Column(db.String(30))
+    name = db.Column(db.Unicode(25), unique=True, nullable=False)
+    value = db.Column(db.Unicode(100))
     value_type = db.Column(db.String(30))
 
     def __unicode__(self):
         return self.code
+
+

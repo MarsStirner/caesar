@@ -1,29 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 {%- for item in tags_tree recursive -%}
-<{{ item.tag.code }}>
-    {%- if item.children -%}
-        {%- if item.tag.code == 'ZAP' -%}
-            {%- for person in data -%}
-                {%- if not loop.first -%}
-                </{{ item.tag.code }}><{{ item.tag.code }}>
-                {%- endif -%}
+    {%- if item.tag.code == 'ZAP' -%}
+        {%- for patient_id in data['services'] -%}
+            {% set outer_loop = loop %}
+            <{{ item.tag.code }}>
                 {%- for node in item.children -%}
-                    <{{ node.tag.code }}>
-                        {%- if node.tag.code == 'ID_PAC' -%}
-                            {{ person|attr('patientId') }}
-                        {%- elif person|attr(node.tag.code) -%}
-                            {{ person|attr(node.tag.code) }}
-                        {%- endif -%}
-                    </{{ node.tag.code }}>
+                    {%- if node.tag.code == 'N_ZAP' -%}
+                        <{{ node.tag.code }}>{{ outer_loop.index }}</{{ node.tag.code }}>
+                    {%- elif node.tag.code == 'PR_NOV' -%}
+                        <{{ node.tag.code }}>0</{{ node.tag.code }}>
+                    {%- elif node.tag.code == 'PACIENT' and node.children -%}
+                        {%- for patient_field in node.children -%}
+                            {%- if patient_field.tag.code == 'ID_PAC' -%}
+                                <{{ patient_field.tag.code }}>{{ patient_id }}</{{ patient_field.tag.code }}>
+                            {%- elif data['patients'][patient_id]|attr(patient_field.tag.code) -%}
+                                <{{ patient_field.tag.code }}>{{ data['patients'][patient_id]|attr(patient_field.tag.code) }}</{{ patient_field.tag.code }}>
+                            {%- endif -%}
+                        {%- endfor -%}
+                    {%- elif node.tag.code == 'SLUCH' and node.children -%}
+                        {%- for event in data['services'][patient_id] -%}
+                            <{{ node.tag.code }}>
+                                {%- for event_field in node.children -%}
+                                    {%- if event_field.tag.code == 'USL' -%}
+                                        <{{ event_field.tag.code }}>
+                                        {%- if event|attr(event_field.tag.code) and event_field.children -%}
+                                            {%- for service in event|attr(event_field.tag.code) -%}
+                                                {%- for service_field in event_field.children -%}
+                                                    {%- if service|attr(service_field.tag.code) -%}
+                                                        <{{ service_field.tag.code }}>{{ service|attr(service_field.tag.code) }}</{{ service_field.tag.code }}>
+                                                    {%- elif event|attr(service_field.tag.code) -%}
+                                                        <{{ service_field.tag.code }}>{{ event|attr(service_field.tag.code) }}</{{ service_field.tag.code }}>
+                                                    {%- elif service_field.tag.code == 'DS' -%}
+                                                        <{{ service_field.tag.code }}>{{ service|attr('DS1') }}</{{ service_field.tag.code }}>
+                                                    {%- elif service_field.tag.code == 'SUMV_USL' -%}
+                                                        <{{ service_field.tag.code }}>{{ service|attr('TARIF') * service|attr('KOL_USL') }}</{{ service_field.tag.code }}>
+                                                    {%- elif service_field.tag.code == 'DATE_IN' -%}
+                                                        <{{ service_field.tag.code }}>{{ event|attr('DATE_1') }}</{{ service_field.tag.code }}>
+                                                    {%- elif service_field.tag.code == 'DATE_OUT' -%}
+                                                        <{{ service_field.tag.code }}>{{ event|attr('DATE_2') }}</{{ service_field.tag.code }}>
+                                                    {%- elif service_field.tag.code == 'CODE_MD' -%}
+                                                        <{{ service_field.tag.code }}>{{ event|attr('IDDOKT') }}</{{ service_field.tag.code }}>
+                                                    {%- endif -%}
+                                                {%- endfor -%}
+                                            {%- endfor -%}
+                                        {%- endif -%}
+                                        </{{ event_field.tag.code }}>
+                                    {%- elif event|attr(event_field.tag.code) -%}
+                                        <{{ event_field.tag.code }}>{{ event|attr(event_field.tag.code) }}</{{ event_field.tag.code }}>
+                                    {%- endif -%}
+                                {%- endfor -%}
+                            </{{ node.tag.code }}>
+                        {%- endfor -%}
+                    {%- endif -%}
                 {%- endfor -%}
-            {%- endfor -%}
-        {%- else -%}
-            {{ loop(item.children) }}
+            </{{ item.tag.code }}>
+        {%- endfor -%}
+    {%- elif item.tag.code == 'ZGL' -%}
+        <{{ item.tag.code }}>
+        {%- if item.children -%}
+            {%- for child in item.children -%}
+                {%- if child.tag.code in head -%}
+                    <{{ child.tag.code }}>{{ head[child.tag.code] }}</{{ child.tag.code }}>
+                {%- endif %}
+            {%- endfor %}
         {%- endif -%}
-    {%- else -%}
-        {%- if item.parent.tag.code == 'ZGL' -%}
-        {{ head[item.tag.code] }}
+        </{{ item.tag.code }}>
+    {%- elif item.tag.code == 'SCHET' -%}
+        <{{ item.tag.code }}>
+        {%- if item.children -%}
+            {%- for child in item.children -%}
+                {%- if child.tag.code in data['bill'] -%}
+                    <{{ child.tag.code }}>{{ data['bill'][child.tag.code] }}</{{ child.tag.code }}>
+                {%- endif %}
+            {%- endfor %}
         {%- endif -%}
+        </{{ item.tag.code }}>
+    {%- elif item.tag.code == 'ZL_LIST' -%}
+        <{{ item.tag.code }}>{{ loop(item.children) }}</{{ item.tag.code }}>
     {%- endif -%}
-</{{ item.tag.code }}>
 {%- endfor %}
