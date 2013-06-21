@@ -2,10 +2,10 @@
 import re
 from datetime import datetime
 
-from flask import render_template, abort, request, redirect, jsonify, send_from_directory, url_for, json
+from flask import render_template, abort, request, redirect, jsonify, send_from_directory, url_for, json, g
 
 from jinja2 import TemplateNotFound
-from app import module
+from app import module, _config
 
 from lib.thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException
 
@@ -15,7 +15,7 @@ from lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR
 from models import Template, TagsTree, StandartTree, TemplateType, DownloadType, ConfigVariables
 from utils import template_types, save_template_tag_tree, save_new_template_tree
 from application.database import db
-from config import LPU_INFIS_CODE
+
 
 @module.route('/')
 def index():
@@ -35,7 +35,7 @@ def ajax_download():
     try:
         for template_id in templates:
             worker = DownloadWorker()
-            file_url = worker.do_download(template_id, start, end, LPU_INFIS_CODE)
+            file_url = worker.do_download(template_id, start, end, _config('lpu_infis_code'))
             result.append(dict(url=file_url))
         return render_template('download/result.html', files=result)
     except NotFoundException:
