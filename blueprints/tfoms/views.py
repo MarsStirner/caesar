@@ -10,7 +10,7 @@ from app import module
 
 from lib.thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException
 
-from forms import CreateTemplateForm, ConfigVariablesForm
+from forms import CreateTemplateForm
 from lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
 from lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR
 from models import Template, TagsTree, StandartTree, TemplateType, DownloadType, ConfigVariables

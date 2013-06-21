@@ -7,7 +7,6 @@
 {% block content %}
 
     {% include '_nav_menu.html' %}
-
         <form class="form-horizontal" method="post">
             {{ form.hidden_tag() }}
             <legend>Настройки</legend>
@@ -17,7 +16,7 @@
                     <div class="control-group">
                         <label class="control-label">{{ field.description }}</label>
                         <div class="controls">
-                            {{ field(value=form[field.name].value, placeholder="Введите "+field.description, required="required") }}
+                            {{ field(value=field.value, placeholder="Введите "+field.description, required="required") }}
                         </div>
                     </div>
                 {% endif %}
