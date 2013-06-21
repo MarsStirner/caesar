@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
+from datetime import date
 import calendar
 
 from urlparse import urlparse
@@ -38,9 +38,10 @@ class TFOMSClient(object):
         self.transport.close()
 
     def __convert_date(self, timestamp):
-        return datetime.fromtimestamp(timestamp / 1000)
+        return date.fromtimestamp(timestamp / 1000)
 
     def __convert_dates(self, data):
+        #TODO: унифицировать для обеих выборок, учесть вложенность
         for item in data:
             for element in data[item]:
                 for attr, value in element.__dict__.iteritems():
@@ -51,6 +52,7 @@ class TFOMSClient(object):
         return data
 
     def __unicode_result(self, data):
+        #TODO: унифицировать для обеих выборок, учесть вложенность
         for element in data:
             for attr, value in element.__dict__.iteritems():
                 if isinstance(value, basestring):
