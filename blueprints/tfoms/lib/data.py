@@ -7,10 +7,8 @@ from jinja2 import Environment, PackageLoader
 from application.database import db
 from service_client import TFOMSClient as Client
 from thrift_service.ttypes import PatientOptionalFields, SluchOptionalFields
-from tags_tree import TagTree
-from ..app import module
+from ..app import module, _config
 from ..models import Template, TagsTree, Tag
-from ..config import CORE_SERVICE_URL, OLD_LPU_INFIS_CODE, SMO_NUMBER, LPU_INFIS_CODE, PAYER_CODE
 
 
 DOWNLOADS_DIR = os.path.join(module.static_folder, 'downloads')
@@ -24,7 +22,7 @@ def datetimeformat(value, format='%Y-%m-%d'):
 class Patients(object):
 
     def __init__(self, start, end, infis_code, tags):
-        self.client = Client(CORE_SERVICE_URL)
+        self.client = Client(_config('core_service_url'))
         self.start = start
         self.end = end
         self.infis_code = infis_code
@@ -52,7 +50,7 @@ class Patients(object):
 class Services(object):
 
     def __init__(self, start, end, infis_code, tags):
-        self.client = Client(CORE_SERVICE_URL)
+        self.client = Client(_config('core_service_url'))
         self.start = start
         self.end = end
         self.infis_code = infis_code
@@ -81,12 +79,12 @@ class Services(object):
 
     def __get_bill(self, services):
         data = dict(CODE=1,
-                    CODE_MO=LPU_INFIS_CODE,
+                    CODE_MO=_config('lpu_infis_code'),
                     YEAR=self.end.strftime('%Y'),
                     MONTH=self.end.strftime('%m'),
-                    NSCHET='%s-%s/%s' % (self.end.strftime('%Y%m'), 1, OLD_LPU_INFIS_CODE),
+                    NSCHET='%s-%s/%s' % (self.end.strftime('%Y%m'), 1, _config('old_lpu_infis_code')),
                     DSCHET=date.today().strftime('%Y-%m-%d'),
-                    PLAT=PAYER_CODE,
+                    PLAT=_config('payer_code'),
                     SUMMAV=self.__get_ammount(services))
         return data
 
@@ -209,9 +207,9 @@ class XML(object):
 
     def generate_filename(self):
         self.file_name += 'M'
-        self.file_name += OLD_LPU_INFIS_CODE
+        self.file_name += _config('old_lpu_infis_code')
         self.file_name += 'T'
-        self.file_name += SMO_NUMBER
+        self.file_name += _config('smo_number')
         self.file_name += '_'
         self.file_name += '%s' % self.end.strftime("%y%m")
         self.file_name += '1'
