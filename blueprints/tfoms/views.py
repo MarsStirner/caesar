@@ -2,7 +2,8 @@
 import re
 from datetime import datetime
 
-from flask import render_template, abort, request, redirect, jsonify, send_from_directory, url_for, json, g
+from flask import render_template, abort, request, redirect, jsonify, send_from_directory, url_for, json
+from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
 
 from jinja2 import TemplateNotFound
 from app import module, _config
@@ -81,21 +82,28 @@ def reports():
 @module.route('/settings/', methods=['GET', 'POST'])
 def settings():
     try:
-        smo_number = ConfigVariables.query.filter_by(code="smo_number").first()
-        lpu_infis_code = ConfigVariables.query.filter_by(code="lpu_infis_code").first()
-        old_lpu_infis_code = ConfigVariables.query.filter_by(code="old_lpu_infis_code").first()
-        core_service_url = ConfigVariables.query.filter_by(code="core_service_url").first()
+        class ConfigVariablesForm(Form):
+            pass
 
-        form = ConfigVariablesForm(smo_number=smo_number.value, lpu_infis_code=lpu_infis_code.value,
-                                   old_lpu_infis_code=old_lpu_infis_code.value, core_service_url=core_service_url.value)
+        variables = ConfigVariables.query.all()
+        for variable in variables:
+            if variable.value_type == "text":
+                setattr(ConfigVariablesForm, variable.code, TextField(variable.code,
+                                                                      validators=[Required()], default="",
+                                                                      description=variable.name))
+            elif variable.value_type == "int":
+                setattr(ConfigVariablesForm, variable.code, IntegerField(variable.code,
+                                                                         validators=[Required()], default="",
+                                                                         description=variable.name))
+        form = ConfigVariablesForm()
+        for variable in variables:
+            form[variable.code].value = variable.value
+
         if form.validate_on_submit():
-
-            smo_number.value = request.form['smo_number']
-            lpu_infis_code.value = request.form['lpu_infis_code']
-            old_lpu_infis_code.value = request.form['old_lpu_infis_code']
-            core_service_url.value = request.form['core_service_url']
-
+            for variable in variables:
+                variable.value = form.data[variable.code]
             db.session.commit()
+            return redirect(url_for('.settings'))
 
         return render_template('settings.html', form=form)
     except TemplateNotFound:

@@ -11,31 +11,18 @@
         <form class="form-horizontal" method="post">
             {{ form.hidden_tag() }}
             <legend>Настройки</legend>
-            <div class="control-group">
-                <label class="control-label" >Адрес сервиса в ядре</label>
-                <div class="controls">
-                        {{ form.core_service_url(placeholder="Введите адрес сервиса", required="required") }}
 
-                </div>
-            </div>
-            <div class="control-group">
-                <label class="control-label">ИНФИС код ЛПУ</label>
-                <div class="controls">
-                    {{ form.lpu_infis_code(placeholder="Введите ИНФИС код ЛПУ", pattern="\d+", required="required") }}
-                </div>
-            </div>
-            <div class="control-group">
-                <label class="control-label">старый ИНФИС код</label>
-                <div class="controls">
-                    {{ form.old_lpu_infis_code(placeholder="Введите старый ИНФИС код", pattern="\d+", required="required") }}
-                </div>
-            </div>
-            <div class="control-group">
-                <label class="control-label"> номер СМО</label>
-                <div class="controls">
-                    {{ form.smo_number(placeholder="Введите номер СМО", pattern="\d+", required="required") }}
-                </div>
-            </div>
+            {% for field in form %}
+                {% if field.type != "CSRFTokenField" %}
+                    <div class="control-group">
+                        <label class="control-label">{{ field.description }}</label>
+                        <div class="controls">
+                            {{ field(value=form[field.name].value, placeholder="Введите "+field.description, required="required") }}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
             <div class="control-group">
                 <div class="controls">
                     <button type="submit" class="btn btn-primary">Сохранить</button>
