@@ -141,6 +141,7 @@ class ConfigVariables(db.Model):
     code = db.Column(db.String(25), unique=True, nullable=False)
     name = db.Column(db.String(25), unique=True, nullable=False)
     value = db.Column(db.String(30))
+    value_type = db.Column(db.String(30))
 
     def __unicode__(self):
-        return self.tag.code
+        return self.code
