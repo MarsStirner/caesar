@@ -154,7 +154,7 @@
                 <p id="debug-url"></p>
             </div>
             <div class="modal-footer">
-                <a href="javascript:$('#modal-from-dom').modal('hide')" class="btn btn-secondary">Нет</a>
+                <a href="javascript:void(0);" onclick="$('#modal-from-dom').modal('hide');" class="btn btn-secondary">Нет</a>
                 <a href="{{ url_for('.delete_template', template_type='dbf', action='delete_template', id=current_id)}}" class="btn btn-danger">Да</a>
             </div>
         </div>
@@ -169,8 +169,8 @@
                 <p id="debug-url"></p>
             </div>
             <div class="modal-footer">
-                <a href="javascript:$('#modal-from-dom1').modal('hide');" class="btn btn-secondary">Нет</a>
-                <a id="confirm-save" href="#" class="btn btn-success">Да</a>
+                <a href="javascript:void(0);" onclick="$('#modal-from-dom1').modal('hide');" class="btn btn-secondary">Нет</a>
+                <a id="confirm-save" href="javascript:void(0);" onclick="$('#modal-from-dom1').modal('hide');" class="btn btn-success">Да</a>
             </div>
         </div>
 {% endblock %}
@@ -217,7 +217,6 @@
                   var form = $(this);
                   $('#modal-from-dom1').modal('show');
                   $('#confirm-save').click(function(){
-                      $('#modal-from-dom1').modal('hide');
                       form.unbind('submit');
                       form.submit();
                   });
