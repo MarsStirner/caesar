@@ -72,7 +72,7 @@
                         <label class="control-label">Название шаблона:</label>
                         <div class="controls">
                             {{ form.hidden_tag() }}
-                            {{ form.name(class='input-xlarge', placeholder="Введите наименование шаблона", maxlength=30, required="required") }}
+                            {{ form.name(class='input-xlarge', placeholder="Введите наименование шаблона", maxlength=30) }}
                             {% if form.name.errors %}
                                 <ul class=errors style="color:red">
                                 {% for error in form.name.errors %}
@@ -203,7 +203,7 @@
                   return false;
               }
               else if (templates.indexOf(current_name) != -1){
-                  show_error('Наименование шаблонов должны быть уникальны!');
+                  show_error('Наименования шаблонов должны быть уникальны!');
                   $('html, body').animate({scrollTop:0}, 'slow');
                   return false;
               }
@@ -231,7 +231,7 @@
                       return false;
                   }
                   else if (templates.indexOf(current_name) != -1){
-                      show_error('Наименование шаблонов должны быть уникальны!');
+                      show_error('Наименования шаблонов должны быть уникальны!');
                       $('html, body').animate({scrollTop:0}, 'slow');
                       return false;
                   }
