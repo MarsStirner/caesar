@@ -25,7 +25,7 @@
         <div class="row-fluid">
           <div class="span4">
               <ul class="nav nav-list nav-stacked">
-                   <li><strong>Созданные шаблоны <span class="pull-right">Участвует в выгрузке</span></strong></li>
+                   <li><strong>Созданные шаблоны <span class="pull-right">Выгружать</span></strong></li>
                    <li class="divider"></li>
                    {%- for template in templates -%}
                    		{%- set id = template.id -%}
@@ -35,7 +35,7 @@
                                     {%- if template.is_active -%}
                                         <input class="is_active" type="radio" name="is_active" value="{{ id }}" checked/>
                                     {%- else -%}
-                                        <input class="is_active" type="radio" name="is_active" value="{{ id }}"/>
+                                        <input title="Выбрать для выгрузки данных по шаблону" class="is_active" type="radio" name="is_active" value="{{ id }}"/>
                                     {%- endif -%}
                                 </span>
                                 <a href="{{ url_for('.settings_template', template_type='xml_service', id=id) }}">{{template.name}}</a>
@@ -46,7 +46,7 @@
                                         {%- if template.is_active -%}
                                             <input class="is_active" type="radio" name="is_active" value="{{ id }}" checked/>
                                         {%- else -%}
-                                            <input class="is_active" type="radio" name="is_active" value="{{ id }}" />
+                                            <input title="Выбрать для выгрузки данных по шаблону" class="is_active" type="radio" name="is_active" value="{{ id }}" />
                                         {%- endif -%}
                                 </span>
                   				<a href="{{ url_for('.settings_template', template_type='xml_service', id=id) }}">{{template.name}}</a>
@@ -330,6 +330,8 @@
             function(){
                 var item = $(this);
                 if ($(this).is(':checked')){
+                    $("input[name=is_active]:not(:checked)").attr('title', "Выбрать для выгрузки данных по шаблону")
+                    $(this).removeAttr('title')
                     $.ajax({
                             url : '{{ url_for('.activate', template_type='xml_service') }}',
                             type : 'POST',
