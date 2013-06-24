@@ -170,7 +170,7 @@
             </div>
             <div class="modal-footer">
                 <a href="javascript:$('#modal-from-dom1').modal('hide');" class="btn btn-secondary">Нет</a>
-                <a id="confirm-save" href="javascript:$('#modal-from-dom1').modal('hide');" class="btn btn-success">Да</a>
+                <a id="confirm-save" href="#" class="btn btn-success">Да</a>
             </div>
         </div>
 {% endblock %}
@@ -217,8 +217,9 @@
                   var form = $(this);
                   $('#modal-from-dom1').modal('show');
                   $('#confirm-save').click(function(){
+                      $('#modal-from-dom1').modal('hide');
                       form.unbind('submit');
-                        form.submit();
+                      form.submit();
                   });
                   return false;
               }
