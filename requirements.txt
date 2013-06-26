@@ -11,3 +11,4 @@ thrift
 selenium
 #twisted
 mysql-python
+psycopg2

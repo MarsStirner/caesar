@@ -5,11 +5,13 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 DEBUG = False
 
+DB_DRIVER = 'postgresql+psycopg2'
 DB_HOST = 'localhost'
-DB_PORT = 3306
-DB_USER = ''
-DB_PASSWORD = ''
-DB_NAME = ''
+DB_PORT = 5432
+DB_USER = 'db_user'
+DB_PASSWORD = 'db_password'
+DB_NAME = 'db_name'
+DB_CONNECT_OPTIONS = ''
 
 SYSTEM_USER = ''
 
@@ -24,4 +26,10 @@ except ImportError:
     # no local config found
     pass
 
-SQLALCHEMY_DATABASE_URI = 'mysql://%s:%s@%s:%s/%s?charset=utf8' % (DB_USER , DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME)
+SQLALCHEMY_DATABASE_URI = '{}://{}:{}@{}:{}/{}'.format(DB_DRIVER,
+                                                       DB_USER,
+                                                       DB_PASSWORD,
+                                                       DB_HOST,
+                                                       DB_PORT,
+                                                       DB_NAME,
+                                                       DB_CONNECT_OPTIONS)
