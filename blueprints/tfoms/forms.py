@@ -4,7 +4,7 @@ from models import Template
 
 class CreateTemplateForm(Form):
     name = TextField('name', validators=[Required()], default="")
-    archive = BooleanField('archive', default="true")
+    archive = BooleanField('archive', default=True)
 
     def validate(self):
         rv = Form.validate(self)

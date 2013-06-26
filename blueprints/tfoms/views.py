@@ -123,9 +123,9 @@ def settings_template(template_type='xml_patient', id=0):
         current_template = filter(lambda x: x.id == id, templates)
 
         if current_template[0].archive:
-            archive = 1
+            archive = True
         else:
-            archive = 0
+            archive = False
 
         form = CreateTemplateForm(name=current_template[0].name, archive=archive)
 
@@ -146,9 +146,9 @@ def settings_template(template_type='xml_patient', id=0):
             data = request.form.items()
 
             if 'archive' in request.form:
-                archive = 1
+                archive = True
             else:
-                archive = 0
+                archive = False
 
             if request.form['btn'] == 'Save':
                 save_template_tag_tree(data, current_template_id)
@@ -181,9 +181,9 @@ def add_new_template(template_type='xml_patient', action="add_new"):
         if form.is_submitted():
             if form.validate():
                 if 'archive' in request.form:
-                    archive = 1
+                    archive = True
                 else:
-                    archive = 0
+                    archive = False
 
                 new_template = Template(name=request.form['name'], archive=archive, type_id=template_type_id)
                 db.session.add(new_template)
@@ -238,13 +238,13 @@ def activate(template_type):
                     deactivated = Template.query.filter_by(type_id=type).all()
                     for item in deactivated:
                         if item.id != id:
-                            item.is_active = 0
-                template.is_active = 1
+                            item.is_active = False
+                template.is_active = True
                 db.session.commit()
             elif 'deactivate' in request.form:
                 active_template_id = request.form['deactivate']
                 template = Template.query.filter_by(id=active_template_id).first()
-                template.is_active = 0
+                template.is_active = False
                 db.session.commit()
 
         return jsonify()

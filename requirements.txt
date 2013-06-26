@@ -10,3 +10,4 @@ Flask-Login
 thrift
 #twisted
 mysql-python
+psycopg2
