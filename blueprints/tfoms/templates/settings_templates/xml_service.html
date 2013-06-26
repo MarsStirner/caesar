@@ -158,7 +158,7 @@
                 <div class="row-fluid">
                         <div class="span6">
                             {% if current_id %}
-                                <a class="btn btn-danger btn-large confirm-delete" href="#" data-id={{ current_id }}>Удалить шаблон</a>
+                                <a id="confirm-delete" class="btn btn-danger btn-large" href="#" data-id={{ current_id }}>Удалить шаблон</a>
                             {% endif %}
                         </div>
                         <div class="span6 pull-right">
@@ -383,7 +383,7 @@
     });
     $( "ul, li" ).disableSelection();
 
-    $('.confirm-delete').on('click', function(e) {
+    $('#confirm-delete').on('click', function(e) {
         e.preventDefault();
         var id = $(this).data('id');
         $('#modal-from-dom').modal('show');
