@@ -51,8 +51,7 @@ def save_template_tag_tree(data, current_template_id):
                     new_tag_tree_item = TagsTree.query.filter_by(id=new_tags[match.group(1)]).first()
                     new_tag_tree_item.parent_id = new_tags[parent_id_t.group(1)]
                     db.session.commit()
-
-            else:
+            elif parent_id != u'None':
                 if match.group(1) not in new_tags:
                     new_tag_tree_item = TagsTree(tag_id=int(match.group(1)), parent_id=int(parent_id),
                                                  template_id=current_template_id, ordernum=ordernum)
@@ -63,6 +62,11 @@ def save_template_tag_tree(data, current_template_id):
                     new_tag_tree_item = TagsTree.query.filter_by(id=new_tags[match.group(1)]).first()
                     new_tag_tree_item.parent_id = int(parent_id)
                     db.session.commit()
+            else:#случай dbf
+                new_tag_tree_item = TagsTree(tag_id=int(match.group(1)), parent_id=None,
+                                             template_id=current_template_id, ordernum=ordernum)
+                db.session.add(new_tag_tree_item)
+                db.session.commit()
 
         match = re.match(r'removedtag\[(\d+),(\d+)\]', item[0])
         if match:

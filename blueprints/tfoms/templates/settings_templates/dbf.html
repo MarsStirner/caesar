@@ -25,7 +25,7 @@
         <div class="row-fluid">
           <div class="span4">
               <ul class="nav nav-list nav-stacked">
-                   <li><strong>Созданные шаблоны <span class="pull-right">Участвует в выгрузке</span></strong></li>
+                   <li><strong>Созданные шаблоны <span class="pull-right">Выгружать</span></strong></li>
                    <li class="divider"></li>
                        {%- for template in templates -%}
                             {% set id = template.id %}
@@ -35,7 +35,7 @@
                                         {%- if template.is_active -%}
                                             <input class="is_active" type="checkbox" name="is_active" value="{{ id }}" checked/>
                                         {%- else -%}
-                                            <input class="is_active" type="checkbox" name="is_active" value="{{ id }}" />
+                                            <input title="Выбрать для выгрузки данных по шаблону" class="is_active" type="checkbox" name="is_active" value="{{ id }}" />
                                         {%- endif -%}
                                     </span>
                                     <a href="{{ url_for('.settings_template', template_type='dbf', id=id) }}">{{template.name}}</a>
@@ -46,7 +46,7 @@
                                         {%- if template.is_active -%}
                                             <input class="is_active" type="checkbox" name="is_active" value="{{ id }}" checked/>
                                         {%- else -%}
-                                            <input class="is_active" type="checkbox" name="is_active" value="{{ id }}" />
+                                            <input title="Выбрать для выгрузки данных по шаблону" class="is_active" type="checkbox" name="is_active" value="{{ id }}" />
                                         {%- endif -%}
                                     </span>
                                     <a href="{{ url_for('.settings_template', template_type='dbf', id=id) }}">{{template.name}}</a>
@@ -72,7 +72,7 @@
                         <label class="control-label">Название шаблона:</label>
                         <div class="controls">
                             {{ form.hidden_tag() }}
-                            {{ form.name(class='input-xlarge', placeholder="Введите наименование шаблона", maxlength=30, required="required") }}
+                            {{ form.name(class='input-xlarge', placeholder="Введите наименование шаблона", maxlength=30) }}
                             {% if form.name.errors %}
                                 <ul class=errors style="color:red">
                                 {% for error in form.name.errors %}
@@ -146,31 +146,31 @@
         <!-- Modal -->
         <div id="modal-from-dom" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-header">
-                <a href="javascript:$('#modal-from-dom').modal('hide')" class="close">&times;</a>
-                 <h3>Удаление шаблона</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3>Удаление шаблона</h3>
             </div>
             <div class="modal-body">
                 <p>Вы действительно хотите удалить шаблон?</p>
                 <p id="debug-url"></p>
             </div>
             <div class="modal-footer">
-                <a href="javascript:$('#modal-from-dom').modal('hide')" class="btn btn-secondary">Нет</a>
+                <a href="javascript:void(0);" onclick="$('#modal-from-dom').modal('hide');" class="btn btn-secondary">Нет</a>
                 <a href="{{ url_for('.delete_template', template_type='dbf', action='delete_template', id=current_id)}}" class="btn btn-danger">Да</a>
             </div>
         </div>
 
         <div id="modal-from-dom1" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-header">
-                <a href="javascript:$('#modal-from-dom1').modal('hide')" class="close">&times;</a>
-                 <h3>Сохранение изменений в шаблоне</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3>Сохранение изменений в шаблоне</h3>
             </div>
             <div class="modal-body">
                 <p>Вы действительно хотите изменить шаблон?</p>
                 <p id="debug-url"></p>
             </div>
             <div class="modal-footer">
-                <a href="javascript:$('#modal-from-dom1').modal('hide');" class="btn btn-secondary">Нет</a>
-                <a id="confirm-save" href="javascript:$('#modal-from-dom1').modal('hide');" class="btn btn-success">Да</a>
+                <a href="javascript:void(0);" onclick="$('#modal-from-dom1').modal('hide');" class="btn btn-secondary">Нет</a>
+                <a id="confirm-save" href="javascript:void(0);" onclick="$('#modal-from-dom1').modal('hide');" class="btn btn-success">Да</a>
             </div>
         </div>
 {% endblock %}
@@ -185,7 +185,7 @@
       if (number_of_checked===2){
             $("input[name=is_active]:not(:checked)").attr({
                               'disabled': 'disabled'
-                        });
+                        }).removeAttr('title');
       }
 
       function show_error(text){
@@ -203,7 +203,7 @@
                   return false;
               }
               else if (templates.indexOf(current_name) != -1){
-                  show_error('Наименование шаблонов должны быть уникальны!');
+                  show_error('Наименования шаблонов должны быть уникальны!');
                   $('html, body').animate({scrollTop:0}, 'slow');
                   return false;
               }
@@ -218,7 +218,7 @@
                   $('#modal-from-dom1').modal('show');
                   $('#confirm-save').click(function(){
                       form.unbind('submit');
-                        form.submit();
+                      form.submit();
                   });
                   return false;
               }
@@ -230,7 +230,7 @@
                       return false;
                   }
                   else if (templates.indexOf(current_name) != -1){
-                      show_error('Наименование шаблонов должны быть уникальны!');
+                      show_error('Наименования шаблонов должны быть уникальны!');
                       $('html, body').animate({scrollTop:0}, 'slow');
                       return false;
                   }
@@ -305,6 +305,8 @@
             function(){
                 var item = $(this);
                 if ($(this).is(':checked')){
+                    $("input[name=is_active]:not(:checked)").attr('title', "Выбрать для выгрузки данных по шаблону")
+                    $(this).removeAttr('title')
                     $.ajax({
                             url : '{{ url_for('.activate', template_type='dbf') }}',
                             type : 'POST',
@@ -314,7 +316,7 @@
                     if (number_of_checked===2){
                         $("input[name=is_active]:not(:checked)").attr({
                               'disabled': 'disabled'
-                        });
+                        }).removeAttr('title');
                     }
                 }
                 else{
@@ -326,6 +328,7 @@
                     var number_of_checked = $("input[name=is_active]:checked").length;
                     if (number_of_checked<2){
                         $("input[name=is_active]:not(:checked)").removeAttr('disabled');
+                        $("input[name=is_active]:not(:checked)").attr('title', "Выбрать для выгрузки данных по шаблону");
                     }
                 }
             }

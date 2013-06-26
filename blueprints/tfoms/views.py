@@ -226,6 +226,7 @@ def delete_template(action='delete_template', template_type='xml_patient', id=id
     except TemplateNotFound:
         abort(404)
 
+
 @module.route('/settings_template/<string:template_type>/activate/', methods=['POST'])
 def activate(template_type):
     try:
