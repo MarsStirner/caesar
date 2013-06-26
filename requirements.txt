@@ -8,6 +8,7 @@ Flask-Admin
 Flask-BabelEx
 Flask-Login
 thrift
+selenium
 #twisted
 mysql-python
 psycopg2
