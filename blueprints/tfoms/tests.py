@@ -14,7 +14,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 
-from models import Template, TagsTree
+from models import Template
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
@@ -58,8 +58,7 @@ class TestPatients(unittest.TestCase):
 class SimpleTestCase(unittest.TestCase):
     def setUp(self):
         self.driver = webdriver.Firefox()
-        self.driver.implicitly_wait(30)
-        #TODO: возможно убрать завершающий "/"? в тестах получаются адреса вида: http://127.0.0.1:5000//tfoms/
+        self.driver.implicitly_wait(20)
         self.base_url = "http://127.0.0.1:5000/"
         self.verificationErrors = []
         self.accept_next_alert = True
@@ -95,7 +94,7 @@ class ClickTabs(SimpleTestCase):
 
     def test_click_tubs(self):
         driver = self.driver
-        driver.get(self.base_url + "/tfoms/")
+        driver.get(self.base_url + "tfoms/")
         driver.find_element_by_link_text("Выгрузка").click()
         driver.find_element_by_link_text("Выгрузка DBF").click()
         driver.find_element_by_link_text("Загрузка").click()
@@ -116,7 +115,7 @@ class EmptyTemplateName(SimpleTestCase):
 
     def test_empty_template_name(self):
         driver = self.driver
-        driver.get(self.base_url + "/tfoms/settings_template/xml_service/")
+        driver.get(self.base_url + "tfoms/settings_template/xml_service/")
         driver.find_element_by_link_text("Сведения об оказанной мед.помощи (XML)").click()
         driver.find_element_by_id("Save").click()
         time.sleep(1)
@@ -142,7 +141,7 @@ class SaveDeleteNewTemplate(SimpleTestCase):
     def test_save_delete_new_template(self):
         #wait = ui.WebDriverWait(self.driver, 15)
         driver = self.driver
-        driver.get(self.base_url + "/tfoms/settings_template/xml_patient/")
+        driver.get(self.base_url + "tfoms/settings_template/xml_patient/")
         driver.find_element_by_id("name").clear()
         driver.find_element_by_id("name").send_keys("TestTemplate")
         driver.find_element_by_id("Save").click()
@@ -155,7 +154,6 @@ class SaveDeleteNewTemplate(SimpleTestCase):
         #wait.until(lambda driver: driver.find_element_by_xpath("//*[@id='modal-from-dom'][contains(@style,'display: none')]"))
         time.sleep(10)
         deleteLinks = driver.find_elements_by_link_text("TestTemplate")
-        print 'deleteLinks', deleteLinks
         self.assertTrue(not deleteLinks)
 
         driver.find_element_by_link_text("Сведения об оказанной мед.помощи (XML)").click()
@@ -169,7 +167,6 @@ class SaveDeleteNewTemplate(SimpleTestCase):
         #wait.until(lambda driver: driver.find_element_by_xpath("//*[@id='modal-from-dom'][contains(@style,'display: none')]"))
         time.sleep(10)
         deleteLinks = driver.find_elements_by_link_text("TestTemplate_usl")
-        print 'deleteLinks2', deleteLinks
         self.assertTrue(not deleteLinks)
 
         driver.find_element_by_link_text("Выгрузка в формате DBF").click()
@@ -182,7 +179,6 @@ class SaveDeleteNewTemplate(SimpleTestCase):
         driver.find_element_by_xpath("//*[@id='modal-from-dom']/div[3]/a[2]").click()
         time.sleep(10)
         deleteLinks = driver.find_elements_by_link_text("TestTemplate_dbf")
-        print 'deleteLinks3', deleteLinks
         self.assertTrue(not deleteLinks)
 
 
@@ -190,7 +186,7 @@ class UniqueTemplateName(SimpleTestCase):
 
     def test_unique_template_name(self):
         driver = self.driver
-        driver.get(self.base_url + "/tfoms/settings_template/xml_patient/")
+        driver.get(self.base_url + "tfoms/settings_template/xml_patient/")
         driver.find_element_by_id("name").clear()
         driver.find_element_by_id("name").send_keys("TestTemplate")
         driver.find_element_by_id("Save").click()
@@ -256,7 +252,7 @@ class ClickTabsOpera(ClickTabs):
 
     def setUp(self):
         self.driver = webdriver.Opera("path to selenium-server")
-        self.driver.implicitly_wait(30)
+        self.driver.implicitly_wait(20)
         self.base_url = "http://127.0.0.1:5000/"
         self.verificationErrors = []
         self.accept_next_alert = True
@@ -266,7 +262,7 @@ class EmptyTemplateNameOpera(EmptyTemplateName):
 
     def setUp(self):
         self.driver = webdriver.Opera("path to selenium-server")
-        self.driver.implicitly_wait(30)
+        self.driver.implicitly_wait(20)
         self.base_url = "http://127.0.0.1:5000/"
         self.verificationErrors = []
         self.accept_next_alert = True
@@ -276,7 +272,7 @@ class SaveDeleteNewTemplateOpera(SaveDeleteNewTemplate):
 
     def setUp(self):
         self.driver = webdriver.Opera("path to selenium-server")
-        self.driver.implicitly_wait(30)
+        self.driver.implicitly_wait(20)
         self.base_url = "http://127.0.0.1:5000/"
         self.verificationErrors = []
         self.accept_next_alert = True
@@ -286,7 +282,7 @@ class UniqueTemplateNameOpera(UniqueTemplateName):
 
     def setUp(self):
         self.driver = webdriver.Opera("path to selenium-server")
-        self.driver.implicitly_wait(30)
+        self.driver.implicitly_wait(20)
         self.base_url = "http://127.0.0.1:5000/"
         self.verificationErrors = []
         self.accept_next_alert = True
@@ -296,8 +292,8 @@ class UniqueTemplateNameOpera(UniqueTemplateName):
 class ClickTabsChrome(ClickTabs):
 
     def setUp(self):
-        self.driver = webdriver.Chrome("path to chromesriver")
-        self.driver.implicitly_wait(30)
+        self.driver = webdriver.Chrome("/home/plakrisenko/Documents/repos/caesar/code/chromedriver_old")
+        self.driver.implicitly_wait(20)
         self.base_url = "http://127.0.0.1:5000/"
         self.verificationErrors = []
         self.accept_next_alert = True
@@ -306,8 +302,8 @@ class ClickTabsChrome(ClickTabs):
 class EmptyTemplateNameChrome(EmptyTemplateName):
 
     def setUp(self):
-        self.driver = webdriver.Chrome("path to chromesriver")
-        self.driver.implicitly_wait(30)
+        self.driver = webdriver.Chrome("/home/plakrisenko/Documents/repos/caesar/code/chromedriver_old")
+        self.driver.implicitly_wait(20)
         self.base_url = "http://127.0.0.1:5000/"
         self.verificationErrors = []
         self.accept_next_alert = True
@@ -315,8 +311,8 @@ class EmptyTemplateNameChrome(EmptyTemplateName):
 
 class SaveDeleteNewTemplateChrome(SaveDeleteNewTemplate):
     def setUp(self):
-        self.driver = webdriver.Chrome("path to chromesriver")
-        self.driver.implicitly_wait(30)
+        self.driver = webdriver.Chrome("/home/plakrisenko/Documents/repos/caesar/code/chromedriver_old")
+        self.driver.implicitly_wait(20)
         self.base_url = "http://127.0.0.1:5000/"
         self.verificationErrors = []
         self.accept_next_alert = True
@@ -325,14 +321,14 @@ class SaveDeleteNewTemplateChrome(SaveDeleteNewTemplate):
 class UniqueTemplateNameChrome(UniqueTemplateName):
 
     def setUp(self):
-        self.driver = webdriver.Chrome("path to chromesriver")
-        self.driver.implicitly_wait(30)
+        self.driver = webdriver.Chrome("/home/plakrisenko/Documents/repos/caesar/code/chromedriver_old")
+        self.driver.implicitly_wait(20)
         self.base_url = "http://127.0.0.1:5000/"
         self.verificationErrors = []
         self.accept_next_alert = True
 
 
-test_cases = (EmptyTemplateName, ClickTabs)
+test_cases = (ClickTabsChrome, EmptyTemplateName)
 
 
 def load_tests(loader, tests, pattern):
