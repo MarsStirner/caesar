@@ -28,7 +28,9 @@ class TemplateType(db.Model):
     code = db.Column(db.String(20), unique=True, nullable=False)
     name = db.Column(db.String(45), unique=True, nullable=False)
 
-    download_type_id = db.Column(db.Integer, db.ForeignKey('%s_download_type.id' % TABLE_PREFIX), index=True)
+    download_type_id = db.Column(db.Integer,
+                                 db.ForeignKey('%s_download_type.id' % TABLE_PREFIX, deferrable=True),
+                                 index=True)
     download_type = db.relationship(DownloadType)
 
     def __repr__(self):

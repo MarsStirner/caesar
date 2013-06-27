@@ -7,7 +7,7 @@ import logging
 import time
 
 from lib.service_client import TFOMSClient
-#from lib.data import DownloadWorker
+from lib.data import DownloadWorker
 from .app import _config
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -29,33 +29,37 @@ db.app = app
 class TestPatients(unittest.TestCase):
 
     def setUp(self):
-        self.client = TFOMSClient(_config('core_service_url'))
-        self.app = app
+        with app.app_context():
+            self.client = TFOMSClient(_config('core_service_url'))
+            self.lpu_infis_code = _config('lpu_infis_code')
+            self.app = app
 
     def tearDown(self):
         del self.client
         del self.app
 
-    # def testGetPatients(self):
-    #     beginDate = datetime(2013, 01, 01)
-    #     endDate = datetime(2013, 06, 01)
-    #     patients = self.client.get_patients(LPU_INFIS_CODE, beginDate, endDate)
-    #     if patients:
-    #         self.assertIsInstance(patients, list)
+    def testGetPatients(self):
+        beginDate = datetime(2013, 01, 01)
+        endDate = datetime(2013, 06, 01)
+        patients = self.client.get_patients(self.lpu_infis_code, beginDate, endDate)
+        if patients:
+            self.assertIsInstance(patients, list)
 
     def testDowloadPatients(self):
-        template_id = 16
+        template_id = 1
         start = datetime(2013, 01, 01)
         end = datetime(2013, 06, 01)
         worker = DownloadWorker()
-        file_url = worker.do_download(template_id, start, end, _config('lpu_infis_code'))
-        self.assertIsNotNone(file_url)
+        with app.app_context():
+            file_url = worker.do_download(template_id, start, end, self.lpu_infis_code)
+            self.assertIsNotNone(file_url)
 
 
 class SimpleTestCase(unittest.TestCase):
     def setUp(self):
         self.driver = webdriver.Firefox()
         self.driver.implicitly_wait(30)
+        #TODO: возможно убрать завершающий "/"? в тестах получаются адреса вида: http://127.0.0.1:5000//tfoms/
         self.base_url = "http://127.0.0.1:5000/"
         self.verificationErrors = []
         self.accept_next_alert = True
