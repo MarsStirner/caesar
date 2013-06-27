@@ -115,7 +115,7 @@ class EmptyTemplateName(SimpleTestCase):
 
     def test_empty_template_name(self):
         driver = self.driver
-        driver.get(self.base_url + "tfoms/settings_template/xml_service/")
+        driver.get(self.base_url + "tfoms/settings_template/service/")
         driver.find_element_by_link_text("Сведения об оказанной мед.помощи (XML)").click()
         driver.find_element_by_id("Save").click()
         time.sleep(1)
@@ -141,7 +141,7 @@ class SaveDeleteNewTemplate(SimpleTestCase):
     def test_save_delete_new_template(self):
         #wait = ui.WebDriverWait(self.driver, 15)
         driver = self.driver
-        driver.get(self.base_url + "tfoms/settings_template/xml_patient/")
+        driver.get(self.base_url + "tfoms/settings_template/patient/")
         driver.find_element_by_id("name").clear()
         driver.find_element_by_id("name").send_keys("TestTemplate")
         driver.find_element_by_id("Save").click()
@@ -186,7 +186,7 @@ class UniqueTemplateName(SimpleTestCase):
 
     def test_unique_template_name(self):
         driver = self.driver
-        driver.get(self.base_url + "tfoms/settings_template/xml_patient/")
+        driver.get(self.base_url + "tfoms/settings_template/patient/")
         driver.find_element_by_id("name").clear()
         driver.find_element_by_id("name").send_keys("TestTemplate")
         driver.find_element_by_id("Save").click()
@@ -328,7 +328,7 @@ class UniqueTemplateNameChrome(UniqueTemplateName):
         self.accept_next_alert = True
 
 
-test_cases = (ClickTabsChrome, EmptyTemplateName)
+test_cases = (ClickTabs, EmptyTemplateName, ClickTabsChrome, EmptyTemplateNameChrome)
 
 
 def load_tests(loader, tests, pattern):

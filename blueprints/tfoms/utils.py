@@ -4,9 +4,6 @@ import re
 from application.database import db
 from models import TagsTree
 
-#TODO: перейти на tfoms_template_type.id, дабы избавиться от дублирования справочника
-template_types = {'xml_patient': 1, 'xml_service': 2, 'dbf': 3}
-
 
 def save_template_tag_tree(data, current_template_id):
     """

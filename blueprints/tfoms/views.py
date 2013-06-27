@@ -14,7 +14,7 @@ from forms import CreateTemplateForm
 from lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
 from lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR
 from models import Template, TagsTree, StandartTree, TemplateType, DownloadType, ConfigVariables
-from utils import template_types, save_template_tag_tree, save_new_template_tree
+from utils import save_template_tag_tree, save_new_template_tree
 from application.database import db
 
 
@@ -113,10 +113,9 @@ def settings():
 
 
 @module.route('/settings_template/<string:template_type>/<int:id>', methods=['GET', 'POST'])
-def settings_template(template_type='xml_patient', id=0):
+def settings_template(template_type='patient', id=0):
     try:
-
-        template_type_id = template_types[template_type]
+        template_type_id = TemplateType.query.filter_by(name=template_type).first().id
 
         templates = Template.query.filter_by(type_id=template_type_id).all()
         templates_names = [template.name for template in templates]
@@ -173,9 +172,9 @@ def settings_template(template_type='xml_patient', id=0):
 @module.route('/settings_template/', methods=['GET', 'POST'])
 @module.route('/settings_template/<string:template_type>/', methods=['GET', 'POST'])
 @module.route('/settings_template/<string:template_type>/<string:action>', methods=['POST', 'GET'])
-def add_new_template(template_type='xml_patient', action="add_new"):
+def add_new_template(template_type="patient", action="add_new"):
     try:
-        template_type_id = template_types[template_type]
+        template_type_id = TemplateType.query.filter_by(name=template_type).first().id
         form = CreateTemplateForm()
 
         if form.is_submitted():
@@ -192,10 +191,10 @@ def add_new_template(template_type='xml_patient', action="add_new"):
 
                 data = request.form.items()
                 save_new_template_tree(new_id, data)
-                return redirect(url_for('.settings_template', template_type=template_type, id=new_id))
+                return redirect(url_for('.settings_template', template_type=template_type_id, id=new_id))
         else:
             unused_tags = []
-            if template_type == 'dbf':
+            if template_type_id == 3:
                 tags_tree = [TagTreeNode(tag, 0) for tag in StandartTree.query.
                 filter_by(template_type_id=template_type_id).order_by(StandartTree.ordernum).
                 join(StandartTree.tag).all()]
@@ -216,7 +215,7 @@ def add_new_template(template_type='xml_patient', action="add_new"):
 
 
 @module.route('/settings_template/<string:template_type>/<string:action>/<int:id>', methods=['POST', 'GET'])
-def delete_template(action='delete_template', template_type='xml_patient', id=id):
+def delete_template(action='delete_template', template_type='patient', id=id):
     try:
         current_template = Template.query.filter_by(id=id).first()
         db.session.delete(current_template)
