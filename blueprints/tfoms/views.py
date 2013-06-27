@@ -191,7 +191,7 @@ def add_new_template(template_type="patient", action="add_new"):
 
                 data = request.form.items()
                 save_new_template_tree(new_id, data)
-                return redirect(url_for('.settings_template', template_type=template_type_id, id=new_id))
+                return redirect(url_for('.settings_template', template_type=template_type, id=new_id))
         else:
             unused_tags = []
             if template_type_id == 3:
