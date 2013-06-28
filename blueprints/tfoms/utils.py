@@ -19,10 +19,10 @@ def save_template_tag_tree(data, current_template_id):
                 parent_id = None
             else:
                 parent_id = int(parent_id)
-            #if parent_id != u'None':  # корневой элемент не меняем
             tag_tree_item = TagsTree.query.filter_by(id=int(tag_id)).first()
             tag_tree_item.parent_id = parent_id
             tag_tree_item.ordernum = int(ordernum)
+            db.session.commit()
 
         match = re.match(r'tag\[None,(\d+)\]', item[0])  #добавление нового тега в шаблон
         if match:
@@ -59,7 +59,7 @@ def save_template_tag_tree(data, current_template_id):
                     new_tag_tree_item = TagsTree.query.filter_by(id=new_tags[match.group(1)]).first()
                     new_tag_tree_item.parent_id = int(parent_id)
                     db.session.commit()
-            else:#случай dbf
+            else:  # случай dbf
                 new_tag_tree_item = TagsTree(tag_id=int(match.group(1)), parent_id=None,
                                              template_id=current_template_id, ordernum=ordernum)
                 db.session.add(new_tag_tree_item)
@@ -108,4 +108,3 @@ def save_new_template_tree(template_id, data):
                 new_tag_tree_item.tag_id = int(match.group(2))
                 new_tag_tree_item.ordernum = ordernum
                 db.session.commit()
-
