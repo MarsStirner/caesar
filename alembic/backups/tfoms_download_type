@@ -8,10 +8,10 @@ p3
 c__builtin__
 tuple
 p4
-(L1L
+(I1
 Vxml
 p5
-VXML
+V\u0412\u044b\u0433\u0440\u0443\u0437\u043a\u0430 XML
 p6
 ttRp7
 (dp8
@@ -27,16 +27,16 @@ tp13
 sg11
 g5
 sg10
-L1L
+I1
 sg12
 g6
 sbag2
 (g3
 g4
-(L2L
+(I2
 Vdbf
 p14
-VDBF
+V\u0412\u044b\u0433\u0440\u0443\u0437\u043a\u0430 DBF
 p15
 ttRp16
 (dp17
@@ -45,7 +45,7 @@ g13
 sg11
 g14
 sg10
-L2L
+I2
 sg12
 g15
 sba.

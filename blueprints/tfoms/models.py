@@ -11,7 +11,7 @@ class DownloadType(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     code = db.Column(db.String(10), unique=True, nullable=False)
-    name = db.Column(db.Unicode(10), unique=True)
+    name = db.Column(db.Unicode(25), unique=True)
 
     def __repr__(self):
         return '<DownloadType %r>' % self.code
