@@ -1,14 +1,14 @@
 <ul class="nav nav-tabs">
     <li{% if request.path == url_for('.add_new_template', template_type='patient')  or
     request.path == url_for('.add_new_template') or
-    request.path == url_for('.settings_template', template_type='patient', id=request.view_args.get('id', 0)) or
-    request.path == url_for('.delete_template', template_type='patient', action='delete_template', id=request.view_args.get('id', 0)) or
-    request.path == url_for('.add_new_template', template_type='patient', action='add_new' ) %} class="active"{% endif %}><a href="{{ url_for('.add_new_template', template_type='patient') }}">
+    request.path == url_for('.settings_template', template_type='patients', id=request.view_args.get('id', 0)) or
+    request.path == url_for('.delete_template', template_type='patients', action='delete_template', id=request.view_args.get('id', 0)) or
+    request.path == url_for('.add_new_template', template_type='patients', action='add_new' ) %} class="active"{% endif %}><a href="{{ url_for('.add_new_template', template_type='patients') }}">
         Сведения о персональных данных (XML)</a></li>
-    <li{% if request.path == url_for('.add_new_template', template_type='service') or
-            request.path == url_for('.settings_template', template_type='service', id=request.view_args.get('id', 0)) or
-            request.path == url_for('.delete_template', template_type='service', action='delete_template', id=request.view_args.get('id', 0)) or
-            request.path == url_for('.add_new_template', template_type='service', action='add_new' )%} class="active"{% endif %}><a href="{{ url_for('.add_new_template', template_type='service') }}">
+    <li{% if request.path == url_for('.add_new_template', template_type='services') or
+            request.path == url_for('.settings_template', template_type='services', id=request.view_args.get('id', 0)) or
+            request.path == url_for('.delete_template', template_type='services', action='delete_template', id=request.view_args.get('id', 0)) or
+            request.path == url_for('.add_new_template', template_type='services', action='add_new' )%} class="active"{% endif %}><a href="{{ url_for('.add_new_template', template_type='services') }}">
         Сведения об оказанной мед.помощи (XML)</a></li>
     <li{% if request.path == url_for('.add_new_template', template_type='dbf') or
             request.path == url_for('.settings_template', template_type='dbf', id=request.view_args.get('id', 0)) or
