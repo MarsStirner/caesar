@@ -37,7 +37,7 @@
                                         <input title="Выбрать для выгрузки данных по шаблону" class="is_active" type="radio" name="is_active" value="{{ id }}"/>
                                     {%- endif -%}
                                 </span>
-                                <a href="{{ url_for('.settings_template', template_type='service', id=id) }}">{{template.name}}</a>
+                                <a href="{{ url_for('.settings_template', template_type='services', id=id) }}">{{template.name}}</a>
                    			</li>
                    		{%- else -%}
                   			<li>
@@ -48,14 +48,14 @@
                                             <input title="Выбрать для выгрузки данных по шаблону" class="is_active" type="radio" name="is_active" value="{{ id }}" />
                                         {%- endif -%}
                                 </span>
-                  				<a href="{{ url_for('.settings_template', template_type='service', id=id) }}">{{template.name}}</a>
+                  				<a href="{{ url_for('.settings_template', template_type='services', id=id) }}">{{template.name}}</a>
                   			</li>
                   		{%- endif -%}
                    {%- endfor -%}
                    <li class="divider"></li>
                    <li>
                         <span class="pull-left">
-                                <a href="{{ url_for('.add_new_template', template_type='service', action="add_new") }}" class="btn btn-primary" title="Добавить новый шаблон">
+                                <a href="{{ url_for('.add_new_template', template_type='services', action="add_new") }}" class="btn btn-primary" title="Добавить новый шаблон">
                                     <i class="icon-plus icon-white"></i>Создать
                                 </a>
                         </span>
@@ -183,7 +183,7 @@
             </div>
             <div class="modal-footer">
                 <a href="javascript:void(0);" onclick="$('#modal-from-dom').modal('hide');" class="btn btn-secondary">Нет</a>
-                <a href="{{ url_for('.delete_template', template_type='service', action='delete_template', id=current_id)}}" class="btn btn-danger">Да</a>
+                <a href="{{ url_for('.delete_template', template_type='services', action='delete_template', id=current_id)}}" class="btn btn-danger">Да</a>
             </div>
         </div>
 
@@ -332,14 +332,14 @@
                     $("input[name=is_active]:not(:checked)").attr('title', "Выбрать для выгрузки данных по шаблону")
                     $(this).removeAttr('title')
                     $.ajax({
-                            url : '{{ url_for('.activate', template_type='service') }}',
+                            url : '{{ url_for('.activate', template_type='services') }}',
                             type : 'POST',
                             data: {activate:item.val()}
                     });
                 }
                 else{
                     $.ajax({
-                            url : '{{ url_for('.activate', template_type='service') }}',
+                            url : '{{ url_for('.activate', template_type='services') }}',
                             type : 'POST',
                             data: {deactivate:item.val()}
                     });
