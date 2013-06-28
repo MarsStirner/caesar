@@ -172,7 +172,7 @@ def settings_template(template_type='patient', id=0):
 @module.route('/settings_template/', methods=['GET', 'POST'])
 @module.route('/settings_template/<string:template_type>/', methods=['GET', 'POST'])
 @module.route('/settings_template/<string:template_type>/<string:action>', methods=['POST', 'GET'])
-def add_new_template(template_type="patient", action="add_new"):
+def add_new_template(template_type="patients", action="add_new"):
     try:
         template_type_id = TemplateType.query.filter_by(code=template_type).first().id
         form = CreateTemplateForm()
