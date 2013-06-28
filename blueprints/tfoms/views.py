@@ -115,7 +115,7 @@ def settings():
 @module.route('/settings_template/<string:template_type>/<int:id>', methods=['GET', 'POST'])
 def settings_template(template_type='patient', id=0):
     try:
-        template_type_id = TemplateType.query.filter_by(name=template_type).first().id
+        template_type_id = TemplateType.query.filter_by(code=template_type).first().id
 
         templates = Template.query.filter_by(type_id=template_type_id).all()
         templates_names = [template.name for template in templates]
@@ -174,7 +174,7 @@ def settings_template(template_type='patient', id=0):
 @module.route('/settings_template/<string:template_type>/<string:action>', methods=['POST', 'GET'])
 def add_new_template(template_type="patient", action="add_new"):
     try:
-        template_type_id = TemplateType.query.filter_by(name=template_type).first().id
+        template_type_id = TemplateType.query.filter_by(code=template_type).first().id
         form = CreateTemplateForm()
 
         if form.is_submitted():
@@ -194,7 +194,7 @@ def add_new_template(template_type="patient", action="add_new"):
                 return redirect(url_for('.settings_template', template_type=template_type, id=new_id))
         else:
             unused_tags = []
-            if template_type_id == 3:
+            if template_type == 'dbf':
                 tags_tree = [TagTreeNode(tag, 0) for tag in StandartTree.query.
                 filter_by(template_type_id=template_type_id).order_by(StandartTree.ordernum).
                 join(StandartTree.tag).all()]

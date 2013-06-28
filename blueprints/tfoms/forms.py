@@ -2,6 +2,7 @@
 from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
 from models import Template
 
+
 class CreateTemplateForm(Form):
     name = TextField('name', validators=[Required()], default="")
     archive = BooleanField('archive', default=True)
