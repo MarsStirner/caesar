@@ -1,5 +1,5 @@
 <ul class="nav nav-tabs">
-    <li{% if request.path == url_for('.add_new_template', template_type='patient')  or
+    <li{% if request.path == url_for('.add_new_template', template_type='patients')  or
     request.path == url_for('.add_new_template') or
     request.path == url_for('.settings_template', template_type='patients', id=request.view_args.get('id', 0)) or
     request.path == url_for('.delete_template', template_type='patients', action='delete_template', id=request.view_args.get('id', 0)) or
