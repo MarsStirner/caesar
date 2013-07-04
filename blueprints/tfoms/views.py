@@ -87,7 +87,7 @@ def settings():
         class ConfigVariablesForm(Form):
             pass
 
-        variables = ConfigVariables.query.all()
+        variables = ConfigVariables.query.order_by('id').all()
         for variable in variables:
             if variable.value_type == "text":
                 setattr(ConfigVariablesForm, variable.code, TextField(variable.code,
