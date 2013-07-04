@@ -1,0 +1,3 @@
+{%- for item in tags_tree -%}
+{{ item.tag.code }} C(50);
+{%- endfor -%}
