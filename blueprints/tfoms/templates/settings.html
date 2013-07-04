@@ -14,7 +14,7 @@
             {% for field in form %}
                 {% if field.type != "CSRFTokenField" %}
                     <div class="control-group">
-                        <label class="control-label">{{ field.description }}</label>
+                        <label class="control-label">{{ field.description|safe }}</label>
                         <div class="controls">
                             {{ field(value=field.value, placeholder="Введите "+field.description, required="required", title="Необходимо заполнить это поле!") }}
                         </div>
