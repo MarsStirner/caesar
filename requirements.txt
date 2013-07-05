@@ -12,3 +12,5 @@ selenium
 #twisted
 mysql-python
 psycopg2
+dbf
+patool

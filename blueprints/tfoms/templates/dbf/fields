@@ -1,3 +1,4 @@
-{%- for item in tags_tree -%}
-{{ item.tag.code }} C(50);
+{%- for tag in tags -%}
+{{ tag }} C(50)
+{%- if not loop.last -%};{%- endif -%}
 {%- endfor -%}
