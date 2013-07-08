@@ -67,7 +67,7 @@ class Services(object):
                 print e
             else:
                 result.append(attr)
-        return result
+        return list(set(result))
 
     def __get_ammount(self, services):
         ammount = 0.0

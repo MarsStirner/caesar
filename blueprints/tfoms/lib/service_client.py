@@ -58,8 +58,6 @@ class TFOMSClient(object):
                         setattr(element, attr, self.__convert_date(value))
                     elif isinstance(value, basestring):
                         setattr(element, attr, value.strip().decode('utf8'))
-                    else:
-                        setattr(element, attr, str(value))
         return data
 
     def __unicode_result(self, data):
@@ -70,8 +68,6 @@ class TFOMSClient(object):
                     setattr(element, attr, value.strip().decode('utf8'))
                 elif attr in self.date_tags and isinstance(value, int) and value:
                     setattr(element, attr, self.__convert_date(value))
-                else:
-                    setattr(element, attr, str(value))
         return data
 
     def get_patients(self, infis_code, start, end, **kwargs):
