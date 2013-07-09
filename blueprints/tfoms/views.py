@@ -29,18 +29,21 @@ def index():
 @module.route('/ajax_download/', methods=['GET', 'POST'])
 def ajax_download():
     result = list()
+    errors = list()
     templates = request.form.getlist('templates[]')
     start = datetime.strptime(request.form['start'], '%d.%m.%Y')
     end = datetime.strptime(request.form['end'], '%d.%m.%Y')
-    #TODO: как-то покрасивее сделать
-    try:
-        for template_id in templates:
-            worker = DownloadWorker()
+    #TODO: как-то покрасивее сделать?
+    worker = DownloadWorker()
+    for template_id in templates:
+        try:
             file_url = worker.do_download(template_id, start, end, _config('lpu_infis_code'))
+        except NotFoundException:
+            template = db.session.query(Template).get(template_id)
+            errors.append(u'<b>%s</b>: данных для выгрузки в заданный период не найдено' % template.name)
+        else:
             result.append(dict(url=file_url))
-        return render_template('download/result.html', files=result)
-    except NotFoundException:
-        return jsonify(error=u'В заданный период данных для выгрузки не найдено')
+    return render_template('download/result.html', files=result, errors=errors)
 
 
 @module.route('/download/')

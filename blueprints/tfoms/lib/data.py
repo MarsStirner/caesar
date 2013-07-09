@@ -108,7 +108,7 @@ class Services(object):
         return dict(patients=patients, services=data, bill=self.__get_bill(data))
 
 
-class DBF_Data(object):
+class DBF(object):
 
     def __init__(self, start, end, infis_code):
         self.client = Client(_config('core_service_url'))
@@ -117,9 +117,24 @@ class DBF_Data(object):
         self.infis_code = infis_code
 
     def get_data(self):
+        pass
+
+
+class DBF_Policlinic(DBF):
+
+    def get_data(self):
         data = self.client.get_policlinic_dbf(infis_code=self.infis_code,
                                               start=self.start,
                                               end=self.end)
+        return data
+
+
+class DBF_Hospital(DBF):
+
+    def get_data(self):
+        data = self.client.get_hospital_dbf(infis_code=self.infis_code,
+                                            start=self.start,
+                                            end=self.end)
         return data
 
 
@@ -152,10 +167,14 @@ class DownloadWorker(object):
             data = Patients(**kwargs).get_data()
         elif template_type == ('xml', 'services'):
             data = Services(**kwargs).get_data()
-        elif template_type[0] == 'dbf':
+        elif template_type == ('dbf', 'policlinic'):
             if 'tags' in kwargs:
                 del kwargs['tags']
-            data = DBF_Data(**kwargs).get_data()
+            data = DBF_Policlinic(**kwargs).get_data()
+        elif template_type == ('dbf', 'hospital'):
+            if 'tags' in kwargs:
+                del kwargs['tags']
+            data = DBF_Hospital(**kwargs).get_data()
         else:
             raise NameError
         return data

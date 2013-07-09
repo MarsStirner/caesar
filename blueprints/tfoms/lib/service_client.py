@@ -141,7 +141,7 @@ class TFOMSClient(object):
             raise e
         return self.__unicode_result(result)
 
-    def get_stationary_dbf(self, infis_code, start, end, **kwargs):
+    def get_hospital_dbf(self, infis_code, start, end, **kwargs):
         """Получает данные для dbf по поликлинике и стационару в данном ЛПУ в указанный промежуток времени"""
         result = None
         try:

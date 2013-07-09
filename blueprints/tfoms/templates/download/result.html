@@ -1,3 +1,11 @@
+{% if errors %}
+    <div class="alert alert-error">
+    {%- for error in errors -%}
+        {{ error|safe }}
+        {%- if not loop.last -%}<br/>{%- endif -%}
+    {%- endfor -%}
+    </div>
+{% endif %}
 {% for file in files %}
     <i class="icon-download"></i> <a href="{{ url_for('.download_file', filename=file['url']) }}">{{ file['url'] }}</a><br/>
 {% endfor %}
