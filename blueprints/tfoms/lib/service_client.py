@@ -32,7 +32,16 @@ class TFOMSClient(object):
         self.client = Client(protocol)
         self.transport.open()
 
-        self.date_tags = ['DR', 'DATE_1', 'DATE_2', 'DATE_IN', 'DATE_OUT']
+        self.date_tags = ['DR',
+                          'DATE_1',
+                          'DATE_2',
+                          'DATE_IN',
+                          'DATE_OUT',
+                          'D_R',
+                          'DAT_PR',
+                          'DAT_VV',
+                          'DAT_BLVN',
+                          'DAT_ELVN']
 
     def __del__(self):
         self.transport.close()
@@ -45,7 +54,7 @@ class TFOMSClient(object):
         for item in data:
             for element in data[item]:
                 for attr, value in element.__dict__.iteritems():
-                    if attr in self.date_tags and isinstance(value, int):
+                    if attr in self.date_tags and isinstance(value, int) and value:
                         setattr(element, attr, self.__convert_date(value))
                     elif isinstance(value, basestring):
                         setattr(element, attr, value.strip().decode('utf8'))
@@ -57,7 +66,7 @@ class TFOMSClient(object):
             for attr, value in element.__dict__.iteritems():
                 if isinstance(value, basestring):
                     setattr(element, attr, value.strip().decode('utf8'))
-                elif attr in self.date_tags and isinstance(value, int):
+                elif attr in self.date_tags and isinstance(value, int) and value:
                     setattr(element, attr, self.__convert_date(value))
         return data
 
@@ -114,3 +123,37 @@ class TFOMSClient(object):
         except TException, e:
             raise e
         return result
+
+    def get_policlinic_dbf(self, infis_code, start, end, **kwargs):
+        """Получает данные для dbf по поликлинике и стационару в данном ЛПУ в указанный промежуток времени"""
+        result = None
+        try:
+            result = self.client.getDBFPoliclinic(beginDate=calendar.timegm(start.timetuple()) * 1000,
+                                                  endDate=calendar.timegm(end.timetuple()) * 1000,
+                                                  infisCode=infis_code)
+        except InvalidArgumentException, e:
+            print e
+        except SQLException, e:
+            print e
+        except NotFoundException, e:
+            raise e
+        except TException, e:
+            raise e
+        return self.__unicode_result(result)
+
+    def get_hospital_dbf(self, infis_code, start, end, **kwargs):
+        """Получает данные для dbf по поликлинике и стационару в данном ЛПУ в указанный промежуток времени"""
+        result = None
+        try:
+            result = self.client.getDBFStationary(beginDate=calendar.timegm(start.timetuple()) * 1000,
+                                                  endDate=calendar.timegm(end.timetuple()) * 1000,
+                                                  infisCode=infis_code)
+        except InvalidArgumentException, e:
+            print e
+        except SQLException, e:
+            print e
+        except NotFoundException, e:
+            raise e
+        except TException, e:
+            raise e
+        return self.__unicode_result(result)

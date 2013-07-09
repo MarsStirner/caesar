@@ -15,7 +15,8 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, NoAlertPresentException
 import selenium.webdriver.support.ui as ui
 
-from models import Template
+
+from models import Template, TemplateType
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
 
@@ -34,6 +35,10 @@ class TestPatients(unittest.TestCase):
             self.client = TFOMSClient(_config('core_service_url'))
             self.lpu_infis_code = _config('lpu_infis_code')
             self.app = app
+            self.template_id = (db.session.query(Template)
+                                .join(TemplateType)
+                                .filter(TemplateType.code == 'patients')
+                                .first())
 
     def tearDown(self):
         del self.client
@@ -41,18 +46,90 @@ class TestPatients(unittest.TestCase):
 
     def testGetPatients(self):
         beginDate = datetime(2013, 01, 01)
-        endDate = datetime(2013, 06, 01)
+        endDate = datetime(2013, 02, 01)
         patients = self.client.get_patients(self.lpu_infis_code, beginDate, endDate)
         if patients:
             self.assertIsInstance(patients, list)
 
     def testDowloadPatients(self):
-        template_id = 1
         start = datetime(2013, 01, 01)
-        end = datetime(2013, 06, 01)
+        end = datetime(2013, 02, 01)
         worker = DownloadWorker()
         with app.app_context():
-            file_url = worker.do_download(template_id, start, end, self.lpu_infis_code)
+            file_url = worker.do_download(self.template_id, start, end, self.lpu_infis_code)
+            self.assertIsNotNone(file_url)
+
+
+class TestServices(unittest.TestCase):
+
+    def setUp(self):
+        with app.app_context():
+            self.client = TFOMSClient(_config('core_service_url'))
+            self.lpu_infis_code = _config('lpu_infis_code')
+            self.app = app
+            self.template_id = (db.session.query(Template)
+                                .join(TemplateType)
+                                .filter(TemplateType.code == 'services')
+                                .first())
+
+    def tearDown(self):
+        del self.client
+        del self.app
+
+    def testGetServices(self):
+        beginDate = datetime(2013, 01, 01)
+        endDate = datetime(2013, 02, 01)
+        patients = self.client.get_patients(self.lpu_infis_code, beginDate, endDate)
+        patient_ids = []
+        for patient in patients:
+            patient_ids.append(patient.patientId)
+            patients[patient.patientId] = patient
+
+        services = self.client.get_patient_events(infis_code=self.lpu_infis_code,
+                                                  start=beginDate,
+                                                  end=endDate,
+                                                  patients=patient_ids)
+        if services:
+            self.assertIsInstance(services, list)
+
+    def testDowloadServices(self):
+        start = datetime(2013, 01, 01)
+        end = datetime(2013, 02, 01)
+        worker = DownloadWorker()
+        with app.app_context():
+            file_url = worker.do_download(self.template_id, start, end, self.lpu_infis_code)
+            self.assertIsNotNone(file_url)
+
+
+class TestDBF(unittest.TestCase):
+
+    def setUp(self):
+        with app.app_context():
+            self.client = TFOMSClient(_config('core_service_url'))
+            self.lpu_infis_code = _config('lpu_infis_code')
+            self.app = app
+            self.template_id = (db.session.query(Template)
+                                .join(TemplateType)
+                                .filter(TemplateType.code == 'dbf')
+                                .first())
+
+    def tearDown(self):
+        del self.client
+        del self.app
+
+    def testGetDBFData(self):
+        beginDate = datetime(2013, 01, 01)
+        endDate = datetime(2013, 02, 01)
+        patients = self.client.get_dbf_data(self.lpu_infis_code, beginDate, endDate)
+        if patients:
+            self.assertIsInstance(patients, list)
+
+    def testDowloadDBF(self):
+        start = datetime(2013, 01, 01)
+        end = datetime(2013, 02, 01)
+        worker = DownloadWorker()
+        with app.app_context():
+            file_url = worker.do_download(self.template_id, start, end, self.lpu_infis_code)
             self.assertIsNotNone(file_url)
 
 

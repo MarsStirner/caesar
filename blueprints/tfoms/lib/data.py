@@ -3,6 +3,8 @@ import os
 import exceptions
 from datetime import date
 from zipfile import ZipFile
+import dbf
+import patoolib
 from jinja2 import Environment, PackageLoader
 from application.database import db
 from service_client import TFOMSClient as Client
@@ -61,11 +63,11 @@ class Services(object):
         for tag in tags:
             try:
                 attr = getattr(SluchOptionalFields, tag)
-            except exceptions.AttributeError:
-                pass
+            except exceptions.AttributeError, e:
+                print e
             else:
                 result.append(attr)
-        return result
+        return list(set(result))
 
     def __get_ammount(self, services):
         ammount = 0.0
@@ -106,6 +108,36 @@ class Services(object):
         return dict(patients=patients, services=data, bill=self.__get_bill(data))
 
 
+class DBF(object):
+
+    def __init__(self, start, end, infis_code):
+        self.client = Client(_config('core_service_url'))
+        self.start = start
+        self.end = end
+        self.infis_code = infis_code
+
+    def get_data(self):
+        pass
+
+
+class DBF_Policlinic(DBF):
+
+    def get_data(self):
+        data = self.client.get_policlinic_dbf(infis_code=self.infis_code,
+                                              start=self.start,
+                                              end=self.end)
+        return data
+
+
+class DBF_Hospital(DBF):
+
+    def get_data(self):
+        data = self.client.get_hospital_dbf(infis_code=self.infis_code,
+                                            start=self.start,
+                                            end=self.end)
+        return data
+
+
 class DownloadWorker(object):
 
     def __get_template(self, id):
@@ -131,26 +163,28 @@ class DownloadWorker(object):
         return None
 
     def get_data(self, template_type, **kwargs):
-        if template_type == 'xml_patients':
+        if template_type == ('xml', 'patients'):
             data = Patients(**kwargs).get_data()
-        elif template_type == 'xml_services':
+        elif template_type == ('xml', 'services'):
             data = Services(**kwargs).get_data()
+        elif template_type == ('dbf', 'policlinic'):
+            if 'tags' in kwargs:
+                del kwargs['tags']
+            data = DBF_Policlinic(**kwargs).get_data()
+        elif template_type == ('dbf', 'hospital'):
+            if 'tags' in kwargs:
+                del kwargs['tags']
+            data = DBF_Hospital(**kwargs).get_data()
         else:
             raise NameError
         return data
 
-    def __get_file_object(self, template_type, end):
-        if template_type in ('xml_patients', 'xml_services'):
-            file_type = 'xml'
-        elif template_type == 'dbf':
-            file_type = 'dbf'
-        else:
-            raise NameError
-        return File.provider(data_type=template_type, file_type=file_type, end=end)
+    def __get_file_object(self, template_type, end, tags):
+        return File.provider(data_type=template_type[1], end=end, file_type=template_type[0], tags=tags)
 
     def do_download(self, template_id, start, end, infis_code):
         template = self.__get_template(template_id)
-        template_type = '%s_%s' % (template.type.download_type.code, template.type.code)
+        template_type = (template.type.download_type.code, template.type.code)
         tree = self.__get_template_tree(template_id)
         if tree is None:
             return None
@@ -162,7 +196,7 @@ class DownloadWorker(object):
                              infis_code=infis_code,
                              tags=tags)
                              # conditions=conditions)
-        file_obj = self.__get_file_object(template_type, end=end)
+        file_obj = self.__get_file_object(template_type, end=end, tags=tags)
         file_url = file_obj.save_file(tree, data)
         if template.archive:
             file_url = file_obj.archive_file()
@@ -178,13 +212,13 @@ class UploadWorker(object):
 class File(object):
 
     @classmethod
-    def provider(cls, data_type, end, file_type='xml'):
+    def provider(cls, data_type, end, file_type='xml', tags=[]):
         """Вернёт объект для работы с указанным типом файла"""
         file_type = file_type.lower()
         if file_type == 'xml':
             obj = XML(data_type, end)
         elif file_type == 'dbf':
-            obj = DBF(data_type, end)
+            obj = DBF(data_type, end, tags=tags)
         else:
             raise exceptions.NameError
         return obj
@@ -196,10 +230,10 @@ class XML(object):
         self.data_type = data_type
         self.end = end
 
-        if self.data_type == 'xml_patients':
+        if self.data_type == 'patients':
             self.file_name = 'L'
             self.template = 'xml/patients.xml'
-        elif self.data_type == 'xml_services':
+        elif self.data_type == 'services':
             self.file_name = 'H'
             self.template = 'xml/services.xml'
         else:
@@ -219,7 +253,7 @@ class XML(object):
         env.filters['datetimeformat'] = datetimeformat
 
         template = env.get_template(self.template)
-        linked_file = XML(data_type='xml_services', end=self.end)
+        linked_file = XML(data_type='services', end=self.end)
         linked_file.generate_filename()
         head = dict(VERSION='1.0',
                     DATA=date.today().strftime('%Y-%m-%d'),
@@ -243,14 +277,60 @@ class XML(object):
 
 class DBF(object):
 
-    def __init__(self, data_type, end):
-        pass
+    def __init__(self, data_type, end, tags):
+        self.data_type = data_type
+        self.end = end
+        self.tags = tags
 
-    def generate_file(self):
-        pass
+    def __get_month(self, date):
+        monthes = range(13)
+        monthes[10] = 'a'
+        monthes[11] = 'b'
+        monthes[12] = 'c'
+        month = date.month
+        if month > 9:
+            month = monthes[month]
+        return month
 
-    def save_file(self):
-        pass
+    def generate_filename(self):
+        self.file_name = 'L'
+        self.file_name += _config('lpu_type')
+        self.file_name += _config('old_lpu_infis_code')
+
+        self.arj_file_name = '10'
+        self.arj_file_name += _config('old_lpu_infis_code')
+        self.arj_file_name += '%s' % self.end.strftime('%d')
+        self.arj_file_name += '%s' % self.__get_month(self.end)
+
+    def __generate_fields(self, tags):
+        env = Environment(loader=PackageLoader(module.import_name, module.template_folder))
+        env.filters['datetimeformat'] = datetimeformat
+
+        template = env.get_template('dbf/fields')
+        return str(template.render(tags=tags).lstrip())
+
+    def generate_file(self, tags_tree, data):
+        dbf.input_decoding = 'utf8'
+        dbf.default_codepage = 'utf8'
+        table = dbf.Table(os.path.join(DOWNLOADS_DIR, '%s.dbf' % self.file_name), self.__generate_fields(self.tags))
+        table.open()
+        for item in data:
+            row = []
+            for tag_item in tags_tree:
+                row.append(getattr(item, tag_item.tag.code, ''))
+            table.append(tuple(row))
+        table.close()
+        return table
+
+    def save_file(self, tags_tree, data):
+        self.generate_filename()
+        dbf_file = self.generate_file(tags_tree, data)
+        return '%s.dbf' % self.file_name
+
+    def archive_file(self):
+        patoolib.create_archive(os.path.join(DOWNLOADS_DIR, '%s.arj' % self.arj_file_name),
+                                os.path.join(DOWNLOADS_DIR, '%s.dbf' % self.file_name))
+        return '%s.arj' % self.arj_file_name
 
 
 class Utility(object):
