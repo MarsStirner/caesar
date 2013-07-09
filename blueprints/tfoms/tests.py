@@ -11,8 +11,9 @@ from lib.data import DownloadWorker
 from .app import _config
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import Select
-from selenium.common.exceptions import NoSuchElementException
+#from selenium.webdriver.support.ui import Select
+from selenium.common.exceptions import NoSuchElementException, NoAlertPresentException
+import selenium.webdriver.support.ui as ui
 
 from models import Template
 
@@ -99,15 +100,18 @@ class ClickTabs(SimpleTestCase):
         driver.find_element_by_link_text("Выгрузка DBF").click()
         driver.find_element_by_link_text("Загрузка").click()
         driver.find_element_by_link_text("Отчёты").click()
-        time.sleep(2)
+        #time.sleep(2)
         driver.find_element_by_id("drop1").click()
-        time.sleep(2)
+        wait = ui.WebDriverWait(self.driver, 15)
+        wait.until(lambda driver: driver.find_element_by_class_name("dropdown-menu"))
         driver.find_element_by_link_text("Шаблоны").click()
         driver.find_element_by_link_text("Сведения об оказанной мед.помощи (XML)").click()
         driver.find_element_by_link_text("Выгрузка в формате DBF").click()
-        time.sleep(2)
+        time.sleep(1)
         driver.find_element_by_id("drop1").click()
-        time.sleep(2)
+        #time.sleep(2)
+        wait = ui.WebDriverWait(self.driver, 15)
+        wait.until(lambda driver: driver.find_element_by_class_name("dropdown-menu"))
         driver.find_element_by_link_text("Общие настройки").click()
 
 
@@ -200,7 +204,7 @@ class UniqueTemplateName(SimpleTestCase):
         time.sleep(10)
         self.assertRegexpMatches(driver.find_element_by_css_selector("BODY").text.encode('utf8'),
                                  r"^[\s\S]*Внимание! Наименования шаблонов должны быть уникальны![\s\S]*$")
-
+        time.sleep(1)
         driver.find_element_by_link_text("Сведения об оказанной мед.помощи (XML)").click()
         time.sleep(5)
         driver.find_element_by_id("name").clear()
@@ -213,13 +217,12 @@ class UniqueTemplateName(SimpleTestCase):
         time.sleep(2)
         driver.find_element_by_id("Save").click()
         # Warning: assertTextPresent may require manual changes
-        time.sleep(10)
+        time.sleep(7)
         self.assertRegexpMatches(driver.find_element_by_css_selector("BODY").text.encode('utf8'),
                                  r"^[\s\S]*Внимание! Наименования шаблонов должны быть уникальны![\s\S]*$")
-
+        time.sleep(1)
         driver.find_element_by_link_text("Выгрузка в формате DBF").click()
         time.sleep(5)
-        driver.find_element_by_link_text("Сведения об оказанной мед.помощи (XML)").click()
         driver.find_element_by_id("name").clear()
         driver.find_element_by_id("name").send_keys("TestTemplate_dbf")
         driver.find_element_by_id("Save").click()
@@ -229,7 +232,7 @@ class UniqueTemplateName(SimpleTestCase):
         driver.find_element_by_id("name").send_keys("TestTemplate_dbf")
         time.sleep(2)
         driver.find_element_by_id("Save").click()
-        time.sleep(10)
+        time.sleep(7)
         # Warning: assertTextPresent may require manual changes
         self.assertRegexpMatches(driver.find_element_by_css_selector("BODY").text.encode('utf8'),
                                  r"^[\s\S]*Внимание! Наименования шаблонов должны быть уникальны![\s\S]*$")
@@ -292,7 +295,7 @@ class UniqueTemplateNameOpera(UniqueTemplateName):
 class ClickTabsChrome(ClickTabs):
 
     def setUp(self):
-        self.driver = webdriver.Chrome("/home/plakrisenko/Documents/repos/caesar/code/chromedriver_old")
+        self.driver = webdriver.Chrome("path to chromedriver")
         self.driver.implicitly_wait(20)
         self.base_url = "http://127.0.0.1:5000/"
         self.verificationErrors = []
@@ -302,7 +305,7 @@ class ClickTabsChrome(ClickTabs):
 class EmptyTemplateNameChrome(EmptyTemplateName):
 
     def setUp(self):
-        self.driver = webdriver.Chrome("/home/plakrisenko/Documents/repos/caesar/code/chromedriver_old")
+        self.driver = webdriver.Chrome("path to chromedriver")
         self.driver.implicitly_wait(20)
         self.base_url = "http://127.0.0.1:5000/"
         self.verificationErrors = []
@@ -311,7 +314,7 @@ class EmptyTemplateNameChrome(EmptyTemplateName):
 
 class SaveDeleteNewTemplateChrome(SaveDeleteNewTemplate):
     def setUp(self):
-        self.driver = webdriver.Chrome("/home/plakrisenko/Documents/repos/caesar/code/chromedriver_old")
+        self.driver = webdriver.Chrome("path to chromedriver")
         self.driver.implicitly_wait(20)
         self.base_url = "http://127.0.0.1:5000/"
         self.verificationErrors = []
@@ -321,14 +324,14 @@ class SaveDeleteNewTemplateChrome(SaveDeleteNewTemplate):
 class UniqueTemplateNameChrome(UniqueTemplateName):
 
     def setUp(self):
-        self.driver = webdriver.Chrome("/home/plakrisenko/Documents/repos/caesar/code/chromedriver_old")
+        self.driver = webdriver.Chrome("path to chromedriver")
         self.driver.implicitly_wait(20)
         self.base_url = "http://127.0.0.1:5000/"
         self.verificationErrors = []
         self.accept_next_alert = True
 
 
-test_cases = (ClickTabs, EmptyTemplateName, ClickTabsChrome, EmptyTemplateNameChrome)
+test_cases = (ClickTabs, ClickTabsChrome, ClickTabsOpera, )
 
 
 def load_tests(loader, tests, pattern):
