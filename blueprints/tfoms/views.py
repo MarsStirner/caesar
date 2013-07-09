@@ -132,7 +132,7 @@ def settings_template(template_type='patient', id=0):
         tree_tags_ids = [tag.tag_id for tag in tree_tags]
         unused_tags = filter(lambda x: x.tag_id not in tree_tags_ids,
                              StandartTree.query.filter_by(template_type_id=template_type_id))
-        if template_type == 'dbf':
+        if template_type in ('policlinic', 'hospital'):
             tag_tree = [TagTreeNode(tag, 0) for tag in tree_tags]
         else:
             root = TagTreeNode(TagsTree.query.filter_by(template_id=id).filter_by(parent_id=None).
@@ -194,7 +194,7 @@ def add_new_template(template_type="patients", action="add_new"):
                 return redirect(url_for('.settings_template', template_type=template_type, id=new_id))
         else:
             unused_tags = []
-            if template_type == 'dbf':
+            if template_type in ('policlinic', 'hospital'):
                 tags_tree = [TagTreeNode(tag, 0) for tag in StandartTree.query.
                 filter_by(template_type_id=template_type_id).order_by(StandartTree.ordernum).
                 join(StandartTree.tag).all()]
@@ -234,7 +234,7 @@ def activate(template_type):
                 id = request.form['activate']
                 template = Template.query.filter_by(id=id).first()
                 type = int(template.type_id)
-                if template_type != 'dbf':
+                if template_type not in ('policlinic', 'hospital'):
                     deactivated = Template.query.filter_by(type_id=type).all()
                     for item in deactivated:
                         if item.id != id:
