@@ -73,7 +73,7 @@
                             {{ form.hidden_tag() }}
                             {{ form.name(class='input-xlarge', placeholder="Введите наименование шаблона", maxlength=30) }}
                             {% if form.name.errors %}
-                                <ul class=errors style="color:red">
+                                <ul class="errors" style="color:red">
                                 {% for error in form.name.errors %}
                                   <li>{{ error }}</li>
                                 {% endfor %}
