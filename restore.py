@@ -2,6 +2,7 @@
 import os
 import sys
 from sqlalchemy.ext.serializer import loads
+from sqlalchemy import func
 from application.app import app, db
 
 
@@ -20,9 +21,17 @@ def restore():
         data_list = loads(data)
         model = db.metadata.tables[bk_file]
         db.session.execute(model.insert().values(data_list))
-    db.session.commit()
+        db.session.commit()
+        __restore_sequence(db.session.bind.engine.url.drivername, model)
+
     enable_fk(db.session.bind.engine.url.drivername)
     db.session.remove()
+
+
+def __restore_sequence(driver, table):
+    if driver.find('postgresql') > -1:
+        db.session.execute('''SELECT setval('{0}_id_seq', (SELECT max(id) FROM {0}))'''.format(table))
+        db.session.commit()
 
 
 def disable_fk(driver):
