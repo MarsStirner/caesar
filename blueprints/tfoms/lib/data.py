@@ -384,7 +384,7 @@ class DBF(object):
 
     def archive_file(self):
         patoolib.create_archive(os.path.join(DOWNLOADS_DIR, '%s.arj' % self.arj_file_name),
-                                os.path.join(DOWNLOADS_DIR, '%s.dbf' % self.file_name))
+                                (os.path.join(DOWNLOADS_DIR, '%s.dbf' % self.file_name), ))
         return '%s.arj' % self.arj_file_name
 
 
