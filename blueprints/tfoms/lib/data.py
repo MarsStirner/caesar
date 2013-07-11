@@ -82,8 +82,8 @@ class Services(object):
     def __get_bill(self, services):
         data = dict(CODE=1,
                     CODE_MO=_config('lpu_infis_code'),
-                    YEAR=self.end.strftime('%Y'),
-                    MONTH=self.end.strftime('%m'),
+                    YEAR=self.start.strftime('%Y'),
+                    MONTH=self.start.strftime('%m'),
                     NSCHET='%s-%s/%s' % (self.end.strftime('%Y%m'), 1, _config('old_lpu_infis_code')),
                     DSCHET=date.today().strftime('%Y-%m-%d'),
                     PLAT=_config('payer_code'),
