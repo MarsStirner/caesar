@@ -108,7 +108,7 @@ class Services(object):
         return dict(patients=patients, services=data, bill=self.__get_bill(data))
 
 
-class DBF(object):
+class DBF_Data(object):
 
     def __init__(self, start, end, infis_code):
         self.client = Client(_config('core_service_url'))
@@ -120,7 +120,7 @@ class DBF(object):
         pass
 
 
-class DBF_Policlinic(DBF):
+class DBF_Policlinic(DBF_Data):
 
     def get_data(self):
         data = self.client.get_policlinic_dbf(infis_code=self.infis_code,
@@ -129,7 +129,7 @@ class DBF_Policlinic(DBF):
         return data
 
 
-class DBF_Hospital(DBF):
+class DBF_Hospital(DBF_Data):
 
     def get_data(self):
         data = self.client.get_hospital_dbf(infis_code=self.infis_code,
@@ -152,8 +152,11 @@ class DownloadWorker(object):
         return [root]
 
     def __tags_list(self, template_id):
-        tags = db.session.query(Tag.code).join(TagsTree).filter(TagsTree.template_id == template_id).all()
-        tags = [r[0] for r in tags]
+        tags = (db.session.query(Tag.code)
+                .join(TagsTree)
+                .filter(TagsTree.template_id == template_id)
+                .order_by(TagsTree.ordernum).all())
+        tags = [tag[0] for tag in tags]
         # tags = list()
         # for item in tree:
         #     tags.append(item.tag.code)
@@ -294,7 +297,7 @@ class DBF(object):
 
     def generate_filename(self):
         self.file_name = 'L'
-        self.file_name += _config('lpu_type')
+        self.file_name += str(self.__get_org_type())
         self.file_name += _config('old_lpu_infis_code')
 
         self.arj_file_name = '10'
@@ -302,29 +305,81 @@ class DBF(object):
         self.arj_file_name += '%s' % self.end.strftime('%d')
         self.arj_file_name += '%s' % self.__get_month(self.end)
 
-    def __generate_fields(self, tags):
+    def __get_field_type(self, value, tag):
+        if isinstance(value, basestring):
+            _type = 'C(254)'
+        elif isinstance(value, date):
+            _type = 'D'
+        elif isinstance(value, int):
+            _type = 'N(10,0)'
+        elif isinstance(value, float):
+            _type = 'N(7,2)'
+        else:
+            _type = 'C(254)'
+
+        if tag == 'KOD_LPU':
+            _type = 'N(10,0)'
+        elif tag == 'DAT_SC':
+            _type = 'D'
+        elif tag == 'VL':
+            _type = 'N(10,0)'
+        return _type
+
+    def __generate_fields(self, tags, row):
         env = Environment(loader=PackageLoader(module.import_name, module.template_folder))
         env.filters['datetimeformat'] = datetimeformat
 
         template = env.get_template('dbf/fields')
         return str(template.render(tags=tags).lstrip())
 
-    def generate_file(self, tags_tree, data):
+    def __get_org_type(self):
+        _type = None
+        if self.data_type == 'hospital':
+            _type = 1
+        elif self.data_type == 'policlinic':
+            _type = 2
+        return _type
+
+    def __generate_bill_number(self, num):
+        bill_num = _config('old_lpu_infis_code')
+        bill_num += str(self.__get_org_type())
+        bill_num += '_'  #TODO: исправленный, то W
+        bill_num += 'M'  #TODO: убедиться, что других случаев нет
+        bill_num += '{0:04d}'.format(num)
+        return bill_num
+
+    def generate_file(self, tags, data):
         dbf.input_decoding = 'utf8'
         dbf.default_codepage = 'utf8'
-        table = dbf.Table(os.path.join(DOWNLOADS_DIR, '%s.dbf' % self.file_name), self.__generate_fields(self.tags))
-        table.open()
-        for item in data:
+        fields = []
+        for key, item in enumerate(data):
+            if key == 0:
+                for tag in tags:
+                    fields.append('{0} {1}'.format(tag.strip(), self.__get_field_type(getattr(item, tag, ''), tag)))
+                table = dbf.Table(os.path.join(DOWNLOADS_DIR, '%s.dbf' % self.file_name), '; '.join(fields))
+                table.open()
+
             row = []
-            for tag_item in tags_tree:
-                row.append(getattr(item, tag_item.tag.code, ''))
+            for tag in tags:
+                value = getattr(item, tag, '')
+                if tag == 'N_CH':
+                    value = self.__generate_bill_number(key + 1)
+                elif tag == 'KOD_LPU':
+                    value = _config('lpu_infis_code')
+                elif tag == 'DAT_SC':
+                    value = date.today()
+                elif tag == 'VL':
+                    value = self.__get_org_type()
+                if isinstance(value, date):
+                    value = dbf.Date(value.year, value.month, value.day)
+                row.append(value)
             table.append(tuple(row))
         table.close()
         return table
 
-    def save_file(self, tags_tree, data):
+    def save_file(self, tags, data):
         self.generate_filename()
-        dbf_file = self.generate_file(tags_tree, data)
+        dbf_file = self.generate_file(self.tags, data)
         return '%s.dbf' % self.file_name
 
     def archive_file(self):

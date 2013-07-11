@@ -10,6 +10,7 @@
                     {%- elif node.tag.code == 'PR_NOV' -%}
                         <{{ node.tag.code }}>0</{{ node.tag.code }}>
                     {%- elif node.tag.code == 'PACIENT' and node.children -%}
+                        <{{ node.tag.code }}>
                         {%- for patient_field in node.children -%}
                             {%- if patient_field.tag.code == 'ID_PAC' -%}
                                 <{{ patient_field.tag.code }}>{{ patient_id }}</{{ patient_field.tag.code }}>
@@ -17,6 +18,7 @@
                                 <{{ patient_field.tag.code }}>{{ data['patients'][patient_id]|attr(patient_field.tag.code) }}</{{ patient_field.tag.code }}>
                             {%- endif -%}
                         {%- endfor -%}
+                        </{{ node.tag.code }}>
                     {%- elif node.tag.code == 'SLUCH' and node.children -%}
                         {%- for event in data['services'][patient_id] -%}
                             <{{ node.tag.code }}>
