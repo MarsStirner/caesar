@@ -1,4 +1,0 @@
-{%- for tag in tags -%}
-{{ tag }} C(50)
-{%- if not loop.last -%};{%- endif -%}
-{%- endfor -%}
