@@ -9,20 +9,20 @@
 {% block content %}
 
     {% include '_nav_menu.html' %}
-        <legend>Выгрузка в ТФОМС</legend>
+        <legend>Формирование реестров, предназначенных для выгрузки в ТФОМС</legend>
         <ul class="nav nav-tabs">
-            <li{% if request.path == url_for('.download', template_type='xml') or request.path == url_for('.download') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='xml') }}">Выгрузка XML</a></li>
-            <li{% if request.path == url_for('.download', template_type='dbf') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='dbf') }}">Выгрузка DBF</a></li>
+            <li{% if request.path == url_for('.download', template_type='xml') or request.path == url_for('.download') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='xml') }}">Выгрузка сведений в формате XML</a></li>
+            <li{% if request.path == url_for('.download', template_type='dbf') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='dbf') }}">Выгрузка  сведений в формате DBF</a></li>
         </ul>
         <form class="form-horizontal" id="download_form">
-            <legend>Укажите параметры выгрузки</legend>
+            <legend><small>Укажите параматры выгрузки</small></legend>
             <div class="row">
                 <div class="span6">
                 <div class="alert alert-error hidden">
                   <strong>Внимание!</strong> <span id="error_text"></span>
                 </div>
                 <div class="control-group">
-                    <label class="control-label">Даты:</label>
+                    <label class="control-label">Отчетный период:</label>
                     <div class="controls">
                         <div class="input-prepend">
                             <span class="add-on">с</span>
@@ -35,7 +35,7 @@
                     </div>
                 </div>
                 <div class="control-group">
-                    <label class="control-label">Шаблоны:</label>
+                    <label class="control-label">Формировать:</label>
                     <div class="controls well well-small">
                         {% for template in templates %}
                             <label class="checkbox"><input type="checkbox" class="templates" checked="checked" name="templates[]" value="{{ template.id }}">{{ template.name }}</label>

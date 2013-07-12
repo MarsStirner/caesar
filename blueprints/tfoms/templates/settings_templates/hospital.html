@@ -32,23 +32,23 @@
                                 <li class="active">
                                     <span class="pull-right">
                                         {%- if template.is_active -%}
-                                            <input class="is_active" type="checkbox" name="is_active" value="{{ id }}" checked/>
+                                            <input class="is_active" type="radio" name="is_active" value="{{ id }}" checked/>
                                         {%- else -%}
-                                            <input title="Выбрать для выгрузки данных по шаблону" class="is_active" type="checkbox" name="is_active" value="{{ id }}" />
+                                            <input title="Выбрать для выгрузки данных по шаблону" class="is_active" type="radio" name="is_active" value="{{ id }}" />
                                         {%- endif -%}
                                     </span>
-                                    <a href="{{ url_for('.settings_template', template_type='hospital', id=id) }}">{{template.name}}</a>
+                                    <a href="{{ url_for('.settings_template', template_type='policlinic', id=id) }}">{{template.name}}</a>
                                 </li>
                             {%- else -%}
                                 <li>
                                     <span class="pull-right">
                                         {%- if template.is_active -%}
-                                            <input class="is_active" type="checkbox" name="is_active" value="{{ id }}" checked/>
+                                            <input class="is_active" type="radio" name="is_active" value="{{ id }}" checked/>
                                         {%- else -%}
-                                            <input title="Выбрать для выгрузки данных по шаблону" class="is_active" type="checkbox" name="is_active" value="{{ id }}" />
+                                            <input title="Выбрать для выгрузки данных по шаблону" class="is_active" type="radio" name="is_active" value="{{ id }}"  />
                                         {%- endif -%}
                                     </span>
-                                    <a href="{{ url_for('.settings_template', template_type='hospital', id=id) }}">{{template.name}}</a>
+                                    <a href="{{ url_for('.settings_template', template_type='policlinic', id=id) }}">{{template.name}}</a>
                                 </li>
                             {%- endif -%}
                        {%- endfor -%}
@@ -299,38 +299,27 @@
             }
       }
 
-    $("input[name=is_active]:checkbox").change(
-            function(){
-                var item = $(this);
-                if ($(this).is(':checked')){
-                    $("input[name=is_active]:not(:checked)").attr('title', "Выбрать для выгрузки данных по шаблону")
-                    $(this).removeAttr('title')
-                    $.ajax({
-                            url : '{{ url_for('.activate', template_type='hospital') }}',
-                            type : 'POST',
-                            data: {activate:item.val()}
-                    });
-                    var number_of_checked = $("input[name=is_active]:checked").length;
-                    if (number_of_checked===2){
-                        $("input[name=is_active]:not(:checked)").attr({
-                              'disabled': 'disabled'
-                        }).removeAttr('title');
+        $("input[name=is_active]:radio").change(
+                function(){
+                    var item = $(this);
+                    if ($(this).is(':checked')){
+                        $("input[name=is_active]:not(:checked)").attr('title', "Выбрать для выгрузки данных по шаблону")
+                        $(this).removeAttr('title')
+                        $.ajax({
+                                url : '{{ url_for('.activate', template_type='patients') }}',
+                                type : 'POST',
+                                data: {activate:item.val()}
+                        });
+                    }
+                    else{
+                        $.ajax({
+                                url : '{{ url_for('.activate', template_type='patients') }}',
+                                type : 'POST',
+                                data: {deactivate:item.val()}
+                        });
                     }
                 }
-                else{
-                    $.ajax({
-                            url : '{{ url_for('.activate', template_type='hospital') }}',
-                            type : 'POST',
-                            data: {deactivate:item.val()}
-                    });
-                    var number_of_checked = $("input[name=is_active]:checked").length;
-                    if (number_of_checked<2){
-                        $("input[name=is_active]:not(:checked)").removeAttr('disabled');
-                        $("input[name=is_active]:not(:checked)").attr('title', "Выбрать для выгрузки данных по шаблону");
-                    }
-                }
-            }
-    );
+        );
 
      $( "#root, #necessary" ).sortable({
         connectWith: ['.necessary'],
