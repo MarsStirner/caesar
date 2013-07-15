@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% block title %}> {{ module_name }} > Настройка шаблонов{% endblock %}
+
 {% block modules_css %}
 <link href="{{ url_for('.static', filename='css/style.css') }}" rel="stylesheet">
 <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/humanity/jquery-ui.css" />
