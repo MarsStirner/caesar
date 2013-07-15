@@ -181,7 +181,6 @@ class DownloadBills(db.Model):
     CODE_MO = db.Column(db.String(10), nullable=False)
     YEAR = db.Column(db.Integer, nullable=False)
     MONTH = db.Column(db.Integer, nullable=False)
-    CODE_MO = db.Column(db.Integer, nullable=False)
     PLAT = db.Column(db.Integer, nullable=False)
     SUMMAV = db.Column(db.Numeric(12, 2), nullable=False)
     start = db.Column(db.Date)
@@ -194,7 +193,6 @@ class DownloadPatients(db.Model):
     __tablename__ = '%s_download_patients' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True)
-    bill_id = db.Column(db.Integer, db.ForeignKey(DownloadBills.id, deferrable=True), index=True)
     VPOLIS = db.Column(db.Integer)
     SPOLIS = db.Column(db.Unicode(20))
     NPOLIS = db.Column(db.Numeric(30))
@@ -203,8 +201,8 @@ class DownloadPatients(db.Model):
     SMO_OK = db.Column(db.Numeric(30))
     SMO_NAM = db.Column(db.Unicode(100))
     NOVOR = db.Column(db.Integer, default=0)
-
-    bill = db.relationship(DownloadBills)
+    clientDocumentId = db.Column(db.Integer)
+    clientPolicyId = db.Column(db.Integer)
 
 
 class DownloadRecords(db.Model):
@@ -212,7 +210,6 @@ class DownloadRecords(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     bill_id = db.Column(db.Integer, db.ForeignKey(DownloadBills.id, deferrable=True), index=True)
-    patient_id = db.Column(db.Integer, db.ForeignKey(DownloadPatients.id, deferrable=True), index=True)
     N_ZAP = db.Column(db.Integer)
     PR_NOV = db.Column(db.Integer, default=0, nullable=False)
 
@@ -221,19 +218,21 @@ class DownloadCases(db.Model):
     __tablename__ = '%s_download_cases' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    bill_id = db.Column(db.Integer, db.ForeignKey(DownloadBills.id, deferrable=True), index=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey(DownloadPatients.id, deferrable=True), index=True)
     record_id = db.Column(db.Integer, db.ForeignKey(DownloadRecords.id, deferrable=True), index=True)
     actionId = db.Column(db.Integer)
     eventId = db.Column(db.Integer)
     rbServiceId = db.Column(db.Integer)
     USL_OK = db.Column(db.Integer)
     VIDPOM = db.Column(db.Integer)
-    NPR_MO = db.Column(db.Integer)
+    NPR_MO = db.Column(db.String(20))
     EXTR = db.Column(db.Integer)
-    LPU = db.Column(db.Integer)
-    LPU_1 = db.Column(db.Integer)
+    LPU = db.Column(db.String(20))
+    LPU_1 = db.Column(db.String(20))
     PODR = db.Column(db.Integer)
     PROFIL = db.Column(db.Integer)
-    NHISTORY = db.Column(db.BigInteger)
+    NHISTORY = db.Column(db.String(50))
     DATE_1 = db.Column(db.Date)
     DATE_2 = db.Column(db.Date)
     DS1 = db.Column(db.Unicode(250))
@@ -254,8 +253,8 @@ class DownloadServices(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     case_id = db.Column(db.Integer, db.ForeignKey(DownloadCases.id, deferrable=True), index=True)
     IDSERV = db.Column(db.Integer)
-    LPU = db.Column(db.Integer)
-    LPU_1 = db.Column(db.Integer)
+    LPU = db.Column(db.String(20))
+    LPU_1 = db.Column(db.String(20))
     PODR = db.Column(db.Integer)
     PROFIL = db.Column(db.Integer)
     DATE_IN = db.Column(db.Date)

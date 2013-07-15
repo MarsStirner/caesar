@@ -4,13 +4,13 @@ import exceptions
 from datetime import date
 from zipfile import ZipFile
 import dbf
-import patoolib
 from jinja2 import Environment, PackageLoader
 from application.database import db
 from service_client import TFOMSClient as Client
 from thrift_service.ttypes import PatientOptionalFields, SluchOptionalFields
 from ..app import module, _config
 from ..models import Template, TagsTree, Tag
+from reports import Reports
 
 
 DOWNLOADS_DIR = os.path.join(module.static_folder, 'downloads')
@@ -201,6 +201,10 @@ class DownloadWorker(object):
                              # conditions=conditions)
         file_obj = self.__get_file_object(template_type, end=end, tags=tags)
         file_url = file_obj.save_file(tree, data)
+        if template_type == ('xml', 'services'):
+            reports = Reports()
+            data.update(dict(template_id=template_id, file=file_url, start=start, end=end))
+            reports.save_data(data)
         if template.archive:
             file_url = file_obj.archive_file()
         return file_url
@@ -383,6 +387,7 @@ class DBF(object):
         return '%s.dbf' % self.file_name
 
     def archive_file(self):
+        import patoolib
         patoolib.create_archive(os.path.join(DOWNLOADS_DIR, '%s.arj' % self.arj_file_name),
                                 (os.path.join(DOWNLOADS_DIR, '%s.dbf' % self.file_name), ))
         return '%s.arj' % self.arj_file_name
