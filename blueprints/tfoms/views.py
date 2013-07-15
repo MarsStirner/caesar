@@ -41,6 +41,9 @@ def ajax_download():
         except NotFoundException:
             template = db.session.query(Template).get(template_id)
             errors.append(u'<b>%s</b>: данных для выгрузки в заданный период не найдено' % template.name)
+        except TException, e:
+            template = db.session.query(Template).get(template_id)
+            errors.append(u'<b>%s</b>: внутренняя ошибка ядра во время выборки данных (%s)' % (template.name, e))
         else:
             result.append(dict(url=file_url))
     return render_template('download/result.html', files=result, errors=errors)
