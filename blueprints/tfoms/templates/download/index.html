@@ -15,7 +15,7 @@
             <li{% if request.path == url_for('.download', template_type='dbf') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='dbf') }}">Выгрузка  сведений в формате DBF</a></li>
         </ul>
         <form class="form-horizontal" id="download_form">
-            <legend><small>Укажите параматры выгрузки</small></legend>
+            <legend><small>Укажите параметры выгрузки</small></legend>
             <div class="row">
                 <div class="span6">
                 <div class="alert alert-error hidden">
@@ -44,7 +44,7 @@
                 </div>
                 <div class="control-group">
                     <div class="controls">
-                        <button type="submit" class="btn btn-primary">Сделать выгрузку</button>
+                        <button type="submit" class="btn btn-primary">Сформировать выгрузку</button>
                     </div>
                 </div>
                 </div>
