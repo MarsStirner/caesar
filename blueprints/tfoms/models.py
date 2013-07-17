@@ -246,6 +246,10 @@ class DownloadCases(db.Model):
     IDSP = db.Column(db.Integer)
     ED_COL = db.Column(db.Numeric(5, 2))
     SUMV = db.Column(db.Numeric(10, 2))
+    REFREASON = db.Column(db.Unicode(20))
+    confirmed = db.Column(db.Boolean, default=False)
+    confirmed_date = db.Column(db.DateTime, nullable=True)
+    uploaded_file = db.Column(db.String(50), nullable=True)
 
 
 class DownloadServices(db.Model):
@@ -268,3 +272,12 @@ class DownloadServices(db.Model):
     PRVS = db.Column(db.BigInteger)
     CODE_MD = db.Column(db.BigInteger)
 
+
+class RbPayRefuseType(db.Model):
+    __tablename__ = 'rbPayRefuseType'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    code = db.Column(db.Unicode(8), nullable=False)
+    name = db.Column(db.Unicode(128), nullable=False)
+    finance_id = db.Column(db.Integer(11))
+    rerun = db.Column(db.SmallInteger(1), default=0)
