@@ -1,16 +1,24 @@
 # -*- encoding: utf-8 -*-
-from datetime import date
+from datetime import datetime
 from application.database import db
 from ..models import DownloadFiles, DownloadBills, DownloadCases, DownloadPatients, DownloadRecords, DownloadServices
 
 
 class Reports(object):
 
+    def __get_file(self, file_name, template_id):
+        return (db.session.query(DownloadFiles)
+                .filter(DownloadFiles.name == file_name, DownloadFiles.template_id == template_id)
+                .first())
+
     def __add_file(self, template_id, file_name):
         file_obj = None
         if template_id and file_name:
-            file_obj = DownloadFiles(template_id=template_id, name=file_name)
-            db.session.add(file_obj)
+            file_obj = self.__get_file(file_name, template_id)
+            if not file_obj:
+                file_obj = DownloadFiles(template_id=template_id, name=file_name)
+                db.session.add(file_obj)
+            file_obj.created = datetime.now()
             db.session.commit()
         return file_obj
 
@@ -18,11 +26,11 @@ class Reports(object):
         bill_obj = None
         if file_id and bill and start and end:
             bill_obj = (db.session.query(DownloadBills)
-                        .filter(file_id=file_id,
-                                start=start,
-                                end=end,
-                                NSCHET=bill.get('NSCHET'),
-                                DSCHET=bill.get('DSCHET'))
+                        .filter(DownloadBills.file_id == file_id,
+                                DownloadBills.start == start,
+                                DownloadBills.end == end,
+                                DownloadBills.NSCHET == bill.get('NSCHET'),
+                                DownloadBills.DSCHET == bill.get('DSCHET'))
                         .first())
         return bill_obj
 
@@ -42,6 +50,7 @@ class Reports(object):
                                          NSCHET=bill.get('NSCHET'),
                                          CODE_MO=bill.get('CODE_MO'),
                                          YEAR=bill.get('YEAR'),
+                                         MONTH=bill.get('MONTH'),
                                          PLAT=bill.get('PLAT'),
                                          SUMMAV=bill.get('SUMMAV'),
                                          start=start,
@@ -56,18 +65,26 @@ class Reports(object):
             patient = db.session.query(DownloadPatients).get(patient_id)
         return patient
 
+    def __parse_default_value(self, value):
+        if value == 'UNDEFINED':
+            value = None
+        return value
+
     def __add_patient(self, patient):
         patient_id = getattr(patient, 'patientId')
         patient_obj = self.__get_patient(patient_id)
         if patient_obj:
             for key in patient_obj.__dict__.keys():
                 patient_value = getattr(patient, key, None)
+                patient_value = self.__parse_default_value(patient_value)
                 if patient_value and patient_value != getattr(patient_obj, key):
                     setattr(patient_obj, key, patient_value)
         else:
             patient_obj = DownloadPatients()
             for key in patient.__dict__.keys():
-                if hasattr(patient_obj, key):
+                patient_value = getattr(patient, key, None)
+                patient_value = self.__parse_default_value(patient_value)
+                if patient_value:
                     setattr(patient_obj, key, getattr(patient, key))
             patient_obj.id = patient_id
             db.session.add(patient_obj)
@@ -75,7 +92,7 @@ class Reports(object):
 
     def __add_patients(self, patients):
         if patients:
-            for patient in patients:
+            for patient in patients.itervalues():
                 self.__add_patient(patient)
 
     def __add_record(self, bill_id, N_ZAP, PR_NOV=0):
@@ -91,7 +108,7 @@ class Reports(object):
         return case
 
     def __add_case(self, bill_id, patient_id, record_id, data):
-        case = self.__get_case(data.get('IDCASE'))
+        case = self.__get_case(getattr(data, 'IDCASE'))
         if case:
             for key in case.__dict__.keys():
                 case_value = getattr(data, key, None)

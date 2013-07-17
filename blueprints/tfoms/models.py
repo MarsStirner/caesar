@@ -68,6 +68,7 @@ class TagTemplateType(db.Model):
     tag_id = db.Column(db.Integer,
                        db.ForeignKey('%s_tag.id' % TABLE_PREFIX, deferrable=True),
                        primary_key=True,
+                       autoincrement=True,
                        nullable=False)
     template_type_id = db.Column(db.Integer,
                                  db.ForeignKey('%s_template_type.id' % TABLE_PREFIX, deferrable=True),
@@ -193,16 +194,16 @@ class DownloadPatients(db.Model):
     __tablename__ = '%s_download_patients' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True)
-    VPOLIS = db.Column(db.Integer)
-    SPOLIS = db.Column(db.Unicode(20))
-    NPOLIS = db.Column(db.Numeric(30))
-    SMO = db.Column(db.Integer)
-    SMO_OGRN = db.Column(db.Numeric(30))
-    SMO_OK = db.Column(db.Numeric(30))
-    SMO_NAM = db.Column(db.Unicode(100))
-    NOVOR = db.Column(db.Integer, default=0)
-    clientDocumentId = db.Column(db.Integer)
-    clientPolicyId = db.Column(db.Integer)
+    VPOLIS = db.Column(db.Integer(1))
+    SPOLIS = db.Column(db.Unicode(10))
+    NPOLIS = db.Column(db.Unicode(20))
+    SMO = db.Column(db.String(5), nullable=True)
+    SMO_OGRN = db.Column(db.String(15), nullable=True)
+    SMO_OK = db.Column(db.String(30), nullable=True)
+    SMO_NAM = db.Column(db.Unicode(100), nullable=True)
+    NOVOR = db.Column(db.String(9), nullable=True)
+    clientDocumentId = db.Column(db.Integer, nullable=True)
+    clientPolicyId = db.Column(db.Integer, nullable=True)
 
 
 class DownloadRecords(db.Model):
@@ -230,7 +231,7 @@ class DownloadCases(db.Model):
     EXTR = db.Column(db.Integer)
     LPU = db.Column(db.String(20))
     LPU_1 = db.Column(db.String(20))
-    PODR = db.Column(db.Integer)
+    PODR = db.Column(db.String(8))
     PROFIL = db.Column(db.Integer)
     NHISTORY = db.Column(db.String(50))
     DATE_1 = db.Column(db.Date)
@@ -239,7 +240,7 @@ class DownloadCases(db.Model):
     CODE_MES1 = db.Column(db.Unicode(250))
     CODE_MES2 = db.Column(db.Unicode(250))
     RSLT = db.Column(db.Integer)
-    ISHOD = db.Column(db.Integer)
+    ISHOD = db.Column(db.Integer(8))
     PRVS = db.Column(db.BigInteger)
     IDDOKT = db.Column(db.BigInteger)
     IDSP = db.Column(db.Integer)

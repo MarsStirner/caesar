@@ -204,7 +204,10 @@ class DownloadWorker(object):
         if template_type == ('xml', 'services'):
             reports = Reports()
             data.update(dict(template_id=template_id, file=file_url, start=start, end=end))
-            reports.save_data(data)
+            try:
+                reports.save_data(data)
+            except Exception, e:
+                print e
         if template.archive:
             file_url = file_obj.archive_file()
         return file_url
