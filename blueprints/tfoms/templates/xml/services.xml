@@ -73,8 +73,8 @@
             {%- for child in item.children -%}
                 {%- if child.tag.code in data['bill'] -%}
                     <{{ child.tag.code }}>{{ data['bill'][child.tag.code] }}</{{ child.tag.code }}>
-                {%- endif %}
-            {%- endfor %}
+                {%- endif -%}
+            {%- endfor -%}
         {%- endif -%}
         </{{ item.tag.code }}>
     {%- elif item.tag.code == 'ZL_LIST' -%}

@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 import re
+import os
 from datetime import datetime
 
 from flask import render_template, abort, request, redirect, jsonify, send_from_directory, url_for, json
@@ -12,7 +13,7 @@ from lib.thrift_service.ttypes import InvalidArgumentException, NotFoundExceptio
 
 from forms import CreateTemplateForm
 from lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
-from lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR
+from lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR, UploadWorker
 from models import Template, TagsTree, StandartTree, TemplateType, DownloadType, ConfigVariables
 from utils import save_template_tag_tree, save_new_template_tree
 from application.database import db
@@ -72,10 +73,35 @@ def download_file(filename):
 @module.route('/upload/')
 def upload():
     try:
-        # return render_template('upload.html')
-        return render_template('under_construction.html')
+        return render_template('upload/index.html')
     except TemplateNotFound:
         abort(404)
+
+
+@module.route('/ajax_upload/', methods=['GET', 'POST'])
+def ajax_upload():
+    messages = list()
+    errors = list()
+    if request.method == 'POST':
+        data_file = request.files.get('upload_file')
+        file_path = os.path.join(UPLOADS_DIR, data_file.filename)
+        if data_file.content_type == 'text/xml':
+            with open(file_path, "wb") as f:
+                f.write(data_file.stream.read())
+            f.close()
+            worker = UploadWorker()
+            try:
+                result = worker.parse(file_path)
+            except NotFoundException:
+                errors.append(u'<b>%s</b>: данных для выгрузки в заданный период не найдено' % data_file.filename)
+            except TException, e:
+                errors.append(u'<b>%s</b>: внутренняя ошибка ядра во время выборки данных (%s)' % (data_file.filename, e))
+            else:
+                #TODO: добавить вывод подробной информации
+                messages.append(u'Загрузка прошла успешно')
+        else:
+            errors.append(u'<b>%s</b>: не является XML-файлом' % data_file.filename)
+        return render_template('upload/result.html', errors=errors, messages=messages)
 
 
 @module.route('/reports/')

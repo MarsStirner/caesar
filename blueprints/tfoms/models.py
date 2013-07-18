@@ -247,8 +247,9 @@ class DownloadCases(db.Model):
     ED_COL = db.Column(db.Numeric(5, 2))
     SUMV = db.Column(db.Numeric(10, 2))
     REFREASON = db.Column(db.Unicode(20))
+    COMENTSL = db.Column(db. Unicode(250), nullable=True)
     confirmed = db.Column(db.Boolean, default=False)
-    confirmed_date = db.Column(db.DateTime, nullable=True)
+    confirmed_date = db.Column(db.Date, nullable=True)
     uploaded_file = db.Column(db.String(50), nullable=True)
 
 

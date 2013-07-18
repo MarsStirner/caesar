@@ -173,3 +173,17 @@ class Reports(object):
                         for service_item in service_data:
                             self.__add_service(case.id, service_item)
 
+    def update_patient(self, id, data):
+        patient = self.__get_patient(id)
+        updated = dict()
+        if not patient:
+            #TODO: Обработка ненайденного
+            return None
+        for key, value in data.iteritems():
+            value = self.__parse_default_value(value)
+            if getattr(patient, key) != value:
+                setattr(patient, key, value)
+                updated[key] = value
+        if updated:
+            db.session.commit()
+        return updated

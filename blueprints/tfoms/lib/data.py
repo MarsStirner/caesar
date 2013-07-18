@@ -7,10 +7,18 @@ import dbf
 from jinja2 import Environment, PackageLoader
 from application.database import db
 from service_client import TFOMSClient as Client
-from thrift_service.ttypes import PatientOptionalFields, SluchOptionalFields
+from thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException
+from thrift_service.ttypes import PatientOptionalFields, SluchOptionalFields, TClientPolicy
 from ..app import module, _config
-from ..models import Template, TagsTree, Tag
+from ..models import Template, TagsTree, Tag, DownloadCases
 from reports import Reports
+
+try:
+    from lxml import etree
+    print("running with lxml.etree")
+except ImportError:
+    import xml.etree.ElementTree as etree
+    print("running with ElementTree on Python 2.5+")
 
 
 DOWNLOADS_DIR = os.path.join(module.static_folder, 'downloads')
@@ -215,8 +223,81 @@ class DownloadWorker(object):
 
 class UploadWorker(object):
 
+    policy_fields = dict(SPOLIS='serial', NPOLIS='number', VPOLIS='policyTypeCode', SMO='insurerInfisCode')
+
+    def __init__(self):
+        self.client = Client(_config('core_service_url'))
+
     def do_upload(self):
         pass
+
+    def __patient(self, element):
+        data = dict()
+        patient_id = None
+        for child in element:
+            if child.tag == 'ID_PAC':
+                patient_id = int(child.text)
+            elif child.tag == 'VPOLIS':
+                data[child.tag] = int(child.text)
+            else:
+                data[child.tag] = child.text
+        report = Reports()
+        result = report.update_patient(patient_id, data)
+        if result:
+            policy_data = dict()
+            for key, value in data.iteritems():
+                if key in self.policy_fields:
+                    policy_data[self.policy_fields[key]] = value
+
+            policy_data = TClientPolicy(**policy_data)
+            try:
+                client_result = self.client.update_policy(patient_id, policy_data)
+            except NotFoundException, e:
+                print e
+            except TException, e:
+                print e
+            else:
+                pass
+
+    def __update_case(self, element, filename):
+        data = dict()
+        case_id = None
+        case = None
+        for child in element:
+            if child.tag == 'IDCASE':
+                case_id = int(child.text)
+            elif child.tag == 'REFREASON':
+                data[child.tag] = child.text
+                if child.text == '0':
+                    data['confirmed'] = True
+            elif child.tag == 'COMENTSL':
+                data[child.tag] = child.text
+        if case_id:
+            case = db.session.query(DownloadCases).get(case_id)
+        if case and data:
+            data['confirmed_date'] = date.today()
+            data['uploaded_file'] = filename
+            for key, value in data.iteritems():
+                if hasattr(case, key):
+                    setattr(case, key, value)
+            db.session.commit()
+        return data.get('confirmed', False)
+
+    def parse(self, file_path):
+        filename = None
+        if os.path.isfile(file_path):
+            tree = etree.parse(file_path)
+            root = tree.getroot()
+            for element in root.iter('ZGL'):
+                for child in element:
+                    if child.tag == 'FILENAME':
+                        filename = child.text
+            for element in root.iter('ZAP'):
+                for child in element:
+                    if child.tag == 'PACIENT':
+                        self.__patient(child)
+                    elif child.tag == 'SLUCH':
+                        self.__update_case(child, filename)
 
 
 class File(object):

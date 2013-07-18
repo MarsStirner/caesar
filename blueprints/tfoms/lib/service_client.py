@@ -10,7 +10,7 @@ from thrift.protocol import TBinaryProtocol
 
 from thrift_service.TFOMSService import Client
 from thrift_service.ttypes import Patient, PatientOptionalFields, Sluch, SluchOptionalFields, Usl, Spokesman
-from thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException
+from thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException, TClientPolicy
 
 
 class TFOMSClient(object):
@@ -157,3 +157,22 @@ class TFOMSClient(object):
         except TException, e:
             raise e
         return self.__unicode_result(result)
+
+    def update_policy(self, patient_id, data):
+        """Получает данные для dbf по поликлинике и стационару в данном ЛПУ в указанный промежуток времени"""
+        result = None
+        try:
+            if isinstance(data, TClientPolicy):
+                for key, value in data.__dict__.iteritems():
+                    if isinstance(value, basestring):
+                        setattr(data, key, value.encode('utf-8'))
+            result = self.client.changeClientPolicy(patientId=patient_id, newPolicy=data)
+        except InvalidArgumentException, e:
+            print e
+        except SQLException, e:
+            print e
+        except NotFoundException, e:
+            raise e
+        except TException, e:
+            raise e
+        return result
