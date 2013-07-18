@@ -104,11 +104,13 @@ def ajax_upload():
         return render_template('upload/result.html', errors=errors, messages=messages)
 
 
-@module.route('/reports/')
+@module.route('/reports/', methods=['GET', 'POST'])
 def reports():
     try:
-        # return render_template('reports.html')
-        return render_template('under_construction.html')
+        if request.method == 'POST':
+            start = datetime.strptime(request.form['start'], '%d.%m.%Y')
+            end = datetime.strptime(request.form['end'], '%d.%m.%Y')
+        return render_template('reports/index.html')
     except TemplateNotFound:
         abort(404)
 
