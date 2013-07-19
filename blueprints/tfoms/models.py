@@ -167,9 +167,11 @@ class DownloadFiles(db.Model):
     template_id = db.Column(db.Integer, db.ForeignKey(Template.id, deferrable=True), index=True)
     name = db.Column(db.String(50), nullable=False)
     created = db.Column(db.DateTime, default=db.text('NOW()'), nullable=False)
+    DATA = db.Column(db.Date)
+    VERSION = db.Column(db.String(5))
+    FILENAME = db.Column(db.String(50), nullable=False)
 
-    db.UniqueConstraint(name, created)
-    template = db.relationship(Template)
+    db.UniqueConstraint(FILENAME, DATA)
 
 
 class DownloadBills(db.Model):
@@ -184,6 +186,7 @@ class DownloadBills(db.Model):
     MONTH = db.Column(db.Integer, nullable=False)
     PLAT = db.Column(db.Integer, nullable=False)
     SUMMAV = db.Column(db.Numeric(12, 2), nullable=False)
+    COMENTS = db.Column(db. Unicode(250), nullable=True)
     start = db.Column(db.Date)
     end = db.Column(db.Date)
 
@@ -204,6 +207,12 @@ class DownloadPatients(db.Model):
     NOVOR = db.Column(db.String(9), nullable=True)
     clientDocumentId = db.Column(db.Integer, nullable=True)
     clientPolicyId = db.Column(db.Integer, nullable=True)
+    SNILS = db.Column(db.Unicode(30), nullable=True)
+    FAM = db.Column(db.Unicode(30), nullable=True)
+    IM = db.Column(db.Unicode(30), nullable=True)
+    OT = db.Column(db.Unicode(30), nullable=True)
+    W = db.Column(db.String(1), nullable=True)
+    DR = db.Column(db.Date, nullable=True)
 
 
 class DownloadRecords(db.Model):
@@ -252,6 +261,9 @@ class DownloadCases(db.Model):
     confirmed_date = db.Column(db.Date, nullable=True)
     uploaded_file = db.Column(db.String(50), nullable=True)
 
+    bill = db.relationship(DownloadBills, backref='cases')
+    patient = db.relationship(DownloadPatients)
+
 
 class DownloadServices(db.Model):
     __tablename__ = '%s_download_services' % TABLE_PREFIX
@@ -272,6 +284,8 @@ class DownloadServices(db.Model):
     SUMV_USL = db.Column(db.Numeric(10, 2))
     PRVS = db.Column(db.BigInteger)
     CODE_MD = db.Column(db.BigInteger)
+
+    case = db.relationship(DownloadCases, backref='services')
 
 
 class RbPayRefuseType(db.Model):

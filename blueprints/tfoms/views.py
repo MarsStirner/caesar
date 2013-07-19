@@ -3,20 +3,24 @@ import re
 import os
 from datetime import datetime
 
-from flask import render_template, abort, request, redirect, jsonify, send_from_directory, url_for, json
+from flask import render_template, abort, request, redirect, jsonify, send_from_directory, url_for, json, current_app
 from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
+from flask.ext.sqlalchemy import Pagination
 
-from jinja2 import TemplateNotFound
+from jinja2 import TemplateNotFound, Environment, PackageLoader
 from app import module, _config
 
 from lib.thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException
 
 from forms import CreateTemplateForm
 from lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
-from lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR, UploadWorker
+from lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR, UploadWorker, Reports, datetimeformat
 from models import Template, TagsTree, StandartTree, TemplateType, DownloadType, ConfigVariables
 from utils import save_template_tag_tree, save_new_template_tree
 from application.database import db
+
+
+PER_PAGE = 20
 
 
 @module.route('/')
@@ -106,12 +110,35 @@ def ajax_upload():
 
 @module.route('/reports/', methods=['GET', 'POST'])
 def reports():
+    start = None
+    end = None
+    report = Reports()
+    if request.method == 'POST':
+        start = datetime.strptime(request.form['start'], '%d.%m.%Y')
+        end = datetime.strptime(request.form['end'], '%d.%m.%Y')
+
+    data = report.get_bills(start, end)
     try:
-        if request.method == 'POST':
-            start = datetime.strptime(request.form['start'], '%d.%m.%Y')
-            end = datetime.strptime(request.form['end'], '%d.%m.%Y')
-        return render_template('reports/index.html')
+        current_app.jinja_env.filters['datetimeformat'] = datetimeformat
+        return render_template('reports/index.html', data=data, form=Form())
     except TemplateNotFound:
+        abort(404)
+
+
+@module.route('/reports/<int:bill_id>/', defaults={'page': 1}, methods=['GET'])
+@module.route('/reports/<int:bill_id>/page/<int:page>/', methods=['GET'])
+def report_cases(bill_id, page):
+    report = Reports()
+    bill = report.get_bill(bill_id)
+    if bill:
+        query, data = report.get_cases(bill_id, page, PER_PAGE)
+        pagination = Pagination(query, page, PER_PAGE, query.count(), data)
+        try:
+            current_app.jinja_env.filters['datetimeformat'] = datetimeformat
+            return render_template('reports/cases.html', cases=data, bill=bill, pagination=pagination)
+        except TemplateNotFound:
+            abort(404)
+    else:
         abort(404)
 
 

@@ -10,7 +10,7 @@ from service_client import TFOMSClient as Client
 from thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException
 from thrift_service.ttypes import PatientOptionalFields, SluchOptionalFields, TClientPolicy
 from ..app import module, _config
-from ..models import Template, TagsTree, Tag, DownloadCases
+from ..models import Template, TagsTree, Tag, DownloadCases, DownloadBills
 from reports import Reports
 
 try:
@@ -211,9 +211,15 @@ class DownloadWorker(object):
         file_url = file_obj.save_file(tree, data)
         if template_type == ('xml', 'services'):
             reports = Reports()
-            data.update(dict(template_id=template_id, file=file_url, start=start, end=end))
+            data.update(dict(template_id=template_id, file=file_obj.head, start=start, end=end))
             try:
                 reports.save_data(data)
+            except Exception, e:
+                print e
+        elif template_type == ('xml', 'patients'):
+            reports = Reports()
+            try:
+                reports.add_patients(data)
             except Exception, e:
                 print e
         if template.archive:
@@ -283,6 +289,19 @@ class UploadWorker(object):
             db.session.commit()
         return data.get('confirmed', False)
 
+    def __update_bill(self, element):
+        data = dict()
+        for child in element:
+            if child.text:
+                data[child.tag] = child.text
+        if data:
+            bill = db.session.query(DownloadBills).filter(DownloadBills.NSCHET == data.get('NSCHET')).first()
+            if bill:
+                for key, value in data.iteritems():
+                    if hasattr(bill, key):
+                        setattr(bill, key, value)
+            db.session.commit()
+
     def parse(self, file_path):
         filename = None
         if os.path.isfile(file_path):
@@ -292,6 +311,8 @@ class UploadWorker(object):
                 for child in element:
                     if child.tag == 'FILENAME':
                         filename = child.text
+            for element in root.iter('SCHET'):
+                self.__update_bill(element)
             for element in root.iter('ZAP'):
                 for child in element:
                     if child.tag == 'PACIENT':
@@ -346,11 +367,11 @@ class XML(object):
         template = env.get_template(self.template)
         linked_file = XML(data_type='services', end=self.end)
         linked_file.generate_filename()
-        head = dict(VERSION='1.0',
-                    DATA=date.today().strftime('%Y-%m-%d'),
-                    FILENAME=self.file_name,
-                    FILENAME1=linked_file.file_name)
-        return template.render(head=head, tags_tree=tags_tree, data=data)
+        self.head = dict(VERSION='1.0',
+                         DATA=date.today().strftime('%Y-%m-%d'),
+                         FILENAME=self.file_name,
+                         FILENAME1=linked_file.file_name)
+        return template.render(head=self.head, tags_tree=tags_tree, data=data)
 
     def save_file(self, tags_tree, data):
         self.generate_filename()

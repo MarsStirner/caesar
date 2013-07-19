@@ -63,8 +63,8 @@
             {%- for child in item.children -%}
                 {%- if child.tag.code in head -%}
                     <{{ child.tag.code }}>{{ head[child.tag.code] }}</{{ child.tag.code }}>
-                {%- endif %}
-            {%- endfor %}
+                {%- endif -%}
+            {%- endfor -%}
         {%- endif -%}
         </{{ item.tag.code }}>
     {%- elif item.tag.code == 'SCHET' -%}
@@ -80,4 +80,4 @@
     {%- elif item.tag.code == 'ZL_LIST' -%}
         <{{ item.tag.code }}>{{ loop(item.children) }}</{{ item.tag.code }}>
     {%- endif -%}
-{%- endfor %}
+{%- endfor -%}

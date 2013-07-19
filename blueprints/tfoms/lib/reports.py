@@ -11,12 +11,15 @@ class Reports(object):
                 .filter(DownloadFiles.name == file_name, DownloadFiles.template_id == template_id)
                 .first())
 
-    def __add_file(self, template_id, file_name):
+    def __add_file(self, template_id, data):
         file_obj = None
-        if template_id and file_name:
-            file_obj = self.__get_file(file_name, template_id)
+        if template_id and data:
+            file_obj = self.__get_file(data['FILENAME'], template_id)
             if not file_obj:
-                file_obj = DownloadFiles(template_id=template_id, name=file_name)
+                file_obj = DownloadFiles(template_id=template_id, name=data['FILENAME'])
+                for key, value in data.iteritems():
+                    if hasattr(file_obj, key):
+                        setattr(file_obj, key, value)
                 db.session.add(file_obj)
             file_obj.created = datetime.now()
             db.session.commit()
@@ -40,21 +43,16 @@ class Reports(object):
             bill_obj = self.__get_bill(file_id, bill, start, end)
             if bill_obj:
                 for key in bill_obj.__dict__.keys():
-                    bill_value = getattr(bill, key, None)
+                    bill_value = bill.get(key)
                     if bill_value and bill_value != getattr(bill_obj, key):
                         setattr(bill_obj, key, bill_value)
                 db.session.commit()
             else:
-                bill_obj = DownloadBills(file_id=file_id,
-                                         DSCHET=bill.get('DSCHET'),
-                                         NSCHET=bill.get('NSCHET'),
-                                         CODE_MO=bill.get('CODE_MO'),
-                                         YEAR=bill.get('YEAR'),
-                                         MONTH=bill.get('MONTH'),
-                                         PLAT=bill.get('PLAT'),
-                                         SUMMAV=bill.get('SUMMAV'),
-                                         start=start,
-                                         end=end)
+                bill_obj = DownloadBills(file_id=file_id, start=start, end=end)
+                for key in bill_obj.__dict__.keys():
+                    bill_value = bill.get(key)
+                    if bill_value:
+                        setattr(bill_obj, key, bill_value)
                 db.session.add(bill_obj)
                 db.session.commit()
         return bill_obj
@@ -84,15 +82,17 @@ class Reports(object):
             for key in patient.__dict__.keys():
                 patient_value = getattr(patient, key, None)
                 patient_value = self.__parse_default_value(patient_value)
-                if patient_value:
+                if patient_value and hasattr(patient_obj, key):
                     setattr(patient_obj, key, getattr(patient, key))
             patient_obj.id = patient_id
             db.session.add(patient_obj)
         db.session.commit()
 
-    def __add_patients(self, patients):
+    def add_patients(self, patients):
         if patients:
-            for patient in patients.itervalues():
+            if isinstance(patients, dict):
+                patients = patients.itervalues()
+            for patient in patients:
                 self.__add_patient(patient)
 
     def __add_record(self, bill_id, N_ZAP, PR_NOV=0):
@@ -112,7 +112,7 @@ class Reports(object):
         if case:
             for key in case.__dict__.keys():
                 case_value = getattr(data, key, None)
-                if case_value and case_value != getattr(case, key):
+                if hasattr(case, key) and case_value and case_value != getattr(case, key):
                     setattr(case, key, case_value)
                 case.bill_id = bill_id
                 case.patient_id = patient_id
@@ -145,7 +145,7 @@ class Reports(object):
         db.session.commit()
 
     def save_data(self, data):
-        file_obj = self.__add_file(template_id=data.get('template_id'), file_name=data.get('file'))
+        file_obj = self.__add_file(template_id=data.get('template_id'), data=data.get('file'))
         if file_obj is None:
             raise AttributeError
             # return None
@@ -155,21 +155,22 @@ class Reports(object):
             raise AttributeError
             # return None
 
-        self.__add_patients(data.get('patients'))
+        self.add_patients(data.get('patients'))
 
         services = data.get('services')
         if services:
             record_number = 0
             for patient_id, service_list in services.iteritems():
-                record = self.__add_record(bill_obj.id, ++record_number)
+                record_number += 1
+                record = self.__add_record(bill_obj.id, record_number)
                 for service in service_list:
-                    case_data = service
-                    if hasattr(case_data, 'USL'):
-                        del case_data.USL
-                    case = self.__add_case(bill_obj.id, patient_id, record.id, case_data)
-
                     service_data = getattr(service, 'USL', None)
-                    if service_data:
+
+                    if hasattr(service, 'USL'):
+                        del service.USL
+                    case = self.__add_case(bill_obj.id, patient_id, record.id, service)
+
+                    if service_data and case:
                         for service_item in service_data:
                             self.__add_service(case.id, service_item)
 
@@ -187,3 +188,44 @@ class Reports(object):
         if updated:
             db.session.commit()
         return updated
+
+    def get_num_services(self, bill):
+        num = 0
+        if bill.cases:
+            for case in bill.cases:
+                if hasattr(case, 'services'):
+                    num += len(case.services)
+        return num
+
+    def get_cases_sum(self, bill):
+        cases_sum = dict(confirmed=0.00, unconfirmed=0.00)
+        if bill.cases:
+            for case in bill.cases:
+                if case.REFREASON is not None:
+                    if case.REFREASON == '0':
+                        cases_sum['confirmed'] += float(case.SUMV)
+                    else:
+                        cases_sum['unconfirmed'] += float(case.SUMV)
+        return cases_sum
+
+    def get_bills(self, start=None, end=None):
+        cases_sum = dict()
+        num_services = dict()
+        query = db.session.query(DownloadBills)
+        if start and end:
+            query = query.filter(DownloadBills.DSCHET.between(start, end))
+        bills = query.order_by(DownloadBills.DSCHET).all()
+        for bill in bills:
+            cases_sum[bill.id] = self.get_cases_sum(bill)
+            num_services[bill.id] = self.get_num_services(bill)
+        return dict(bills=bills, cases_sum=cases_sum, num_services=num_services)
+
+    def get_bill(self, id):
+        return db.session.query(DownloadBills).get(id)
+
+    def get_cases(self, bill_id, page, per_page):
+        query = db.session.query(DownloadCases).filter(DownloadCases.bill_id == bill_id).order_by(DownloadCases.id)
+        data_query = query.limit(per_page)
+        if page > 1:
+            data_query = data_query.offset((page-1) * per_page)
+        return query, data_query.all()
