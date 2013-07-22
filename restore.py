@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+from sqlalchemy import exc
 from sqlalchemy.ext.serializer import loads
 from sqlalchemy import func
 from application.app import app, db
@@ -20,8 +21,11 @@ def restore():
         data = f.read()
         data_list = loads(data)
         model = db.metadata.tables[bk_file]
-        db.session.execute(model.insert().values(data_list))
-        db.session.commit()
+        try:
+            db.session.execute(model.insert().values(data_list))
+            db.session.commit()
+        except exc.DatabaseError, e:
+            print e
         __restore_sequence(db.session.bind.engine.url.drivername, model)
 
     enable_fk(db.session.bind.engine.url.drivername)
