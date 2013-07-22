@@ -57,7 +57,7 @@ class TFOMSClient(object):
         for item in data:
             for element in data[item]:
                 for attr, value in element.__dict__.iteritems():
-                    if attr in self.date_tags and isinstance(value, int) and value:
+                    if attr in self.date_tags and isinstance(value, (int, long)) and value:
                         setattr(element, attr, self.__convert_date(value))
                     elif isinstance(value, basestring):
                         setattr(element, attr, value.strip().decode('utf8'))
@@ -69,7 +69,7 @@ class TFOMSClient(object):
             for attr, value in element.__dict__.iteritems():
                 if isinstance(value, basestring):
                     setattr(element, attr, value.strip().decode('utf8'))
-                elif attr in self.date_tags and isinstance(value, int) and value:
+                elif attr in self.date_tags and isinstance(value, (int, long)) and value:
                     setattr(element, attr, self.__convert_date(value))
         return data
 
