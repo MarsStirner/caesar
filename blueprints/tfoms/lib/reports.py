@@ -2,6 +2,7 @@
 from datetime import datetime
 from application.database import db
 from ..models import DownloadFiles, DownloadBills, DownloadCases, DownloadPatients, DownloadRecords, DownloadServices
+from sqlalchemy import exc
 
 
 class Reports(object):
@@ -53,8 +54,13 @@ class Reports(object):
                     bill_value = bill.get(key)
                     if bill_value:
                         setattr(bill_obj, key, bill_value)
-                db.session.add(bill_obj)
-                db.session.commit()
+                try:
+                    db.session.add(bill_obj)
+                except exc.IntegrityError, e:
+                    print e
+                    db.session.rollback()
+                else:
+                    db.session.commit()
         return bill_obj
 
     def __get_patient(self, patient_id):
