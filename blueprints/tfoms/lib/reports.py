@@ -50,17 +50,15 @@ class Reports(object):
                 db.session.commit()
             else:
                 bill_obj = DownloadBills(file_id=file_id, start=start, end=end)
-                for key in bill_obj.__dict__.keys():
-                    bill_value = bill.get(key)
-                    if bill_value:
-                        setattr(bill_obj, key, bill_value)
+                for key, value in bill.iteritems():
+                    if value and hasattr(bill_obj, key):
+                        setattr(bill_obj, key, value)
                 try:
                     db.session.add(bill_obj)
+                    db.session.commit()
                 except exc.IntegrityError, e:
                     print e
                     db.session.rollback()
-                else:
-                    db.session.commit()
         return bill_obj
 
     def __get_patient(self, patient_id):
