@@ -26,7 +26,7 @@ class TemplateType(db.Model):
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     code = db.Column(db.String(20), unique=True, nullable=False)
-    name = db.Column(db.String(45), unique=True, nullable=False)
+    name = db.Column(db.Unicode(45), unique=True, nullable=False)
 
     download_type_id = db.Column(db.Integer,
                                  db.ForeignKey('%s_download_type.id' % TABLE_PREFIX, deferrable=True),
@@ -45,7 +45,7 @@ class Template(db.Model):
     __tablename__ = '%s_template' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(80), unique=True, nullable=False)
+    name = db.Column(db.Unicode(80), unique=True, nullable=False)
     archive = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=False)
     
@@ -289,7 +289,7 @@ class DownloadServices(db.Model):
 
 
 class RbPayRefuseType(db.Model):
-    __tablename__ = 'rbPayRefuseType'
+    __tablename__ = 'rbpayrefusetype'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     code = db.Column(db.Unicode(8), nullable=False)
