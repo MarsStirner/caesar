@@ -23,9 +23,10 @@ def restore():
         model = db.metadata.tables[bk_file]
         try:
             db.session.execute(model.insert().values(data_list))
-            db.session.commit()
-        except exc.DatabaseError, e:
+        except exc.IntegrityError, e:
             print e
+        else:
+            db.session.commit()
         __restore_sequence(db.session.bind.engine.url.drivername, model)
 
     enable_fk(db.session.bind.engine.url.drivername)
