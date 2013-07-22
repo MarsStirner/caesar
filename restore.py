@@ -25,8 +25,10 @@ def restore():
             db.session.execute(model.insert().values(data_list))
         except exc.IntegrityError, e:
             print e
+            db.session.rollback()
         except exc.InternalError, e:
             print e
+            db.session.rollback()
         else:
             db.session.commit()
             __restore_sequence(db.session.bind.engine.url.drivername, model)
