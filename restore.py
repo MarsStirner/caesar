@@ -29,7 +29,7 @@ def restore():
             print e
         else:
             db.session.commit()
-        __restore_sequence(db.session.bind.engine.url.drivername, model)
+            __restore_sequence(db.session.bind.engine.url.drivername, model)
 
     enable_fk(db.session.bind.engine.url.drivername)
     db.session.remove()
