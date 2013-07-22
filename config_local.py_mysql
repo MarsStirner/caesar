@@ -1,0 +1,14 @@
+# -*- coding: utf-8 -*-
+DEBUG = True
+
+DB_DRIVER = 'mysql'
+DB_HOST = 'localhost'
+DB_PORT = 3306
+DB_USER = 'caesar'
+DB_PASSWORD = 'caesar'
+DB_NAME = 'caesar'
+DB_CONNECT_OPTIONS = '?charset=utf8'
+
+SYSTEM_USER = 'caesar'
+
+SECRET_KEY = '\x8c\xfc\xb3K\xf4\x96\xf3F\xf3\xdbN\x07\xb9\xbe\x88X\xa9\xea\xec\x91!0,\x8c'
