@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
-from datetime import date
+import os
+from datetime import date, timedelta
 import calendar
 
 from urlparse import urlparse
@@ -47,6 +47,9 @@ class TFOMSClient(object):
         self.transport.close()
 
     def __convert_date(self, timestamp):
+        if os.name == 'nt':
+            # Hack for Win (http://stackoverflow.com/questions/10588027/converting-timestamps-larger-than-maxint-into-datetime-objects)
+            return date.fromtimestamp(0) + timedelta(seconds=timestamp / 1000)
         return date.fromtimestamp(timestamp / 1000)
 
     def __convert_dates(self, data):
