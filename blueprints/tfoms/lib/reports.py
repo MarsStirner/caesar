@@ -90,7 +90,16 @@ class Reports(object):
                     setattr(patient_obj, key, getattr(patient, key))
             patient_obj.id = patient_id
             db.session.add(patient_obj)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except exc.OperationalError, e:
+            # TODO: уведомлять пользователя
+            print e
+            db.session.rollback()
+        except Exception, e:
+            # TODO: уведомлять пользователя
+            print e
+            db.session.rollback()
 
     def add_patients(self, patients):
         if patients:
@@ -116,23 +125,36 @@ class Reports(object):
         if case:
             for key in case.__dict__.keys():
                 case_value = getattr(data, key, None)
+                if key == 'IDDOKT':
+                    case_value = int(case_value)
                 if hasattr(case, key) and case_value and case_value != getattr(case, key):
                     setattr(case, key, case_value)
                 case.bill_id = bill_id
                 case.patient_id = patient_id
                 case.record_id = record_id
-            db.session.commit()
         else:
             case = DownloadCases()
             case.bill_id = bill_id
             case.patient_id = patient_id
             case.record_id = record_id
             for key in data.__dict__.keys():
-                if hasattr(case, key):
-                    setattr(case, key, getattr(data, key))
+                case_value = getattr(data, key, None)
+                if key == 'IDDOKT':
+                    case_value = int(case_value)
+                if hasattr(case, key) and case_value:
+                    setattr(case, key, case_value)
             case.id = getattr(data, 'IDCASE')
             db.session.add(case)
+        try:
             db.session.commit()
+        except exc.OperationalError, e:
+            # TODO: уведомлять пользователя
+            print e
+            db.session.rollback()
+        except Exception, e:
+            # TODO: уведомлять пользователя
+            print e
+            db.session.rollback()
         return case
 
     def __clear_services(self, case_id):
