@@ -42,7 +42,6 @@ struct Patient{
 	19:optional string SMO_OGRN;
 	20:optional string SMO_NAM;
 	21:optional string SMO_OK;
-	22:required string NOVOR = "";
 	//Внутренние идентификаторы
 	25:required int clientDocumentId = 0;
 	26:required int clientPolicyId = 0;
@@ -87,6 +86,7 @@ struct Sluch{
 	26:optional tinyint OPLATA;
 	27:optional list<Usl> USL;
 	28:optional list<int> OS_SLUCH;
+	29:required string NOVOR = "";
 	
 	//Внутренние идентификаторы
 	30:required int actionId = 0;

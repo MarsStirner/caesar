@@ -32,7 +32,7 @@ class StandartTagTree():
 
     def get_node_children(self, node):
         children_values = StandartTree.query.filter_by(template_type_id=self.template_type_id).\
-            filter_by(parent_id=node.value.id).join(StandartTree.tag).all()
+            filter_by(parent_id=node.value.id).join(StandartTree.tag).order_by(StandartTree.ordernum).all()
         return [TagTreeNode(value, node.level + 1) for value in children_values]
 
     def load_tree(self, root, tree):
