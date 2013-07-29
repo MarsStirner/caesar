@@ -96,10 +96,9 @@ def ajax_upload():
             worker = UploadWorker()
             try:
                 result = worker.parse(file_path)
-            except NotFoundException:
-                errors.append(u'<b>%s</b>: данных для выгрузки в заданный период не найдено' % data_file.filename)
             except TException, e:
-                errors.append(u'<b>%s</b>: внутренняя ошибка ядра во время выборки данных (%s)' % (data_file.filename, e))
+                errors.append(u'<b>%s</b>: внутренняя ошибка ядра во время обновления данных (%s)'
+                              % (data_file.filename, e))
             else:
                 #TODO: добавить вывод подробной информации
                 messages.append(u'Загрузка прошла успешно')

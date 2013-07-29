@@ -162,7 +162,7 @@ class TFOMSClient(object):
         return self.__unicode_result(result)
 
     def update_policy(self, patient_id, data):
-        """Получает данные для dbf по поликлинике и стационару в данном ЛПУ в указанный промежуток времени"""
+        """Обновление полисов у пациентов"""
         result = None
         try:
             if isinstance(data, TClientPolicy):
