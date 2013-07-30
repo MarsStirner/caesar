@@ -18,10 +18,10 @@ except:
 
 
 class Iface:
-  def updateTariffs(self, tariff):
+  def updateTariffs(self, tariffs):
     """
     Parameters:
-     - tariff
+     - tariffs
     """
     pass
 
@@ -33,18 +33,18 @@ class Client(Iface):
       self._oprot = oprot
     self._seqid = 0
 
-  def updateTariffs(self, tariff):
+  def updateTariffs(self, tariffs):
     """
     Parameters:
-     - tariff
+     - tariffs
     """
-    self.send_updateTariffs(tariff)
+    self.send_updateTariffs(tariffs)
     return self.recv_updateTariffs()
 
-  def send_updateTariffs(self, tariff):
+  def send_updateTariffs(self, tariffs):
     self._oprot.writeMessageBegin('updateTariffs', TMessageType.CALL, self._seqid)
     args = updateTariffs_args()
-    args.tariff = tariff
+    args.tariffs = tariffs
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -95,7 +95,7 @@ class Processor(Iface, TProcessor):
     iprot.readMessageEnd()
     result = updateTariffs_result()
     try:
-      result.success = self._handler.updateTariffs(args.tariff)
+      result.success = self._handler.updateTariffs(args.tariffs)
     except InvalidArgumentException as argExc:
       result.argExc = argExc
     except SQLException as sqlExc:
@@ -111,16 +111,16 @@ class Processor(Iface, TProcessor):
 class updateTariffs_args:
   """
   Attributes:
-   - tariff
+   - tariffs
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.LIST, 'tariff', (TType.STRUCT,(Tariff, Tariff.thrift_spec)), None, ), # 1
+    (1, TType.LIST, 'tariffs', (TType.STRUCT,(Tariff, Tariff.thrift_spec)), None, ), # 1
   )
 
-  def __init__(self, tariff=None,):
-    self.tariff = tariff
+  def __init__(self, tariffs=None,):
+    self.tariffs = tariffs
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -133,12 +133,12 @@ class updateTariffs_args:
         break
       if fid == 1:
         if ftype == TType.LIST:
-          self.tariff = []
+          self.tariffs = []
           (_etype3, _size0) = iprot.readListBegin()
           for _i4 in xrange(_size0):
             _elem5 = Tariff()
             _elem5.read(iprot)
-            self.tariff.append(_elem5)
+            self.tariffs.append(_elem5)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -152,10 +152,10 @@ class updateTariffs_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('updateTariffs_args')
-    if self.tariff is not None:
-      oprot.writeFieldBegin('tariff', TType.LIST, 1)
-      oprot.writeListBegin(TType.STRUCT, len(self.tariff))
-      for iter6 in self.tariff:
+    if self.tariffs is not None:
+      oprot.writeFieldBegin('tariffs', TType.LIST, 1)
+      oprot.writeListBegin(TType.STRUCT, len(self.tariffs))
+      for iter6 in self.tariffs:
         iter6.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()

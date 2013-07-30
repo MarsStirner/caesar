@@ -33,7 +33,7 @@ class TARIFFClient(object):
         """Отправка тарифов"""
         result = None
         try:
-            result = self.client.updateTariffs(tariff=data)
+            result = self.client.updateTariffs(tariffs=data)
         except InvalidArgumentException, e:
             print e
         except SQLException, e:

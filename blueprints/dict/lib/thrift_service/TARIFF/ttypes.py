@@ -21,27 +21,27 @@ class Tariff:
   """
   Attributes:
    - number
-   - C_TAR
-   - SUMM_TAR
-   - DATE_B
-   - DATE_E
+   - c_tar
+   - summ_tar
+   - date_b
+   - date_e
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.I32, 'number', None, None, ), # 1
-    (2, TType.STRING, 'C_TAR', None, None, ), # 2
-    (3, TType.I32, 'SUMM_TAR', None, None, ), # 3
-    (4, TType.I64, 'DATE_B', None, None, ), # 4
-    (5, TType.I64, 'DATE_E', None, None, ), # 5
+    (2, TType.STRING, 'c_tar', None, None, ), # 2
+    (3, TType.DOUBLE, 'summ_tar', None, None, ), # 3
+    (4, TType.I64, 'date_b', None, None, ), # 4
+    (5, TType.I64, 'date_e', None, None, ), # 5
   )
 
-  def __init__(self, number=None, C_TAR=None, SUMM_TAR=None, DATE_B=None, DATE_E=None,):
+  def __init__(self, number=None, c_tar=None, summ_tar=None, date_b=None, date_e=None,):
     self.number = number
-    self.C_TAR = C_TAR
-    self.SUMM_TAR = SUMM_TAR
-    self.DATE_B = DATE_B
-    self.DATE_E = DATE_E
+    self.c_tar = c_tar
+    self.summ_tar = summ_tar
+    self.date_b = date_b
+    self.date_e = date_e
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -59,22 +59,22 @@ class Tariff:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.STRING:
-          self.C_TAR = iprot.readString();
+          self.c_tar = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 3:
-        if ftype == TType.I32:
-          self.SUMM_TAR = iprot.readI32();
+        if ftype == TType.DOUBLE:
+          self.summ_tar = iprot.readDouble();
         else:
           iprot.skip(ftype)
       elif fid == 4:
         if ftype == TType.I64:
-          self.DATE_B = iprot.readI64();
+          self.date_b = iprot.readI64();
         else:
           iprot.skip(ftype)
       elif fid == 5:
         if ftype == TType.I64:
-          self.DATE_E = iprot.readI64();
+          self.date_e = iprot.readI64();
         else:
           iprot.skip(ftype)
       else:
@@ -91,21 +91,21 @@ class Tariff:
       oprot.writeFieldBegin('number', TType.I32, 1)
       oprot.writeI32(self.number)
       oprot.writeFieldEnd()
-    if self.C_TAR is not None:
-      oprot.writeFieldBegin('C_TAR', TType.STRING, 2)
-      oprot.writeString(self.C_TAR)
+    if self.c_tar is not None:
+      oprot.writeFieldBegin('c_tar', TType.STRING, 2)
+      oprot.writeString(self.c_tar)
       oprot.writeFieldEnd()
-    if self.SUMM_TAR is not None:
-      oprot.writeFieldBegin('SUMM_TAR', TType.I32, 3)
-      oprot.writeI32(self.SUMM_TAR)
+    if self.summ_tar is not None:
+      oprot.writeFieldBegin('summ_tar', TType.DOUBLE, 3)
+      oprot.writeDouble(self.summ_tar)
       oprot.writeFieldEnd()
-    if self.DATE_B is not None:
-      oprot.writeFieldBegin('DATE_B', TType.I64, 4)
-      oprot.writeI64(self.DATE_B)
+    if self.date_b is not None:
+      oprot.writeFieldBegin('date_b', TType.I64, 4)
+      oprot.writeI64(self.date_b)
       oprot.writeFieldEnd()
-    if self.DATE_E is not None:
-      oprot.writeFieldBegin('DATE_E', TType.I64, 5)
-      oprot.writeI64(self.DATE_E)
+    if self.date_e is not None:
+      oprot.writeFieldBegin('date_e', TType.I64, 5)
+      oprot.writeI64(self.date_e)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -113,14 +113,14 @@ class Tariff:
   def validate(self):
     if self.number is None:
       raise TProtocol.TProtocolException(message='Required field number is unset!')
-    if self.C_TAR is None:
-      raise TProtocol.TProtocolException(message='Required field C_TAR is unset!')
-    if self.SUMM_TAR is None:
-      raise TProtocol.TProtocolException(message='Required field SUMM_TAR is unset!')
-    if self.DATE_B is None:
-      raise TProtocol.TProtocolException(message='Required field DATE_B is unset!')
-    if self.DATE_E is None:
-      raise TProtocol.TProtocolException(message='Required field DATE_E is unset!')
+    if self.c_tar is None:
+      raise TProtocol.TProtocolException(message='Required field c_tar is unset!')
+    if self.summ_tar is None:
+      raise TProtocol.TProtocolException(message='Required field summ_tar is unset!')
+    if self.date_b is None:
+      raise TProtocol.TProtocolException(message='Required field date_b is unset!')
+    if self.date_e is None:
+      raise TProtocol.TProtocolException(message='Required field date_e is unset!')
     return
 
 
@@ -215,20 +215,20 @@ class Result:
   """
   Attributes:
    - number
-   - C_TAR
+   - c_tar
    - error
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.I32, 'number', None, None, ), # 1
-    (2, TType.STRING, 'C_TAR', None, None, ), # 2
+    (2, TType.STRING, 'c_tar', None, None, ), # 2
     (3, TType.STRUCT, 'error', (Error, Error.thrift_spec), None, ), # 3
   )
 
-  def __init__(self, number=None, C_TAR=None, error=None,):
+  def __init__(self, number=None, c_tar=None, error=None,):
     self.number = number
-    self.C_TAR = C_TAR
+    self.c_tar = c_tar
     self.error = error
 
   def read(self, iprot):
@@ -247,7 +247,7 @@ class Result:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.STRING:
-          self.C_TAR = iprot.readString();
+          self.c_tar = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 3:
@@ -270,9 +270,9 @@ class Result:
       oprot.writeFieldBegin('number', TType.I32, 1)
       oprot.writeI32(self.number)
       oprot.writeFieldEnd()
-    if self.C_TAR is not None:
-      oprot.writeFieldBegin('C_TAR', TType.STRING, 2)
-      oprot.writeString(self.C_TAR)
+    if self.c_tar is not None:
+      oprot.writeFieldBegin('c_tar', TType.STRING, 2)
+      oprot.writeString(self.c_tar)
       oprot.writeFieldEnd()
     if self.error is not None:
       oprot.writeFieldBegin('error', TType.STRUCT, 3)
@@ -284,8 +284,8 @@ class Result:
   def validate(self):
     if self.number is None:
       raise TProtocol.TProtocolException(message='Required field number is unset!')
-    if self.C_TAR is None:
-      raise TProtocol.TProtocolException(message='Required field C_TAR is unset!')
+    if self.c_tar is None:
+      raise TProtocol.TProtocolException(message='Required field c_tar is unset!')
     return
 
 

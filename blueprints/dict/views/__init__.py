@@ -9,6 +9,14 @@ from ..models import ConfigVariables
 from application.database import db
 
 
+@module.route('/')
+def index():
+    try:
+        return render_template('dict/index.html')
+    except TemplateNotFound:
+        abort(404)
+
+
 @module.route('/settings/', methods=['GET', 'POST'])
 def settings():
     try:
@@ -36,6 +44,6 @@ def settings():
             db.session.commit()
             return redirect(url_for('.settings'))
 
-        return render_template('settings.html', form=form)
+        return render_template('dict/settings.html', form=form)
     except TemplateNotFound:
         abort(404)
