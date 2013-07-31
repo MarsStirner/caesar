@@ -7,27 +7,19 @@
   <body>
   <div id="wrap">
   {% include '_top.html' %}
-{#  <div class="container">#}
-{#  {% include '_nav_menu.html' %}#}
-{#  </div>#}
   <div id="container" class="container">
-
     {% block content %}
-
       <!-- Jumbotron -->
       <div class="jumbotron">
         <h1>Самая главная страница</h1>
         <p class="lead">Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
       </div>
-
       {% endblock %}
    </div> <!-- /container -->
-   <div id="push">
-   </div>
+   <div id="push"></div>
   </div>
   {% include '_bottom.html' %}
   {% include '_footer.html' %}
   {% block modules_js %}{% endblock %}
-
   </body>
 </html>

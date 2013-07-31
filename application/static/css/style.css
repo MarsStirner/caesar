@@ -7,3 +7,22 @@ body {
 .footer > hr {
     margin: 20px 0;
 }
+#wrap {
+    min-height: 100%; height: auto !important; height: 100%; margin: 0 auto -60px;
+}
+
+html, body {height: 100%;}
+#bottom, #push {height:60px;}
+#footer {height:60px;}
+
+#wrap > #container {
+    padding-top: 60px;
+}
+
+body{
+    padding-top:0;
+}
+
+.container > hr {
+    margin: 10px 0;
+}

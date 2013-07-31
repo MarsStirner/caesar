@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from flask import Flask, g
+from flask import Flask
 from database import db
 from autoload import load_blueprints
 import config
@@ -11,11 +11,9 @@ app.config.from_object(config)
 db.init_app(app)
 from models import *
 
-
 #Register blueprints
 blueprints_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', app.config['BLUEPRINTS_DIR']))
 load_blueprints(app, apps_path=blueprints_path)
-
 
 # Import all views
 from views import *
