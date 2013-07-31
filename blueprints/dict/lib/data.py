@@ -7,6 +7,7 @@ import dbf
 
 from ..app import module, _config
 from service_client import TARIFFClient as Client
+from .thrift_service.TARIFF.ttypes import Tariff
 
 DOWNLOADS_DIR = os.path.join(module.static_folder, 'downloads')
 UPLOADS_DIR = os.path.join(module.static_folder, 'uploads')
@@ -31,13 +32,13 @@ class Tariff(object):
             if table:
                 table.open()
                 for i, record in enumerate(table):
-                    value = dict()
+                    value = Tariff(number=i + 1)
                     if self.__check_record(record['c_tar']):
-                        value['number'] = i + 1
                         for key in self.dbf_keys:
-                            value[key] = record[key]
-                            if isinstance(value[key], date):
-                                value[key] = self.__convert_date(value[key])
+                            if isinstance(record[key], date):
+                                setattr(value, key, self.__convert_date(record[key]))
+                            else:
+                                setattr(value, key, record[key])
                         result.append(value)
                 table.close()
         return result
