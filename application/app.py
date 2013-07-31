@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from flask import Flask
+from flask import Flask, g
 from database import db
 from autoload import load_blueprints
 import config
@@ -9,6 +9,8 @@ app = Flask(__name__)
 app.config.from_object(config)
 
 db.init_app(app)
+from models import *
+
 
 #Register blueprints
 blueprints_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', app.config['BLUEPRINTS_DIR']))

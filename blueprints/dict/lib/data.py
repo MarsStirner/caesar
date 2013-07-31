@@ -2,12 +2,12 @@
 import os
 import exceptions
 import calendar
-from datetime import date, timedelta
+from datetime import date
 import dbf
 
 from ..app import module, _config
 from service_client import TARIFFClient as Client
-from .thrift_service.TARIFF.ttypes import Tariff
+from .thrift_service.TARIFF.ttypes import Tariff as Tariff_Type
 
 DOWNLOADS_DIR = os.path.join(module.static_folder, 'downloads')
 UPLOADS_DIR = os.path.join(module.static_folder, 'uploads')
@@ -23,7 +23,9 @@ class Tariff(object):
         return calendar.timegm(_date.timetuple()) * 1000
 
     def __check_record(self, c_tar):
-        return True
+        if c_tar[0:6] == _config('old_lpu_infis_code'):
+            return True
+        return False
 
     def parse(self, file_path):
         result = list()
@@ -32,7 +34,7 @@ class Tariff(object):
             if table:
                 table.open()
                 for i, record in enumerate(table):
-                    value = Tariff(number=i + 1)
+                    value = Tariff_Type(number=i + 1)
                     if self.__check_record(record['c_tar']):
                         for key in self.dbf_keys:
                             if isinstance(record[key], date):
