@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 from flask import render_template, abort, request, redirect, url_for, flash, session, current_app
+from flask.views import MethodView
 
 from jinja2 import TemplateNotFound
 from flask.ext.wtf import Form, TextField, PasswordField, IntegerField, Required
@@ -8,17 +9,21 @@ from flask.ext.login import LoginManager, login_user, logout_user, login_require
 
 from application.app import app, db
 from application.context_processors import general_menu
-from models import Settings, User
+from models import Settings, Users
+from lib.user import User
+from forms import EditUserForm
 
 
 Principal(app)
 
-login_manager = LoginManager(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+
 
 @login_manager.user_loader
 def load_user(user_id):
     # Return an instance of the User model
-    return db.session.query(User).get(user_id)
+    return db.session.query(Users).get(user_id)
 
 
 class LoginForm(Form):
@@ -28,7 +33,7 @@ class LoginForm(Form):
 
 @app.route('/')
 def index():
-    return render_template('base.html')
+    return render_template('index.html')
 
 
 @app.route('/settings/', methods=['GET', 'POST'])
@@ -59,7 +64,7 @@ def settings():
         abort(404)
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login/', methods=['GET', 'POST'])
 def login():
     # A hypothetical login form that uses Flask-WTF
     form = LoginForm()
@@ -67,10 +72,11 @@ def login():
     # Validate form input
     if form.validate_on_submit():
         # Retrieve the user from the hypothetical datastore
-        user = db.session.query(User).filter(login=form.login.data).first()
+        user = db.session.query(Users).filter(login=form.login.data.strip()).first()
+        check_user = User(user.login)
 
         # Compare passwords (use password hashing production)
-        if form.password.data == user.password:
+        if check_user.check_password(form.password.data.strip(), user.password):
             # Keep the user info in the session using Flask-Login
             login_user(user)
 
@@ -82,7 +88,7 @@ def login():
     return render_template('user/login.html', form=form)
 
 
-@app.route('/logout')
+@app.route('/logout/')
 @login_required
 def logout():
     # Remove the user information from the session
@@ -93,7 +99,46 @@ def logout():
         session.pop(key, None)
 
     # Tell Flask-Principal the user is anonymous
-    identity_changed.send(current_app._get_current_object(),
-                          identity=AnonymousIdentity())
+    identity_changed.send(current_app._get_current_object(), identity=AnonymousIdentity())
 
     return redirect(request.args.get('next') or '/')
+
+
+class UserAPI(MethodView):
+
+    def get(self, user_id):
+        if user_id is None:
+            # return a list of users
+            pass
+        else:
+            # expose a single user
+            pass
+
+    def post(self):
+        # create a new user
+        pass
+
+    def delete(self, user_id):
+        # delete a single user
+        pass
+
+    def put(self, user_id):
+        form = EditUserForm()
+        if form.validate_on_submit():
+            user = User(form.login, form.password)
+            db_user = db.session.query(Users).get(user_id)
+            db_user.login = user.login
+            db_user.password = user.pw_hash
+            db.session.commit()
+            flash(u'Пользователь изменен')
+
+
+def register_api(view, endpoint, url, pk='id', pk_type='int'):
+    view_func = view.as_view(endpoint)
+    app.add_url_rule(url, defaults={pk: None},
+                     view_func=view_func, methods=['GET', ])
+    app.add_url_rule(url, view_func=view_func, methods=['POST', ])
+    app.add_url_rule('%s<%s:%s>' % (url, pk_type, pk), view_func=view_func,
+                     methods=['GET', 'PUT', 'DELETE'])
+
+register_api(UserAPI, 'user_api', '/users/')
