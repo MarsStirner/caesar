@@ -36,6 +36,10 @@ class Users(db.Model):
                             secondary='%s_users_roles' % TABLE_PREFIX,
                             backref=db.backref('users', lazy='dynamic'))
 
+    def __init__(self, login, password):
+        self.login = login
+        self.password = password
+
 
 class UsersRoles(db.Model):
     __tablename__ = '%s_users_roles' % TABLE_PREFIX

@@ -9,21 +9,21 @@ from flask.ext.login import LoginManager, login_user, logout_user, login_require
 
 from application.app import app, db
 from application.context_processors import general_menu
-from models import Settings, Users
+from models import Settings, Users, Roles
 from lib.user import User
 from forms import EditUserForm
 
 
-Principal(app)
+# Principal(app)
+#
+# login_manager = LoginManager()
+# login_manager.init_app(app)
 
-login_manager = LoginManager()
-login_manager.init_app(app)
 
-
-@login_manager.user_loader
-def load_user(user_id):
-    # Return an instance of the User model
-    return db.session.query(Users).get(user_id)
+# @login_manager.user_loader
+# def load_user(user_id):
+#     # Return an instance of the User model
+#     return db.session.query(Users).get(user_id)
 
 
 class LoginForm(Form):
@@ -83,7 +83,7 @@ def login():
             # Tell Flask-Principal the identity changed
             identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
 
-            return redirect(request.args.get('next') or '/')
+            return redirect(request.args.get('next') or url_for('index'))
 
     return render_template('user/login.html', form=form)
 
@@ -104,41 +104,76 @@ def logout():
     return redirect(request.args.get('next') or '/')
 
 
-class UserAPI(MethodView):
+@app.route('/users/')
+def users():
+    # return a list of users
+    return render_template('user/list.html', users=db.session.query(Users).order_by(Users.id).all())
 
-    def get(self, user_id):
-        if user_id is None:
-            # return a list of users
-            pass
-        else:
-            # expose a single user
-            pass
 
-    def post(self):
-        # create a new user
-        pass
+@app.route('/users/add/', methods=['GET', 'POST'])
+def post_user():
+    # create a new user
+    db_roles = db.session.query(Roles).all()
+    radio_roles = [(role.id, role.name) for role in db_roles]
+    form = EditUserForm()
+    form.role.choices = radio_roles
+    if form.validate_on_submit():
+        user = User(form.login.data.strip(), form.password.data.strip())
+        if db.session.query(Users).filter(Users.login == user.login).count() > 0:
+            return render_template('user/edit.html',
+                                   errors=[u'Пользователь с логином <b>%s</b> уже существует' % user.login], form=form)
+        db_user = Users(user.login, user.pw_hash)
+        db_role = db.session.query(Roles).get(form.role.data)
+        db_user.roles.append(db_role)
+        db.session.add(db_user)
+        db.session.commit()
+        flash(u'Пользователь добавлен')
+        return redirect(url_for('users'))
+    return render_template('user/edit.html', form=form)
 
-    def delete(self, user_id):
-        # delete a single user
-        pass
 
-    def put(self, user_id):
-        form = EditUserForm()
-        if form.validate_on_submit():
-            user = User(form.login, form.password)
-            db_user = db.session.query(Users).get(user_id)
-            db_user.login = user.login
+@app.route('/users/<int:user_id>/', methods=['GET', 'POST'])
+def put_user(user_id):
+    db_user = db.session.query(Users).get(user_id)
+    if db_user is None:
+        return render_template('user/list.html',
+                               users=db.session.query(Users).order_by(Users.id).all(),
+                               errors=u'Пользователя с id=%s не существует' % user_id)
+    db_roles = db.session.query(Roles).all()
+    radio_roles = [(role.id, role.name) for role in db_roles]
+    form = EditUserForm(login=db_user.login)
+    form.role.choices = radio_roles
+    if form.validate_on_submit():
+        password = form.password.data.strip()
+        if password:
+            user = User(form.login.data.strip(), form.password.data.strip())
             db_user.password = user.pw_hash
-            db.session.commit()
-            flash(u'Пользователь изменен')
+        else:
+            user = User(form.login.data.strip())
+
+        if db_user.login != user.login and db.session.query(Users).filter(Users.login == user.login).count() > 0:
+            return render_template('user/edit.html',
+                                   errors=[u'Пользователь с логином <b>%s</b> уже существует' % user.login], form=form)
+        db_user.login = user.login
+        db_role = db.session.query(Roles).get(form.role.data)
+        db_user.roles[0] = db_role
+        db.session.commit()
+        flash(u'Пользователь изменен')
+        return redirect(url_for('users'))
+    return render_template('user/edit.html', form=form, user=db_user)
 
 
-def register_api(view, endpoint, url, pk='id', pk_type='int'):
-    view_func = view.as_view(endpoint)
-    app.add_url_rule(url, defaults={pk: None},
-                     view_func=view_func, methods=['GET', ])
-    app.add_url_rule(url, view_func=view_func, methods=['POST', ])
-    app.add_url_rule('%s<%s:%s>' % (url, pk_type, pk), view_func=view_func,
-                     methods=['GET', 'PUT', 'DELETE'])
-
-register_api(UserAPI, 'user_api', '/users/')
+@app.route('/users/delete/<int:user_id>/', methods=['POST'])
+def delete_user(user_id):
+    # delete a single user
+    errors = list()
+    try:
+        user = db.session.query(Users).get(user_id)
+        db.session.delete(user)
+        db.session.commit()
+    except Exception, e:
+        errors.append(u'Ошибка при удалении пользователя: %s' % e)
+    else:
+        flash(u'Пользователь удалён')
+        return redirect(url_for('users'))
+    return render_template('user/list.html', users=db.session.query(Users).order_by(Users.id).all(), errors=errors)

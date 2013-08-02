@@ -51,3 +51,20 @@ body{
     margin-bottom: 15px;
     padding: 7px 9px;
 }
+
+/* Form customizations */
+form.icon {
+    display: inline;
+}
+
+form.icon button {
+    border: none;
+    background: transparent;
+    text-decoration: none;
+    padding: 0;
+    line-height: normal;
+}
+
+a.icon {
+    text-decoration: none;
+}
