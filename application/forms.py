@@ -19,3 +19,8 @@ class EditUserForm(Form):
             self.password_reply.errors.append(u'Пароли не совпадают')
             return False
         return True
+
+
+class LoginForm(Form):
+    login = TextField(u'Логин')
+    password = PasswordField(u'Пароль')

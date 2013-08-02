@@ -2,20 +2,19 @@
 
 {% block title %} > Авторизация{% endblock %}
 
-{% block module_css %}
+{% block modules_css %}
 <style type="text/css">
       body {
-        padding-top: 40px;
-        padding-bottom: 40px;
         background-color: #f5f5f5;
       }
 </style>
 {% endblock %}
 
 {% block content %}
+    <div class="marketing">
     <form class="form-signin" method="post">
         {{ form.hidden_tag() }}
-        <h2 class="form-signin-heading">Авторизация</h2>
+        <h2 class="form-signin-heading">Авторизуйтесь</h2>
 
         {% with messages = get_flashed_messages() %}
           {% if messages %}
@@ -27,12 +26,19 @@
           {% endif %}
         {% endwith %}
 
+        {% if errors %}
+        <div class="alert alert-error">
+            {%- for error in errors -%}
+              <div>{{ error|safe }}</div>
+            {%- endfor -%}
+        </div>
+        {% endif %}
+
         {% for field in form %}
             {% if field.type != "CSRFTokenField" %}
                 <div class="control-group">
-                    <label class="control-label">{{ field.description|safe }}</label>
                     <div class="controls">
-                        {{ field(value=field.value, placeholder=field.description, required="required", title="Необходимо заполнить это поле!") }}
+                        {{ field(value=field.value, placeholder=field.label.text, required="required", title="Необходимо заполнить это поле!", class="input-block-level") }}
                     </div>
                 </div>
             {% endif %}
@@ -40,8 +46,9 @@
 
         <div class="control-group">
             <div class="controls">
-                <button type="submit" class="btn btn-primary">Войти</button>
+                <button type="submit" class="btn btn-success btn-large">Войти</button>
             </div>
         </div>
     </form>
+    </div>
 {% endblock %}

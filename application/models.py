@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from database import db
+from flask_login import UserMixin
 
 TABLE_PREFIX = 'app'
 
@@ -25,7 +26,7 @@ class Roles(db.Model):
     description = db.Column(db.Unicode(255))
 
 
-class Users(db.Model):
+class Users(db.Model, UserMixin):
     __tablename__ = '%s_users' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

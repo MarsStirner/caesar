@@ -10,7 +10,7 @@
 
 {% block content %}
 
-    {% include '_nav_menu.html' %}
+    {% include 'tfoms/_nav_menu.html' %}
         <legend>Формирование реестров, предназначенных для выгрузки в ТФОМС</legend>
         <ul class="nav nav-tabs">
             <li{% if request.path == url_for('.download', template_type='xml') or request.path == url_for('.download') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='xml') }}">Выгрузка сведений в формате XML</a></li>

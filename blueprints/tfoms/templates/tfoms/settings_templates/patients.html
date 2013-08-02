@@ -17,17 +17,15 @@
 
 {% block content %}
 
-    {% include '_nav_menu.html' %}
-
+    {% include 'tfoms/_nav_menu.html' %}
         <legend>Настройка шаблонов реестров для выгрузки в ТФОМС</legend>
-
-        {% include 'settings_templates/_sub_menu.html' %}
+        {% include 'tfoms/settings_templates/_sub_menu.html' %}
 
         <div class="row-fluid">
-          <div class="span4">
-              <ul class="nav nav-list nav-stacked">
-                   <li><strong>Созданные шаблоны <span class="pull-right">Выгружать</span></strong></li>
-                   <li class="divider"></li>
+            <div class="span4">
+                  <ul class="nav nav-list nav-stacked">
+                       <li><strong>Созданные шаблоны <span class="pull-right">Выгружать</span></strong></li>
+                       <li class="divider"></li>
                        {%- for template in templates -%}
                             {% set id = template.id %}
                             {%- if id == current_id -%}
@@ -39,7 +37,7 @@
                                             <input title="Выбрать для выгрузки данных по шаблону" class="is_active" type="radio" name="is_active" value="{{ id }}" />
                                         {%- endif -%}
                                     </span>
-                                    <a href="{{ url_for('.settings_template', template_type='policlinic', id=id) }}">{{template.name}}</a>
+                                    <a href="{{ url_for('.settings_template', template_type='patients', id=id) }}">{{template.name}}</a>
                                 </li>
                             {%- else -%}
                                 <li>
@@ -50,23 +48,22 @@
                                             <input title="Выбрать для выгрузки данных по шаблону" class="is_active" type="radio" name="is_active" value="{{ id }}"  />
                                         {%- endif -%}
                                     </span>
-                                    <a href="{{ url_for('.settings_template', template_type='policlinic', id=id) }}">{{template.name}}</a>
+                                    <a href="{{ url_for('.settings_template', template_type='patients', id=id) }}">{{template.name}}</a>
                                 </li>
                             {%- endif -%}
                        {%- endfor -%}
-                   <li class="divider"></li>
-                   <li>
-                        <span>
-                            <a href="{{ url_for('.add_new_template', template_type='policlinic', action="add_new") }}" class="btn btn-primary" title="Добавить новый шаблон">
-                                <i class="icon-plus icon-white"></i>Создать
-                            </a>
-                        </span>
-                   </li>
+                       <li class="divider"></li>
+                       <li>
+                            <span>
+                                <a href="{{ url_for('.add_new_template', template_type='patients', action="add_new") }}" class="btn btn-primary" title="Добавить новый шаблон">
+                                    <i class="icon-plus icon-white"></i>Создать
+                                </a>
+                            </span>
+                       </li>
                 </ul>
-
-          </div>
-          <div class="span8">
-              <form id="main_form" class="form-horizontal" method=post>
+            </div>
+            <div class="span8">
+                <form id="main_form" class="form-horizontal" method="post">
                     <legend>Параметры шаблона:</legend>
 
                     <div class="control-group">
@@ -74,15 +71,17 @@
                         <div class="controls">
                             {{ form.hidden_tag() }}
                             {{ form.name(class='input-xlarge', placeholder="Введите наименование шаблона", maxlength=30) }}
-                            {% if form.name.errors %}
-                                <ul class="errors" style="color:red">
-                                {% for error in form.name.errors %}
-                                  <li>{{ error }}</li>
-                                {% endfor %}
-                                </ul>
-                            {% endif %}
+
                             <div class="alert alert-error hidden">
-                              <strong>Внимание!</strong> <span id="error_text"></span>
+                                <strong>Внимание!</strong> <span id="error_text">
+{#                            {% if form.name.errors %}#}
+{#                                <ul class="errors" style="color:red">#}
+{#                                {% for error in form.name.errors %}#}
+{#                                  <li>{{ error }}</li>#}
+{#                                {% endfor %}#}
+{#                                </ul>#}
+{#                            {% endif %}#}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -93,21 +92,51 @@
                         </div>
                     </div>
 
-
-                  <p class="lead"><small>Состав и порядок размещения данных в шаблоне:</small></p>
-                  <div class="row-fluid col-wrap tags">
-                  <div class="span7 well col" id="used">
-                      <legend >Попадают в реестр</legend>
-                            <ul id="root" class="sortable">
-                                {%- for tag in tag_tree -%}
-                                    </li>
-                                    <li class="children">
-                                        <i class="tree"></i>{{tag.value.tag.code}} <small class="text-info">{{tag.value.tag.name}}</small>
+                    <p class="lead"><small>Состав и порядок размещения данных в шаблоне:</small></p>
+                    <div class="row-fluid col-wrap tags">
+                        <div class="span7 well col" id="used">
+                            <legend>Попадают в реестр</legend>
+                            <ul id="root" class="necessary">
+                            {%- for tag in tag_tree -%}
+                                {%- if loop.index0 == 0 -%}
+                                  <li>
+                                        {{tag.value.tag.code}} <small class="text-info">{{tag.value.tag.name}}</small>
                                         <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
-                                {%- endfor -%}
+                                        <ul id="necessary" class="necessary">
+                                {%- else -%}
+                                    {% set k = tag_tree[loop.index0 - 1].level-tag.level %}
+                                        {%- if k == 0 -%}
+                                            {%- if not tag_tree[loop.index0 - 1].value.tag.is_leaf -%}</ul>{%- endif -%}
+                                            </li>
+                                            <li class="children">
+                                                <i class="tree"></i>{{tag.value.tag.code}} <small class="text-info">{{tag.value.tag.name}}</small>
+                                                <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
+                                                {%- if not tag.value.tag.is_leaf -%}<ul id="sortable" class=" sortable">{%- endif -%}
+                                        {%- endif -%}
+                                        {%- if k < 0 -%}
+                                              <li class="children">
+                                                    <i class="tree"></i>{{tag.value.tag.code}} <small class="text-info">{{tag.value.tag.name}}</small>
+                                                    <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
+                                                    {%- if not tag.value.tag.is_leaf -%}<ul  id="sortable" class=" sortable">{%- endif -%}
+                                        {%- endif -%}
+                                        {%- if k > 0 -%}
+                                                {%- if not tag_tree[loop.index0 - 1].value.tag.is_leaf -%}</ul>{%- endif -%}
+                                                 </li>
+                                            {%- for i in range(k) -%}
+                                                </ul>
+                                                 </li>
+                                            {%- endfor -%}
+                                                <li class="children">
+                                                    <i class="tree"></i>{{tag.value.tag.code}} <small class="text-info">{{tag.value.tag.name}}</small>
+                                                    <input type="hidden" name="tag[{{tag.value.id}},{{ tag.value.tag.id }}]" value="{{tag.value.parent_id}},{{tag.value.ordernum}}">
+                                                    {%- if not tag.value.tag.is_leaf -%} <ul id="sortable" class=" sortable"> {%- endif -%}
+                                        {%- endif -%}
+                                {%- endif -%}
+                            {%- endfor -%}
+                            </ul>
                             </li>
                           </ul>
-                  </div>
+                        </div>
                         <div class="span5 well col" id="unused">
                           <legend>Не используются</legend>
                           <ul id="root" class="unused col">
@@ -115,12 +144,14 @@
                               <li class="children">
                                 <i class="tree"></i>{{ tag.tag.code }} <small class="text-info">{{ tag.tag.name }}</small>
                                 <input type="hidden" id="hid_{{tag.id}}" name="unusedtag[None,{{ tag.tag_id }}]" value="None,1">
+                                {%- if not tag.tag.is_leaf -%} <ul id="sortable" class="unused">
+                                </ul>{%- endif -%}
                               </li>
                           {%- endfor -%}
                           </ul>
 
                         </div>
-                  </div>
+                    </div>
                     <div class="row-fluid col-wrap">
                         <!-- add a second row of wells or rounded corner divs immeadiately underneath-->
                         <div class="span7 col-base well"></div>
@@ -140,14 +171,14 @@
                             <input id="btn" type="hidden" name="btn" value="Save">
                         </div>
                     </div>
-        </form>
+                </form>
           </div>
         </div>
         <!-- Modal -->
         <div id="modal-from-dom" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>Удаление шаблона</h3>
+                <a href="javascript:void(0);" onclick="$('#modal-from-dom').modal('hide');" class="close">&times;</a>
+                 <h3>Удаление шаблона</h3>
             </div>
             <div class="modal-body">
                 <p>Вы действительно хотите удалить шаблон?</p>
@@ -155,14 +186,13 @@
             </div>
             <div class="modal-footer">
                 <a href="javascript:void(0);" onclick="$('#modal-from-dom').modal('hide');" class="btn btn-secondary">Нет</a>
-                <a href="{{ url_for('.delete_template', template_type='policlinic', action='delete_template', id=current_id)}}" class="btn btn-danger">Да</a>
+                <a href="{{ url_for('.delete_template', template_type='patients', action='delete_template', id=current_id)}}" class="btn btn-danger">Да</a>
             </div>
         </div>
-
         <div id="modal-from-dom1" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>Сохранение изменений в шаблоне</h3>
+                <a href="javascript:void(0);" onclick="$('#modal-from-dom1').modal('hide');" class="close">&times;</a>
+                 <h3>Сохранение изменений в шаблоне</h3>
             </div>
             <div class="modal-body">
                 <p>Вы действительно хотите изменить шаблон?</p>
@@ -179,14 +209,8 @@
   <script>
 
   $(function() {
-      var templates = {{ templates_names|tojson|safe }};
 
-      var number_of_checked = $("input[name=is_active]:checked").length;
-      if (number_of_checked===2){
-            $("input[name=is_active]:not(:checked)").attr({
-                              'disabled': 'disabled'
-                        }).removeAttr('title');
-      }
+      var templates = {{ templates_names|tojson|safe }};
 
       function show_error(text){
             $('#error_text').text(text);
@@ -240,7 +264,7 @@
           });
       });
 
-      function distinguish_used_unused_tags(event, ui) {
+        function distinguish_used_unused_tags(event, ui) {
             var item = ui.item;
             var isused = item.closest('div').attr('id');
             var descendants = item.find('input');
@@ -260,9 +284,9 @@
                     descendant.attr('name', 'removed'+old_name);
                 });
             }
-      }
+        }
 
-      function find_parent_ordernum(event, ui) {
+        function find_parent_ordernum(event, ui) {
             var item = ui.item;
             var isused = item.closest('div').attr('id');
             //var item_parent_input = ui.item.children('input');
@@ -297,9 +321,8 @@
                     var ordernum_value = index+1;
                     item.val(parent_id+','+ordernum_value);
                 });
-
             }
-      }
+        }
 
     $("input[name=is_active]:radio").change(
             function(){
@@ -356,13 +379,24 @@
         }
     });
     $( "ul, li" ).disableSelection();
-    //$("#sortable, #sortable2").css('minHeight',"0px");
+
+{#    $('#modal-from-dom').on('show', function() {#}
+{#        var id = $(this).data('id'),#}
+{#            removeBtn = $(this).find('.danger');#}
+{##}
+{#        removeBtn.attr('href', removeBtn.attr('href').replace(/(&|\?)ref=\d*/, '$1ref=' + id));#}
+{##}
+{#        $('#debug-url').html('Delete URL: <strong>' + removeBtn.attr('href') + '</strong>');#}
+{#    })#}
+{#    .modal({backdrop: true});#}
+
     $('#confirm-delete').on('click', function(e) {
         e.preventDefault();
         var id = $(this).data('id');
         $('#modal-from-dom').modal('show');
     });
 
+    //$("#sortable, #sortable2").css('minHeight',"0px");
   });
   </script>
 {% endblock %}

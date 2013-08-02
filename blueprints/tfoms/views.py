@@ -26,7 +26,7 @@ PER_PAGE = 20
 @module.route('/')
 def index():
     try:
-        return render_template('index.html')
+        return render_template('tfoms/index.html')
     except TemplateNotFound:
         abort(404)
 
@@ -51,7 +51,7 @@ def ajax_download():
             errors.append(u'<b>%s</b>: внутренняя ошибка ядра во время выборки данных (%s)' % (template.name, e))
         else:
             result.append(dict(url=file_url))
-    return render_template('download/result.html', files=result, errors=errors)
+    return render_template('tfoms/download/result.html', files=result, errors=errors)
 
 
 @module.route('/download/')
@@ -62,7 +62,7 @@ def download(template_type='xml'):
                      .filter(Template.is_active == True,
                              Template.type.has(TemplateType.download_type.has(DownloadType.code == template_type)))
                      .all())
-        return render_template('download/index.html', templates=templates)
+        return render_template('tfoms/download/index.html', templates=templates)
     except TemplateNotFound:
         abort(404)
 
@@ -77,7 +77,7 @@ def download_file(filename):
 @module.route('/upload/')
 def upload():
     try:
-        return render_template('upload/index.html')
+        return render_template('tfoms/upload/index.html')
     except TemplateNotFound:
         abort(404)
 
@@ -104,7 +104,7 @@ def ajax_upload():
                 messages.append(u'Загрузка прошла успешно')
         else:
             errors.append(u'<b>%s</b>: не является XML-файлом' % data_file.filename)
-        return render_template('upload/result.html', errors=errors, messages=messages)
+        return render_template('tfoms/upload/result.html', errors=errors, messages=messages)
 
 
 @module.route('/reports/', methods=['GET', 'POST'])
@@ -119,7 +119,7 @@ def reports():
     data = report.get_bills(start, end)
     try:
         current_app.jinja_env.filters['datetimeformat'] = datetimeformat
-        return render_template('reports/index.html', data=data, form=Form())
+        return render_template('tfoms/reports/index.html', data=data, form=Form())
     except TemplateNotFound:
         abort(404)
 
@@ -134,7 +134,7 @@ def report_cases(bill_id, page):
         pagination = Pagination(query, page, PER_PAGE, query.count(), data)
         try:
             current_app.jinja_env.filters['datetimeformat'] = datetimeformat
-            return render_template('reports/cases.html', cases=data, bill=bill, pagination=pagination)
+            return render_template('tfoms/reports/cases.html', cases=data, bill=bill, pagination=pagination)
         except TemplateNotFound:
             abort(404)
     else:
@@ -167,7 +167,7 @@ def settings():
             db.session.commit()
             return redirect(url_for('.settings'))
 
-        return render_template('settings.html', form=form)
+        return render_template('tfoms/settings.html', form=form)
     except TemplateNotFound:
         abort(404)
 
@@ -223,7 +223,7 @@ def settings_template(template_type='patient', id=0):
                 save_new_template_tree(new_id, data)
                 return redirect(url_for('.settings_template', template_type=template_type, id=new_id))
 
-        return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates,
+        return render_template('tfoms/settings_templates/%s.html' % template_type, form=form, templates=templates,
                                current_id=id, tag_tree=tag_tree, unused_tags=unused_tags, templates_names=templates_names)
     except TemplateNotFound:
         abort(404)    
@@ -267,7 +267,7 @@ def add_new_template(template_type="patients", action="add_new"):
         templates = Template.query.filter_by(type_id=template_type_id).all()
         templates_names = [template.name for template in templates]
 
-        return render_template('settings_templates/%s.html' % template_type, form=form, templates=templates,
+        return render_template('tfoms/settings_templates/%s.html' % template_type, form=form, templates=templates,
                                current_id=0, tag_tree=tags_tree, unused_tags=unused_tags,
                                templates_names=json.dumps(templates_names))
     except TemplateNotFound:
@@ -315,6 +315,6 @@ def activate(template_type):
 @module.route('/<string:page>.html')
 def show_page(page):
     try:
-        return render_template('/%s.html' % page)
+        return render_template('tfoms/%s.html' % page)
     except TemplateNotFound:
         abort(404)

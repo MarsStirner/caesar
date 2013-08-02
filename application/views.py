@@ -5,30 +5,43 @@ from flask.views import MethodView
 from jinja2 import TemplateNotFound
 from flask.ext.wtf import Form, TextField, PasswordField, IntegerField, Required
 from flask.ext.principal import Principal, Identity, AnonymousIdentity, identity_changed
+from flask.ext.principal import identity_loaded, Permission, RoleNeed, UserNeed
 from flask.ext.login import LoginManager, login_user, logout_user, login_required, current_user
 
 from application.app import app, db
 from application.context_processors import general_menu
 from models import Settings, Users, Roles
 from lib.user import User
-from forms import EditUserForm
+from forms import EditUserForm, LoginForm
 
 
-# Principal(app)
-#
-# login_manager = LoginManager()
-# login_manager.init_app(app)
+Principal(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
 
-# @login_manager.user_loader
-# def load_user(user_id):
-#     # Return an instance of the User model
-#     return db.session.query(Users).get(user_id)
+@login_manager.user_loader
+def load_user(user_id):
+    # Return an instance of the User model
+    return db.session.query(Users).get(user_id)
 
 
-class LoginForm(Form):
-    login = TextField()
-    password = PasswordField()
+@app.before_request
+def check_valid_login():
+    login_valid = current_user.is_authenticated()
+
+    if (request.endpoint and
+            'static' not in request.endpoint and
+            not login_valid and
+            not getattr(app.view_functions[request.endpoint], 'is_public', False)):
+        return redirect(url_for('login'))
+
+
+def public_endpoint(function):
+    function.is_public = True
+    return function
 
 
 @app.route('/')
@@ -65,27 +78,33 @@ def settings():
 
 
 @app.route('/login/', methods=['GET', 'POST'])
+@public_endpoint
 def login():
     # A hypothetical login form that uses Flask-WTF
     form = LoginForm()
+    errors = list()
 
     # Validate form input
     if form.validate_on_submit():
         # Retrieve the user from the hypothetical datastore
-        user = db.session.query(Users).filter(login=form.login.data.strip()).first()
-        check_user = User(user.login)
+        user = db.session.query(Users).filter(Users.login == form.login.data.strip()).first()
+        if user:
+            check_user = User(user.login)
+            # Compare passwords (use password hashing production)
+            if check_user.check_password(form.password.data.strip(), user.password):
+                # Keep the user info in the session using Flask-Login
+                login_user(user)
 
-        # Compare passwords (use password hashing production)
-        if check_user.check_password(form.password.data.strip(), user.password):
-            # Keep the user info in the session using Flask-Login
-            login_user(user)
+                # Tell Flask-Principal the identity changed
+                identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
 
-            # Tell Flask-Principal the identity changed
-            identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
+                return redirect(request.args.get('next') or url_for('index'))
+            else:
+                errors.append(u'Неверная пара логин/пароль')
+        else:
+            errors.append(u'Нет пользователя с логином <b>%s</b>' % form.login.data.strip())
 
-            return redirect(request.args.get('next') or url_for('index'))
-
-    return render_template('user/login.html', form=form)
+    return render_template('user/login.html', form=form, errors=errors)
 
 
 @app.route('/logout/')

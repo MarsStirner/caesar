@@ -9,7 +9,7 @@
 
 {% block content %}
 
-    {% include '_nav_menu.html' %}
+    {% include 'tfoms/_nav_menu.html' %}
 
     <legend>Услуги по счёту №{{ bill.NSCHET }} ({{ bill.DSCHET|datetimeformat('%d/%m/%Y') }})</legend>
     {% if cases %}

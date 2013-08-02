@@ -344,10 +344,10 @@ class XML(object):
 
         if self.data_type == 'patients':
             self.file_name = 'L'
-            self.template = 'xml/patients.xml'
+            self.template = 'tfoms/xml/patients.xml'
         elif self.data_type == 'services':
             self.file_name = 'H'
-            self.template = 'xml/services.xml'
+            self.template = 'tfoms/xml/services.xml'
         else:
             raise exceptions.NameError
 
@@ -435,6 +435,7 @@ class DBF(object):
         return _type
 
     def __generate_fields(self, tags, row):
+        # NOT USED
         env = Environment(loader=PackageLoader(module.import_name, module.template_folder))
         env.filters['datetimeformat'] = datetimeformat
 
