@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from flask import g
+from flask.ext.principal import identity_loaded, Principal, Permission, RoleNeed, UserNeed
+from flask.ext.login import LoginManager, current_user
 from database import db
-from models import Settings
+from models import Settings, Users, Roles
 from app import app
 
 
@@ -24,3 +26,15 @@ def create_config_func(module_name, config_table):
         return config.get(code, None)
 
     return _config
+
+permissions = dict()
+with app.app_context():
+    login_manager = LoginManager()
+    roles = db.session.query(Roles).all()
+    for role in roles:
+        permissions[role.code] = Permission(RoleNeed(role.code))
+        permissions[role.code].description = role.description
+
+# TODO: разобратсья как покрасивше сделать
+admin_permission = permissions.get('admin')
+user_permission = permissions.get('user')

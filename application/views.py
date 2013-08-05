@@ -4,28 +4,19 @@ from flask.views import MethodView
 
 from jinja2 import TemplateNotFound
 from flask.ext.wtf import Form, TextField, PasswordField, IntegerField, Required
-from flask.ext.principal import Principal, Identity, AnonymousIdentity, identity_changed
+from flask.ext.principal import Identity, AnonymousIdentity, identity_changed
 from flask.ext.principal import identity_loaded, Permission, RoleNeed, UserNeed
-from flask.ext.login import LoginManager, login_user, logout_user, login_required, current_user
+from flask.ext.login import login_user, logout_user, login_required, current_user
 
-from application.app import app, db
+from application.app import app, db, login_manager
 from application.context_processors import general_menu
 from models import Settings, Users, Roles
 from lib.user import User
 from forms import EditUserForm, LoginForm
+from utils import admin_permission
 
 
-Principal(app)
-
-login_manager = LoginManager()
-login_manager.init_app(app)
 login_manager.login_view = 'login'
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    # Return an instance of the User model
-    return db.session.query(Users).get(user_id)
 
 
 @app.before_request
@@ -50,6 +41,7 @@ def index():
 
 
 @app.route('/settings/', methods=['GET', 'POST'])
+@admin_permission.require(http_exception=403)
 def settings():
     try:
         class ConfigVariablesForm(Form):
@@ -80,7 +72,7 @@ def settings():
 @app.route('/login/', methods=['GET', 'POST'])
 @public_endpoint
 def login():
-    # A hypothetical login form that uses Flask-WTF
+    # login form that uses Flask-WTF
     form = LoginForm()
     errors = list()
 
@@ -108,7 +100,6 @@ def login():
 
 
 @app.route('/logout/')
-@login_required
 def logout():
     # Remove the user information from the session
     logout_user()
@@ -124,12 +115,14 @@ def logout():
 
 
 @app.route('/users/')
+@admin_permission.require(http_exception=403)
 def users():
     # return a list of users
     return render_template('user/list.html', users=db.session.query(Users).order_by(Users.id).all())
 
 
 @app.route('/users/add/', methods=['GET', 'POST'])
+@admin_permission.require(http_exception=403)
 def post_user():
     # create a new user
     db_roles = db.session.query(Roles).all()
@@ -152,6 +145,7 @@ def post_user():
 
 
 @app.route('/users/<int:user_id>/', methods=['GET', 'POST'])
+@admin_permission.require(http_exception=403)
 def put_user(user_id):
     db_user = db.session.query(Users).get(user_id)
     if db_user is None:
@@ -183,6 +177,7 @@ def put_user(user_id):
 
 
 @app.route('/users/delete/<int:user_id>/', methods=['POST'])
+@admin_permission.require(http_exception=403)
 def delete_user(user_id):
     # delete a single user
     errors = list()
@@ -196,3 +191,34 @@ def delete_user(user_id):
         flash(u'Пользователь удалён')
         return redirect(url_for('users'))
     return render_template('user/list.html', users=db.session.query(Users).order_by(Users.id).all(), errors=errors)
+
+
+@app.errorhandler(403)
+def authorisation_failed(e):
+    flash(u'У вас недостаточно привелегий ')
+
+    return render_template('privileges.html')
+
+
+#########################################
+
+@login_manager.user_loader
+def load_user(user_id):
+    # Return an instance of the User model
+    return db.session.query(Users).get(user_id)
+
+
+@identity_loaded.connect_via(app)
+def on_identity_loaded(sender, identity):
+    # Set the identity user object
+    identity.user = load_user(identity.id)
+
+    # Add the UserNeed to the identity
+    if hasattr(identity.user, 'id'):
+        identity.provides.add(UserNeed(identity.user.id))
+
+    # Assuming the User model has a list of roles, update the
+    # identity with the roles that the user provides
+    if hasattr(identity.user, 'roles'):
+        for role in identity.user.roles:
+            identity.provides.add(RoleNeed(role.code))
