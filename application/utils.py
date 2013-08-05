@@ -39,6 +39,7 @@ with app.app_context():
         roles = db.session.query(Roles).all()
     except Exception, e:
         print e
+        permissions['admin'] = Permission(RoleNeed('admin'))
     else:
         for role in roles:
             permissions[role.code] = Permission(RoleNeed(role.code))
