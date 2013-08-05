@@ -161,8 +161,6 @@ class Reports(object):
         db.session.query(DownloadServices).filter(DownloadServices.case_id == case_id).delete()
 
     def __add_service(self, case_id, data):
-        self.__clear_services(case_id)
-
         service = DownloadServices(case_id=case_id)
         for key in data.__dict__.keys():
             if hasattr(service, key):
@@ -196,6 +194,7 @@ class Reports(object):
                         del service.USL
                     case = self.__add_case(bill_obj.id, patient_id, record.id, service)
 
+                    self.__clear_services(case.id)
                     if service_data and case:
                         for service_item in service_data:
                             self.__add_service(case.id, service_item)
