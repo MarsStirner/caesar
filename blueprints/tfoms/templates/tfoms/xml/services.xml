@@ -26,10 +26,11 @@
                                     {%- if event_field.tag.code == 'USL' -%}
                                         {%- if event|attr(event_field.tag.code) and event_field.children -%}
                                             {%- for service in event|attr(event_field.tag.code) -%}
+                                                {%- set service_loop = loop -%}
                                                 <{{ event_field.tag.code }}>
                                                 {%- for service_field in event_field.children -%}
-                                                    {%- if service|attr(service_field.tag.code) == 'IDSERV' -%}
-                                                        <{{ service_field.tag.code }}>{{ loop.index }}</{{ service_field.tag.code }}>
+                                                    {%- if service_field.tag.code == 'IDSERV' -%}
+                                                        <{{ service_field.tag.code }}>{{ service_loop.index }}</{{ service_field.tag.code }}>
                                                     {%- elif service|attr(service_field.tag.code) -%}
                                                         <{{ service_field.tag.code }}>{{ service|attr(service_field.tag.code) }}</{{ service_field.tag.code }}>
                                                     {%- elif event|attr(service_field.tag.code) -%}
@@ -50,7 +51,7 @@
                                             {%- endfor -%}
                                         {%- endif -%}
                                     {%- elif event|attr(event_field.tag.code) -%}
-                                        {%- if event_field.tag.code == 'ISHOD' and event|attr(event_field.tag.code)=='-1' -%}
+                                        {%- if event_field.tag.code == 'ISHOD' and event|attr(event_field.tag.code)==-1 -%}
                                             <{{ event_field.tag.code }}/>
                                         {%- else -%}
                                             <{{ event_field.tag.code }}>{{ event|attr(event_field.tag.code) }}</{{ event_field.tag.code }}>
