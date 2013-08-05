@@ -2,7 +2,7 @@
 import os
 import exceptions
 from datetime import date
-from zipfile import ZipFile
+from zipfile import ZipFile, ZIP_DEFLATED
 import dbf
 from jinja2 import Environment, PackageLoader
 from application.database import db
@@ -382,7 +382,7 @@ class XML(object):
         return '%s.xml' % self.file_name
 
     def archive_file(self):
-        with ZipFile(os.path.join(DOWNLOADS_DIR, '%s.xml.zip' % self.file_name), 'w') as archive:
+        with ZipFile(os.path.join(DOWNLOADS_DIR, '%s.xml.zip' % self.file_name), 'w', ZIP_DEFLATED) as archive:
             archive.write(os.path.join(DOWNLOADS_DIR, '%s.xml' % self.file_name), '%s.xml' % self.file_name)
         return '%s.xml.zip' % self.file_name
 
