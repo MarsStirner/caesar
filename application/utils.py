@@ -11,7 +11,12 @@ def create_config_func(module_name, config_table):
 
     #Remember app_settings to globals
     with app.app_context():
-        app_settings = {item.code: item.value for item in db.session.query(Settings).all()}
+        with app.app_context():
+            app_settings = dict()
+            try:
+                app_settings = {item.code: item.value for item in db.session.query(Settings).all()}
+            except Exception, e:
+                print e
 
     def _config(code):
         """Возвращает значение конфигурационной переменной, полученной из таблицы config_table"""
