@@ -8,7 +8,7 @@
             <li{% if request.path == url_for('.download') %} class="active"{% endif %}><a href="{{ url_for('.download') }}">Выгрузка</a></li>
             <li{% if request.path == url_for('.upload') %} class="active"{% endif %}><a href="{{ url_for('.upload') }}">Загрузка</a></li>
             <li{% if request.path == url_for('.reports') %} class="active"{% endif %}><a href="{{ url_for('.reports') }}">Отчёты</a></li>
-
+            {%  if current_user.role == 'admin' %}
             <li>
                 <div class="dropdown">
                 <a id="drop1" class="dropdown-toggle" data-toggle="dropdown" role="button">Настройка <b class="caret"></b></a>
@@ -18,7 +18,7 @@
                 </ul>
                 </div>
             </li>
-
+            {% endif %}
           </ul>
         </div>
       </div>

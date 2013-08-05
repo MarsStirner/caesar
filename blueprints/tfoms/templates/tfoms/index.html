@@ -17,13 +17,18 @@
             Система осуществляет формирование и выгрузку файлов формата XML или DBF для последующей отправки в ТФОМС. Дополнительной возможностью системы является приём данных в формате XML после произведенного форматно-логического контроля.</p>
       </div>
         <div class="row-fluid">
+            {%  if current_user.role == 'admin' %}
             <div class="span3 offset3">
               <a class="btn btn-large btn-danger" href="{{ url_for('.add_new_template') }}">Настроить шаблоны</a>
             </div>
-
             <div class="span3">
               <a class="btn btn-large btn-success" href="{{ url_for('.download') }}">Сформировать реестры</a>
             </div>
+            {% else %}
+            <div class="span4 offset4">
+              <a class="btn btn-large btn-success" href="{{ url_for('.download') }}">Сформировать реестры</a>
+            </div>
+            {% endif %}
         </div>
        <br/>
       <hr>
@@ -41,10 +46,12 @@
           <p>Полученные из ТФОМС обновленные данные по пациентам загружаются в БД ЛПУ. Результат форматно-логического контроля отображается в сводной таблице по реестрам.</p>
           <p><a class="btn" href="{{ url_for('.upload') }}">Загрузить из ТФОМС &raquo;</a></p>
        </div>
+      {%  if current_user.role == 'admin' %}
         <div class="span4">
           <h2>Настройка шаблонов</h2>
           <p>Формирование шаблонов осуществляется администратором системы в отдельном интерфейсе. Интерфейс реализован с использованием drag'n'drop. Набор и порядок следования тегов в шаблонах изменяется с помощью &laquo;мыши&raquo;.</p>
           <p><a class="btn" href="{{ url_for('.add_new_template') }}">Настроить шаблоны &raquo;</a></p>
         </div>
+      {% endif %}
       </div>
 {% endblock %}

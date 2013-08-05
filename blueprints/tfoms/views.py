@@ -18,6 +18,7 @@ from lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR, UploadWorker, R
 from models import Template, TagsTree, StandartTree, TemplateType, DownloadType, ConfigVariables
 from utils import save_template_tag_tree, save_new_template_tree
 from application.database import db
+from application.utils import admin_permission
 
 
 PER_PAGE = 20
@@ -142,6 +143,7 @@ def report_cases(bill_id, page):
 
 
 @module.route('/settings/', methods=['GET', 'POST'])
+@admin_permission.require(http_exception=403)
 def settings():
     try:
         class ConfigVariablesForm(Form):
@@ -173,6 +175,7 @@ def settings():
 
 
 @module.route('/settings_template/<string:template_type>/<int:id>', methods=['GET', 'POST'])
+@admin_permission.require(http_exception=403)
 def settings_template(template_type='patient', id=0):
     try:
         template_type_id = TemplateType.query.filter_by(code=template_type).first().id
@@ -232,6 +235,7 @@ def settings_template(template_type='patient', id=0):
 @module.route('/settings_template/', methods=['GET', 'POST'])
 @module.route('/settings_template/<string:template_type>/', methods=['GET', 'POST'])
 @module.route('/settings_template/<string:template_type>/<string:action>', methods=['POST', 'GET'])
+@admin_permission.require(http_exception=403)
 def add_new_template(template_type="patients", action="add_new"):
     try:
         template_type_id = TemplateType.query.filter_by(code=template_type).first().id
@@ -275,6 +279,7 @@ def add_new_template(template_type="patients", action="add_new"):
 
 
 @module.route('/settings_template/<string:template_type>/<string:action>/<int:id>', methods=['POST', 'GET'])
+@admin_permission.require(http_exception=403)
 def delete_template(action='delete_template', template_type='patient', id=id):
     try:
         current_template = Template.query.filter_by(id=id).first()
@@ -287,6 +292,7 @@ def delete_template(action='delete_template', template_type='patient', id=id):
 
 
 @module.route('/settings_template/<string:template_type>/activate/', methods=['POST'])
+@admin_permission.require(http_exception=403)
 def activate(template_type):
     try:
         if request.form:
@@ -311,6 +317,7 @@ def activate(template_type):
 
     except TemplateNotFound:
         abort(404)
+
 
 @module.route('/<string:page>.html')
 def show_page(page):

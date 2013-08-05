@@ -12,7 +12,9 @@
                 </ul>
                 </div>
             </li>
-            <li{% if request.path == url_for('.settings') %} class="active"{% endif %}><a href="{{ url_for('.settings') }}">Настройки</a></li>
+            {%  if current_user.role == 'admin' %}
+              <li{% if request.path == url_for('.settings') %} class="active"{% endif %}><a href="{{ url_for('.settings') }}">Настройки</a></li>
+            {% endif %}
           </ul>
         </div>
       </div>

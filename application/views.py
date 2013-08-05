@@ -195,9 +195,8 @@ def delete_user(user_id):
 
 @app.errorhandler(403)
 def authorisation_failed(e):
-    flash(u'У вас недостаточно привелегий ')
-
-    return render_template('privileges.html')
+    flash(u'У вас недостаточно привилегий для доступа к функционалу')
+    return render_template('user/denied.html')
 
 
 #########################################
@@ -211,14 +210,15 @@ def load_user(user_id):
 @identity_loaded.connect_via(app)
 def on_identity_loaded(sender, identity):
     # Set the identity user object
-    identity.user = load_user(identity.id)
+    if identity.id:
+        identity.user = load_user(identity.id)
 
-    # Add the UserNeed to the identity
-    if hasattr(identity.user, 'id'):
-        identity.provides.add(UserNeed(identity.user.id))
+        # Add the UserNeed to the identity
+        if hasattr(identity.user, 'id'):
+            identity.provides.add(UserNeed(identity.user.id))
 
-    # Assuming the User model has a list of roles, update the
-    # identity with the roles that the user provides
-    if hasattr(identity.user, 'roles'):
-        for role in identity.user.roles:
-            identity.provides.add(RoleNeed(role.code))
+        # Assuming the User model has a list of roles, update the
+        # identity with the roles that the user provides
+        if hasattr(identity.user, 'roles'):
+            for role in identity.user.roles:
+                identity.provides.add(RoleNeed(role.code))
