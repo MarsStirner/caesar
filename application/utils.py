@@ -27,13 +27,17 @@ def create_config_func(module_name, config_table):
 
     return _config
 
-permissions = dict()
 with app.app_context():
+    permissions = dict()
     login_manager = LoginManager()
-    roles = db.session.query(Roles).all()
-    for role in roles:
-        permissions[role.code] = Permission(RoleNeed(role.code))
-        permissions[role.code].description = role.description
+    try:
+        roles = db.session.query(Roles).all()
+    except Exception, e:
+        print e
+    else:
+        for role in roles:
+            permissions[role.code] = Permission(RoleNeed(role.code))
+            permissions[role.code].description = role.description
 
 # TODO: разобратсья как покрасивше сделать
 admin_permission = permissions.get('admin')
