@@ -49,7 +49,7 @@
                     <td>{{ bill.download_file.DATA|datetimeformat('%d/%m/%Y') }}</td>
                     <td>{{ bill.download_file.FILENAME }}</td>
                     <td><a href="{{ url_for('.report_cases', bill_id=bill.id) }}">{{ bill.NSCHET }}</a></td>
-                    <td>{{ bill.cases.services|length }}</td>
+                    <td>{{ bill.cases|length }}</td>
                     <td>{{ data['num_services'][bill.id] }}</td>
                     <td>{{ bill.SUMMAV|float }}</td>
                     <td>{{ data['cases_sum'][bill.id]['confirmed'] }}</td>
