@@ -11,7 +11,7 @@
 
 ### Необходимое ПО, поставляемое с дистрибутивом ALTLinux
 
-* Python 2.6 и выше
+* Python 2.7
 * Web-Server Apache2 + apache2-mod_wsgi
 * zlib
 
