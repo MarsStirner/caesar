@@ -46,4 +46,4 @@ class Tariff(object):
         return result
 
     def send(self, data):
-        return self.client.send_tariffs(data)
+        return self.client.send_tariffs(data, _config('contract_id'))

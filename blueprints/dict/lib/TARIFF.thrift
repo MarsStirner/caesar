@@ -39,7 +39,8 @@ service TARIFFService{
 
     //Загрузка тарифов
     list<Result> updateTariffs(
-            1:list<Tariff> tariffs
+            1:list<Tariff> tariffs,
+            2:int contract_id
         )
         throws (1:InvalidArgumentException argExc, 2:SQLException sqlExc);
 }
