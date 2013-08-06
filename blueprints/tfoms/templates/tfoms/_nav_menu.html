@@ -11,10 +11,10 @@
             {%  if current_user.role == 'admin' %}
             <li>
                 <div class="dropdown">
-                <a id="drop1" class="dropdown-toggle" data-toggle="dropdown" role="button">Настройка <b class="caret"></b></a>
+                <a id="drop1" class="dropdown-toggle" data-toggle="dropdown" role="button">Настройки <b class="caret"></b></a>
                 <ul class="dropdown-menu" role="menu" aria-labelledby="drop1" >
                   <li role="presentation" {% if request.path == url_for('.add_new_template') %} class="active"{% endif %}><a href="{{ url_for('.add_new_template') }}">Шаблоны</a></li>
-                  <li role="presentation" {% if request.path == url_for('.settings') %} class="active"{% endif %}><a href="{{ url_for('.settings') }}">Общие настройки</a></li>
+                  <li role="presentation" {% if request.path == url_for('.settings') %} class="active"{% endif %}><a href="{{ url_for('.settings') }}">Настройки модуля</a></li>
                 </ul>
                 </div>
             </li>
