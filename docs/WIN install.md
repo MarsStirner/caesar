@@ -29,7 +29,7 @@ lower_case_table_names=2
 ```
 * Создать новую БД, например с именем: caesar.
 * Установить Apache
-* Скачать модуль mod_wsgi, скопиррвать в директорию модулей Apache2.2/modules, подключить модуль в конфиге Apache2.2/conf/httpd.conf:
+* Скачать модуль mod_wsgi, скопировать в директорию модулей Apache2.2/modules, подключить модуль в конфиге Apache2.2/conf/httpd.conf:
 
 ```
 LoadModule mod_wsgi modules/mod_wsgi.so
