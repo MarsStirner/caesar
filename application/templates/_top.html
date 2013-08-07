@@ -3,27 +3,27 @@
     <div class="container nav-collapse collapse">
         <ul class="nav">
           <li>
-            <a href="/" title="Главная страница"><i class="icon-home icon-white"></i></a>
+              <div class="btn-group">
+                <a class="btn btn-small btn-inverse" href="/" title="Главная страница"><i class="icon-home icon-white"></i></a>
+              {% for item in main_menu %}
+                <a class="btn btn-small btn-inverse{% if request.blueprint == item.module %}{% endif %}" href="{{ url_for(item.module + '.index') }}" title="{{ item.name }}">{{ item.name }}</a>
+              {% endfor %}
+              </div>
           </li>
-          {% for item in main_menu %}
-          <li{% if request.blueprint == item.module %} class="active"{% endif %}>
-            <a href="{{ url_for(item.module + '.index') }}" title="{{ item.name }}">{{ item.name }}</a>
-          </li>
-          {% endfor %}
         </ul>
         <ul class="nav pull-right">
         {%  if current_user.role == 'admin' %}
           <li>
               <div class="btn-group">
-                <a id="drop_set" class="btn btn-small"  href="{{ url_for('users') }}" title="Пользователи"><i class="icon-user"></i></a>
-                <a id="drop_set" class="btn btn-small"  href="{{ url_for('settings') }}" title="Настройки"><i class="icon-wrench"></i></a>
+                <a id="drop_set" class="btn btn-small btn-inverse"  href="{{ url_for('users') }}" title="Пользователи"><i class="icon-user icon-white"></i></a>
+                <a id="drop_set" class="btn btn-small btn-inverse"  href="{{ url_for('settings') }}" title="Настройки"><i class="icon-wrench icon-white"></i></a>
               </div>
           </li>
         {% endif %}
           <li class="divider-vertical"></li>
           <li>
               <div class="btn-group">
-                <a class="btn btn-small" href="{{ url_for('logout') }}" title="Выйти"><i class="icon-ban-circle"></i></a>
+                <a class="btn btn-small btn-inverse" href="{{ url_for('logout') }}" title="Выйти"><i class="icon-ban-circle icon-white"></i></a>
               </div>
           </li>
         </ul>
