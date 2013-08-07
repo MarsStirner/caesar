@@ -6,10 +6,9 @@
   </head>
   <body>
   <div id="wrap">
+
   {% include '_top.html' %}
-{#  <div class="container">#}
-{#  {% include '_nav_menu.html' %}#}
-{#  </div>#}
+
   <div id="container" class="container">
 
     {% block content %}
@@ -21,10 +20,11 @@
       </div>
 
       {% endblock %}
+
    </div> <!-- /container -->
-   <div id="push">
-   </div>
+   <div id="push"></div>
   </div>
+
   {% include '_bottom.html' %}
   {% include '_footer.html' %}
   {% block modules_js %}{% endblock %}

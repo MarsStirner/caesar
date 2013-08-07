@@ -7,10 +7,10 @@ typedef i16 tinyint
 
 struct Tariff{
 	1:required int number;
-	2:required string C_TAR;
-	3:required int SUMM_TAR;
-	4:required timestamp DATE_B;
-	5:required timestamp DATE_E;
+	2:required string c_tar;
+	3:required double summ_tar;
+	4:required timestamp date_b;
+	5:required timestamp date_e;
 }
 
 struct Error{
@@ -20,7 +20,7 @@ struct Error{
 
 struct Result{
     1:required int number;
-	2:required string C_TAR;
+	2:required string c_tar;
 	3:optional Error error;
 }
 
@@ -39,7 +39,8 @@ service TARIFFService{
 
     //Загрузка тарифов
     list<Result> updateTariffs(
-            1:list<Tariff> tariff
+            1:list<Tariff> tariffs,
+            2:int contract_id
         )
         throws (1:InvalidArgumentException argExc, 2:SQLException sqlExc);
 }

@@ -7,9 +7,19 @@ from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
 from ..app import module
 from ..models import ConfigVariables
 from application.database import db
+from application.utils import admin_permission
+
+
+@module.route('/')
+def index():
+    try:
+        return render_template('dict/index.html')
+    except TemplateNotFound:
+        abort(404)
 
 
 @module.route('/settings/', methods=['GET', 'POST'])
+@admin_permission.require(http_exception=403)
 def settings():
     try:
         class ConfigVariablesForm(Form):
@@ -36,6 +46,6 @@ def settings():
             db.session.commit()
             return redirect(url_for('.settings'))
 
-        return render_template('settings.html', form=form)
+        return render_template('dict/settings.html', form=form)
     except TemplateNotFound:
         abort(404)

@@ -29,11 +29,11 @@ class TARIFFClient(object):
     def __del__(self):
         self.transport.close()
 
-    def send_tariffs(self, data):
+    def send_tariffs(self, data, contract_id):
         """Отправка тарифов"""
         result = None
         try:
-            result = self.client.updateTariffs(tariff=data)
+            result = self.client.updateTariffs(tariffs=data, contract_id=contract_id)
         except InvalidArgumentException, e:
             print e
         except SQLException, e:

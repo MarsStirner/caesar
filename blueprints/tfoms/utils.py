@@ -2,7 +2,10 @@
 import re
 
 from application.database import db
-from models import TagsTree
+from application.utils import create_config_func
+from .models import TagsTree
+from .models import ConfigVariables
+from .config import MODULE_NAME
 
 
 def save_template_tag_tree(data, current_template_id):
@@ -108,3 +111,6 @@ def save_new_template_tree(template_id, data):
                 new_tag_tree_item.tag_id = int(match.group(2))
                 new_tag_tree_item.ordernum = ordernum
                 db.session.commit()
+
+
+_config = create_config_func(MODULE_NAME, ConfigVariables)

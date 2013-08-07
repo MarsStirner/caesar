@@ -1,7 +1,6 @@
 <div class="navbar navbar-inverse navbar-fixed-top">
   <div class="navbar-inner">
-    <div class="container">
-      <div class="nav-collapse collapse">
+    <div class="container nav-collapse collapse">
         <ul class="nav">
           <li>
             <a href="/" title="Главная страница"><i class="icon-home icon-white"></i></a>
@@ -12,7 +11,22 @@
           </li>
           {% endfor %}
         </ul>
-      </div>
+        <ul class="nav pull-right">
+        {%  if current_user.role == 'admin' %}
+          <li>
+              <div class="btn-group">
+                <a id="drop_set" class="btn btn-small"  href="{{ url_for('users') }}" title="Пользователи"><i class="icon-user"></i></a>
+                <a id="drop_set" class="btn btn-small"  href="{{ url_for('settings') }}" title="Настройки"><i class="icon-wrench"></i></a>
+              </div>
+          </li>
+        {% endif %}
+          <li class="divider-vertical"></li>
+          <li>
+              <div class="btn-group">
+                <a class="btn btn-small" href="{{ url_for('logout') }}" title="Выйти"><i class="icon-ban-circle"></i></a>
+              </div>
+          </li>
+        </ul>
     </div>
   </div>
 </div>

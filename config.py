@@ -13,7 +13,10 @@ DB_PASSWORD = 'db_password'
 DB_NAME = 'db_name'
 DB_CONNECT_OPTIONS = ''
 
-SYSTEM_USER = ''
+SERVER_HOST = '127.0.0.1'
+SERVER_PORT = 5000
+
+SYSTEM_USER = 'caesar'
 
 CSRF_ENABLED = True
 SECRET_KEY = ''
