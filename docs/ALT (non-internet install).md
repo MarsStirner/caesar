@@ -1,8 +1,7 @@
-Интеграционный сервер (ИС)
+Система администрирования ЛПУ
 =================
 
-Интеграционный сервер обеспечивает взаимодействие между различными ТМИС.
-Для установки ИС ознакомьтесь с системными требованиями и инструкцией, указанными ниже.
+Для установки системы администрирования ознакомьтесь с техническими требованиями и инструкцией, указанными ниже.
 
 Системные требования
 -----------
@@ -35,8 +34,11 @@ apt-get upgrade
  * kernel-headers-common
  * libmprf
  * tzdata
-* MySQL 5 (MySQL-server, MySQL-client) ```apt-get install MySQL-server``` ```apt-get install MySQL-client```
-* python-module-MySQLdb ```apt-get install python-module-MySQLdb```
+* СУБД
+ * MySQL 5 (MySQL-server, MySQL-client) ```apt-get install MySQL-server``` ```apt-get install MySQL-client```
+   * python-module-MySQLdb ```apt-get install python-module-MySQLdb```
+ * или
+ * PostgreSQL ```apt-get install postgresql-server postgresql-client postgresql-contrib``` (руководство по первоначальной установке PostgreSQL можно найти в Интернете)
 * libxml2-devel ```apt-get install libxml2-devel```
 * libxslt-devel ```apt-get install libxslt-devel```
  * libxslt
@@ -47,7 +49,7 @@ apt-get upgrade
 **Во вложенных пунктах указаны зависимости, которые потребуется разрешить**
 
 
-Установка ИС
+Установка
 -----------
 
 Описанная ниже установка и настройка ПО производится из консоли Linux. Используется root-доступ.
@@ -59,7 +61,7 @@ apt-get upgrade
 apt-get install python-module-virtualenv
 ```
 
-Используем директорию /srv/ для обеспечения защищенной установки ИС. Вместо /srv можно использовать любую удобную директорию на сервере (например, /var/www/webapps).
+Используем директорию /srv/ для обеспечения защищенной установки. Вместо /srv можно использовать любую удобную директорию на сервере (например, /var/www/webapps).
 
 При этом, следуя инструкции, необходимо подразумевать, что вместо /srv необходимо указывать Вашу директорию.
 
@@ -88,12 +90,22 @@ source .virtualenv/bin/activate
 
 **Перечень модулей для установки**
 
+* distribute (https://pypi.python.org/pypi/distribute/)
+* setuptools (https://pypi.python.org/pypi/setuptools/)
+* lxml (https://pypi.python.org/pypi/lxml/)
+* Модуль для работы с СУБД:
+ * mysql-python (https://pypi.python.org/pypi/MySQL-python/) - для MySQL
+ * или
+ * psycopg2 (https://pypi.python.org/pypi/psycopg2/) - для PostgreSQL
+* MarkupSafe (https://pypi.python.org/pypi/MarkupSafe/)
+* Mako (https://pypi.python.org/pypi/Mako/)
+* itsdangerous (https://pypi.python.org/pypi/itsdangerous/)
 * fabric (https://pypi.python.org/pypi/Fabric/)
- * pycrypto>=2.6 (https://pypi.python.org/pypi/pycrypto/)
- * paramiko>=1.10.1 (https://pypi.python.org/pypi/paramiko/)
+ * pycrypto (https://pypi.python.org/pypi/pycrypto/)
+ * paramiko (https://pypi.python.org/pypi/paramiko/)
 * Flask (https://pypi.python.org/pypi/Flask/)
- * Jinja2>=2.4 (https://pypi.python.org/pypi/Jinja2/)
- * Werkzeug>=0.7 (https://pypi.python.org/pypi/Werkzeug/)
+ * Jinja2 (https://pypi.python.org/pypi/Jinja2/)
+ * Werkzeug (https://pypi.python.org/pypi/Werkzeug/)
 * WTForms (https://pypi.python.org/pypi/WTForms/)
 * Flask-WTF (https://pypi.python.org/pypi/Flask-WTF/)
 * Flask-Admin (https://pypi.python.org/pypi/Flask-Admin/)
@@ -101,77 +113,66 @@ source .virtualenv/bin/activate
  * speaklater (https://pypi.python.org/pypi/speaklater/)
  * pytz (https://pypi.python.org/pypi/pytz/)
  * Babel (https://pypi.python.org/pypi/Babel/)
-* Celery (https://pypi.python.org/pypi/celery/)
- * amqp (https://pypi.python.org/pypi/amqp/)
- * python-dateutil (https://pypi.python.org/pypi/python-dateutil/)
- * billiard (https://pypi.python.org/pypi/billiard/)
- * ordereddict (https://pypi.python.org/pypi/ordereddict/)
- * importlib (https://pypi.python.org/pypi/importlib/)
- * kombu (https://pypi.python.org/pypi/kombu/)
- * anyjson (https://pypi.python.org/pypi/anyjson/)
- * six (https://pypi.python.org/pypi/six/)
-* supervisor
- * meld3 (https://pypi.python.org/pypi/meld3/)
-* spyne (https://pypi.python.org/pypi/spyne/)
 * SQLAlchemy (https://pypi.python.org/pypi/SQLAlchemy/)
+* Flask-SQLAlchemy (https://pypi.python.org/pypi/Flask-SQLAlchemy/)
+* Flask-Login (https://pypi.python.org/pypi/Flask-Login/)
+* blinker (https://pypi.python.org/pypi/blinker/)
+* Flask-Principal (https://pypi.python.org/pypi/Flask-Principal/)
 * suds (https://pypi.python.org/pypi/suds/)
 * simplejson (https://pypi.python.org/pypi/simplejson/)
 * thrift (https://pypi.python.org/pypi/thrift/)
-* lxml (https://pypi.python.org/pypi/lxml/)
-* python-hl7 (https://pypi.python.org/pypi/hl7/)
+* selenium (https://pypi.python.org/pypi/selenium/)
+* patool (https://pypi.python.org/pypi/patool/)
+* dbf (https://pypi.python.org/pypi/dbf/)
+* alembic (https://pypi.python.org/pypi/alembic/)
 
-#### Перенос исходников ИС на сервер
+Если возникнет ошибка в разрешении зависимостей для одного из модулей, найти необходимый модуль на https://pypi.python.org/pypi/, скачать и установить его.
 
-Распаковать архив https://github.com/KorusConsulting/sobiralka/archive/master.zip в директорию проекта (/srv/my_project)
+#### Перенос исходных кодов на сервер
 
+Распаковать архив https://github.com/KorusConsulting/caesar/archive/master.zip в директорию проекта (/srv/my_project)
 
-Настройка конфига ИС
+Настройка конфига
 -----------
 
-Необходимо переопределить константы в файле settings_local.py в корне ИС
+Переименовать файл config_local.py_mysql (для MySQL-версии) или config_local.py_psql (для PostgreSQL-версии) в config_local.py и заменить в нем значения настроек на актуальные, например:
+
 ```
 #Параметры подключения к БД
 DB_HOST = 'localhost'
 DB_PORT = 3306
-DB_USER = 'soap_user'
+DB_USER = 'caesar'
 DB_PASSWORD = 'q1w2e3r4t5'
-DB_NAME = 'soap_new'
+DB_NAME = 'caesar'
 
 #Системный пользователь, от которого будет запускаться вэб-сервер
-SYSTEM_USER = 'is_user'
+SYSTEM_USER = 'caesar'
 
-#Хост и порт, по которым будет доступе ИС
-SOAP_SERVER_HOST = '127.0.0.1'
-SOAP_SERVER_PORT = 9910
-
-#Хост, по которому будет доступен административный интерфейс ИСа
-SOAP_ADMIN_HOST = '127.0.0.1'
-
-EPGU_SERVICE_URL = 'http://adapter-fer.rosminzdrav.ru/misAdapterService/ws/MisAdapterService?wsdl'
+#Хост и порт, по которым будет доступна система
+SERVER_HOST = '127.0.0.1'
+SERVER_PORT = 5000
 ```
 
-### Автоматическая установка ИС
+### Автоматическая установка
 
 ```
 fab alt_deploy
 ```
-В процессе установки потребуется ввести логин/пароль администратора MySQL, из-под которого будет создан пользователь БД для ИС.
 
-Настройка ИС
+В процессе установки может потребоваться ввести логин/пароль администратора MySQL, из-под которого будет создан пользователь БД.
+
+Настройка системы
 -----------
-* Зайти в административный интерфейс:
-http://IP_ADSRESS:8888/admin/
-* Перейти в интерфейс управления Регионами:
-http://IP_ADSRESS:8888/admin/regionsview/
 
-Заполнить необходимую информацию о Регионах, с которыми будет взаимодействовать ИС
-* Перейти в интерфейс управления списком ЛПУ:
-http://IP_ADSRESS:8888/admin/lpuview/
+При установке системы автоматически создаётся два аккаунта:
+* Администратора (Логин: admin / Пароль: admin)
+* Пользователя (Логин: user / Пароль: user)
 
-Заполнить необходимую информацию о компонентах связи ЛПУ (КС), с которыми будет взаимодействовать ИС
+* Зайти в интерфейс настроек, залогинившись под администратором:
+http://%SERVER_HOST%:%SERVER_POR%T/settings/
 
-**Импортирование данных в БД ИС из БД указанных КС**
+И заполнить значения конфигурационных параметров.
 
-```
-fab update_db
-```
+В каждом из модулей в настройках необходимо прописать адрес соответствующего вэб-сервиса в ядре, а также задать конфигурационные значения.
+
+В настройки модуля можно попасть из меню модуля.

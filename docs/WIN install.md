@@ -7,13 +7,14 @@
 -----------
 
 * ОС Windows
-* Python 2.7 (http://www.python.org/download/)
+* Python 2.7.5 (http://www.python.org/download/)
 * MySQL 5 (http://dev.mysql.com/downloads/installer/)
 * Web-Server Apache2.2 (http://www.sai.msu.su/apache/dist/httpd/binaries/win32/) + mod_wsgi (http://code.google.com/p/modwsgi/wiki/DownloadTheSoftware)
 * git (http://git-scm.com/download/win)
-* Twisted (http://twistedmatrix.com/Releases/Twisted/12.3/Twisted-12.3.0.win32-py2.7.msi)
 
 Под windows используются только 32-bit версии
+
+```Команды выполняются в консоли (cmd)```
 
 Установка
 -----------
@@ -24,7 +25,7 @@
 ```
 lower_case_table_names=2
 ```
-* Создать новую БД, например с именем: soap.
+* Создать новую БД, например с именем: caesar.
 * Установить Apache
 * Скачать модуль mod_wsgi, скопиррвать в директорию модулей Apache2.2/modules, подключить модуль в конфиге Apache2.2/conf/httpd.conf:
 
@@ -38,7 +39,9 @@ LoadModule mod_wsgi modules/mod_wsgi.so
 set PYTHONPATH=%PYTHONPATH%;D:\Python27;D:\Python27\Scripts
 set PATH=%PATH%;%PYTHONPATH%
 ```
-* Установить Twisted (http://twistedmatrix.com/Releases/Twisted/12.3/Twisted-12.3.0.win32-py2.7.msi)
+
+### Установка с использованием pip (Internet)
+
 
 * Установить setup_tools (https://pypi.python.org/pypi/setuptools/0.6c11#downloads)
 
@@ -73,7 +76,7 @@ venv\Scripts\activate
 * Клонировать репозиторий из git, для этого в директории проекта вызвать из контекстного меню Git Bash и выполнить команду:
 
 ```
-git clone https://github.com/KorusConsulting/sobiralka.git code
+git clone https://github.com/KorusConsulting/caesar.git code
 ```
 
 * Установить зависимости через командную строку:
@@ -82,12 +85,71 @@ git clone https://github.com/KorusConsulting/sobiralka.git code
 pip install -r code\requirements.txt
 ```
 
+### Установка пакетов вручную
+
+**Создание и активация виртуального окружения**
+
+* Устанавливаем virtualenv (https://pypi.python.org/pypi/virtualenv/)
+    * Распаковываем архив и переходим в директорию модуля
+    * Выполняем из консоли ```python setup.py install```
+* Создаём и активируем виртуальное окружение
+
+```
+virtualenv venv
+venv\Scripts\activate
+```
+
+Далее Python-пакеты будут устанавливаться в активированное виртуальное окружение.
+
+**Общий принцип установки python-модулей**
+
+* Заливаем во временную директорию архив модуля, скаченный с https://pypi.python.org/
+* Распаковываем архив и переходим в директорию модуля
+* Выполняем из консоли ```python setup.py install```
+
+**Перечень модулей для установки**
+
+* distribute (https://pypi.python.org/pypi/distribute/)
+* setuptools (https://pypi.python.org/pypi/setuptools/)
+* lxml (https://pypi.python.org/pypi/lxml/)
+* mysql-python (https://pypi.python.org/pypi/MySQL-python/)
+* MarkupSafe (https://pypi.python.org/pypi/MarkupSafe/)
+* Mako (https://pypi.python.org/pypi/Mako/)
+* itsdangerous (https://pypi.python.org/pypi/itsdangerous/)
+* fabric (https://pypi.python.org/pypi/Fabric/)
+ * pycrypto (https://pypi.python.org/pypi/pycrypto/)
+ * paramiko (https://pypi.python.org/pypi/paramiko/)
+* Flask (https://pypi.python.org/pypi/Flask/)
+ * Jinja2 (https://pypi.python.org/pypi/Jinja2/)
+ * Werkzeug (https://pypi.python.org/pypi/Werkzeug/)
+* WTForms (https://pypi.python.org/pypi/WTForms/)
+* Flask-WTF (https://pypi.python.org/pypi/Flask-WTF/)
+* Flask-Admin (https://pypi.python.org/pypi/Flask-Admin/)
+* Flask-BabelEx (https://pypi.python.org/pypi/Flask-BabelEx/)
+ * speaklater (https://pypi.python.org/pypi/speaklater/)
+ * pytz (https://pypi.python.org/pypi/pytz/)
+ * Babel (https://pypi.python.org/pypi/Babel/)
+* SQLAlchemy (https://pypi.python.org/pypi/SQLAlchemy/)
+* Flask-SQLAlchemy (https://pypi.python.org/pypi/Flask-SQLAlchemy/)
+* Flask-Login (https://pypi.python.org/pypi/Flask-Login/)
+* blinker (https://pypi.python.org/pypi/blinker/)
+* Flask-Principal (https://pypi.python.org/pypi/Flask-Principal/)
+* suds (https://pypi.python.org/pypi/suds/)
+* simplejson (https://pypi.python.org/pypi/simplejson/)
+* thrift (https://pypi.python.org/pypi/thrift/)
+* selenium (https://pypi.python.org/pypi/selenium/)
+* patool (https://pypi.python.org/pypi/patool/)
+* dbf (https://pypi.python.org/pypi/dbf/)
+* alembic (https://pypi.python.org/pypi/alembic/)
+
+Если возникнет ошибка в разрешении зависимостей для одного из модулей, найти необходимый модуль на https://pypi.python.org/pypi/, скачать и установить его.
+
+
 Настройка серверного окружения
 -----------
 
 * Конфигурирование виртуальных хостов Apache (Apache2.2/conf/extra/httpd-vhosts.conf), секция Virtual Hosts, добавить следующие конфигурации:
 
-Конфигурирация для ИС:
 
 ```
 Listen %SERVER_HOST%:%SERVER_PORT%
@@ -137,11 +199,11 @@ DB_NAME = 'caesar'
 #Системный пользователь, от которого будет запускаться вэб-сервер
 SYSTEM_USER = 'caesar'
 
-#Хост и порт, по которым будет доступен ИС
+#Хост и порт, по которым будет доступна система
 SERVER_HOST = '127.0.0.1'
-SERVER_PORT = 9910
+SERVER_PORT = 5000
 ```
-Параметры подключения к БД соответствуют параметрам, установленным при создании БД для ИС.
+Параметры подключения к БД соответствуют параметрам, установленным при создании БД.
 
 SERVER_HOST и SERVER_PORT - должны соответствовать %SERVER_HOST% и %SERVER_PORT%, указанным в конфиге апача
 
