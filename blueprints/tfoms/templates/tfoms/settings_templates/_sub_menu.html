@@ -1,4 +1,4 @@
-<ul class="nav nav-tabs">
+<ul class="nav nav-tabs" id="tpl_types">
     <li{% if request.path == url_for('.add_new_template', template_type='patients')  or
     request.path == url_for('.add_new_template') or
     request.path == url_for('.settings_template', template_type='patients', id=request.view_args.get('id', 0)) or

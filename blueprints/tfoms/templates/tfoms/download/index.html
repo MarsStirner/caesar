@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'tfoms/base.html' %}
 
 {% block title %}> {{ module_name }} > Формирование реестров{% endblock %}
 
@@ -13,8 +13,8 @@
     {% include 'tfoms/_nav_menu.html' %}
         <legend>Формирование реестров, предназначенных для выгрузки в ТФОМС</legend>
         <ul class="nav nav-tabs">
-            <li{% if request.path == url_for('.download', template_type='xml') or request.path == url_for('.download') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='xml') }}">Выгрузка сведений в формате XML</a></li>
-            <li{% if request.path == url_for('.download', template_type='dbf') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='dbf') }}">Выгрузка  сведений в формате DBF</a></li>
+            <li{% if request.path == url_for('.download', template_type='xml') or request.path == url_for('.download') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='xml') }}" id="download_xml">Выгрузка сведений в формате XML</a></li>
+            <li{% if request.path == url_for('.download', template_type='dbf') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='dbf') }}" id="download_dbf">Выгрузка  сведений в формате DBF</a></li>
         </ul>
         <form class="form-horizontal" id="download_form">
             <legend><small>Укажите параметры выгрузки</small></legend>
@@ -23,7 +23,7 @@
                 <div class="alert alert-error hidden">
                   <strong>Внимание!</strong> <span id="error_text"></span>
                 </div>
-                <div class="control-group">
+                <div class="control-group" id="download_dates">
                     <label class="control-label">Отчетный период:</label>
                     <div class="controls">
                         <div class="input-prepend">
@@ -36,7 +36,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="control-group">
+                <div class="control-group" id="download_templates">
                     <label class="control-label">Формировать:</label>
                     <div class="controls well well-small">
                         {% for template in templates %}
@@ -52,13 +52,14 @@
                 </div>
             </div>
         </form>
-<div id="download_result">
+<div id="download_result" class="hide">
 <legend>Скачивание файлов</legend>
 <div id="result"></div>
 </div>
 <div class="loader"></div>
 {% endblock %}
 {% block modules_js %}
+{{ super() }}
 <script src="{{ url_for('static', filename='jquery-ui/js/jquery-ui-1.10.2.custom.min.js') }}"></script>
 <script src="{{ url_for('static', filename='jquery-ui/js/i18n/jquery.ui.datepicker-ru.js') }}"></script>
 <script type="text/javascript">

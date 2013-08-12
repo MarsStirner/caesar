@@ -4,6 +4,7 @@ import exceptions
 from datetime import date
 from zipfile import ZipFile, ZIP_DEFLATED
 import dbf
+from flask import current_app
 from jinja2 import Environment, PackageLoader
 from application.database import db
 from service_client import TFOMSClient as Client
@@ -33,6 +34,11 @@ class Patients(object):
 
     def __init__(self, start, end, infis_code, tags):
         self.client = Client(_config('core_service_url'))
+        if current_app.debug:
+            try:
+                self.client.prepare_tables()
+            except Exception, e:
+                print e
         self.start = start
         self.end = end
         self.infis_code = infis_code

@@ -12,18 +12,24 @@
           </li>
         </ul>
         <ul class="nav pull-right">
-        {%  if current_user.role == 'admin' %}
           <li>
               <div class="btn-group">
-                <a id="drop_set" class="btn btn-small btn-inverse"  href="{{ url_for('users') }}" title="Пользователи"><i class="icon-user icon-white"></i></a>
-                <a id="drop_set" class="btn btn-small btn-inverse"  href="{{ url_for('settings') }}" title="Настройки"><i class="icon-wrench icon-white"></i></a>
+                <a class="btn btn-small btn-inverse" href="javascript:startIntro();" title="Помощь"><i class="icon-question-sign icon-white"></i></a>
+              </div>
+          </li>
+        {%  if current_user.role == 'admin' %}
+          <li class="divider-vertical"></li>
+          <li>
+              <div class="btn-group">
+                <a id="users" class="btn btn-small btn-inverse"  href="{{ url_for('users') }}" title="Пользователи"><i class="icon-user icon-white"></i></a>
+                <a id="gen_settings" class="btn btn-small btn-inverse"  href="{{ url_for('settings') }}" title="Настройки"><i class="icon-wrench icon-white"></i></a>
               </div>
           </li>
         {% endif %}
           <li class="divider-vertical"></li>
           <li>
               <div class="btn-group">
-                <a class="btn btn-small btn-inverse" href="{{ url_for('logout') }}" title="Выйти"><i class="icon-ban-circle icon-white"></i></a>
+                <a id="logout" class="btn btn-small btn-inverse" href="{{ url_for('logout') }}" title="Выйти"><i class="icon-ban-circle icon-white"></i></a>
               </div>
           </li>
         </ul>

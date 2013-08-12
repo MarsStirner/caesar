@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'tfoms/base.html' %}
 
 {% block title %}> {{ module_name }} > Настройки{% endblock %}
 
@@ -9,9 +9,9 @@
 {% block content %}
 
     {% include 'tfoms/_nav_menu.html' %}
+        <legend>Настройки</legend>
         <form class="form-horizontal" method="post">
             {{ form.hidden_tag() }}
-            <legend>Настройки</legend>
 
             {% for field in form %}
                 {% if field.type != "CSRFTokenField" %}

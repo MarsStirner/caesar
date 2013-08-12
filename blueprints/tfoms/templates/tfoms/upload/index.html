@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'tfoms/base.html' %}
 
 {% block title %}> {{ module_name }} > Загрузка реестров{% endblock %}
 
@@ -31,6 +31,8 @@
 <div class="loader"></div>
 {% endblock %}
 {% block modules_js %}
+{{ super() }}
+
 <script src="{{ url_for('.static', filename='js/jquery_file_upload/js/vendor/jquery.ui.widget.js') }}"></script>
 <script src="{{ url_for('.static', filename='js/jquery_file_upload/js/jquery.iframe-transport.js') }}"></script>
 <script src="{{ url_for('.static', filename='js/jquery_file_upload/js/jquery.fileupload.js') }}"></script>
