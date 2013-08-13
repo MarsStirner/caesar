@@ -369,7 +369,8 @@ class XML(object):
         self.file_name += '01'
 
     def generate_file(self, tags_tree, data):
-        env = Environment(loader=PackageLoader(module.import_name, module.template_folder))
+        env = Environment(loader=PackageLoader(module.import_name,
+                                               module.template_folder))
         env.filters['datetimeformat'] = datetimeformat
 
         template = env.get_template(self.template)
@@ -379,13 +380,13 @@ class XML(object):
                          DATA=date.today().strftime('%Y-%m-%d'),
                          FILENAME=self.file_name,
                          FILENAME1=linked_file.file_name)
-        return template.render(head=self.head, tags_tree=tags_tree, data=data)
+        return template.render(encoding=_config('xml_encoding'), head=self.head, tags_tree=tags_tree, data=data)
 
     def save_file(self, tags_tree, data):
         self.generate_filename()
         content = self.generate_file(tags_tree, data)
         f = open(os.path.join(DOWNLOADS_DIR, '%s.xml' % self.file_name), 'w')
-        f.write(content.encode('utf-8'))
+        f.write(content.encode(_config('xml_encoding')))
         f.close()
         return '%s.xml' % self.file_name
 

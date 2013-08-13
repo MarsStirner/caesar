@@ -5,7 +5,7 @@ from datetime import datetime
 
 from flask import render_template, abort, request, redirect, jsonify, send_from_directory, url_for, json, current_app
 from flask import flash
-from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
+from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required, SelectField
 from flask.ext.sqlalchemy import Pagination
 
 from jinja2 import TemplateNotFound, Environment, PackageLoader
@@ -23,6 +23,7 @@ from application.utils import admin_permission
 
 
 PER_PAGE = 20
+xml_encodings = ['windows-1251', 'utf-8']
 
 
 @module.route('/')
@@ -161,6 +162,14 @@ def settings():
                 setattr(ConfigVariablesForm, variable.code, IntegerField(variable.code,
                                                                          validators=[Required()], default="",
                                                                          description=variable.name))
+            elif variable.value_type == "enum" and variable.code == 'xml_encoding':
+                setattr(ConfigVariablesForm,
+                        variable.code,
+                        SelectField(variable.code,
+                                    description=variable.name,
+                                    choices=[(choice, choice) for choice in xml_encodings],
+                                    default=variable.value))
+
         form = ConfigVariablesForm()
         for variable in variables:
             form[variable.code].value = variable.value
