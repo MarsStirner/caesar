@@ -11,6 +11,8 @@
                     <{{ node.tag.code }}>
                         {%- if node.tag.code == 'ID_PAC' -%}
                             {{ person|attr('patientId') }}
+                        {%- elif node.tag.code == 'SNILS' and person|attr(node.tag.code) -%}
+                            {{ person|attr(node.tag.code)|wordwrap(3, wrapstring="-") }}
                         {%- elif person|attr(node.tag.code) -%}
                             {%- if node.tag.code in ['DR'] -%}
                                 {{ person|attr(node.tag.code)|datetimeformat('%Y-%m-%d') }}

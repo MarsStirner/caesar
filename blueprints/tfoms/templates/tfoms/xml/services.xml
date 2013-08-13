@@ -42,7 +42,11 @@
                                                     {%- elif service_field.tag.code == 'DATE_OUT' -%}
                                                         <{{ service_field.tag.code }}>{{ event|attr('DATE_2') }}</{{ service_field.tag.code }}>
                                                     {%- elif service_field.tag.code == 'CODE_MD' -%}
-                                                        <{{ service_field.tag.code }}>{{ event|attr('IDDOKT') }}</{{ service_field.tag.code }}>
+                                                        <{{ service_field.tag.code }}>
+                                                        {%- if event|attr('IDDOKT') -%}
+                                                            {{ event|attr('IDDOKT')|wordwrap(3, wrapstring="-") }}
+                                                        {%- endif -%}
+                                                        </{{ service_field.tag.code }}>
                                                     {%- elif service|attr(service_field.tag.code) is defined -%}
                                                         <{{ service_field.tag.code }}>{{ service|attr(service_field.tag.code) }}</{{ service_field.tag.code }}>
                                                     {%- elif event|attr(service_field.tag.code) is defined -%}
@@ -57,6 +61,12 @@
                                             <{{ event_field.tag.code }}/>
                                         {%- elif event_field.tag.code == 'DET' and event|attr(event_field.tag.code) is defined -%}
                                             <{{ event_field.tag.code }}>{{ event|attr('DET')|int }}</{{ event_field.tag.code }}>
+                                        {%- elif event_field.tag.code == 'IDDOKT' -%}
+                                            <{{ event_field.tag.code }}>
+                                            {%- if event|attr('IDDOKT') -%}
+                                                {{ event|attr('IDDOKT')|wordwrap(3, wrapstring="-") }}
+                                            {%- endif -%}
+                                            </{{ event_field.tag.code }}>
                                         {%- else -%}
                                             <{{ event_field.tag.code }}>{{ event|attr(event_field.tag.code) if event|attr(event_field.tag.code) != None }}</{{ event_field.tag.code }}>
                                         {%- endif -%}
