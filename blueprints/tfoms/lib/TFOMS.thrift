@@ -19,13 +19,12 @@ struct Spokesman{
 //Данные о пациенте
 struct Patient{
 	//Данные для тега PERS
-	1:required int patientId = -1; 
-	
-	2:required string FAM = "";
-	3:required string IM = "";
-	4:required string OT = "";
-	5:required timestamp DR = -1;
-	6:required tinyint W = -1;
+	1:required int patientId = -1; 	
+	2:required string FAM;
+	3:required string IM;
+	4:required string OT;
+	5:required timestamp DR;
+	6:required tinyint W;
 	7:optional string SNILS;
 	8:optional string MR;
 	9:optional string OKATOG;
@@ -35,7 +34,7 @@ struct Patient{
 	13:optional string DOCSER;
 	14:optional string DOCNUM;
 	// Данные для тега PATIENT
-	15:required tinyint VPOLIS  = -1;
+	15:required tinyint VPOLIS = -1;
 	16:optional string SPOLIS;
 	17:required string NPOLIS = "";
 	18:required string SMO = "";
@@ -50,28 +49,28 @@ struct Patient{
 //Данные о услуге
 struct Usl{
 	1:required int IDSERV = -1;
-	2:required string CODE_USL = "";
+	2:required string CODE_USL;
 	3:required double KOL_USL = -1.0;
 	4:required double TARIF = -1.0;
-	//Ве=нутренние идентификаторы
-	5:required int contract_TariffId = 0;
+	//Внутренние идентификаторы
+	5:required int contract_TariffId;
 }
 
 struct Sluch{
-	1:required int IDCASE = -1;
-	2:required tinyint USL_OK = -1;
-	3:required tinyint VIDPOM = -1;
+	1:required int IDCASE;
+	2:required tinyint USL_OK;
+	3:required tinyint VIDPOM;
 	4:optional string NPR_MO;
 	5:optional tinyint EXTR;
-	6:required string LPU = "";
+	6:required string LPU;
 	7:optional string LPU_1;
 	8:optional string PODR;
-	9:required tinyint PROFIL = -1;
+	9:required tinyint PROFIL;
 	10:optional bool DET;
-	11:required string NHISTORY = "";
-	12:required timestamp DATE_1 = -1;
-	13:required timestamp DATE_2 = -1;
-	14:optional string DS0;
+	11:required string NHISTORY;
+	12:required timestamp DATE_1;
+	13:required timestamp DATE_2;
+	14:optional string DS0 ="0";
 	15:required string DS1 = "";
 	16:optional string DS2;
 	17:optional string CODE_MES1;
@@ -85,13 +84,12 @@ struct Sluch{
 	25:required double SUMV = -1.0;
 	26:optional tinyint OPLATA;
 	27:optional list<Usl> USL;
-	28:optional list<int> OS_SLUCH;
-	29:required string NOVOR = "";
-	
+	28:required string NOVOR = "0";
+	29:optional list<int> OS_SLUCH;
 	//Внутренние идентификаторы
-	30:required int actionId = 0;
-	31:required int eventId = 0;
-	32:required int rbServiceId = 0;
+	30:required int actionId;
+	31:required int eventId;
+	32:required int rbServiceId;
 	
 }
 //Перечисление с названиями требуемых опциональных полей
