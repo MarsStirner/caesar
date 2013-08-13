@@ -31,12 +31,10 @@
                                                 {%- for service_field in event_field.children -%}
                                                     {%- if service_field.tag.code == 'IDSERV' -%}
                                                         <{{ service_field.tag.code }}>{{ service_loop.index }}</{{ service_field.tag.code }}>
-                                                    {%- elif service|attr(service_field.tag.code) -%}
-                                                        <{{ service_field.tag.code }}>{{ service|attr(service_field.tag.code) }}</{{ service_field.tag.code }}>
-                                                    {%- elif event|attr(service_field.tag.code) -%}
-                                                        <{{ service_field.tag.code }}>{{ event|attr(service_field.tag.code) }}</{{ service_field.tag.code }}>
                                                     {%- elif service_field.tag.code == 'DS' -%}
                                                         <{{ service_field.tag.code }}>{{ service|attr('DS1') }}</{{ service_field.tag.code }}>
+                                                    {%- elif service_field.tag.code == 'DET' and event|attr(service_field.tag.code) is defined -%}
+                                                        <{{ service_field.tag.code }}>{{ event|attr('DET')|int }}</{{ service_field.tag.code }}>
                                                     {%- elif service_field.tag.code == 'SUMV_USL' -%}
                                                         <{{ service_field.tag.code }}>{{ service|attr('TARIF') * service|attr('KOL_USL') }}</{{ service_field.tag.code }}>
                                                     {%- elif service_field.tag.code == 'DATE_IN' -%}
@@ -45,16 +43,22 @@
                                                         <{{ service_field.tag.code }}>{{ event|attr('DATE_2') }}</{{ service_field.tag.code }}>
                                                     {%- elif service_field.tag.code == 'CODE_MD' -%}
                                                         <{{ service_field.tag.code }}>{{ event|attr('IDDOKT') }}</{{ service_field.tag.code }}>
+                                                    {%- elif service|attr(service_field.tag.code) is defined -%}
+                                                        <{{ service_field.tag.code }}>{{ service|attr(service_field.tag.code) }}</{{ service_field.tag.code }}>
+                                                    {%- elif event|attr(service_field.tag.code) is defined -%}
+                                                        <{{ service_field.tag.code }}>{{ event|attr(service_field.tag.code) }}</{{ service_field.tag.code }}>
                                                     {%- endif -%}
                                                 {%- endfor -%}
                                                 </{{ event_field.tag.code }}>
                                             {%- endfor -%}
                                         {%- endif -%}
-                                    {%- elif event|attr(event_field.tag.code) -%}
+                                    {%- elif event|attr(event_field.tag.code) is defined -%}
                                         {%- if event_field.tag.code == 'ISHOD' and event|attr(event_field.tag.code)==-1 -%}
                                             <{{ event_field.tag.code }}/>
+                                        {%- elif event_field.tag.code == 'DET' and event|attr(event_field.tag.code) is defined -%}
+                                            <{{ event_field.tag.code }}>{{ event|attr('DET')|int }}</{{ event_field.tag.code }}>
                                         {%- else -%}
-                                            <{{ event_field.tag.code }}>{{ event|attr(event_field.tag.code) }}</{{ event_field.tag.code }}>
+                                            <{{ event_field.tag.code }}>{{ event|attr(event_field.tag.code) if event|attr(event_field.tag.code) != None }}</{{ event_field.tag.code }}>
                                         {%- endif -%}
                                     {%- endif -%}
                                 {%- endfor -%}
