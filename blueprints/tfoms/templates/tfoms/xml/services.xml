@@ -32,7 +32,7 @@
                                                     {%- if service_field.tag.code == 'IDSERV' -%}
                                                         <{{ service_field.tag.code }}>{{ service_loop.index }}</{{ service_field.tag.code }}>
                                                     {%- elif service_field.tag.code == 'DS' -%}
-                                                        <{{ service_field.tag.code }}>{{ service|attr('DS1') }}</{{ service_field.tag.code }}>
+                                                        <{{ service_field.tag.code }}>{{ event|attr('DS1') }}</{{ service_field.tag.code }}>
                                                     {%- elif service_field.tag.code == 'DET' and event|attr(service_field.tag.code) is defined -%}
                                                         <{{ service_field.tag.code }}>{{ event|attr('DET')|int }}</{{ service_field.tag.code }}>
                                                     {%- elif service_field.tag.code == 'SUMV_USL' -%}
