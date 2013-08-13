@@ -9,17 +9,15 @@ from app import app
 
 def create_config_func(module_name, config_table):
 
-    #Remember app_settings to globals
-    with app.app_context():
-        with app.app_context():
-            app_settings = dict()
-            try:
-                app_settings = {item.code: item.value for item in db.session.query(Settings).all()}
-            except Exception, e:
-                print e
-
     def _config(code):
-        """Возвращает значение конфигурационной переменной, полученной из таблицы config_table"""
+        """Возвращает значение конфигурационной переменной, полученной из таблицы %module_name%_config"""
+        #Get app_settings
+        app_settings = dict()
+        try:
+            app_settings = {item.code: item.value for item in db.session.query(Settings).all()}
+        except Exception, e:
+            print e
+
         config = getattr(g, '%s_config' % module_name, None)
         if not config:
             values = db.session.query(config_table).all()
@@ -31,6 +29,7 @@ def create_config_func(module_name, config_table):
         return config.get(code, None)
 
     return _config
+
 
 with app.app_context():
     permissions = dict()

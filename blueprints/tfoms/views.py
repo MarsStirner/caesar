@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 
 from flask import render_template, abort, request, redirect, jsonify, send_from_directory, url_for, json, current_app
+from flask import flash
 from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
 from flask.ext.sqlalchemy import Pagination
 
@@ -168,6 +169,7 @@ def settings():
             for variable in variables:
                 variable.value = form.data[variable.code]
             db.session.commit()
+            flash(u'Настройки изменены')
             return redirect(url_for('.settings'))
 
         return render_template('{}/settings.html'.format(module.name), form=form)
