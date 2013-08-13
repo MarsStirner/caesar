@@ -13,6 +13,11 @@ function startIntro(){
         intro.setOptions({
         steps: [
             {
+                element: '#cur_modules',
+                intro: "Перечень доступных модулей",
+                position: 'right'
+            },
+            {
                 element: '#users',
                 intro: "Управление пользователями, имеющими доступ в панель администрирования ЛПУ",
                 position: 'right'
