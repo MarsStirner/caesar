@@ -94,11 +94,12 @@ class Services(object):
         return ammount
 
     def __get_bill(self, services):
+        #TODO: инкрементировать номер пакета (01)?
         data = dict(CODE=1,
                     CODE_MO=_config('lpu_infis_code'),
                     YEAR=self.start.strftime('%Y'),
                     MONTH=self.start.strftime('%m'),
-                    NSCHET='%s-%s/%s' % (self.end.strftime('%Y%m'), 1, _config('old_lpu_infis_code')),
+                    NSCHET='%s-%s/%s' % (self.end.strftime('%y%m'), '01', _config('old_lpu_infis_code')[0:3]),
                     DSCHET=date.today().strftime('%Y-%m-%d'),
                     PLAT=_config('payer_code'),
                     SUMMAV=self.__get_ammount(services))
@@ -359,12 +360,13 @@ class XML(object):
 
     def generate_filename(self):
         self.file_name += 'M'
-        self.file_name += _config('old_lpu_infis_code')
+        self.file_name += _config('old_lpu_infis_code')[0:3]
         self.file_name += 'T'
         self.file_name += _config('smo_number')
         self.file_name += '_'
         self.file_name += '%s' % self.end.strftime("%y%m")
-        self.file_name += '1'
+        #TODO: инкрементировать номер пакета (01)?
+        self.file_name += '01'
 
     def generate_file(self, tags_tree, data):
         env = Environment(loader=PackageLoader(module.import_name, module.template_folder))
