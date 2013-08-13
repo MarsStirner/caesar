@@ -18,7 +18,7 @@ function modIntro(){
         steps.push({
             element: '#download_form',
             intro: "Форма для указания параметров выгрузки (периода и шаблонов выгрузки)",
-            position: 'right'
+            position: 'top'
         });
     }
     if ($('#download_dates').length){
