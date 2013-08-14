@@ -10,8 +10,8 @@ function modIntro(){
     if ($('#filter').length){
         steps.push({
             element: '#filter',
-            intro: "Форма фильтрации реестров по датам. В отчёте отображенаются реестры, согласно указанным датам.",
-            position: 'right'
+            intro: "Форма фильтрации реестров по датам.<br>В отчёте отображаются реестры, согласно указанным датам.",
+            position: 'bottom'
         });
     }
     if ($('#reports_table').length){

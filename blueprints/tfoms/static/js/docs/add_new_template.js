@@ -75,7 +75,7 @@ function modIntro(){
         steps.push({
             element: $save.get(0),
             intro: "Создать новый шаблон или сохранить изменения в редактируемом шаблоне",
-            position: 'top'
+            position: 'left'
         });
     }
 

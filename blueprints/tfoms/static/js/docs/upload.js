@@ -4,7 +4,7 @@ function modIntro(){
     if ($file_btn.length){
         steps.push({
             element: $file_btn.get(0),
-            intro: "Выбор файла из файловой системы, содержащего данные для загрузки в ТФОМС",
+            intro: "Выбор файла из файловой системы, содержащего данные для загрузки из ТФОМС",
             position: 'bottom'
         });
     }
