@@ -8,12 +8,13 @@
                 </{{ item.tag.code }}><{{ item.tag.code }}>
                 {%- endif -%}
                 {%- for node in item.children -%}
+                    {%- if person|attr(node.tag.code) is defined and person|attr(node.tag.code) not in [None, ''] -%}
                     <{{ node.tag.code }}>
                         {%- if node.tag.code == 'ID_PAC' -%}
                             {{ person|attr('patientId') }}
-                        {%- elif node.tag.code == 'SNILS' and person|attr(node.tag.code) -%}
+                        {%- elif node.tag.code == 'SNILS' -%}
                             {{ person|attr(node.tag.code)|wordwrap(3, wrapstring="-") }}
-                        {%- elif person|attr(node.tag.code) -%}
+                        {%- else -%}
                             {%- if node.tag.code in ['DR'] -%}
                                 {{ person|attr(node.tag.code)|datetimeformat('%Y-%m-%d') }}
                             {%- else -%}
@@ -21,6 +22,7 @@
                             {%- endif -%}
                         {%- endif -%}
                     </{{ node.tag.code }}>
+                    {%- endif -%}
                 {%- endfor -%}
             {%- endfor -%}
         {%- else -%}
