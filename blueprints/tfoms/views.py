@@ -46,9 +46,10 @@ def ajax_download():
     for template_id in templates:
         try:
             file_url = worker.do_download(template_id, start, end, _config('lpu_infis_code'))
-        except NotFoundException:
+        except NotFoundException, e:
             template = db.session.query(Template).get(template_id)
-            errors.append(u'<b>%s</b>: данных для выгрузки в заданный период не найдено' % template.name)
+            errors.append(u'<b>%s</b>: данных для выгрузки в заданный период не найдено (%s)' %
+                          (template.name, e.message))
         except TException, e:
             template = db.session.query(Template).get(template_id)
             errors.append(u'<b>%s</b>: внутренняя ошибка ядра во время выборки данных (%s)' % (template.name, e))
