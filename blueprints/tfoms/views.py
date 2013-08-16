@@ -15,7 +15,7 @@ from lib.thrift_service.ttypes import InvalidArgumentException, NotFoundExceptio
 
 from forms import CreateTemplateForm
 from lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
-from lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR, UploadWorker, Reports, datetimeformat
+from lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR, UploadWorker, Reports, datetimeformat, UpdateWorker
 from models import Template, TagsTree, StandartTree, TemplateType, DownloadType, ConfigVariables
 from utils import save_template_tag_tree, save_new_template_tree
 from application.database import db
@@ -56,6 +56,22 @@ def ajax_download():
         else:
             result.append(dict(url=file_url))
     return render_template('{}/download/result.html'.format(module.name), files=result, errors=errors)
+
+
+@module.route('/ajax_update_tables/', methods=['GET', 'POST'])
+def ajax_update_tables():
+    worker = UpdateWorker()
+    error, message = None, None
+
+    try:
+        result = worker.update_tables()
+    except NotFoundException, e:
+        error = u'Ошибка при обновлении таблиц: %s' % e.message
+    except TException, e:
+        error = u'Ошибка при обновлении таблиц: %s' % e.message
+    else:
+        message = u'Обновление таблицы прошло успешно'
+    return jsonify(message=message, error=error)
 
 
 @module.route('/download/')

@@ -34,11 +34,6 @@ class Patients(object):
 
     def __init__(self, start, end, infis_code, tags):
         self.client = Client(_config('core_service_url'))
-        if current_app.debug:
-            try:
-                self.client.prepare_tables()
-            except Exception, e:
-                print e
         self.start = start
         self.end = end
         self.infis_code = infis_code
@@ -232,6 +227,15 @@ class DownloadWorker(object):
         if template.archive:
             file_url = file_obj.archive_file()
         return file_url
+
+
+class UpdateWorker(object):
+
+    def __init__(self):
+        self.client = Client(_config('core_service_url'))
+
+    def update_tables(self):
+        return self.client.prepare_tables()
 
 
 class UploadWorker(object):

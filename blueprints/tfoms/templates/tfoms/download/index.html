@@ -16,6 +16,10 @@
             <li{% if request.path == url_for('.download', template_type='xml') or request.path == url_for('.download') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='xml') }}" id="download_xml">Выгрузка сведений в формате XML</a></li>
             <li{% if request.path == url_for('.download', template_type='dbf') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='dbf') }}" id="download_dbf">Выгрузка  сведений в формате DBF</a></li>
         </ul>
+        <div class="alert" id="update_tables_result">
+            <div id="origin_text">В случае необходимости инициировать пересчёт данных в таблице <a href="javascript:void(0);" data-toggle="tooltip" id="upload_tbl_tooltip" title="Таблица содержит данные для формирования файлов выгрузки в ТФОМС. Обновляется по расписанию данными из БД ЛПУ.">TFOMSUpload</a> в БД ЛПУ нажмите <button id="update_tables" type="button" class="btn btn-info btn-small">Пересчитать</button></div>
+            <div id="info"></div>
+        </div>
         <form class="form-horizontal" id="download_form">
             <legend><small>Укажите параметры выгрузки</small></legend>
             <div class="row">
@@ -68,6 +72,7 @@ function show_error(text){
     $(".alert").removeClass('hidden');
 }
 $(document).ready(function(){
+    $('#upload_tbl_tooltip').tooltip();
     $('#download_result').hide();
     $(document).on({
         ajaxStart: function() {
@@ -105,6 +110,19 @@ $(document).ready(function(){
                 }
         );
         return false;
+    });
+    $('#update_tables').click(function(){
+        $.post("{{ url_for('.ajax_update_tables') }}",
+            function(res) {
+                if (res.error){
+                    $('#update_tables_result>#origin_text').hide();
+                    $('#update_tables_result>#info').text(res.error);
+                    $('#update_tables_result').removeClass('alert-success').addClass('alert-error');
+                }else if (res.message){
+                    $('#update_tables_result').removeClass('alert-error').addClass('alert-success').html(res.message);
+                }
+            }
+        );
     });
 });
 $(function() {
