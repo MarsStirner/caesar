@@ -15,5 +15,5 @@ selenium
 psycopg2
 dbf
 patool
-lxml
 fabric
+lxml
