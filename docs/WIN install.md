@@ -96,6 +96,14 @@ pip install -r code\requirements\mysql.txt
 pip install -r code\requirements\pgsql.txt
 ```
 
+**Замечание: в случае, если во время установки возникает проблема вида:**
+```
+building '_mysql' extension
+error: Unable to find vcvarsall.bat
+```
+**необходимо убедиться, что в системе установлен компилятор C++, который доступен по пути, прописанном в PATH, подробнее с решением проблемы можно ознакомиться по ссылке: 
+http://stackoverflow.com/questions/2272786/python-issueunable-to-find-vcvarsall-bat**
+
 ### Установка пакетов вручную
 
 **Создание и активация виртуального окружения**
