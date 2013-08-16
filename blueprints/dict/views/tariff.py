@@ -51,14 +51,19 @@ def ajax_upload():
                         errors.append(u'<b>%s</b>: внутренняя ошибка ядра во время обновления тарифов (%s)' %
                                       (data_file.filename, e))
                     else:
-                        for value in result:
-                            if 'error' in value:
-                                errors.append(u'<b>%s %s</b>: %s' % (value['number'],
-                                                                     value['c_tar'],
-                                                                     getattr(value['error'],
-                                                                             'message',
-                                                                             u'Сообщение об ошибке не определено')))
                         messages.append(u'Загрузка прошла успешно')
+                        for value in result:
+                            number = getattr(value, 'number', '')
+                            c_tar = getattr(value, 'c_tar', '')
+                            error = getattr(value, 'error', None)
+                            if error is not None:
+                                message = ''
+                                if error:
+                                    message = getattr(error, 'message', u'Сообщение об ошибке не определено')
+                                errors.append(u'<b>%s %s</b>: %s' % (number, c_tar, message))
+                            else:
+                                messages.append(u'%s %s' % (number, c_tar))
+
                 else:
                     errors.append(u'<b>%s</b>: нет данных для загрузки' % data_file.filename)
         else:
