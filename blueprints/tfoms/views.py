@@ -29,7 +29,7 @@ xml_encodings = ['windows-1251', 'utf-8']
 @module.route('/')
 def index():
     try:
-        return render_template('{}/index.html'.format(module.name))
+        return render_template('{0}/index.html'.format(module.name))
     except TemplateNotFound:
         abort(404)
 
@@ -55,7 +55,7 @@ def ajax_download():
             errors.append(u'<b>%s</b>: внутренняя ошибка ядра во время выборки данных (%s)' % (template.name, e))
         else:
             result.append(dict(url=file_url))
-    return render_template('{}/download/result.html'.format(module.name), files=result, errors=errors)
+    return render_template('{0}/download/result.html'.format(module.name), files=result, errors=errors)
 
 
 @module.route('/ajax_update_tables/', methods=['GET', 'POST'])
@@ -82,7 +82,7 @@ def download(template_type='xml'):
                      .filter(Template.is_active == True,
                              Template.type.has(TemplateType.download_type.has(DownloadType.code == template_type)))
                      .all())
-        return render_template('{}/download/index.html'.format(module.name), templates=templates)
+        return render_template('{0}/download/index.html'.format(module.name), templates=templates)
     except TemplateNotFound:
         abort(404)
 
@@ -97,7 +97,7 @@ def download_file(filename):
 @module.route('/upload/')
 def upload():
     try:
-        return render_template('{}/upload/index.html'.format(module.name))
+        return render_template('{0}/upload/index.html'.format(module.name))
     except TemplateNotFound:
         abort(404)
 
@@ -124,7 +124,7 @@ def ajax_upload():
                 messages.append(u'Загрузка прошла успешно')
         else:
             errors.append(u'<b>%s</b>: не является XML-файлом' % data_file.filename)
-        return render_template('{}/upload/result.html'.format(module.name), errors=errors, messages=messages)
+        return render_template('{0}/upload/result.html'.format(module.name), errors=errors, messages=messages)
 
 
 @module.route('/reports/', methods=['GET', 'POST'])
@@ -139,7 +139,7 @@ def reports():
     data = report.get_bills(start, end)
     try:
         current_app.jinja_env.filters['datetimeformat'] = datetimeformat
-        return render_template('{}/reports/index.html'.format(module.name), data=data, form=Form())
+        return render_template('{0}/reports/index.html'.format(module.name), data=data, form=Form())
     except TemplateNotFound:
         abort(404)
 
@@ -154,7 +154,7 @@ def report_cases(bill_id, page):
         pagination = Pagination(query, page, PER_PAGE, query.count(), data)
         try:
             current_app.jinja_env.filters['datetimeformat'] = datetimeformat
-            return render_template('{}/reports/cases.html'.format(module.name),
+            return render_template('{0}/reports/cases.html'.format(module.name),
                                    cases=data, bill=bill, pagination=pagination)
         except TemplateNotFound:
             abort(404)
@@ -198,7 +198,7 @@ def settings():
             flash(u'Настройки изменены')
             return redirect(url_for('.settings'))
 
-        return render_template('{}/settings.html'.format(module.name), form=form)
+        return render_template('{0}/settings.html'.format(module.name), form=form)
     except TemplateNotFound:
         abort(404)
 
@@ -255,7 +255,7 @@ def settings_template(template_type='patient', id=0):
                 save_new_template_tree(new_id, data)
                 return redirect(url_for('.settings_template', template_type=template_type, id=new_id))
 
-        return render_template('{}/settings_templates/{}.html'.format(module.name, template_type),
+        return render_template('{0}/settings_templates/{1}.html'.format(module.name, template_type),
                                form=form,
                                templates=templates,
                                current_id=id,
@@ -305,7 +305,7 @@ def add_new_template(template_type="patients", action="add_new"):
         templates = Template.query.filter_by(type_id=template_type_id).all()
         templates_names = [template.name for template in templates]
 
-        return render_template('{}/settings_templates/{}.html'.format(module.name, template_type),
+        return render_template('{0}/settings_templates/{1}.html'.format(module.name, template_type),
                                form=form,
                                templates=templates,
                                current_id=0,
@@ -360,6 +360,6 @@ def activate(template_type):
 @module.route('/<string:page>.html')
 def show_page(page):
     try:
-        return render_template('{}/{}.html'.format(module.name, page))
+        return render_template('{0}/{1}.html'.format(module.name, page))
     except TemplateNotFound:
         abort(404)

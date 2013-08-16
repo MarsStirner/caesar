@@ -14,7 +14,9 @@ def create_config_func(module_name, config_table):
         #Get app_settings
         app_settings = dict()
         try:
-            app_settings = {item.code: item.value for item in db.session.query(Settings).all()}
+            for item in db.session.query(Settings).all():
+                app_settings.update({item.code: item.value})
+            # app_settings = {item.code: item.value for item in db.session.query(Settings).all()}
         except Exception, e:
             print e
 
