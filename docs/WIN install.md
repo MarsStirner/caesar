@@ -46,6 +46,7 @@ LoadModule wsgi_module modules/mod_wsgi.so
 set PYTHONPATH=%PYTHONPATH%;D:\Python27;D:\Python27\Scripts
 set PATH=%PATH%;%PYTHONPATH%
 ```
+------------------
 
 ### Установка с использованием pip (Internet)
 
@@ -106,6 +107,8 @@ error: Unable to find vcvarsall.bat
 http://stackoverflow.com/questions/2019827/error-when-install-python-mysql-module-on-windows**
 
 **Скачать Visual Studio 2008 можно по ссылке: http://download.microsoft.com/download/A/5/4/A54BADB6-9C3F-478D-8657-93B3FC9FE62D/vcsetup.exe**
+
+------------------
 
 ### Установка пакетов вручную
 
