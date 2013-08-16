@@ -32,7 +32,7 @@ lower_case_table_names=2
 * Скачать модуль mod_wsgi, скопировать в директорию модулей Apache2.2/modules, подключить модуль в конфиге Apache2.2/conf/httpd.conf:
 
 ```
-LoadModule mod_wsgi modules/mod_wsgi.so
+LoadModule wsgi_module modules/mod_wsgi.so
 ```
 
 * Установить Python и прописать его в системный путь (например, через cmd):
@@ -78,7 +78,7 @@ venv\Scripts\activate
 * Клонировать репозиторий из git, для этого в директории проекта вызвать из контекстного меню Git Bash и выполнить команду:
 
 ```
-git clone https://github.com/KorusConsulting/caesar.git code
+git clone https://github.com/KorusConsulting/Caesar.git code
 ```
 
 * Установить зависимости через командную строку:
