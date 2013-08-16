@@ -5,6 +5,7 @@ Flask-SQLAlchemy
 wtforms
 Flask-WTF
 Flask-Admin
+pytz==2013b
 Flask-BabelEx
 Flask-Login
 Flask-Principal
