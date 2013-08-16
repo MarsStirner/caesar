@@ -58,7 +58,9 @@ def ajax_upload():
                                                                      getattr(value['error'],
                                                                              'message',
                                                                              u'Сообщение об ошибке не определено')))
-                messages.append(u'Загрузка прошла успешно')
+                        messages.append(u'Загрузка прошла успешно')
+                else:
+                    errors.append(u'<b>%s</b>: нет данных для загрузки' % data_file.filename)
         else:
             errors.append(u'<b>%s</b>: не является DBF-файлом' % data_file.filename)
         return render_template('dict/tariff/upload_result.html', errors=errors, messages=messages)

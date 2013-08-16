@@ -31,13 +31,12 @@ class TARIFFClient(object):
 
     def send_tariffs(self, data, contract_id):
         """Отправка тарифов"""
-        result = None
         try:
-            result = self.client.updateTariffs(tariffs=data, contract_id=contract_id)
+            result = self.client.updateTariffs(tariffs=data, contract_id=int(contract_id))
         except InvalidArgumentException, e:
-            print e
+            raise e
         except SQLException, e:
-            print e
+            raise e
         except TException, e:
             raise e
         return result
