@@ -102,7 +102,7 @@ building '_mysql' extension
 error: Unable to find vcvarsall.bat
 ```
 **необходимо убедиться, что в системе установлен компилятор C++, который доступен по пути, прописанном в PATH, подробнее с решением проблемы можно ознакомиться по ссылке: 
-http://stackoverflow.com/questions/2272786/python-issueunable-to-find-vcvarsall-bat**
+http://stackoverflow.com/questions/2019827/error-when-install-python-mysql-module-on-windows**
 
 ### Установка пакетов вручную
 
