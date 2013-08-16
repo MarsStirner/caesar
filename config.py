@@ -29,7 +29,7 @@ except ImportError:
     # no local config found
     pass
 
-SQLALCHEMY_DATABASE_URI = '{}://{}:{}@{}:{}/{}'.format(DB_DRIVER,
+SQLALCHEMY_DATABASE_URI = '{}://{}:{}@{}:{}/{}{}'.format(DB_DRIVER,
                                                        DB_USER,
                                                        DB_PASSWORD,
                                                        DB_HOST,
