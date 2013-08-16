@@ -78,7 +78,7 @@ venv\Scripts\activate
 * Клонировать репозиторий из git, для этого в директории проекта вызвать из контекстного меню Git Bash и выполнить команду:
 
 ```
-git clone https://github.com/KorusConsulting/caesar.git code
+git clone https://github.com/KorusConsulting/Caesar.git code
 ```
 
 * Установить зависимости через командную строку:
