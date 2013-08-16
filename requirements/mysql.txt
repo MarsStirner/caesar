@@ -15,5 +15,5 @@ selenium
 mysql-python
 dbf
 patool
-lxml
 fabric
+lxml
