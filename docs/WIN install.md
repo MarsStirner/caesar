@@ -89,11 +89,11 @@ git clone https://github.com/KorusConsulting/Caesar.git code
 
 Для MySQL установки:
 ```
-pip install -r code\requirements\mysql.txt
+pip install -r code\requirements\win\mysql.txt
 ```
 Для PostgreSQL установки:
 ```
-pip install -r code\requirements\pgsql.txt
+pip install -r code\requirements\win\pgsql.txt
 ```
 
 ### Установка пакетов вручную
