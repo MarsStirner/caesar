@@ -15,7 +15,6 @@
 * MySQL 5 (http://dev.mysql.com/downloads/installer/)
 * Web-Server Apache2.2 (http://www.sai.msu.su/apache/dist/httpd/binaries/win32/) + mod_wsgi (http://code.google.com/p/modwsgi/wiki/DownloadTheSoftware)
 * git (http://git-scm.com/download/win)
-* Установить lxml (http://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml)
 
 Под windows используются только 32-bit версии
 
