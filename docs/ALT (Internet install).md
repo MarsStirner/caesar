@@ -24,7 +24,11 @@ apt-get upgrade
 ```
 
 * C-compiler (gcc) ```apt-get install gcc4.5``` (установить подходящую версию, в указанном случае gcc4.5)
-* MySQL 5 (MySQL-server, MySQL-client) ```apt-get install MySQL-server``` ```apt-get install MySQL-client```
+* СУБД
+ * MySQL 5 (MySQL-server, MySQL-client) ```apt-get install MySQL-server``` ```apt-get install MySQL-client```
+   * python-module-MySQLdb ```apt-get install python-module-MySQLdb```
+ * или
+ * PostgreSQL ```apt-get install postgresql-server postgresql-client postgresql-contrib``` (руководство по первоначальной установке PostgreSQL можно найти в Интернете)
 * python-module-MySQLdb ```apt-get install python-module-MySQLdb```
 * libxml2-devel ```apt-get install libxml2-devel```
 * libxslt-devel ```apt-get install libxslt-devel```

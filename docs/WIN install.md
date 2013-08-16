@@ -8,6 +8,10 @@
 
 * ОС Windows
 * Python 2.7.5 (http://www.python.org/download/)
+* СУБД
+ * MySQL 5 (http://dev.mysql.com/downloads/installer/)
+ * или
+ * PostgreSQL ```apt-get install postgresql-server postgresql-client postgresql-contrib``` (руководство по первоначальной установке PostgreSQL можно найти в Интернете)
 * MySQL 5 (http://dev.mysql.com/downloads/installer/)
 * Web-Server Apache2.2 (http://www.sai.msu.su/apache/dist/httpd/binaries/win32/) + mod_wsgi (http://code.google.com/p/modwsgi/wiki/DownloadTheSoftware)
 * git (http://git-scm.com/download/win)
@@ -20,7 +24,7 @@
 
 Установка
 -----------
-* Установить MySQL
+* Установить СУБД (MySQL или PostgreSQL)
 
 При конфигурировании MySQL, рекомендуется установить в my.cnf:
 
@@ -67,7 +71,7 @@ virtualenv venv
 venv\Scripts\activate
 ```
 
-* Установить MySQL-python
+* Установить MySQL-python (для MySQL установки)
 
 ```
  easy_install MySQL-python
@@ -83,8 +87,13 @@ git clone https://github.com/KorusConsulting/Caesar.git code
 
 * Установить зависимости через командную строку:
 
+Для MySQL установки:
 ```
-pip install -r code\requirements.txt
+pip install -r code\requirements\mysql.txt
+```
+Для PostgreSQL установки:
+```
+pip install -r code\requirements\pgsql.txt
 ```
 
 ### Установка пакетов вручную
@@ -114,7 +123,10 @@ venv\Scripts\activate
 * distribute (https://pypi.python.org/pypi/distribute/)
 * setuptools (https://pypi.python.org/pypi/setuptools/)
 * lxml (https://pypi.python.org/pypi/lxml/)
-* mysql-python (https://pypi.python.org/pypi/MySQL-python/)
+* Драйвер для работы с СУБД:
+ * mysql-python (https://pypi.python.org/pypi/MySQL-python/) - для MySQL установки
+ * или
+ * psycopg2 (https://pypi.python.org/pypi/psycopg2/) - для PostgreSQL установки
 * MarkupSafe (https://pypi.python.org/pypi/MarkupSafe/)
 * Mako (https://pypi.python.org/pypi/Mako/)
 * itsdangerous (https://pypi.python.org/pypi/itsdangerous/)

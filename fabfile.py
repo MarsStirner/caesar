@@ -170,7 +170,10 @@ def install_requirements():
     with settings(warn_only=True):
         local('apt-get install python-module-MySQLdb')
     with lcd(code_dir_path):
-        local('%s install -r requirements.txt' % os.path.join(virtualenv_bin_path, 'pip'))
+        if DB_DRIVER == 'mysql':
+            local('%s install -r requirements\mysql.txt' % os.path.join(virtualenv_bin_path, 'pip'))
+        elif DB_DRIVER == 'postgresql+psycopg2':
+            local('%s install -r requirements\pgsql.txt' % os.path.join(virtualenv_bin_path, 'pip'))
 
 
 def restore_database():
