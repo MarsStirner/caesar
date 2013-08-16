@@ -96,6 +96,16 @@ pip install -r code\requirements\win\mysql.txt
 pip install -r code\requirements\win\pgsql.txt
 ```
 
+**Замечание: в случае, если во время установки возникает проблема вида:**
+```
+building '_mysql' extension
+error: Unable to find vcvarsall.bat
+```
+**необходимо убедиться, что в системе установлен компилятор C++, который доступен по пути, прописанном в PATH, подробнее с решением проблемы можно ознакомиться по ссылке: 
+http://stackoverflow.com/questions/2019827/error-when-install-python-mysql-module-on-windows**
+
+**Скачать Visual Studio 2008 можно по ссылке: http://download.microsoft.com/download/A/5/4/A54BADB6-9C3F-478D-8657-93B3FC9FE62D/vcsetup.exe**
+
 ### Установка пакетов вручную
 
 **Создание и активация виртуального окружения**
