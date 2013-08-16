@@ -74,7 +74,7 @@ def download(template_type='xml'):
 def download_file(filename):
     """Выдаёт файлы на скачивание"""
     if filename:
-        return send_from_directory(DOWNLOADS_DIR, filename, as_attachment=True)
+        return send_from_directory(DOWNLOADS_DIR, filename, as_attachment=True, cache_timeout=0)
 
 
 @module.route('/upload/')
