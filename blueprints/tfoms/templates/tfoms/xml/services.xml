@@ -56,6 +56,10 @@
                                         {%- if event_field.tag.code == 'ISHOD' and event|attr(event_field.tag.code) == -1 -%}
                                         {%- elif event_field.tag.code == 'DET' and event|attr(event_field.tag.code) is defined -%}
                                             <{{ event_field.tag.code }}>{{ event|attr('DET')|int }}</{{ event_field.tag.code }}>
+                                        {%- elif event_field.tag.code == 'OS_SLUCH' and event|attr(event_field.tag.code) is iterable -%}
+                                            {%- for os_sluch in event|attr(event_field.tag.code) -%}
+                                            <{{ event_field.tag.code }}>{{ os_sluch|int }}</{{ event_field.tag.code }}>
+                                            {%- endfor -%}
                                         {%- elif event_field.tag.code == 'DS0' -%}
                                             <{{ event_field.tag.code }}>
                                             {%- if event|attr(event_field.tag.code) is defined and event|attr(event_field.tag.code) not in [None, ''] -%}
