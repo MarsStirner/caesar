@@ -27,7 +27,9 @@ def ajax_upload():
     if request.method == 'POST':
         data_file = request.files.get('upload_file')
         file_path = os.path.join(UPLOADS_DIR, data_file.filename)
-        if data_file.content_type == 'application/x-dbf':
+        if (data_file.content_type == 'application/x-dbf' or
+                (data_file.content_type == 'application/octet-stream' and
+                 os.path.splitext(data_file.filename)[1] == '.dbf')):
             with open(file_path, "wb") as f:
                 f.write(data_file.stream.read())
             f.close()
