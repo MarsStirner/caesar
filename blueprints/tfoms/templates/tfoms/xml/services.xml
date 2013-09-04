@@ -63,7 +63,7 @@
                                         {%- elif event_field.tag.code == 'DS0' -%}
                                             <{{ event_field.tag.code }}>
                                             {%- if event|attr(event_field.tag.code) is defined and event|attr(event_field.tag.code) not in [None, ''] -%}
-                                                {{ event|attr(vent_field.tag.code)|int }}
+                                                {{ event|attr(event_field.tag.code)|int }}
                                             {%- else -%}
                                                 0
                                             {%- endif -%}
