@@ -52,6 +52,9 @@ def ajax_upload():
                     except TException, e:
                         errors.append(u'<b>%s</b>: внутренняя ошибка ядра во время обновления тарифов (%s)' %
                                       (data_file.filename, e))
+                    except Exception, e:
+                        errors.append(u'<b>%s</b>: внутренняя ошибка ядра во время обновления тарифов (%s)' %
+                                      (data_file.filename, e))
                     else:
                         messages.append(u'Загрузка прошла успешно')
                         for value in result:
