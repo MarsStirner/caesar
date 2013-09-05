@@ -3,7 +3,7 @@
 #
 # DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
 #
-#  options string: py:new_style,utf8strings
+#  options string: py:new_style
 #
 
 from thrift.Thrift import TType, TMessageType, TException, TApplicationException
@@ -960,7 +960,7 @@ class getXMLRegisters_args(object):
           iprot.skip(ftype)
       elif fid == 4:
         if ftype == TType.STRING:
-          self.infisCode = iprot.readString().decode('utf-8')
+          self.infisCode = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 5:
@@ -1017,7 +1017,7 @@ class getXMLRegisters_args(object):
       oprot.writeFieldEnd()
     if self.infisCode is not None:
       oprot.writeFieldBegin('infisCode', TType.STRING, 4)
-      oprot.writeString(self.infisCode.encode('utf-8'))
+      oprot.writeString(self.infisCode)
       oprot.writeFieldEnd()
     if self.orgStructureIdList is not None:
       oprot.writeFieldBegin('orgStructureIdList', TType.LIST, 5)
@@ -1208,7 +1208,7 @@ class getOrgStructures_args(object):
         break
       if fid == 1:
         if ftype == TType.STRING:
-          self.organisationInfis = iprot.readString().decode('utf-8')
+          self.organisationInfis = iprot.readString();
         else:
           iprot.skip(ftype)
       else:
@@ -1223,7 +1223,7 @@ class getOrgStructures_args(object):
     oprot.writeStructBegin('getOrgStructures_args')
     if self.organisationInfis is not None:
       oprot.writeFieldBegin('organisationInfis', TType.STRING, 1)
-      oprot.writeString(self.organisationInfis.encode('utf-8'))
+      oprot.writeString(self.organisationInfis)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -1523,7 +1523,7 @@ class getDBFStationary_args(object):
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.STRING:
-          self.infisCode = iprot.readString().decode('utf-8')
+          self.infisCode = iprot.readString();
         else:
           iprot.skip(ftype)
       else:
@@ -1546,7 +1546,7 @@ class getDBFStationary_args(object):
       oprot.writeFieldEnd()
     if self.infisCode is not None:
       oprot.writeFieldBegin('infisCode', TType.STRING, 3)
-      oprot.writeString(self.infisCode.encode('utf-8'))
+      oprot.writeString(self.infisCode)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -1714,7 +1714,7 @@ class getDBFPoliclinic_args(object):
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.STRING:
-          self.infisCode = iprot.readString().decode('utf-8')
+          self.infisCode = iprot.readString();
         else:
           iprot.skip(ftype)
       else:
@@ -1737,7 +1737,7 @@ class getDBFPoliclinic_args(object):
       oprot.writeFieldEnd()
     if self.infisCode is not None:
       oprot.writeFieldBegin('infisCode', TType.STRING, 3)
-      oprot.writeString(self.infisCode.encode('utf-8'))
+      oprot.writeString(self.infisCode)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
