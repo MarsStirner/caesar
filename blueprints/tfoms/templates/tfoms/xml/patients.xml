@@ -12,6 +12,8 @@
                     <{{ node.tag.code }}>{{ person|attr('patientId') }}</{{ node.tag.code }}>
                     {%- elif node.tag.code == 'SNILS' and person|attr(node.tag.code) is defined and person|attr(node.tag.code) not in [None, ''] -%}
                     <{{ node.tag.code }}>{{ person|attr(node.tag.code)|wordwrap(3, wrapstring="-") }}</{{ node.tag.code }}>
+                    {%- elif node.tag.code in ['IM_P', 'FAM_P', 'OT_P', 'W_P', 'DR_P'] and person|attr(spokesman) is defined and person.spokesman|attr(node.tag.code) is defined -%}
+                    <{{ node.tag.code }}>{{ person.spokesman|attr(node.tag.code) }}</{{ node.tag.code }}>
                     {%- elif person|attr(node.tag.code) is defined and person|attr(node.tag.code) not in [None, ''] -%}
                     <{{ node.tag.code }}>
                         {%- if node.tag.code in ['DR'] -%}
