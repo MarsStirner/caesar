@@ -34,7 +34,7 @@ struct Patient{
 	13:optional string DOCSER;
 	14:optional string DOCNUM;
 	// Данные для тега PATIENT
-	15:required tinyint VPOLIS = -1;
+	15:required tinyint VPOLIS  = -1;
 	16:optional string SPOLIS;
 	17:required string NPOLIS = "";
 	18:required string SMO = "";
@@ -249,6 +249,98 @@ struct DBFPoliclinic{
 	55:required timestamp DATA_NS = 0; 
 }
 
+/*
+Структура счета
+Поля:
+    1-Внутренний идентификатор в БД ЛПУ
+    2-Номер счета
+    3-Дата формирования счета (createDateTime -time)
+    4-Дата начала интервала за который оказывались услуги
+    5-Дата конца интервала за который оказывались услуги
+    6-Общее количество случаев в счете
+    7-Общее количество УЕТ в счете
+    8-Общая сумма все выствленных в счет услуг
+    9-Дата отправки счета в ТФОМС
+    10-Число оплаченных позиции счета
+    11-Сумма оплаченых услуг
+    12- Число отказаных в оплате позиций
+    13-Сумма всех отказанных в оплате услуг
+*/
+struct Account{
+    1:required int id;
+    2:required string number;
+    3:required timestamp date;
+    4:required timestamp begDate;
+    5:required timestamp endDate;
+    6:required int amount;
+    7:required double uet;
+    8:required double sum;
+    9:optional timestamp exposeDate;
+    10:required int payedAmount;
+    11:required double payedSum;
+    12:required int refusedAmount;
+    13:required double refusedSum;
+}
+
+/*
+Структура позиции счета
+Поля:
+    1- Внутренний идентификатор в БД ЛПУ
+    2- дата оказания услуги
+    3- Фамилия пациента, которому оказывалась услуга
+    4- Имя пациента
+    5- Отчество пациента
+    6- пол пациента
+    7- Дата рождения пациента
+    8- Общая сумма за услугу
+    9- Количество оказанных услуг
+    10- Название единицы учета услуги
+    11- дата загрузки результата из ТФОМС
+    12- имя файла, загруженного из тфомс
+    13- наименование причины отказа от оплаты
+    14- код причины отказа от оплаты
+    15- Примечание (SLUCH:COMENT_USL)
+*/
+struct AccountItem{
+    1:required int id;
+    2:required timestamp serviceDate;
+    3:required string lastName;
+    4:required string firstName;
+    5:required string patrName;
+    6:required tinyint sex;
+    7:required timestamp birthDate;
+    8:required double price;
+    9:required double amount;
+    10:required string unitName;
+    11:optional timestamp date;
+    12:required string fileName;
+    13:optional string refuseTypeName;
+    14:optional tinyint refuseTypeCode;
+    15:optional string note;
+}
+
+/*
+Структура подразделения ЛПУ
+Поля:
+    1- Внутренний идентификатор в БД ЛПУ
+    2- код подразделения
+    3- наименование подразделения
+    4- Идентификатор родительского подразделения
+*/
+struct OrgStructure{
+    1:required int id;
+    2:required string code;
+    3:required string name;
+    4:optional int parentId;
+}
+
+
+
+struct XMLRegisters{
+    1:required Account account;
+    2:required map<Patient, list<Sluch>> registry;
+}
+
 //Exceptions
 exception NotFoundException{
 	1:string message;
@@ -265,31 +357,104 @@ exception InvalidArgumentException{
 	2:int code;
 }
 
-service TFOMSService{
+exception InvalidOrganizationInfisException{
+    1:string message;
+    2:int code;
+}
 
-	int prepareTables();
-	
-	list<Patient> getPatients(
-								1:timestamp beginDate,
-								2:timestamp endDate,
-								3:string infisCode,
-								4:list<PatientOptionalFields> optionalFields
-								) 
-						throws (1:InvalidArgumentException argExc, 2:SQLException sqlExc, 3:NotFoundException exc);
-	
-	map<int, list<Sluch>> getSluchByPatients(
-             1:list<int> patientId,
-             2:timestamp beginDate,
-             3:timestamp endDate,
-             4:string infisCode,
-             5:list<SluchOptionalFields> optionalFields
-             )
-          throws (1:InvalidArgumentException argExc, 2:SQLException sqlExc, 3:NotFoundException exc);
-		  
+exception InvalidContractException{
+     1:string message;
+     2:int code;
+}
+
+exception InvalidDateIntervalException{
+     1:string message;
+     2:int code;
+}
+
+service TFOMSService{
+//Работа со счетами
+    /*
+        Получение всех доступных счетов (deleted = 0), в случае если счетов нету - пустой сисок.
+    */
+    list<Account> getAvailableAccounts();
+
+    /*
+        Получение всех позиций счета по идентификатору счета
+        Arguments:
+        1 -  int accountId : идентификатор счета по которому будут возвращены позиции
+        Exceptions:
+        1 - NotFoundException nfExc : Если нету счета с таким идентификатором
+        Return:
+        Список позиций счета или пустой список если на счет нету ни одной позиции
+    */
+    list<AccountItem> getAccountItems(1:int accountId) throws (1:NotFoundException nfExc);
+
+    /*
+        Удаление счета
+        Arguments:
+        1 -  int accountId : идентификатор счета который планируется удалить
+        Return:
+        True - удаление успешно \ False - удаление не удалось
+    */
+    bool deleteAccount(1:int accountId);
+
+//Выгрузка в формате XML
+	/*
+	    Получение реестров по заданным параметрам
+	    Arguments:
+	    1 -  int contractId : Идентификатор контракта
+	    2 -  timestamp beginDate : начало интервала за который формируется реестр
+	    3 -  timestamp endDate : конец интервала за который формируется реестр
+	    4 -  string infisCode : Инфис код ЛПУ
+	    5 -  list<int> orgStructureIdList : Список подразделений
+	    6 -  set<PatientOptionalFields> patientOptionalFields : перечень требуемых опциональных полей реестра пациентов
+	    7 -  set<SluchOptionalFields> sluchOptionalFields : перечень требуемых опциональных полей реестра услуг
+	    Exceptions:
+	    1 - InvalidOrganizationInfisException : нету организации с таким инфис-кодом
+	    2 - InvalidContractException : нету контракта с таким идентификатором
+	    3 - InvalidDateIntervalException : некорректный диапозон дат
+	    4 - NotFoundException : не найдено ни одной оказанной услуги
+	    5 - SQLException : ошибка при обращении к БД
+	    Return:
+	    XMLRegisters - набор реестров и заголовок
+	*/
+	XMLRegisters getXMLRegisters(
+            1:int contractId,
+            2:timestamp beginDate,
+            3:timestamp endDate,
+            4:string infisCode,
+            5:list<int> orgStructureIdList,
+            6:set<PatientOptionalFields> patientOptionalFields,
+            7:set<SluchOptionalFields> sluchOptionalFields
+            )
+        throws (
+            1:InvalidOrganizationInfisException infisExc,
+            2:InvalidContractException contractExc,
+            3:InvalidDateIntervalException datesExc,
+            4:NotFoundException nfExc,
+            5:SQLException sqlExc
+            );
+
+//Работа с подразделениями ЛПУ
+    /*
+        Получение всех подразделений у которых  инфис-код ЛПУ совпадает с заданным
+        Arguments:
+        1 -  string organisationInfis : Инфис код ЛПУ для которого необходимо вернуть подразделения
+        Exceptions:
+        1 - InvalidOrganizationInfisException : нету организации с таким инфис-кодом
+    */
+    list<OrgStructure> getOrgStructures(1:string organisationInfis)
+        throws (1:InvalidOrganizationInfisException infisExc);
+
+    //Работа с ответом из тфомса
+
+
 	//Загрузка измененных данных от ТФОМС
 	int changeClientPolicy(1:int patientId, 2:TClientPolicy newPolicy)  
 		throws (1:InvalidArgumentException argExc, 2:SQLException sqlExc);
-		
+
+	//Выгрузка в формате DBF
 	list<DBFStationary> getDBFStationary(
 			1:timestamp beginDate,
 			2:timestamp endDate,

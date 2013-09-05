@@ -3,7 +3,7 @@
 #
 # DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
 #
-#  options string: py
+#  options string: py:new_style,utf8strings
 #
 
 from thrift.Thrift import TType, TMessageType, TException, TApplicationException
@@ -17,28 +17,41 @@ except:
   fastbinary = None
 
 
-class Iface:
-  def prepareTables(self, ):
+class Iface(object):
+  def getAvailableAccounts(self, ):
     pass
 
-  def getPatients(self, beginDate, endDate, infisCode, optionalFields):
+  def getAccountItems(self, accountId):
     """
     Parameters:
-     - beginDate
-     - endDate
-     - infisCode
-     - optionalFields
+     - accountId
     """
     pass
 
-  def getSluchByPatients(self, patientId, beginDate, endDate, infisCode, optionalFields):
+  def deleteAccount(self, accountId):
     """
     Parameters:
-     - patientId
+     - accountId
+    """
+    pass
+
+  def getXMLRegisters(self, contractId, beginDate, endDate, infisCode, orgStructureIdList, patientOptionalFields, sluchOptionalFields):
+    """
+    Parameters:
+     - contractId
      - beginDate
      - endDate
      - infisCode
-     - optionalFields
+     - orgStructureIdList
+     - patientOptionalFields
+     - sluchOptionalFields
+    """
+    pass
+
+  def getOrgStructures(self, organisationInfis):
+    """
+    Parameters:
+     - organisationInfis
     """
     pass
 
@@ -76,116 +89,176 @@ class Client(Iface):
       self._oprot = oprot
     self._seqid = 0
 
-  def prepareTables(self, ):
-    self.send_prepareTables()
-    return self.recv_prepareTables()
+  def getAvailableAccounts(self, ):
+    self.send_getAvailableAccounts()
+    return self.recv_getAvailableAccounts()
 
-  def send_prepareTables(self, ):
-    self._oprot.writeMessageBegin('prepareTables', TMessageType.CALL, self._seqid)
-    args = prepareTables_args()
+  def send_getAvailableAccounts(self, ):
+    self._oprot.writeMessageBegin('getAvailableAccounts', TMessageType.CALL, self._seqid)
+    args = getAvailableAccounts_args()
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_prepareTables(self, ):
+  def recv_getAvailableAccounts(self, ):
     (fname, mtype, rseqid) = self._iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
       x.read(self._iprot)
       self._iprot.readMessageEnd()
       raise x
-    result = prepareTables_result()
+    result = getAvailableAccounts_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
     if result.success is not None:
       return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "prepareTables failed: unknown result");
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getAvailableAccounts failed: unknown result");
 
-  def getPatients(self, beginDate, endDate, infisCode, optionalFields):
+  def getAccountItems(self, accountId):
     """
     Parameters:
+     - accountId
+    """
+    self.send_getAccountItems(accountId)
+    return self.recv_getAccountItems()
+
+  def send_getAccountItems(self, accountId):
+    self._oprot.writeMessageBegin('getAccountItems', TMessageType.CALL, self._seqid)
+    args = getAccountItems_args()
+    args.accountId = accountId
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_getAccountItems(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = getAccountItems_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    if result.nfExc is not None:
+      raise result.nfExc
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getAccountItems failed: unknown result");
+
+  def deleteAccount(self, accountId):
+    """
+    Parameters:
+     - accountId
+    """
+    self.send_deleteAccount(accountId)
+    return self.recv_deleteAccount()
+
+  def send_deleteAccount(self, accountId):
+    self._oprot.writeMessageBegin('deleteAccount', TMessageType.CALL, self._seqid)
+    args = deleteAccount_args()
+    args.accountId = accountId
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_deleteAccount(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = deleteAccount_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "deleteAccount failed: unknown result");
+
+  def getXMLRegisters(self, contractId, beginDate, endDate, infisCode, orgStructureIdList, patientOptionalFields, sluchOptionalFields):
+    """
+    Parameters:
+     - contractId
      - beginDate
      - endDate
      - infisCode
-     - optionalFields
+     - orgStructureIdList
+     - patientOptionalFields
+     - sluchOptionalFields
     """
-    self.send_getPatients(beginDate, endDate, infisCode, optionalFields)
-    return self.recv_getPatients()
+    self.send_getXMLRegisters(contractId, beginDate, endDate, infisCode, orgStructureIdList, patientOptionalFields, sluchOptionalFields)
+    return self.recv_getXMLRegisters()
 
-  def send_getPatients(self, beginDate, endDate, infisCode, optionalFields):
-    self._oprot.writeMessageBegin('getPatients', TMessageType.CALL, self._seqid)
-    args = getPatients_args()
+  def send_getXMLRegisters(self, contractId, beginDate, endDate, infisCode, orgStructureIdList, patientOptionalFields, sluchOptionalFields):
+    self._oprot.writeMessageBegin('getXMLRegisters', TMessageType.CALL, self._seqid)
+    args = getXMLRegisters_args()
+    args.contractId = contractId
     args.beginDate = beginDate
     args.endDate = endDate
     args.infisCode = infisCode
-    args.optionalFields = optionalFields
+    args.orgStructureIdList = orgStructureIdList
+    args.patientOptionalFields = patientOptionalFields
+    args.sluchOptionalFields = sluchOptionalFields
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_getPatients(self, ):
+  def recv_getXMLRegisters(self, ):
     (fname, mtype, rseqid) = self._iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
       x.read(self._iprot)
       self._iprot.readMessageEnd()
       raise x
-    result = getPatients_result()
+    result = getXMLRegisters_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
     if result.success is not None:
       return result.success
-    if result.argExc is not None:
-      raise result.argExc
+    if result.infisExc is not None:
+      raise result.infisExc
+    if result.contractExc is not None:
+      raise result.contractExc
+    if result.datesExc is not None:
+      raise result.datesExc
+    if result.nfExc is not None:
+      raise result.nfExc
     if result.sqlExc is not None:
       raise result.sqlExc
-    if result.exc is not None:
-      raise result.exc
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "getPatients failed: unknown result");
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getXMLRegisters failed: unknown result");
 
-  def getSluchByPatients(self, patientId, beginDate, endDate, infisCode, optionalFields):
+  def getOrgStructures(self, organisationInfis):
     """
     Parameters:
-     - patientId
-     - beginDate
-     - endDate
-     - infisCode
-     - optionalFields
+     - organisationInfis
     """
-    self.send_getSluchByPatients(patientId, beginDate, endDate, infisCode, optionalFields)
-    return self.recv_getSluchByPatients()
+    self.send_getOrgStructures(organisationInfis)
+    return self.recv_getOrgStructures()
 
-  def send_getSluchByPatients(self, patientId, beginDate, endDate, infisCode, optionalFields):
-    self._oprot.writeMessageBegin('getSluchByPatients', TMessageType.CALL, self._seqid)
-    args = getSluchByPatients_args()
-    args.patientId = patientId
-    args.beginDate = beginDate
-    args.endDate = endDate
-    args.infisCode = infisCode
-    args.optionalFields = optionalFields
+  def send_getOrgStructures(self, organisationInfis):
+    self._oprot.writeMessageBegin('getOrgStructures', TMessageType.CALL, self._seqid)
+    args = getOrgStructures_args()
+    args.organisationInfis = organisationInfis
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_getSluchByPatients(self, ):
+  def recv_getOrgStructures(self, ):
     (fname, mtype, rseqid) = self._iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
       x.read(self._iprot)
       self._iprot.readMessageEnd()
       raise x
-    result = getSluchByPatients_result()
+    result = getOrgStructures_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
     if result.success is not None:
       return result.success
-    if result.argExc is not None:
-      raise result.argExc
-    if result.sqlExc is not None:
-      raise result.sqlExc
-    if result.exc is not None:
-      raise result.exc
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "getSluchByPatients failed: unknown result");
+    if result.infisExc is not None:
+      raise result.infisExc
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getOrgStructures failed: unknown result");
 
   def changeClientPolicy(self, patientId, newPolicy):
     """
@@ -308,9 +381,11 @@ class Processor(Iface, TProcessor):
   def __init__(self, handler):
     self._handler = handler
     self._processMap = {}
-    self._processMap["prepareTables"] = Processor.process_prepareTables
-    self._processMap["getPatients"] = Processor.process_getPatients
-    self._processMap["getSluchByPatients"] = Processor.process_getSluchByPatients
+    self._processMap["getAvailableAccounts"] = Processor.process_getAvailableAccounts
+    self._processMap["getAccountItems"] = Processor.process_getAccountItems
+    self._processMap["deleteAccount"] = Processor.process_deleteAccount
+    self._processMap["getXMLRegisters"] = Processor.process_getXMLRegisters
+    self._processMap["getOrgStructures"] = Processor.process_getOrgStructures
     self._processMap["changeClientPolicy"] = Processor.process_changeClientPolicy
     self._processMap["getDBFStationary"] = Processor.process_getDBFStationary
     self._processMap["getDBFPoliclinic"] = Processor.process_getDBFPoliclinic
@@ -330,49 +405,74 @@ class Processor(Iface, TProcessor):
       self._processMap[name](self, seqid, iprot, oprot)
     return True
 
-  def process_prepareTables(self, seqid, iprot, oprot):
-    args = prepareTables_args()
+  def process_getAvailableAccounts(self, seqid, iprot, oprot):
+    args = getAvailableAccounts_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = prepareTables_result()
-    result.success = self._handler.prepareTables()
-    oprot.writeMessageBegin("prepareTables", TMessageType.REPLY, seqid)
+    result = getAvailableAccounts_result()
+    result.success = self._handler.getAvailableAccounts()
+    oprot.writeMessageBegin("getAvailableAccounts", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
-  def process_getPatients(self, seqid, iprot, oprot):
-    args = getPatients_args()
+  def process_getAccountItems(self, seqid, iprot, oprot):
+    args = getAccountItems_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = getPatients_result()
+    result = getAccountItems_result()
     try:
-      result.success = self._handler.getPatients(args.beginDate, args.endDate, args.infisCode, args.optionalFields)
-    except InvalidArgumentException as argExc:
-      result.argExc = argExc
-    except SQLException as sqlExc:
-      result.sqlExc = sqlExc
-    except NotFoundException as exc:
-      result.exc = exc
-    oprot.writeMessageBegin("getPatients", TMessageType.REPLY, seqid)
+      result.success = self._handler.getAccountItems(args.accountId)
+    except NotFoundException as nfExc:
+      result.nfExc = nfExc
+    oprot.writeMessageBegin("getAccountItems", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
-  def process_getSluchByPatients(self, seqid, iprot, oprot):
-    args = getSluchByPatients_args()
+  def process_deleteAccount(self, seqid, iprot, oprot):
+    args = deleteAccount_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = getSluchByPatients_result()
+    result = deleteAccount_result()
+    result.success = self._handler.deleteAccount(args.accountId)
+    oprot.writeMessageBegin("deleteAccount", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_getXMLRegisters(self, seqid, iprot, oprot):
+    args = getXMLRegisters_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = getXMLRegisters_result()
     try:
-      result.success = self._handler.getSluchByPatients(args.patientId, args.beginDate, args.endDate, args.infisCode, args.optionalFields)
-    except InvalidArgumentException as argExc:
-      result.argExc = argExc
+      result.success = self._handler.getXMLRegisters(args.contractId, args.beginDate, args.endDate, args.infisCode, args.orgStructureIdList, args.patientOptionalFields, args.sluchOptionalFields)
+    except InvalidOrganizationInfisException as infisExc:
+      result.infisExc = infisExc
+    except InvalidContractException as contractExc:
+      result.contractExc = contractExc
+    except InvalidDateIntervalException as datesExc:
+      result.datesExc = datesExc
+    except NotFoundException as nfExc:
+      result.nfExc = nfExc
     except SQLException as sqlExc:
       result.sqlExc = sqlExc
-    except NotFoundException as exc:
-      result.exc = exc
-    oprot.writeMessageBegin("getSluchByPatients", TMessageType.REPLY, seqid)
+    oprot.writeMessageBegin("getXMLRegisters", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_getOrgStructures(self, seqid, iprot, oprot):
+    args = getOrgStructures_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = getOrgStructures_result()
+    try:
+      result.success = self._handler.getOrgStructures(args.organisationInfis)
+    except InvalidOrganizationInfisException as infisExc:
+      result.infisExc = infisExc
+    oprot.writeMessageBegin("getOrgStructures", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -432,7 +532,7 @@ class Processor(Iface, TProcessor):
 
 # HELPER FUNCTIONS AND STRUCTURES
 
-class prepareTables_args:
+class getAvailableAccounts_args(object):
 
   thrift_spec = (
   )
@@ -455,7 +555,7 @@ class prepareTables_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('prepareTables_args')
+    oprot.writeStructBegin('getAvailableAccounts_args')
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -474,14 +574,14 @@ class prepareTables_args:
   def __ne__(self, other):
     return not (self == other)
 
-class prepareTables_result:
+class getAvailableAccounts_result(object):
   """
   Attributes:
    - success
   """
 
   thrift_spec = (
-    (0, TType.I32, 'success', None, None, ), # 0
+    (0, TType.LIST, 'success', (TType.STRUCT,(Account, Account.thrift_spec)), None, ), # 0
   )
 
   def __init__(self, success=None,):
@@ -497,96 +597,13 @@ class prepareTables_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.I32:
-          self.success = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('prepareTables_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.I32, 0)
-      oprot.writeI32(self.success)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class getPatients_args:
-  """
-  Attributes:
-   - beginDate
-   - endDate
-   - infisCode
-   - optionalFields
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.I64, 'beginDate', None, None, ), # 1
-    (2, TType.I64, 'endDate', None, None, ), # 2
-    (3, TType.STRING, 'infisCode', None, None, ), # 3
-    (4, TType.LIST, 'optionalFields', (TType.I32,None), None, ), # 4
-  )
-
-  def __init__(self, beginDate=None, endDate=None, infisCode=None, optionalFields=None,):
-    self.beginDate = beginDate
-    self.endDate = endDate
-    self.infisCode = infisCode
-    self.optionalFields = optionalFields
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.I64:
-          self.beginDate = iprot.readI64();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.I64:
-          self.endDate = iprot.readI64();
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.STRING:
-          self.infisCode = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 4:
         if ftype == TType.LIST:
-          self.optionalFields = []
-          (_etype17, _size14) = iprot.readListBegin()
-          for _i18 in xrange(_size14):
-            _elem19 = iprot.readI32();
-            self.optionalFields.append(_elem19)
+          self.success = []
+          (_etype33, _size30) = iprot.readListBegin()
+          for _i34 in xrange(_size30):
+            _elem35 = Account()
+            _elem35.read(iprot)
+            self.success.append(_elem35)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -599,24 +616,12 @@ class getPatients_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('getPatients_args')
-    if self.beginDate is not None:
-      oprot.writeFieldBegin('beginDate', TType.I64, 1)
-      oprot.writeI64(self.beginDate)
-      oprot.writeFieldEnd()
-    if self.endDate is not None:
-      oprot.writeFieldBegin('endDate', TType.I64, 2)
-      oprot.writeI64(self.endDate)
-      oprot.writeFieldEnd()
-    if self.infisCode is not None:
-      oprot.writeFieldBegin('infisCode', TType.STRING, 3)
-      oprot.writeString(self.infisCode)
-      oprot.writeFieldEnd()
-    if self.optionalFields is not None:
-      oprot.writeFieldBegin('optionalFields', TType.LIST, 4)
-      oprot.writeListBegin(TType.I32, len(self.optionalFields))
-      for iter20 in self.optionalFields:
-        oprot.writeI32(iter20)
+    oprot.writeStructBegin('getAvailableAccounts_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.LIST, 0)
+      oprot.writeListBegin(TType.STRUCT, len(self.success))
+      for iter36 in self.success:
+        iter36.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -637,27 +642,81 @@ class getPatients_args:
   def __ne__(self, other):
     return not (self == other)
 
-class getPatients_result:
+class getAccountItems_args(object):
   """
   Attributes:
-   - success
-   - argExc
-   - sqlExc
-   - exc
+   - accountId
   """
 
   thrift_spec = (
-    (0, TType.LIST, 'success', (TType.STRUCT,(Patient, Patient.thrift_spec)), None, ), # 0
-    (1, TType.STRUCT, 'argExc', (InvalidArgumentException, InvalidArgumentException.thrift_spec), None, ), # 1
-    (2, TType.STRUCT, 'sqlExc', (SQLException, SQLException.thrift_spec), None, ), # 2
-    (3, TType.STRUCT, 'exc', (NotFoundException, NotFoundException.thrift_spec), None, ), # 3
+    None, # 0
+    (1, TType.I32, 'accountId', None, None, ), # 1
   )
 
-  def __init__(self, success=None, argExc=None, sqlExc=None, exc=None,):
+  def __init__(self, accountId=None,):
+    self.accountId = accountId
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.accountId = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getAccountItems_args')
+    if self.accountId is not None:
+      oprot.writeFieldBegin('accountId', TType.I32, 1)
+      oprot.writeI32(self.accountId)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getAccountItems_result(object):
+  """
+  Attributes:
+   - success
+   - nfExc
+  """
+
+  thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT,(AccountItem, AccountItem.thrift_spec)), None, ), # 0
+    (1, TType.STRUCT, 'nfExc', (NotFoundException, NotFoundException.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, success=None, nfExc=None,):
     self.success = success
-    self.argExc = argExc
-    self.sqlExc = sqlExc
-    self.exc = exc
+    self.nfExc = nfExc
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -671,30 +730,18 @@ class getPatients_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype24, _size21) = iprot.readListBegin()
-          for _i25 in xrange(_size21):
-            _elem26 = Patient()
-            _elem26.read(iprot)
-            self.success.append(_elem26)
+          (_etype40, _size37) = iprot.readListBegin()
+          for _i41 in xrange(_size37):
+            _elem42 = AccountItem()
+            _elem42.read(iprot)
+            self.success.append(_elem42)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 1:
         if ftype == TType.STRUCT:
-          self.argExc = InvalidArgumentException()
-          self.argExc.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRUCT:
-          self.sqlExc = SQLException()
-          self.sqlExc.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.STRUCT:
-          self.exc = NotFoundException()
-          self.exc.read(iprot)
+          self.nfExc = NotFoundException()
+          self.nfExc.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -706,25 +753,17 @@ class getPatients_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('getPatients_result')
+    oprot.writeStructBegin('getAccountItems_result')
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter27 in self.success:
-        iter27.write(oprot)
+      for iter43 in self.success:
+        iter43.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
-    if self.argExc is not None:
-      oprot.writeFieldBegin('argExc', TType.STRUCT, 1)
-      self.argExc.write(oprot)
-      oprot.writeFieldEnd()
-    if self.sqlExc is not None:
-      oprot.writeFieldBegin('sqlExc', TType.STRUCT, 2)
-      self.sqlExc.write(oprot)
-      oprot.writeFieldEnd()
-    if self.exc is not None:
-      oprot.writeFieldBegin('exc', TType.STRUCT, 3)
-      self.exc.write(oprot)
+    if self.nfExc is not None:
+      oprot.writeFieldBegin('nfExc', TType.STRUCT, 1)
+      self.nfExc.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -744,31 +783,19 @@ class getPatients_result:
   def __ne__(self, other):
     return not (self == other)
 
-class getSluchByPatients_args:
+class deleteAccount_args(object):
   """
   Attributes:
-   - patientId
-   - beginDate
-   - endDate
-   - infisCode
-   - optionalFields
+   - accountId
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.LIST, 'patientId', (TType.I32,None), None, ), # 1
-    (2, TType.I64, 'beginDate', None, None, ), # 2
-    (3, TType.I64, 'endDate', None, None, ), # 3
-    (4, TType.STRING, 'infisCode', None, None, ), # 4
-    (5, TType.LIST, 'optionalFields', (TType.I32,None), None, ), # 5
+    (1, TType.I32, 'accountId', None, None, ), # 1
   )
 
-  def __init__(self, patientId=None, beginDate=None, endDate=None, infisCode=None, optionalFields=None,):
-    self.patientId = patientId
-    self.beginDate = beginDate
-    self.endDate = endDate
-    self.infisCode = infisCode
-    self.optionalFields = optionalFields
+  def __init__(self, accountId=None,):
+    self.accountId = accountId
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -780,13 +807,145 @@ class getSluchByPatients_args:
       if ftype == TType.STOP:
         break
       if fid == 1:
-        if ftype == TType.LIST:
-          self.patientId = []
-          (_etype31, _size28) = iprot.readListBegin()
-          for _i32 in xrange(_size28):
-            _elem33 = iprot.readI32();
-            self.patientId.append(_elem33)
-          iprot.readListEnd()
+        if ftype == TType.I32:
+          self.accountId = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('deleteAccount_args')
+    if self.accountId is not None:
+      oprot.writeFieldBegin('accountId', TType.I32, 1)
+      oprot.writeI32(self.accountId)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class deleteAccount_result(object):
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    (0, TType.BOOL, 'success', None, None, ), # 0
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.BOOL:
+          self.success = iprot.readBool();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('deleteAccount_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.BOOL, 0)
+      oprot.writeBool(self.success)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getXMLRegisters_args(object):
+  """
+  Attributes:
+   - contractId
+   - beginDate
+   - endDate
+   - infisCode
+   - orgStructureIdList
+   - patientOptionalFields
+   - sluchOptionalFields
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'contractId', None, None, ), # 1
+    (2, TType.I64, 'beginDate', None, None, ), # 2
+    (3, TType.I64, 'endDate', None, None, ), # 3
+    (4, TType.STRING, 'infisCode', None, None, ), # 4
+    (5, TType.LIST, 'orgStructureIdList', (TType.I32,None), None, ), # 5
+    (6, TType.SET, 'patientOptionalFields', (TType.I32,None), None, ), # 6
+    (7, TType.SET, 'sluchOptionalFields', (TType.I32,None), None, ), # 7
+  )
+
+  def __init__(self, contractId=None, beginDate=None, endDate=None, infisCode=None, orgStructureIdList=None, patientOptionalFields=None, sluchOptionalFields=None,):
+    self.contractId = contractId
+    self.beginDate = beginDate
+    self.endDate = endDate
+    self.infisCode = infisCode
+    self.orgStructureIdList = orgStructureIdList
+    self.patientOptionalFields = patientOptionalFields
+    self.sluchOptionalFields = sluchOptionalFields
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.contractId = iprot.readI32();
         else:
           iprot.skip(ftype)
       elif fid == 2:
@@ -801,17 +960,37 @@ class getSluchByPatients_args:
           iprot.skip(ftype)
       elif fid == 4:
         if ftype == TType.STRING:
-          self.infisCode = iprot.readString();
+          self.infisCode = iprot.readString().decode('utf-8')
         else:
           iprot.skip(ftype)
       elif fid == 5:
         if ftype == TType.LIST:
-          self.optionalFields = []
-          (_etype37, _size34) = iprot.readListBegin()
-          for _i38 in xrange(_size34):
-            _elem39 = iprot.readI32();
-            self.optionalFields.append(_elem39)
+          self.orgStructureIdList = []
+          (_etype47, _size44) = iprot.readListBegin()
+          for _i48 in xrange(_size44):
+            _elem49 = iprot.readI32();
+            self.orgStructureIdList.append(_elem49)
           iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.SET:
+          self.patientOptionalFields = set()
+          (_etype53, _size50) = iprot.readSetBegin()
+          for _i54 in xrange(_size50):
+            _elem55 = iprot.readI32();
+            self.patientOptionalFields.add(_elem55)
+          iprot.readSetEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.SET:
+          self.sluchOptionalFields = set()
+          (_etype59, _size56) = iprot.readSetBegin()
+          for _i60 in xrange(_size56):
+            _elem61 = iprot.readI32();
+            self.sluchOptionalFields.add(_elem61)
+          iprot.readSetEnd()
         else:
           iprot.skip(ftype)
       else:
@@ -823,13 +1002,10 @@ class getSluchByPatients_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('getSluchByPatients_args')
-    if self.patientId is not None:
-      oprot.writeFieldBegin('patientId', TType.LIST, 1)
-      oprot.writeListBegin(TType.I32, len(self.patientId))
-      for iter40 in self.patientId:
-        oprot.writeI32(iter40)
-      oprot.writeListEnd()
+    oprot.writeStructBegin('getXMLRegisters_args')
+    if self.contractId is not None:
+      oprot.writeFieldBegin('contractId', TType.I32, 1)
+      oprot.writeI32(self.contractId)
       oprot.writeFieldEnd()
     if self.beginDate is not None:
       oprot.writeFieldBegin('beginDate', TType.I64, 2)
@@ -841,14 +1017,28 @@ class getSluchByPatients_args:
       oprot.writeFieldEnd()
     if self.infisCode is not None:
       oprot.writeFieldBegin('infisCode', TType.STRING, 4)
-      oprot.writeString(self.infisCode)
+      oprot.writeString(self.infisCode.encode('utf-8'))
       oprot.writeFieldEnd()
-    if self.optionalFields is not None:
-      oprot.writeFieldBegin('optionalFields', TType.LIST, 5)
-      oprot.writeListBegin(TType.I32, len(self.optionalFields))
-      for iter41 in self.optionalFields:
-        oprot.writeI32(iter41)
+    if self.orgStructureIdList is not None:
+      oprot.writeFieldBegin('orgStructureIdList', TType.LIST, 5)
+      oprot.writeListBegin(TType.I32, len(self.orgStructureIdList))
+      for iter62 in self.orgStructureIdList:
+        oprot.writeI32(iter62)
       oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.patientOptionalFields is not None:
+      oprot.writeFieldBegin('patientOptionalFields', TType.SET, 6)
+      oprot.writeSetBegin(TType.I32, len(self.patientOptionalFields))
+      for iter63 in self.patientOptionalFields:
+        oprot.writeI32(iter63)
+      oprot.writeSetEnd()
+      oprot.writeFieldEnd()
+    if self.sluchOptionalFields is not None:
+      oprot.writeFieldBegin('sluchOptionalFields', TType.SET, 7)
+      oprot.writeSetBegin(TType.I32, len(self.sluchOptionalFields))
+      for iter64 in self.sluchOptionalFields:
+        oprot.writeI32(iter64)
+      oprot.writeSetEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -868,27 +1058,33 @@ class getSluchByPatients_args:
   def __ne__(self, other):
     return not (self == other)
 
-class getSluchByPatients_result:
+class getXMLRegisters_result(object):
   """
   Attributes:
    - success
-   - argExc
+   - infisExc
+   - contractExc
+   - datesExc
+   - nfExc
    - sqlExc
-   - exc
   """
 
   thrift_spec = (
-    (0, TType.MAP, 'success', (TType.I32,None,TType.LIST,(TType.STRUCT,(Sluch, Sluch.thrift_spec))), None, ), # 0
-    (1, TType.STRUCT, 'argExc', (InvalidArgumentException, InvalidArgumentException.thrift_spec), None, ), # 1
-    (2, TType.STRUCT, 'sqlExc', (SQLException, SQLException.thrift_spec), None, ), # 2
-    (3, TType.STRUCT, 'exc', (NotFoundException, NotFoundException.thrift_spec), None, ), # 3
+    (0, TType.STRUCT, 'success', (XMLRegisters, XMLRegisters.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'infisExc', (InvalidOrganizationInfisException, InvalidOrganizationInfisException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'contractExc', (InvalidContractException, InvalidContractException.thrift_spec), None, ), # 2
+    (3, TType.STRUCT, 'datesExc', (InvalidDateIntervalException, InvalidDateIntervalException.thrift_spec), None, ), # 3
+    (4, TType.STRUCT, 'nfExc', (NotFoundException, NotFoundException.thrift_spec), None, ), # 4
+    (5, TType.STRUCT, 'sqlExc', (SQLException, SQLException.thrift_spec), None, ), # 5
   )
 
-  def __init__(self, success=None, argExc=None, sqlExc=None, exc=None,):
+  def __init__(self, success=None, infisExc=None, contractExc=None, datesExc=None, nfExc=None, sqlExc=None,):
     self.success = success
-    self.argExc = argExc
+    self.infisExc = infisExc
+    self.contractExc = contractExc
+    self.datesExc = datesExc
+    self.nfExc = nfExc
     self.sqlExc = sqlExc
-    self.exc = exc
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -900,38 +1096,39 @@ class getSluchByPatients_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.MAP:
-          self.success = {}
-          (_ktype43, _vtype44, _size42 ) = iprot.readMapBegin() 
-          for _i46 in xrange(_size42):
-            _key47 = iprot.readI32();
-            _val48 = []
-            (_etype52, _size49) = iprot.readListBegin()
-            for _i53 in xrange(_size49):
-              _elem54 = Sluch()
-              _elem54.read(iprot)
-              _val48.append(_elem54)
-            iprot.readListEnd()
-            self.success[_key47] = _val48
-          iprot.readMapEnd()
+        if ftype == TType.STRUCT:
+          self.success = XMLRegisters()
+          self.success.read(iprot)
         else:
           iprot.skip(ftype)
       elif fid == 1:
         if ftype == TType.STRUCT:
-          self.argExc = InvalidArgumentException()
-          self.argExc.read(iprot)
+          self.infisExc = InvalidOrganizationInfisException()
+          self.infisExc.read(iprot)
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.STRUCT:
-          self.sqlExc = SQLException()
-          self.sqlExc.read(iprot)
+          self.contractExc = InvalidContractException()
+          self.contractExc.read(iprot)
         else:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.STRUCT:
-          self.exc = NotFoundException()
-          self.exc.read(iprot)
+          self.datesExc = InvalidDateIntervalException()
+          self.datesExc.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRUCT:
+          self.nfExc = NotFoundException()
+          self.nfExc.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRUCT:
+          self.sqlExc = SQLException()
+          self.sqlExc.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -943,29 +1140,30 @@ class getSluchByPatients_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('getSluchByPatients_result')
+    oprot.writeStructBegin('getXMLRegisters_result')
     if self.success is not None:
-      oprot.writeFieldBegin('success', TType.MAP, 0)
-      oprot.writeMapBegin(TType.I32, TType.LIST, len(self.success))
-      for kiter55,viter56 in self.success.items():
-        oprot.writeI32(kiter55)
-        oprot.writeListBegin(TType.STRUCT, len(viter56))
-        for iter57 in viter56:
-          iter57.write(oprot)
-        oprot.writeListEnd()
-      oprot.writeMapEnd()
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
       oprot.writeFieldEnd()
-    if self.argExc is not None:
-      oprot.writeFieldBegin('argExc', TType.STRUCT, 1)
-      self.argExc.write(oprot)
+    if self.infisExc is not None:
+      oprot.writeFieldBegin('infisExc', TType.STRUCT, 1)
+      self.infisExc.write(oprot)
+      oprot.writeFieldEnd()
+    if self.contractExc is not None:
+      oprot.writeFieldBegin('contractExc', TType.STRUCT, 2)
+      self.contractExc.write(oprot)
+      oprot.writeFieldEnd()
+    if self.datesExc is not None:
+      oprot.writeFieldBegin('datesExc', TType.STRUCT, 3)
+      self.datesExc.write(oprot)
+      oprot.writeFieldEnd()
+    if self.nfExc is not None:
+      oprot.writeFieldBegin('nfExc', TType.STRUCT, 4)
+      self.nfExc.write(oprot)
       oprot.writeFieldEnd()
     if self.sqlExc is not None:
-      oprot.writeFieldBegin('sqlExc', TType.STRUCT, 2)
+      oprot.writeFieldBegin('sqlExc', TType.STRUCT, 5)
       self.sqlExc.write(oprot)
-      oprot.writeFieldEnd()
-    if self.exc is not None:
-      oprot.writeFieldBegin('exc', TType.STRUCT, 3)
-      self.exc.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -985,7 +1183,148 @@ class getSluchByPatients_result:
   def __ne__(self, other):
     return not (self == other)
 
-class changeClientPolicy_args:
+class getOrgStructures_args(object):
+  """
+  Attributes:
+   - organisationInfis
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'organisationInfis', None, None, ), # 1
+  )
+
+  def __init__(self, organisationInfis=None,):
+    self.organisationInfis = organisationInfis
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.organisationInfis = iprot.readString().decode('utf-8')
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getOrgStructures_args')
+    if self.organisationInfis is not None:
+      oprot.writeFieldBegin('organisationInfis', TType.STRING, 1)
+      oprot.writeString(self.organisationInfis.encode('utf-8'))
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getOrgStructures_result(object):
+  """
+  Attributes:
+   - success
+   - infisExc
+  """
+
+  thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT,(OrgStructure, OrgStructure.thrift_spec)), None, ), # 0
+    (1, TType.STRUCT, 'infisExc', (InvalidOrganizationInfisException, InvalidOrganizationInfisException.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, success=None, infisExc=None,):
+    self.success = success
+    self.infisExc = infisExc
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.LIST:
+          self.success = []
+          (_etype68, _size65) = iprot.readListBegin()
+          for _i69 in xrange(_size65):
+            _elem70 = OrgStructure()
+            _elem70.read(iprot)
+            self.success.append(_elem70)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.infisExc = InvalidOrganizationInfisException()
+          self.infisExc.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getOrgStructures_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.LIST, 0)
+      oprot.writeListBegin(TType.STRUCT, len(self.success))
+      for iter71 in self.success:
+        iter71.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.infisExc is not None:
+      oprot.writeFieldBegin('infisExc', TType.STRUCT, 1)
+      self.infisExc.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class changeClientPolicy_args(object):
   """
   Attributes:
    - patientId
@@ -1058,7 +1397,7 @@ class changeClientPolicy_args:
   def __ne__(self, other):
     return not (self == other)
 
-class changeClientPolicy_result:
+class changeClientPolicy_result(object):
   """
   Attributes:
    - success
@@ -1143,7 +1482,7 @@ class changeClientPolicy_result:
   def __ne__(self, other):
     return not (self == other)
 
-class getDBFStationary_args:
+class getDBFStationary_args(object):
   """
   Attributes:
    - beginDate
@@ -1184,7 +1523,7 @@ class getDBFStationary_args:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.STRING:
-          self.infisCode = iprot.readString();
+          self.infisCode = iprot.readString().decode('utf-8')
         else:
           iprot.skip(ftype)
       else:
@@ -1207,7 +1546,7 @@ class getDBFStationary_args:
       oprot.writeFieldEnd()
     if self.infisCode is not None:
       oprot.writeFieldBegin('infisCode', TType.STRING, 3)
-      oprot.writeString(self.infisCode)
+      oprot.writeString(self.infisCode.encode('utf-8'))
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -1227,7 +1566,7 @@ class getDBFStationary_args:
   def __ne__(self, other):
     return not (self == other)
 
-class getDBFStationary_result:
+class getDBFStationary_result(object):
   """
   Attributes:
    - success
@@ -1261,11 +1600,11 @@ class getDBFStationary_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype61, _size58) = iprot.readListBegin()
-          for _i62 in xrange(_size58):
-            _elem63 = DBFStationary()
-            _elem63.read(iprot)
-            self.success.append(_elem63)
+          (_etype75, _size72) = iprot.readListBegin()
+          for _i76 in xrange(_size72):
+            _elem77 = DBFStationary()
+            _elem77.read(iprot)
+            self.success.append(_elem77)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -1300,8 +1639,8 @@ class getDBFStationary_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter64 in self.success:
-        iter64.write(oprot)
+      for iter78 in self.success:
+        iter78.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.argExc is not None:
@@ -1334,7 +1673,7 @@ class getDBFStationary_result:
   def __ne__(self, other):
     return not (self == other)
 
-class getDBFPoliclinic_args:
+class getDBFPoliclinic_args(object):
   """
   Attributes:
    - beginDate
@@ -1375,7 +1714,7 @@ class getDBFPoliclinic_args:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.STRING:
-          self.infisCode = iprot.readString();
+          self.infisCode = iprot.readString().decode('utf-8')
         else:
           iprot.skip(ftype)
       else:
@@ -1398,7 +1737,7 @@ class getDBFPoliclinic_args:
       oprot.writeFieldEnd()
     if self.infisCode is not None:
       oprot.writeFieldBegin('infisCode', TType.STRING, 3)
-      oprot.writeString(self.infisCode)
+      oprot.writeString(self.infisCode.encode('utf-8'))
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -1418,7 +1757,7 @@ class getDBFPoliclinic_args:
   def __ne__(self, other):
     return not (self == other)
 
-class getDBFPoliclinic_result:
+class getDBFPoliclinic_result(object):
   """
   Attributes:
    - success
@@ -1452,11 +1791,11 @@ class getDBFPoliclinic_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype68, _size65) = iprot.readListBegin()
-          for _i69 in xrange(_size65):
-            _elem70 = DBFPoliclinic()
-            _elem70.read(iprot)
-            self.success.append(_elem70)
+          (_etype82, _size79) = iprot.readListBegin()
+          for _i83 in xrange(_size79):
+            _elem84 = DBFPoliclinic()
+            _elem84.read(iprot)
+            self.success.append(_elem84)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -1491,8 +1830,8 @@ class getDBFPoliclinic_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter71 in self.success:
-        iter71.write(oprot)
+      for iter85 in self.success:
+        iter85.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.argExc is not None:
