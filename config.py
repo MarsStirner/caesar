@@ -18,7 +18,7 @@ SERVER_PORT = 5000
 
 SYSTEM_USER = 'caesar'
 
-CSRF_ENABLED = True
+WTF_CSRF_ENABLED = True
 SECRET_KEY = ''
 
 BLUEPRINTS_DIR = 'blueprints'
