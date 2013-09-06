@@ -3,7 +3,9 @@ from flask import render_template, abort, request, redirect, url_for, flash, ses
 from flask.views import MethodView
 
 from jinja2 import TemplateNotFound
-from flask.ext.wtf import Form, TextField, PasswordField, IntegerField, Required
+from wtforms import TextField, PasswordField, IntegerField
+from flask_wtf import Form
+from wtforms.validators import Required
 from flask.ext.principal import Identity, AnonymousIdentity, identity_changed
 from flask.ext.principal import identity_loaded, Permission, RoleNeed, UserNeed
 from flask.ext.login import login_user, logout_user, login_required, current_user

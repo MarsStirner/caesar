@@ -3,7 +3,7 @@ SQLAlchemy
 alembic
 Flask-SQLAlchemy
 wtforms
-Flask-WTF==0.8.4
+Flask-WTF
 Flask-Admin
 pytz==2013b
 Flask-BabelEx

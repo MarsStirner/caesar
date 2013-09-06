@@ -3,7 +3,6 @@ import os
 from flask import render_template, abort, request, redirect, url_for
 
 from jinja2 import TemplateNotFound, Environment, PackageLoader
-from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
 
 from ..lib.thrift_service.TARIFF.ttypes import InvalidArgumentException, SQLException, TException
 from ..app import module, _config

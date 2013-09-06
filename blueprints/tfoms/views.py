@@ -5,7 +5,9 @@ from datetime import datetime
 
 from flask import render_template, abort, request, redirect, jsonify, send_from_directory, url_for, json, current_app
 from flask import flash
-from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required, SelectField
+from wtforms import TextField, BooleanField, IntegerField, SelectField
+from flask_wtf import Form
+from wtforms.validators import Required
 from flask.ext.sqlalchemy import Pagination
 
 from jinja2 import TemplateNotFound, Environment, PackageLoader

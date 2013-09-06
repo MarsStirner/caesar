@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
+from wtforms import TextField, BooleanField, IntegerField
+from flask_wtf import Form
+from wtforms.validators import Required
 from models import Template
 
 

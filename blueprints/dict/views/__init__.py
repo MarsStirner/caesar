@@ -2,7 +2,9 @@
 from flask import render_template, abort, request, redirect, url_for
 
 from jinja2 import TemplateNotFound
-from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
+from wtforms import TextField, BooleanField, IntegerField
+from wtforms.validators import Required
+from flask_wtf import Form
 
 from ..app import module
 from ..models import ConfigVariables
