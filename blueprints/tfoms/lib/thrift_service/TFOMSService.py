@@ -55,6 +55,13 @@ class Iface(object):
     """
     pass
 
+  def getAvailableContracts(self, organisationInfis):
+    """
+    Parameters:
+     - organisationInfis
+    """
+    pass
+
   def changeClientPolicy(self, patientId, newPolicy):
     """
     Parameters:
@@ -260,6 +267,38 @@ class Client(Iface):
       raise result.infisExc
     raise TApplicationException(TApplicationException.MISSING_RESULT, "getOrgStructures failed: unknown result");
 
+  def getAvailableContracts(self, organisationInfis):
+    """
+    Parameters:
+     - organisationInfis
+    """
+    self.send_getAvailableContracts(organisationInfis)
+    return self.recv_getAvailableContracts()
+
+  def send_getAvailableContracts(self, organisationInfis):
+    self._oprot.writeMessageBegin('getAvailableContracts', TMessageType.CALL, self._seqid)
+    args = getAvailableContracts_args()
+    args.organisationInfis = organisationInfis
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_getAvailableContracts(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = getAvailableContracts_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    if result.infisExc is not None:
+      raise result.infisExc
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getAvailableContracts failed: unknown result");
+
   def changeClientPolicy(self, patientId, newPolicy):
     """
     Parameters:
@@ -386,6 +425,7 @@ class Processor(Iface, TProcessor):
     self._processMap["deleteAccount"] = Processor.process_deleteAccount
     self._processMap["getXMLRegisters"] = Processor.process_getXMLRegisters
     self._processMap["getOrgStructures"] = Processor.process_getOrgStructures
+    self._processMap["getAvailableContracts"] = Processor.process_getAvailableContracts
     self._processMap["changeClientPolicy"] = Processor.process_changeClientPolicy
     self._processMap["getDBFStationary"] = Processor.process_getDBFStationary
     self._processMap["getDBFPoliclinic"] = Processor.process_getDBFPoliclinic
@@ -473,6 +513,20 @@ class Processor(Iface, TProcessor):
     except InvalidOrganizationInfisException as infisExc:
       result.infisExc = infisExc
     oprot.writeMessageBegin("getOrgStructures", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_getAvailableContracts(self, seqid, iprot, oprot):
+    args = getAvailableContracts_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = getAvailableContracts_result()
+    try:
+      result.success = self._handler.getAvailableContracts(args.organisationInfis)
+    except InvalidOrganizationInfisException as infisExc:
+      result.infisExc = infisExc
+    oprot.writeMessageBegin("getAvailableContracts", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -1324,6 +1378,147 @@ class getOrgStructures_result(object):
   def __ne__(self, other):
     return not (self == other)
 
+class getAvailableContracts_args(object):
+  """
+  Attributes:
+   - organisationInfis
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'organisationInfis', None, None, ), # 1
+  )
+
+  def __init__(self, organisationInfis=None,):
+    self.organisationInfis = organisationInfis
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.organisationInfis = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getAvailableContracts_args')
+    if self.organisationInfis is not None:
+      oprot.writeFieldBegin('organisationInfis', TType.STRING, 1)
+      oprot.writeString(self.organisationInfis)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getAvailableContracts_result(object):
+  """
+  Attributes:
+   - success
+   - infisExc
+  """
+
+  thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT,(Contract, Contract.thrift_spec)), None, ), # 0
+    (1, TType.STRUCT, 'infisExc', (InvalidOrganizationInfisException, InvalidOrganizationInfisException.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, success=None, infisExc=None,):
+    self.success = success
+    self.infisExc = infisExc
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.LIST:
+          self.success = []
+          (_etype75, _size72) = iprot.readListBegin()
+          for _i76 in xrange(_size72):
+            _elem77 = Contract()
+            _elem77.read(iprot)
+            self.success.append(_elem77)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.infisExc = InvalidOrganizationInfisException()
+          self.infisExc.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getAvailableContracts_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.LIST, 0)
+      oprot.writeListBegin(TType.STRUCT, len(self.success))
+      for iter78 in self.success:
+        iter78.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.infisExc is not None:
+      oprot.writeFieldBegin('infisExc', TType.STRUCT, 1)
+      self.infisExc.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class changeClientPolicy_args(object):
   """
   Attributes:
@@ -1600,11 +1795,11 @@ class getDBFStationary_result(object):
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype75, _size72) = iprot.readListBegin()
-          for _i76 in xrange(_size72):
-            _elem77 = DBFStationary()
-            _elem77.read(iprot)
-            self.success.append(_elem77)
+          (_etype82, _size79) = iprot.readListBegin()
+          for _i83 in xrange(_size79):
+            _elem84 = DBFStationary()
+            _elem84.read(iprot)
+            self.success.append(_elem84)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -1639,8 +1834,8 @@ class getDBFStationary_result(object):
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter78 in self.success:
-        iter78.write(oprot)
+      for iter85 in self.success:
+        iter85.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.argExc is not None:
@@ -1791,11 +1986,11 @@ class getDBFPoliclinic_result(object):
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype82, _size79) = iprot.readListBegin()
-          for _i83 in xrange(_size79):
-            _elem84 = DBFPoliclinic()
-            _elem84.read(iprot)
-            self.success.append(_elem84)
+          (_etype89, _size86) = iprot.readListBegin()
+          for _i90 in xrange(_size86):
+            _elem91 = DBFPoliclinic()
+            _elem91.read(iprot)
+            self.success.append(_elem91)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -1830,8 +2025,8 @@ class getDBFPoliclinic_result(object):
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter85 in self.success:
-        iter85.write(oprot)
+      for iter92 in self.success:
+        iter92.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.argExc is not None:

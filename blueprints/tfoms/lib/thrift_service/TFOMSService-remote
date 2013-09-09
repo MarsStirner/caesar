@@ -28,6 +28,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  bool deleteAccount(int accountId)'
   print '  XMLRegisters getXMLRegisters(int contractId, timestamp beginDate, timestamp endDate, string infisCode,  orgStructureIdList,  patientOptionalFields,  sluchOptionalFields)'
   print '   getOrgStructures(string organisationInfis)'
+  print '   getAvailableContracts(string organisationInfis)'
   print '  int changeClientPolicy(int patientId, TClientPolicy newPolicy)'
   print '   getDBFStationary(timestamp beginDate, timestamp endDate, string infisCode)'
   print '   getDBFPoliclinic(timestamp beginDate, timestamp endDate, string infisCode)'
@@ -111,6 +112,12 @@ elif cmd == 'getOrgStructures':
     print 'getOrgStructures requires 1 args'
     sys.exit(1)
   pp.pprint(client.getOrgStructures(args[0],))
+
+elif cmd == 'getAvailableContracts':
+  if len(args) != 1:
+    print 'getAvailableContracts requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.getAvailableContracts(args[0],))
 
 elif cmd == 'changeClientPolicy':
   if len(args) != 2:

@@ -333,6 +333,22 @@ struct OrgStructure{
     3:required string name;
     4:optional int parentId;
 }
+/*
+Структура контрактов
+Поля:
+    1- Внутренний идентификатор в БД ЛПУ
+    2- номер договора
+    3- дата начала действия контракта
+    4- дата конца действия контракта
+    5- Постановление (основание договора)
+*/
+struct Contract{
+    1:required int id;
+    2:required string number;
+    3:required timestamp begDate;
+    4:required timestamp endDate;
+    5:required string resolution;
+}
 
 
 
@@ -372,7 +388,9 @@ exception InvalidDateIntervalException{
      2:int code;
 }
 
+//Сервис для работы с ТФОМС
 service TFOMSService{
+
 //Работа со счетами
     /*
         Получение всех доступных счетов (deleted = 0), в случае если счетов нету - пустой сисок.
@@ -447,9 +465,18 @@ service TFOMSService{
     list<OrgStructure> getOrgStructures(1:string organisationInfis)
         throws (1:InvalidOrganizationInfisException infisExc);
 
-    //Работа с ответом из тфомса
+//Работа с контрактами
+    /*
+        Получение всех контрактов, где получателем является заданное ЛПУ
+        Arguments:
+        1 -  string organisationInfis : Инфис код ЛПУ для которого необходимо вернуть контракту
+        Exceptions:
+        1 - InvalidOrganizationInfisException : нету организации с таким инфис-кодом
+    */
+    list<Contract> getAvailableContracts(1:string organisationInfis)
+        throws (1:InvalidOrganizationInfisException infisExc);
 
-
+//Работа с ответом из тфомса
 	//Загрузка измененных данных от ТФОМС
 	int changeClientPolicy(1:int patientId, 2:TClientPolicy newPolicy)  
 		throws (1:InvalidArgumentException argExc, 2:SQLException sqlExc);

@@ -3562,6 +3562,124 @@ class OrgStructure(object):
   def __ne__(self, other):
     return not (self == other)
 
+class Contract(object):
+  """
+  Attributes:
+   - id
+   - number
+   - begDate
+   - endDate
+   - resolution
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'id', None, None, ), # 1
+    (2, TType.STRING, 'number', None, None, ), # 2
+    (3, TType.I64, 'begDate', None, None, ), # 3
+    (4, TType.I64, 'endDate', None, None, ), # 4
+    (5, TType.STRING, 'resolution', None, None, ), # 5
+  )
+
+  def __init__(self, id=None, number=None, begDate=None, endDate=None, resolution=None,):
+    self.id = id
+    self.number = number
+    self.begDate = begDate
+    self.endDate = endDate
+    self.resolution = resolution
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.id = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.number = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I64:
+          self.begDate = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.I64:
+          self.endDate = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.resolution = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('Contract')
+    if self.id is not None:
+      oprot.writeFieldBegin('id', TType.I32, 1)
+      oprot.writeI32(self.id)
+      oprot.writeFieldEnd()
+    if self.number is not None:
+      oprot.writeFieldBegin('number', TType.STRING, 2)
+      oprot.writeString(self.number)
+      oprot.writeFieldEnd()
+    if self.begDate is not None:
+      oprot.writeFieldBegin('begDate', TType.I64, 3)
+      oprot.writeI64(self.begDate)
+      oprot.writeFieldEnd()
+    if self.endDate is not None:
+      oprot.writeFieldBegin('endDate', TType.I64, 4)
+      oprot.writeI64(self.endDate)
+      oprot.writeFieldEnd()
+    if self.resolution is not None:
+      oprot.writeFieldBegin('resolution', TType.STRING, 5)
+      oprot.writeString(self.resolution)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.id is None:
+      raise TProtocol.TProtocolException(message='Required field id is unset!')
+    if self.number is None:
+      raise TProtocol.TProtocolException(message='Required field number is unset!')
+    if self.begDate is None:
+      raise TProtocol.TProtocolException(message='Required field begDate is unset!')
+    if self.endDate is None:
+      raise TProtocol.TProtocolException(message='Required field endDate is unset!')
+    if self.resolution is None:
+      raise TProtocol.TProtocolException(message='Required field resolution is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class XMLRegisters(object):
   """
   Attributes:
