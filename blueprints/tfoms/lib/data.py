@@ -223,7 +223,15 @@ class DownloadWorker(object):
             try:
                 reports.add_patients(data)
             except Exception, e:
+                import logging, sys
+                h1 = logging.StreamHandler(sys.stdout)
+                h2 = logging.StreamHandler(sys.stderr)
+                logger = logging.getLogger()
+                logger.addHandler(h1)
+                logger.addHandler(h2)
+                logger.error(e)
                 print e
+
         if template.archive:
             file_url = file_obj.archive_file()
         return file_url
