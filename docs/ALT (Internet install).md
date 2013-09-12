@@ -57,7 +57,7 @@ apt-get upgrade
 
 ```
 cd /srv/my_project
-git clone https://github.com/KorusConsulting/caesar.git code
+git clone https://github.com/KorusConsulting/Caesar.git code
 ```
 при этом необходимо наличие github аккаунта с правами доступа в корпоративный репозиторий
 
