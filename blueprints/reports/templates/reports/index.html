@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}> {{ module_name }}{% endblock %}
+
+{% block modules_css %}
+<link href="{{ url_for('.static', filename='css/style.css') }}" media="screen" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+    {% include 'reports/_nav_menu.html' %}
+
+      <div class="jumbotron">
+        <h1>Отчёты</h1>
+        <p class="lead"></p>
+      </div>
+       <br/>
+      <hr>
+       <br/>
+
+      <div class="row-fluid">
+      {%  if current_user.role == 'admin' %}
+        <div class="span4">
+          <h2>Настройки</h2>
+          <p>Настройки отчётов.</p>
+          <p><a class="btn" href="{{ url_for('.settings') }}">Перейти &raquo;</a></p>
+        </div>
+      {% endif %}
+      </div>
+{% endblock %}
