@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-from flask import render_template, abort, request, redirect, url_for
+from flask import render_template, abort, request, redirect, url_for, flash
 
 from jinja2 import TemplateNotFound
 from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
@@ -38,12 +38,13 @@ def settings():
 
         form = ConfigVariablesForm()
         for variable in variables:
-            form[variable.code].value = variable.value
+            form[variable.code].value = variable.value if variable.value else ""
 
         if form.validate_on_submit():
             for variable in variables:
                 variable.value = form.data[variable.code]
             db.session.commit()
+            flash(u'Настройки изменены')
             return redirect(url_for('.settings'))
 
         return render_template('reports/settings.html', form=form)

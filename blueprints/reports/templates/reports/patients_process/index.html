@@ -1,0 +1,55 @@
+{% extends 'reports/base.html' %}
+
+{% block title %}> {{ module_name }} > Лист движения пациентов{% endblock %}
+
+
+{% block content %}
+
+    {% include 'reports/_nav_menu.html' %}
+    <legend>
+        Лист движения пациентов {% if request.form.get('start') and request.form.get('end') %}({{ request.form.get('start') }} - {{ request.form.get('end') }}){% endif %}
+    </legend>
+    <form class="form-inline" id="filter" method="POST" action="{{ url_for('.patients_process') }}">
+        {{ form.hidden_tag() }}
+        <label for="from">Даты с:</label>
+        <input type="text" id="from" name="start" class="span2" />
+        <label for="to">по</label>
+        <input type="text" id="to" name="end" class="span2" />
+      <button type="submit" class="btn btn-primary">Фильтровать</button>
+    </form>
+    {% if errors %}
+        <div class="alert alert-error">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <strong>Не настроено подключение к БД ЛПУ.</strong> Заполните <a href="{{ url_for('.settings') }}">настройки</a> подключения.
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block modules_js %}
+{{ super() }}
+<script src="{{ url_for('static', filename='jquery-ui/js/jquery-ui-1.10.2.custom.min.js') }}"></script>
+<script src="{{ url_for('static', filename='jquery-ui/js/i18n/jquery.ui.datepicker-ru.js') }}"></script>
+<script type="text/javascript">
+$(function() {
+    $( "#from" ).datepicker({
+      changeMonth: true,
+      onClose: function( selectedDate ) {
+        $( "#to" ).datepicker( "option", "minDate", selectedDate );
+      }
+    });
+    {% if request.form.get('start') %}
+        $('#from').datepicker("setDate", '{{ request.form.get('start') }}');
+    {% endif %}
+    $( "#to" ).datepicker({
+      defaultDate: "+1w",
+      changeMonth: true,
+      onClose: function( selectedDate ) {
+        $( "#from" ).datepicker( "option", "maxDate", selectedDate );
+      }
+    });
+    {% if request.form.get('end') %}
+        $('#to').datepicker("setDate", '{{ request.form.get('end') }}');
+    {% endif %}
+});
+</script>
+{% endblock %}

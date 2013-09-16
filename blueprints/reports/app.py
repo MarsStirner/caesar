@@ -12,3 +12,4 @@ def module_name():
 
 
 from .views import *
+from .views.patients_process import *
