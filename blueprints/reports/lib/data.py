@@ -36,7 +36,7 @@ class Patients_Process(object):
                       INNER JOIN Client
                       ON Client.id = Event.client_id
                     WHERE `Action`.`deleted` = 0 AND `Action`.`actionType_id` = 112
-                    AND (Action.endDate BETWEEN '{} 08:00:00' AND '{} 07:59:59')
+                    AND (Action.endDate BETWEEN '{0} 08:00:00' AND '{1} 07:59:59')
                     '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
 
         return self.db_session.execute(query)
@@ -63,7 +63,7 @@ class Patients_Process(object):
                       INNER JOIN Client
                       ON Client.id = Event.client_id
                     WHERE `Action`.`deleted` = 0 AND Event.deleted=0 AND date(`Action`.endDate)=DATE(VYPISKI.`Data vypiski`)
-                    AND (VYPISKI.`Data vypiski` BETWEEN '{} 08:00:00' AND '{} 07:59:59')
+                    AND (VYPISKI.`Data vypiski` BETWEEN '{0} 08:00:00' AND '{1} 07:59:59')
                     '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
 
         return self.db_session.execute(query)
@@ -91,7 +91,7 @@ class Patients_Process(object):
                       ON Event.id = Action.event_id
                       INNER JOIN Client
                       ON Client.id = Event.client_id
-                    WHERE `Action`.`deleted` = 0 AND (Action.begDate BETWEEN '{} 08:00:00' AND '{} 07:59:59')
+                    WHERE `Action`.`deleted` = 0 AND (Action.begDate BETWEEN '{0} 08:00:00' AND '{1} 07:59:59')
                     '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
 
         return self.db_session.execute(query)
@@ -119,7 +119,7 @@ class Patients_Process(object):
                       INNER JOIN Client
                       ON Client.id = Event.client_id
                     WHERE `Action`.`deleted` = 0
-                    AND (Action.endDate >= '{} 08:00:00' AND Action.endDate <= '{} 07:59:59')
+                    AND (Action.endDate >= '{0} 08:00:00' AND Action.endDate <= '{1} 07:59:59')
                     '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
 
         return self.db_session.execute(query)
@@ -197,7 +197,7 @@ class AnaesthesiaAmount(object):
                     FROM `Action`
                     INNER JOIN Event
                     ON Event.id = `Action`.event_id AND `Action`.deleted = 0 AND Action.actionType_id = 1480
-                    AND (`Action`.endDate BETWEEN '{} 00:00:00' AND '{} 23:59:59')
+                    AND (`Action`.endDate BETWEEN '{0} 00:00:00' AND '{1} 23:59:59')
 
                     LEFT JOIN Anesteziolog_zakl
                     ON Anesteziolog_zakl.id = Action.id
@@ -249,8 +249,8 @@ class List_Of_Operations(object):
                     ON Client.id= Event.client_id
 
                     INNER JOIN name_oper
-                    ON Action.id = name_oper.ID AND Action.deleted=0 AND (Action.begDate BETWEEN '{} 00:00:00'
-                    AND '{} 23:59:59')
+                    ON Action.id = name_oper.ID AND Action.deleted=0 AND (Action.begDate BETWEEN '{0} 00:00:00'
+                    AND '{1} 23:59:59')
 
                     LEFT JOIN Cel_oper
                     ON Action.id = Cel_oper.ID
@@ -298,8 +298,8 @@ class Policlinic(object):
                     ON ((`Person`.`speciality_id` = `rbSpeciality`.`id`)))
                     WHERE
                       `Event`.`eventType_id` = 109
-                    AND Person.id = {}
-                      AND (`Event`.`setDate` BETWEEN '{} 00:00:00' AND '{} 23:59:59') AND `Event`.`deleted` = 0
+                    AND Person.id = {0}
+                      AND (`Event`.`setDate` BETWEEN '{1} 00:00:00' AND '{2} 23:59:59') AND `Event`.`deleted` = 0
                     GROUP BY
                       `rbSpeciality`.`name`
                     , `Person`.`lastName`
@@ -325,8 +325,8 @@ class Policlinic(object):
                     ON ((`Person`.`speciality_id` = `rbSpeciality`.`id`)))
                     WHERE
                       `Event`.`eventType_id` = 70
-                    AND Person.id = {}
-                      AND (`Event`.`setDate` BETWEEN '{} 00:00:00' AND '{} 23:59:59') AND `Event`.`deleted` = 0
+                    AND Person.id = {0}
+                      AND (`Event`.`setDate` BETWEEN '{1} 00:00:00' AND '{2} 23:59:59') AND `Event`.`deleted` = 0
                     GROUP BY
                       `rbSpeciality`.`name`
                     , `Person`.`lastName`
@@ -352,8 +352,8 @@ class Policlinic(object):
                     ON ((`Person`.`speciality_id` = `rbSpeciality`.`id`)))
                     WHERE
                       `Event`.`eventType_id` = 61
-                    AND Person.id = {}
-                      AND (`Event`.`setDate` BETWEEN '{} 00:00:00' AND '{} 23:59:59') AND `Event`.`deleted` = 0
+                    AND Person.id = {0}
+                      AND (`Event`.`setDate` BETWEEN '{1} 00:00:00' AND '{2} 23:59:59') AND `Event`.`deleted` = 0
                     GROUP BY
                       `rbSpeciality`.`name`
                     , `Person`.`lastName`
@@ -379,8 +379,8 @@ class Policlinic(object):
                     ON ((`Person`.`speciality_id` = `rbSpeciality`.`id`)))
                     WHERE
                       `Event`.`eventType_id` = 65
-                    AND Person.id = {}
-                      AND (`Event`.`setDate` BETWEEN '{} 00:00:00' AND '{} 23:59:59') AND `Event`.`deleted` = 0
+                    AND Person.id = {0}
+                      AND (`Event`.`setDate` BETWEEN '{1} 00:00:00' AND '{2} 23:59:59') AND `Event`.`deleted` = 0
                     GROUP BY
                       `rbSpeciality`.`name`
                     , `Person`.`lastName`
@@ -406,8 +406,8 @@ class Policlinic(object):
                     ON ((`Person`.`speciality_id` = `rbSpeciality`.`id`)))
                     WHERE
                       `Event`.`eventType_id` = 66
-                    AND Person.id = {}
-                      AND (`Event`.`setDate` BETWEEN '{} 00:00:00' AND '{} 23:59:59') AND `Event`.`deleted` = 0
+                    AND Person.id = {0}
+                      AND (`Event`.`setDate` BETWEEN '{1} 00:00:00' AND '{2} 23:59:59') AND `Event`.`deleted` = 0
                     GROUP BY
                       `rbSpeciality`.`name`
                     , `Person`.`lastName`
@@ -437,9 +437,9 @@ class Policlinic(object):
                     ON ((`rbSpeciality`.`id` = `Person`.`speciality_id`)))
                     WHERE
                       `EventType`.`purpose_id` = 8
-                    AND Person.id = {}
+                    AND Person.id = {0}
                     AND `ActionType`.`group_id` = 101
-                    AND (`Event`.`setDate` BETWEEN '{} 00:00:00' AND '{} 23:59:59') AND `Action`.`deleted` = 0
+                    AND (`Event`.`setDate` BETWEEN '{1} 00:00:00' AND '{2} 23:59:59') AND `Action`.`deleted` = 0
                     GROUP BY
                       `rbSpeciality`.`name`
                     , `Person`.`lastName`
@@ -512,7 +512,7 @@ class Discharged_Patients(object):
 
                 INNER JOIN ActionType
                 ON ActionType.id = Action.actionType_id AND Action.actionType_id = 118 AND `Action`.deleted = 0
-                AND Action.endDate BETWEEN '{}' AND '{}'
+                AND Action.endDate BETWEEN '{0}' AND '{1}'
 
                 INNER JOIN Event
                 ON Event.id = Action.event_id
@@ -601,7 +601,7 @@ class Sickness_Rate_Blocks(object):
 
                     WHERE
                       Event.deleted = 0
-                      AND Event.execDate BETWEEN ('{} 00:00:00' AND '{} 23:59:59')
+                      AND Event.execDate BETWEEN ('{0} 00:00:00' AND '{1} 23:59:59')
                       AND Diagnosis.deleted = 0
                       AND Diagnostic.deleted = 0
                       AND Person.deleted = 0
@@ -679,11 +679,11 @@ class Sickness_Rate_Diagnosis(object):
                       DS_zak_epic
 
                     INNER JOIN Event
-                    ON Event.id = DS_zak_epic.event_id AND DS_zak_epic.DiagID = '{}'
+                    ON Event.id = DS_zak_epic.event_id AND DS_zak_epic.DiagID = '{0}'
 
                     INNER JOIN otd_vypis_from_dvizh
                     ON otd_vypis_from_dvizh.EventID = DS_zak_epic.event_id
-                    AND (otd_vypis_from_dvizh.endDate BETWEEN '{} 00:00:00' AND '{} 23:59:59')
+                    AND (otd_vypis_from_dvizh.endDate BETWEEN '{1} 00:00:00' AND '{2} 23:59:59')
 
                     INNER JOIN Client
                     ON Client.id = Event.client_id
