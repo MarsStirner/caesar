@@ -205,3 +205,55 @@ class AnaesthesiaAmount(object):
                     , Anesteziolog_oper.value
                 '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
         return self.db_session.execute(query)
+
+
+class List_Of_Operations(object):
+
+    def __init__(self):
+        self.db_session = get_lpu_session()
+
+    def get_list_of_operations(self, start, end):
+        query = '''
+                    SELECT
+                          Client.lastName,
+                          Client.firstName,
+                          Client.patrName,
+                          Event.externalId,
+                          Event.setDate,
+                          VYPISKI.`Data vypiski` AS "DataVypiski",
+                          name_oper.name AS "operName",
+                          Cel_oper.Cel AS "Cel",
+                          Obl_oper.Oblast AS "Oblast",
+                          Type_oper.Type AS "operType",
+                          ds_before_oper.dsbo AS "dsbo",
+                          Action.begDate AS "begDate"
+
+                    FROM Action
+
+                    INNER JOIN Event
+                    ON Action.event_id = Event.id AND Action.deleted=0
+
+                    INNER JOIN Client
+                    ON Client.id= Event.client_id
+
+                    INNER JOIN name_oper
+                    ON Action.id = name_oper.ID AND Action.deleted=0 AND (Action.begDate BETWEEN '{} 00:00:00'
+                    AND '{} 23:59:59')
+
+                    LEFT JOIN Cel_oper
+                    ON Action.id = Cel_oper.ID
+
+                    LEFT JOIN Obl_oper
+                    ON Action.id = Obl_oper.ID
+
+                    LEFT JOIN Type_oper
+                    ON Action.id = Type_oper.ID
+
+                    LEFT JOIN ds_before_oper
+                    ON Action.id = ds_before_oper.ID
+
+                    LEFT JOIN VYPISKI
+                    ON Action.event_id = VYPISKI.Event_id
+
+                '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
+        return self.db_session.execute(query)

@@ -9,6 +9,7 @@
                 <a id="drop1" class="dropdown-toggle" data-toggle="dropdown" role="button">Отчёты <b class="caret"></b></a>
                 <ul class="dropdown-menu" role="menu" aria-labelledby="drop1" >
                     <li{% if request.path == url_for('.patients_process') %} class="active"{% endif %}><a href="{{ url_for('.patients_process') }}">Лист движения пациентов в ФНКЦ</a></li>
+                    <li{% if request.path == url_for('.list_of_operations') %} class="active"{% endif %}><a href="{{ url_for('.list_of_operations') }}">Список операций за период</a></li>
                     <li{% if request.path == url_for('.anaesthesia_amount') %} class="active"{% endif %}><a href="{{ url_for('.anaesthesia_amount') }}">Количество анестезий за период</a></li>
                     <li{% if request.path == url_for('.more_then_21') %} class="active"{% endif %}><a href="{{ url_for('.more_then_21') }}">Пациенты, находящиеся на лечении  более 21 дня</a></li>
                 </ul>
