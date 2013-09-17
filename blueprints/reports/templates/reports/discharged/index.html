@@ -36,7 +36,7 @@
                 <th>ФИО</th>
                 <th>Дата рождения</th>
                 <th>Отделение поступления</th>
-                <th>Основной клинический Дз</th>
+                <th>Основной клинический Диагноз</th>
                 <th>МКБ</th>
                 <th>Диагноз</th>
                 <th>Область</th>
@@ -57,14 +57,18 @@
                 <td>{{ item.lastName }} {{ item.firstName }} {{ item.patrName }}</td>
                 <td>{{ item.birthDate }}</td>
                 <td>{{ item.otd }}</td>
-                <td>{{ item.primary_kd }}</td>
+                <td>{{ item.primary_kd|safe }}</td>
                 <td>{{ item.DiagID }}</td>
                 <td>{{ item.DiagName }}</td>
-                <td>{{ item.obl|default("") }}</td>
-                <td>{{ item.rai|default("") }}</td>
-                <td>{{ item.SOCR|default("") }}</td>
-                <td>{{ item.infisREGION|default("") }}</td>
-                <td>{{ item.street }} д.{{ item.house }}, кв.{{ item.flat }}</td>
+                <td>{% if item.obl not in [None, ''] %}{{ item.obl }}{% else %}""{% endif %}</td>
+                <td>{% if item.rai not in [None, ''] %}{{ item.rai }}{% else %}""{% endif %}</td>
+                <td>{% if item.SOCR not in [None, ''] %}{{ item.SOCR }}{% else %}""{% endif %}</td>
+                <td>{% if item.infisREGION not in [None, ''] %}{{ item.infisREGION }}{% else %}""{% endif %}</td>
+                <td>
+                    {%- if item.street not in [None, ''] -%}{{ item.street }}{%- else -%}""{%- endif -%}
+                    {%- if item.house not in [None, ''] -%} д.{{ item.house }}{%- else -%}""{%- endif -%}
+                    {%- if item.flat not in [None, ''] -%}, кв.{{ item.flat }}{%- else -%}""{%- endif -%}
+                </td>
                 <td>{{ item.freeInput }}</td>
             </tr>
             {% endfor %}
