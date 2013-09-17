@@ -208,7 +208,8 @@ class AnaesthesiaAmount(object):
                     , Anesteziolog_oper.value
                 '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
         return self.db_session.execute(query)
-    
+
+
 class Policlinic(object):
 
     def __init__(self):
@@ -412,3 +413,88 @@ class Policlinic(object):
                              zaochb=self.__get_zaochb(person.id, start, end),
                              kskons=self.__get_kskons(person.id, start, end),))
         return data
+
+
+class Discharged_Patients(object):
+
+    def __init__(self):
+        self.db_session = get_lpu_session()
+
+    def __del__(self):
+        self.db_session.close()
+
+    def get_vypis(self, start, end):
+        query = '''SELECT Action.begDate
+                     , ActionType.name AS document
+                     , Event.externalId
+                     , Event.setDate
+                     , Client.lastName
+                     , Client.firstName
+                     , Client.patrName
+                     , Client.birthDate
+                     , otd_postup_from_dvizh.`otd`
+                     , DS_osnk_zak_epic.value AS primary_kd
+                     , DS_zak_epic.DiagID
+                     , DS_zak_epic.DiagName
+                     , kladr_obl.NAME AS obl
+                     , kladr_rai.NAME AS rai
+                     , kladr.KLADR.SOCR
+                     , kladr.infisREGION.NAME AS infisREGION
+                     , kladr.KLADR.NAME AS city
+                     , kladr.STREET.NAME AS street
+                     , AddressHouse.number AS house
+                     , Address.flat
+                     , Adr.freeInput
+
+                FROM
+                  Action
+
+                INNER JOIN ActionType
+                ON ActionType.id = Action.actionType_id AND Action.actionType_id = 118 AND `Action`.deleted = 0
+                AND Action.endDate BETWEEN '{}' AND '{}'
+
+                INNER JOIN Event
+                ON Event.id = Action.event_id
+
+                INNER JOIN Client
+                ON Client.id = Event.client_id
+
+                LEFT JOIN otd_postup_from_dvizh
+                  ON otd_postup_from_dvizh.EventID = Event.id AND date(otd_postup_from_dvizh.begDate) = date(Event.setDate)
+
+                LEFT JOIN DS_osnk_zak_epic
+                ON Event.id = DS_osnk_zak_epic.event_id
+
+                LEFT JOIN DS_zak_epic
+                ON Event.id = DS_zak_epic.event_id
+
+                INNER JOIN ClientAddress AS Adr
+                ON (Adr.client_id = Client.id AND Adr.id IN (SELECT max(Tmp.id)
+                                                                      FROM
+                                                                        ClientAddress AS Tmp
+                                                                      WHERE
+                                                                        Tmp.deleted = 0
+                                                                        AND type = '0'
+                                                                      GROUP BY
+                                                                        client_id))
+                LEFT JOIN Address
+                ON Address.id = Adr.address_id
+                LEFT JOIN AddressHouse
+                ON AddressHouse.id = Address.house_id
+                LEFT JOIN kladr.KLADR
+                ON kladr.KLADR.Code = AddressHouse.KLADRCode
+                LEFT JOIN kladr.infisREGION
+                ON kladr.infisREGION.KLADR = kladr.KLADR.CODE
+
+                LEFT JOIN kladr_obl
+                ON kladr_obl.id = AddressHouse.id
+
+                LEFT JOIN kladr_rai
+                ON kladr_rai.id = AddressHouse.id
+
+                LEFT JOIN kladr.infisAREA
+                ON kladr.infisAREA.CODE = kladr.infisREGION.AREA
+                LEFT JOIN kladr.STREET
+                ON AddressHouse.KLADRStreetCode = kladr.STREET.code
+                    '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
+        return self.db_session.execute(query)
