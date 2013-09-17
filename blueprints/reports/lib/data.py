@@ -493,7 +493,7 @@ class Discharged_Patients(object):
                      , Client.firstName
                      , Client.patrName
                      , Client.birthDate
-                     , otd_postup_from_dvizh.`otd`
+                     , otd_postup_from_dvizh.Address as otd
                      , DS_osnk_zak_epic.value AS primary_kd
                      , DS_zak_epic.DiagID
                      , DS_zak_epic.DiagName
