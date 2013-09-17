@@ -1,0 +1,58 @@
+{% extends 'reports/base.html' %}
+
+{% block title %}> {{ module_name }} > Посещения врачей поликлиники{% endblock %}
+
+{% block content %}
+
+    {% include 'reports/_nav_menu.html' %}
+    <legend>
+        Посещения врачей поликлиники {% if request.form.get('start') and request.form.get('end') %}({{ request.form.get('start') }} - {{ request.form.get('end') }}){% endif %}
+    </legend>
+    <form class="form-inline" id="filter" method="POST" action="{{ url_for('.patients_process') }}">
+        {{ form.hidden_tag() }}
+        <label for="from">Даты с:</label>
+        <input type="text" id="from" name="start" class="span2" />
+        <label for="to">по</label>
+        <input type="text" id="to" name="end" class="span2" />
+      <button type="submit" class="btn btn-primary">Фильтровать</button>
+    </form>
+    {% if errors %}
+        {% for error in errors %}
+        <div class="alert alert-error">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          {{ error|safe }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if personpoly and personpoly is iterable %}
+    <table class="table table-striped table-bordered table-condensed">
+        <thead>
+            <tr>
+                <th>Врач</th>
+                <th>Специальность</th>
+                <th>Платные</th>
+                <th>Бюджет</th>
+                <th>Консультативный</th>
+                <th>Заочные консультации</th>
+                <th>Консультации в КС</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in personpoly %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ item.lastName }} {{ item.firstName }} {{ item.patrName }}</td>
+                <td>{{ item.externalId }}</td>
+                <td>{{ item.Address }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+{% endblock %}
+
+{% block modules_js %}
+{{ super() }}
+{% endblock %}
