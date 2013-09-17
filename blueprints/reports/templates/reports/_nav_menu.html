@@ -14,6 +14,7 @@
                     <li{% if request.path == url_for('.more_then_21') %} class="active"{% endif %}><a href="{{ url_for('.more_then_21') }}">Пациенты, находящиеся на лечении  более 21 дня</a></li>
                     <li{% if request.path == url_for('.policlinic') %} class="active"{% endif %}><a href="{{ url_for('.policlinic') }}">Посещения врачей поликлиники</a></li>
                     <li{% if request.path == url_for('.discharged') %} class="active"{% endif %}><a href="{{ url_for('.discharged') }}">Выписанные пациенты</a></li>
+                    <li{% if request.path == url_for('.sickness_rate_blocks') %} class="active"{% endif %}><a href="{{ url_for('.sickness_rate_blocks') }}">Заболеваемость за период по блокам (стационар)</a></li>
                 </ul>
                 </div>
             </li>

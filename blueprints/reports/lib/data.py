@@ -259,6 +259,7 @@ class List_Of_Operations(object):
                     ON Action.event_id = VYPISKI.Event_id
 
                 '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
+        return self.db_session.execute(query)
 
 
 class Policlinic(object):
@@ -548,4 +549,56 @@ class Discharged_Patients(object):
                 LEFT JOIN kladr.STREET
                 ON AddressHouse.KLADRStreetCode = kladr.STREET.code
                     '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
+        return self.db_session.execute(query)
+
+
+class Sickness_Rate_Blocks(object):
+
+    def __init__(self):
+        self.db_session = get_lpu_session()
+
+    def get_sickness_rate_blocks(self, start, end):
+        query = '''
+                    SELECT
+                          MKB.BlockName,
+                          MKB.BlockID,
+                          count(MKB) AS amount
+                    FROM
+                      Event
+
+                    INNER JOIN Client
+                    ON Client.id = Event.client_id
+
+                    INNER JOIN EventType
+                    ON EventType.id = Event.eventType_id AND EventType.purpose_id = 8
+
+                    INNER JOIN Person
+                    ON Person.id = Event.execPerson_id
+
+                    INNER JOIN rbSpeciality
+                    ON rbSpeciality.id = Person.speciality_id
+
+                    INNER JOIN Diagnostic
+                    ON Diagnostic.event_id = Event.id
+
+                    INNER JOIN Diagnosis
+                    ON Diagnostic.diagnosis_id = Diagnosis.id
+
+                    INNER JOIN MKB
+                    ON MKB.DiagID = Diagnosis.MKB
+
+                    WHERE
+                      Event.deleted = 0
+                      AND Event.execDate BETWEEN ('{} 00:00:00' AND '{} 23:59:59')
+                      AND Diagnosis.deleted = 0
+                      AND Diagnostic.deleted = 0
+                      AND Person.deleted = 0
+
+                    GROUP BY
+
+                      MKB.BlockName
+
+                    ORDER BY
+                      MKB.BlockName
+                '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
         return self.db_session.execute(query)
