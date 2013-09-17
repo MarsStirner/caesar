@@ -20,6 +20,7 @@ def get_lpu_session():
     else:
         engine = create_engine(LPU_DB_CONNECT_STRING, convert_unicode=True, pool_recycle=600)
         Session = scoped_session(sessionmaker(bind=engine))
+    Session = None
     if Session is None:
         raise AttributeError(u'Не настроено подключение к БД ЛПУ')
     return Session()

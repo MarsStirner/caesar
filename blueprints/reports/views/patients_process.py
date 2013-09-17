@@ -22,14 +22,20 @@ def patients_process():
             try:
                 data_obj = Patients_Process()
             except AttributeError, e:
-                errors.append(e.message)
+                errors.append(
+                    u'<strong>Не настроено подключение к БД ЛПУ.</strong> '
+                    u'Заполните <a href="{}">настройки</a> подключения.'.format(url_for('.settings')))
             else:
-                start = datetime.strptime(request.form['start'], '%d.%m.%Y')
-                end = datetime.strptime(request.form['end'], '%d.%m.%Y')
-                priemn_postup = data_obj.get_priemn_postup(start, end)
-                priemn_vypis = data_obj.get_priemn_vypis(start, end)
-                priemn_perevod = data_obj.get_priemn_perevod(start, end)
-                priemn_umerlo = data_obj.get_priemn_umerlo(start, end)
+                try:
+                    start = datetime.strptime(request.form['start'], '%d.%m.%Y')
+                    end = datetime.strptime(request.form['end'], '%d.%m.%Y')
+                except ValueError:
+                    errors.append(u'Некорректно указаны даты')
+                else:
+                    priemn_postup = data_obj.get_priemn_postup(start, end)
+                    priemn_vypis = data_obj.get_priemn_vypis(start, end)
+                    priemn_perevod = data_obj.get_priemn_perevod(start, end)
+                    priemn_umerlo = data_obj.get_priemn_umerlo(start, end)
         return render_template('reports/patients_process/index.html',
                                form=Form(),
                                priemn_postup=priemn_postup,
