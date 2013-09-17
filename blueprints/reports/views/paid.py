@@ -8,11 +8,14 @@ from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
 
 from ..app import module
 from ..lib.data import Paid_Patients
+from application.utils import public_endpoint
 
 
 def datetimeformat(value, format='%Y-%m-%d'):
     return value.strftime(format)
 
+
+@public_endpoint
 @module.route('/paid/', methods=['GET', 'POST'])
 def paid():
     current_app.jinja_env.filters['datetimeformat'] = datetimeformat

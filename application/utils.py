@@ -7,6 +7,11 @@ from models import Settings, Users, Roles
 from app import app
 
 
+def public_endpoint(function):
+    function.is_public = True
+    return function
+
+
 def create_config_func(module_name, config_table):
 
     def _config(code):

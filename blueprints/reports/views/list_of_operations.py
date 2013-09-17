@@ -8,8 +8,10 @@ from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
 
 from ..app import module
 from ..lib.data import List_Of_Operations
+from application.utils import public_endpoint
 
 
+@public_endpoint
 @module.route('/list_of_operations/', methods=['GET', 'POST'])
 def list_of_operations():
     try:
