@@ -666,7 +666,7 @@ class Sickness_Rate_Diagnosis(object):
         self.db_session.close()
 
     def get_vypds(self, diagnosis, start, end):
-        query = '''SELECT Client.lastName
+        query = u'''SELECT Client.lastName
                                , Client.firstName
                               ,  Client.patrName
                               , DS_zak_epic.DiagID
