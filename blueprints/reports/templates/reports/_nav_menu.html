@@ -12,6 +12,8 @@
                     <li{% if request.path == url_for('.list_of_operations') %} class="active"{% endif %}><a href="{{ url_for('.list_of_operations') }}">Список операций за период</a></li>
                     <li{% if request.path == url_for('.anaesthesia_amount') %} class="active"{% endif %}><a href="{{ url_for('.anaesthesia_amount') }}">Количество анестезий за период</a></li>
                     <li{% if request.path == url_for('.more_then_21') %} class="active"{% endif %}><a href="{{ url_for('.more_then_21') }}">Пациенты, находящиеся на лечении  более 21 дня</a></li>
+                    <li{% if request.path == url_for('.policlinic') %} class="active"{% endif %}><a href="{{ url_for('.policlinic') }}">Посещения врачей поликлиники</a></li>
+                    <li{% if request.path == url_for('.discharged') %} class="active"{% endif %}><a href="{{ url_for('.discharged') }}">Выписанные пациенты</a></li>
                 </ul>
                 </div>
             </li>

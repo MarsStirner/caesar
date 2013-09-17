@@ -1,0 +1,78 @@
+{% extends 'reports/base.html' %}
+
+{% block title %}> {{ module_name }} > Выписанные пациенты{% endblock %}
+
+{% block content %}
+
+    {% include 'reports/_nav_menu.html' %}
+    <legend>
+        Выписанные пациенты {% if request.form.get('start') and request.form.get('end') %}({{ request.form.get('start') }} - {{ request.form.get('end') }}){% endif %}
+    </legend>
+    <form class="form-inline" id="filter" method="POST" action="{{ url_for('.discharged') }}">
+        {{ form.hidden_tag() }}
+        <label for="from">Даты с:</label>
+        <input type="text" id="from" name="start" class="span2" />
+        <label for="to">по</label>
+        <input type="text" id="to" name="end" class="span2" />
+      <button type="submit" class="btn btn-primary">Фильтровать</button>
+    </form>
+    {% if errors %}
+        {% for error in errors %}
+        <div class="alert alert-error">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          {{ error|safe }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if data and data is iterable %}
+    <table class="table table-striped table-bordered table-condensed">
+        <thead>
+            <tr>
+                <th>Дата выписки</th>
+                <th>Документ</th>
+                <th>№ИБ</th>
+                <th>Поступил</th>
+                <th>ФИО</th>
+                <th>Дата рождения</th>
+                <th>Отделение поступления</th>
+                <th>Основной клинический Дз</th>
+                <th>МКБ</th>
+                <th>Диагноз</th>
+                <th>Область</th>
+                <th>Район</th>
+                <th>Тип нас.пункта</th>
+                <th>Нас.пункт</th>
+                <th>Улица, дом, квартира</th>
+                <th>Свободный ввод адреса</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in data %}
+            <tr>
+                <td>{{ item.begDate }}</td>
+                <td>{{ item.document }}</td>
+                <td>{{ item.externalId }}</td>
+                <td>{{ item.setDate }}</td>
+                <td>{{ item.lastName }} {{ item.firstName }} {{ item.birthDate }}</td>
+                <td>{{ item.birthDate }}</td>
+                <td>{{ item.otd }}</td>
+                <td>{{ item.primary_kd }}</td>
+                <td>{{ item.DiagID }}</td>
+                <td>{{ item.DiagName }}</td>
+                <td>{{ item.obl|default("") }}</td>
+                <td>{{ item.rai|default("") }}</td>
+                <td>{{ item.SOCR|default("") }}</td>
+                <td>{{ item.infisREGION|default("") }}</td>
+                <td>{{ item.street }} д.{{ item.house }}, кв.{{ item.flat }}</td>
+                <td>{{ item.freeInput }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+{% endblock %}
+
+{% block modules_js %}
+{{ super() }}
+{% endblock %}

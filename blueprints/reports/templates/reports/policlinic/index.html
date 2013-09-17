@@ -8,7 +8,7 @@
     <legend>
         Посещения врачей поликлиники {% if request.form.get('start') and request.form.get('end') %}({{ request.form.get('start') }} - {{ request.form.get('end') }}){% endif %}
     </legend>
-    <form class="form-inline" id="filter" method="POST" action="{{ url_for('.patients_process') }}">
+    <form class="form-inline" id="filter" method="POST" action="{{ url_for('.policlinic') }}">
         {{ form.hidden_tag() }}
         <label for="from">Даты с:</label>
         <input type="text" id="from" name="start" class="span2" />
@@ -25,26 +25,33 @@
         {% endfor %}
     {% endif %}
 
-    {% if personpoly and personpoly is iterable %}
+    {% if data and data is iterable %}
     <table class="table table-striped table-bordered table-condensed">
         <thead>
             <tr>
+                <th>№п/п</th>
                 <th>Врач</th>
                 <th>Специальность</th>
+                <th>ОМС</th>
                 <th>Платные</th>
                 <th>Бюджет</th>
-                <th>Консультативный</th>
+                <th>Консультативный (Бюджет)</th>
                 <th>Заочные консультации</th>
                 <th>Консультации в КС</th>
             </tr>
         </thead>
         <tbody>
-            {% for item in personpoly %}
+            {% for item in data %}
             <tr>
                 <td>{{ loop.index }}</td>
-                <td>{{ item.lastName }} {{ item.firstName }} {{ item.patrName }}</td>
-                <td>{{ item.externalId }}</td>
-                <td>{{ item.Address }}</td>
+                <td>(id: <b>{{ item.person.id }}</b>) {{ item.person.lastName }} {{ item.person.firstName }}</td>
+                <td>{{ item.person.speciality }}</td>
+                <td><div class="text-right">{{ item.oms.number|default(0) }}</div></td>
+                <td><div class="text-right">{{ item.polip.number|default(0) }}</div></td>
+                <td><div class="text-right">{{ item.polib.number|default(0) }}</div></td>
+                <td><div class="text-right">{{ item.poliz.number|default(0) }}</div></td>
+                <td><div class="text-right">{{ item.zaochb.number|default(0) }}</div></td>
+                <td><div class="text-right">{{ item.kskons.number|default(0) }}</div></td>
             </tr>
             {% endfor %}
         </tbody>

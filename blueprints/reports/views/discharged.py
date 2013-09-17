@@ -7,17 +7,17 @@ from jinja2 import TemplateNotFound
 from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
 
 from ..app import module
-from ..lib.data import Policlinic
+from ..lib.data import Discharged_Patients
 
 
-@module.route('/policlinic/', methods=['GET', 'POST'])
-def policlinic():
+@module.route('/discharged/', methods=['GET', 'POST'])
+def discharged():
     try:
         errors = list()
         data = None
         if request.method == 'POST':
             try:
-                data_obj = Policlinic()
+                data_obj = Discharged_Patients()
             except AttributeError, e:
                 errors.append(
                     u'<strong>Не настроено подключение к БД ЛПУ.</strong> '
@@ -29,8 +29,8 @@ def policlinic():
                 except ValueError:
                     errors.append(u'Некорректно указаны даты')
                 else:
-                    data = data_obj.get_personpoly(start, end)
-        return render_template('reports/policlinic/index.html',
+                    data = data_obj.get_vypis(start, end)
+        return render_template('reports/discharged/index.html',
                                form=Form(),
                                data=data,
                                errors=errors)
