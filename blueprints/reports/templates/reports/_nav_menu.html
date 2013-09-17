@@ -15,6 +15,7 @@
                     <li{% if request.path == url_for('.policlinic') %} class="active"{% endif %}><a href="{{ url_for('.policlinic') }}">Посещения врачей поликлиники</a></li>
                     <li{% if request.path == url_for('.discharged') %} class="active"{% endif %}><a href="{{ url_for('.discharged') }}">Выписанные пациенты</a></li>
                     <li{% if request.path == url_for('.sickness_rate_blocks') %} class="active"{% endif %}><a href="{{ url_for('.sickness_rate_blocks') }}">Заболеваемость за период по блокам (стационар)</a></li>
+                    <li{% if request.path == url_for('.paid') %} class="active"{% endif %}><a href="{{ url_for('.paid') }}">Пациенты, находящиеся на лечении в круглосуточном и дневном стационарах за счет самообеспечения и Фондов</a></li>
                 </ul>
                 </div>
             </li>
