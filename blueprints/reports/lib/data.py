@@ -171,3 +171,37 @@ class More_Then_21(object):
                           OrgStructure_HospitalBed.master_id
                 '''
         return self.db_session.execute(query)
+
+
+class AnaesthesiaAmount(object):
+
+    def __init__(self):
+        self.db_session = get_lpu_session()
+
+    def get_anaesthesia_amount(self, start, end):
+        query = '''
+                    SELECT
+                       Anesteziolog_zakl.value AS "zakl",
+                       Anesteziolog_oper.value AS "oper",
+                       Anesteziolog_status.value AS "status",
+                       count(Action.id) AS "amount"
+                    FROM `Action`
+                    INNER JOIN Event
+                    ON Event.id = `Action`.event_id AND `Action`.deleted = 0 AND Action.actionType_id = 1480
+                    AND (`Action`.endDate BETWEEN '{} 00:00:00' AND '{} 23:59:59')
+
+                    LEFT JOIN Anesteziolog_zakl
+                    ON Anesteziolog_zakl.id = Action.id
+
+                    LEFT JOIN Anesteziolog_oper
+                    ON Anesteziolog_oper.id = Action.id
+
+                    LEFT JOIN Anesteziolog_status
+                    ON Anesteziolog_status.id = Action.id
+
+                    GROUP BY
+
+                      Anesteziolog_zakl.value
+                    , Anesteziolog_oper.value
+                '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
+        return self.db_session.execute(query)

@@ -14,3 +14,4 @@ def module_name():
 from .views import *
 from .views.patients_process import *
 from .views.more_then_21 import *
+from .views.anaesthesia_amount import *
