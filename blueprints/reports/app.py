@@ -21,3 +21,4 @@ from .views.anaesthesia_amount import *
 
 from .views.policlinic import *
 from .views.discharged import *
+from .views.paid import *

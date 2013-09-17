@@ -57,7 +57,7 @@
                 <td>{{ item.lastName }} {{ item.firstName }} {{ item.patrName }}</td>
                 <td>{{ item.birthDate }}</td>
                 <td>{{ item.otd }}</td>
-                <td>{{ item.primary_kd|safe }}</td>
+                <td>{{ item.primary_kd|striptags|trim }}</td>
                 <td>{{ item.DiagID }}</td>
                 <td>{{ item.DiagName }}</td>
                 <td>{% if item.obl not in [None, ''] %}{{ item.obl }}{% else %}""{% endif %}</td>

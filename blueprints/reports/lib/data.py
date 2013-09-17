@@ -498,3 +498,44 @@ class Discharged_Patients(object):
                 ON AddressHouse.KLADRStreetCode = kladr.STREET.code
                     '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
         return self.db_session.execute(query)
+
+
+class Paid_Patients(object):
+
+    def __init__(self):
+        self.db_session = get_lpu_session()
+
+    def __del__(self):
+        self.db_session.close()
+
+    def get_platn_ks(self):
+        query = '''SELECT
+                      Client.lastName,
+                      Client.firstName,
+                      Client.patrName,
+                      Event.externalId,
+                      Event.setDate,
+                      Pac_prb.name AS otd,
+                     rbFinance.name AS finance_source,
+                      EventType.name AS event_type
+
+                      FROM Event
+
+                    INNER JOIN Client
+                    ON Client.id = Event.client_id AND Event.deleted =0
+
+                     INNER JOIN Pac_prb
+                     ON Pac_prb.Evid = Event.id
+
+                       INNER JOIN EventType
+                      ON EventType.id = Event.eventType_id AND EventType.finance_id IN (4,9)
+
+                      LEFT
+                      JOIN rbFinance
+                      ON rbFinance.id = EventType.finance_id
+
+                      WHERE Event.execDate IS NULL
+
+                      ORDER
+                       BY Pac_prb.Prb,Client.lastName,rbFinance.name'''
+        return self.db_session.execute(query)
