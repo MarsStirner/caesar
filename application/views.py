@@ -27,7 +27,7 @@ def check_valid_login():
             'static' not in request.endpoint and
             not login_valid and
             not getattr(app.view_functions[request.endpoint], 'is_public', False)):
-        return redirect(url_for('login'))
+        return redirect(url_for('login', next=url_for(request.endpoint)))
 
 
 def public_endpoint(function):
