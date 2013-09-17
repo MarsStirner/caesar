@@ -14,7 +14,7 @@
         <input type="text" id="from" name="start" class="span2" />
         <label for="to">по</label>
         <input type="text" id="to" name="end" class="span2" />
-      <button type="submit" class="btn btn-primary">Фильтровать</button>
+      <button type="submit" class="btn btn-primary">Выбрать</button>
     </form>
     {% if errors %}
         {% for error in errors %}
@@ -26,7 +26,7 @@
     {% endif %}
     <hr>
         <div class="row">
-            <label class="span1" for="filter_report">Выбрать: </label>
+            <label class="span1" for="filter_report">Фильтр:</label>
             <input type="text" id="filter_report" class="span5" />
         </div>
     {% if priemn_postup and priemn_postup is iterable %}

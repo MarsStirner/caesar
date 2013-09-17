@@ -57,11 +57,11 @@
                     }
                     }
                 table.rows[r].style.display = displayStyle;
-            }
+            };
         }
-    </script>
-    <script type="text/javascript">
-    $('#filter_report').attr({'onkeyup': "filter(this, 'result_table')"});
+    $(function() {
+        $('#filter_report').keyup(function(){ filter($(this).get(0), 'result_table')})
+    });
     </script>
     <div class="loader"></div>
 {% endblock %}

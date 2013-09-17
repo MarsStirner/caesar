@@ -31,7 +31,7 @@
         </div>
         <div class="control-group">
             <div class="controls">
-                <button type="submit" class="btn btn-primary">Фильтровать</button>
+                <button type="submit" class="btn btn-primary">Выбрать</button>
             </div>
       </div>
     </form>
@@ -45,7 +45,7 @@
         {% endfor %}
     {% endif %}
         <div class="row">
-            <label class="span1" for="filter_report">Выбрать: </label>
+            <label class="span1" for="filter_report">Фильтр:</label>
             <input type="text" id="filter_report" class="span5" />
         </div>
     {% if data and data is iterable %}
