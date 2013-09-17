@@ -7,3 +7,14 @@
 <link href="{{ url_for('.static', filename='css/style.css') }}" media="screen" rel="stylesheet">
 <link href="{{ url_for('static', filename='jquery-ui/css/cupertino/jquery-ui-1.10.2.custom.min.css') }}" rel="stylesheet">
 {% endblock %}
+
+{% block modules_js %}
+    {{ super() }}
+
+    <script type="text/javascript">
+    $('form').submit(function(){
+        $('body').addClass("loading");
+    });
+    </script>
+    <div class="loader"></div>
+{% endblock %}

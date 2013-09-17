@@ -2,7 +2,6 @@
 
 {% block title %}> {{ module_name }} > Лист движения пациентов{% endblock %}
 
-
 {% block content %}
 
     {% include 'reports/_nav_menu.html' %}
@@ -23,6 +22,109 @@
           <strong>Не настроено подключение к БД ЛПУ.</strong> Заполните <a href="{{ url_for('.settings') }}">настройки</a> подключения.
         </div>
     {% endif %}
+
+    {% if priemn_postup and priemn_postup is iterable %}
+    <table class="table table-striped table-bordered table-condensed">
+        <caption><p class="lead">Поступившие</p></caption>
+        <thead>
+            <tr>
+                <th width="2%">№п/п</th>
+                <th>Фамилия Имя Отчество</th>
+                <th width="5%">№ИБ</th>
+                <th>Отделение госпитализации</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in priemn_postup %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ item.lastName }} {{ item.firstName }} {{ item.patrName }}</td>
+                <td>{{ item.externalId }}</td>
+                <td>{{ item.Address }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if priemn_vypis and priemn_vypis is iterable %}
+    <table class="table table-striped table-bordered table-condensed">
+        <caption><p class="lead">Выписанные</p></caption>
+        <thead>
+            <tr>
+                <th width="2%">№п/п</th>
+                <th>Фамилия Имя Отчество</th>
+                <th width="5%">№ИБ</th>
+                <th>Отделение выписки</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in priemn_vypis %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ item.lastName }} {{ item.firstName }} {{ item.patrName }}</td>
+                <td>{{ item.externalId }}</td>
+                <td>{{ item.Address }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if priemn_perevod and priemn_perevod is iterable %}
+    <table class="table table-striped table-bordered table-condensed">
+        <caption><p class="lead">Переведенные</p></caption>
+        <thead>
+            <tr>
+                <th width="2%">№п/п</th>
+                <th>Фамилия Имя Отчество</th>
+                <th width="5%">№ИБ</th>
+                <th>Из отделения</th>
+                <th width="2%">>></th>
+                <th>В отделение</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in priemn_perevod %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ item.lastName }} {{ item.firstName }} {{ item.patrName }}</td>
+                <td>{{ item.externalId }}</td>
+                <td>{{ item.Address }}</td>
+                <td>>></td>
+                <td>{{ item.prb }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if priemn_umerlo and priemn_umerlo is iterable %}
+    <table class="table table-striped table-bordered table-condensed">
+        <caption><p class="lead">Умерло</p></caption>
+        <thead>
+            <tr>
+                <th width="2%">№п/п</th>
+                <th>Фамилия Имя Отчество</th>
+                <th width="5%">№ИБ</th>
+                <th>Отделение</th>
+                <th>Исход госпитализации</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in priemn_umerlo %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ item.lastName }} {{ item.firstName }} {{ item.patrName }}</td>
+                <td>{{ item.externalId }}</td>
+                <td>{{ item.Address }}</td>
+                <td>{{ item.result }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
 {% endblock %}
 
 {% block modules_js %}
