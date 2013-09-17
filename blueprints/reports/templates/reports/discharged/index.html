@@ -60,14 +60,14 @@
                 <td>{{ item.primary_kd|striptags|trim }}</td>
                 <td>{{ item.DiagID }}</td>
                 <td>{{ item.DiagName }}</td>
-                <td>{% if item.obl not in [None, ''] %}{{ item.obl }}{% else %}""{% endif %}</td>
-                <td>{% if item.rai not in [None, ''] %}{{ item.rai }}{% else %}""{% endif %}</td>
-                <td>{% if item.SOCR not in [None, ''] %}{{ item.SOCR }}{% else %}""{% endif %}</td>
-                <td>{% if item.infisREGION not in [None, ''] %}{{ item.infisREGION }}{% else %}""{% endif %}</td>
+                <td>{% if item.obl not in [None, ''] %}{{ item.obl }}{% endif %}</td>
+                <td>{% if item.rai not in [None, ''] %}{{ item.rai }}{% endif %}</td>
+                <td>{% if item.SOCR not in [None, ''] %}{{ item.SOCR }}{% endif %}</td>
+                <td>{% if item.infisREGION not in [None, ''] %}{{ item.infisREGION }}{% endif %}</td>
                 <td>
-                    {%- if item.street not in [None, ''] -%}{{ item.street }}{%- else -%}""{%- endif -%}
-                    {%- if item.house not in [None, ''] -%} д.{{ item.house }}{%- else -%}""{%- endif -%}
-                    {%- if item.flat not in [None, ''] -%}, кв.{{ item.flat }}{%- else -%}""{%- endif -%}
+                    {%- if item.street not in [None, ''] -%}{{ item.street }}{%- endif -%}
+                    {%- if item.house not in [None, ''] -%} д.{{ item.house }}{%- endif -%}
+                    {%- if item.flat not in [None, ''] -%}, кв.{{ item.flat }}{%- endif -%}
                 </td>
                 <td>{{ item.freeInput }}</td>
             </tr>
