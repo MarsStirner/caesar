@@ -120,3 +120,54 @@ class Patients_Process(object):
                     '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
 
         return self.db_session.execute(query)
+
+
+class More_Then_21(object):
+
+    def __init__(self):
+        self.db_session = get_lpu_session()
+
+    def get_more_then_21(self):
+        query = '''
+                    SELECT
+                       Event.externalId,
+                       Client.lastName,
+                       Client.firstName,
+                       Client.patrName,
+                       Client.birthDate,
+                       Event.setDate,
+                       Action.begDate,
+                       datediff(curdate(), Action.begDate) AS "Days",
+                       OrgStructure.name AS "OrgStructureName"
+                        FROM Action
+                        INNER JOIN Event
+                        ON Event.id = Action.event_id
+
+                        INNER JOIN EventType
+                          ON EventType.id = Event.eventType_id AND EventType.purpose_id = 8
+
+                        INNER JOIN Client
+                        ON Client.id = Event.client_id
+
+                        INNER JOIN ActionProperty
+                        ON Action.id = ActionProperty.action_id
+
+                        INNER JOIN ActionProperty_HospitalBed
+                        ON ActionProperty.id = ActionProperty_HospitalBed.id
+
+                        INNER JOIN OrgStructure_HospitalBed
+                        ON ActionProperty_HospitalBed.value = OrgStructure_HospitalBed.id
+
+                        INNER JOIN OrgStructure
+                        ON OrgStructure_HospitalBed.master_id = OrgStructure.id
+
+                        WHERE
+                          Action.deleted = 0
+                          AND Event.deleted = 0
+                          AND (Action.begDate <= curdate()
+                          AND Action.endDate IS NULL)
+                          AND (datediff(curdate(), Action.begDate) >= 21)
+                        ORDER BY
+                          OrgStructure_HospitalBed.master_id
+                '''
+        return self.db_session.execute(query)
