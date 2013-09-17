@@ -210,6 +210,58 @@ class AnaesthesiaAmount(object):
         return self.db_session.execute(query)
 
 
+class List_Of_Operations(object):
+
+    def __init__(self):
+        self.db_session = get_lpu_session()
+
+    def get_list_of_operations(self, start, end):
+        query = '''
+                    SELECT
+                          Client.lastName,
+                          Client.firstName,
+                          Client.patrName,
+                          Event.externalId,
+                          Event.setDate,
+                          VYPISKI.`Data vypiski` AS "DataVypiski",
+                          name_oper.name AS "operName",
+                          Cel_oper.Cel AS "Cel",
+                          Obl_oper.Oblast AS "Oblast",
+                          Type_oper.Type AS "operType",
+                          ds_before_oper.dsbo AS "dsbo",
+                          Action.begDate AS "begDate"
+
+                    FROM Action
+
+                    INNER JOIN Event
+                    ON Action.event_id = Event.id AND Action.deleted=0
+
+                    INNER JOIN Client
+                    ON Client.id= Event.client_id
+
+                    INNER JOIN name_oper
+                    ON Action.id = name_oper.ID AND Action.deleted=0 AND (Action.begDate BETWEEN '{} 00:00:00'
+                    AND '{} 23:59:59')
+
+                    LEFT JOIN Cel_oper
+                    ON Action.id = Cel_oper.ID
+
+                    LEFT JOIN Obl_oper
+                    ON Action.id = Obl_oper.ID
+
+                    LEFT JOIN Type_oper
+                    ON Action.id = Type_oper.ID
+
+                    LEFT JOIN ds_before_oper
+                    ON Action.id = ds_before_oper.ID
+
+                    LEFT JOIN VYPISKI
+                    ON Action.event_id = VYPISKI.Event_id
+
+                '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
+        return self.db_session.execute(query)
+
+
 class Policlinic(object):
 
     def __init__(self):
@@ -497,6 +549,58 @@ class Discharged_Patients(object):
                 LEFT JOIN kladr.STREET
                 ON AddressHouse.KLADRStreetCode = kladr.STREET.code
                     '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
+        return self.db_session.execute(query)
+
+
+class Sickness_Rate_Blocks(object):
+
+    def __init__(self):
+        self.db_session = get_lpu_session()
+
+    def get_sickness_rate_blocks(self, start, end):
+        query = '''
+                    SELECT
+                          MKB.BlockName,
+                          MKB.BlockID,
+                          count(MKB) AS amount
+                    FROM
+                      Event
+
+                    INNER JOIN Client
+                    ON Client.id = Event.client_id
+
+                    INNER JOIN EventType
+                    ON EventType.id = Event.eventType_id AND EventType.purpose_id = 8
+
+                    INNER JOIN Person
+                    ON Person.id = Event.execPerson_id
+
+                    INNER JOIN rbSpeciality
+                    ON rbSpeciality.id = Person.speciality_id
+
+                    INNER JOIN Diagnostic
+                    ON Diagnostic.event_id = Event.id
+
+                    INNER JOIN Diagnosis
+                    ON Diagnostic.diagnosis_id = Diagnosis.id
+
+                    INNER JOIN MKB
+                    ON MKB.DiagID = Diagnosis.MKB
+
+                    WHERE
+                      Event.deleted = 0
+                      AND Event.execDate BETWEEN ('{} 00:00:00' AND '{} 23:59:59')
+                      AND Diagnosis.deleted = 0
+                      AND Diagnostic.deleted = 0
+                      AND Person.deleted = 0
+
+                    GROUP BY
+
+                      MKB.BlockName
+
+                    ORDER BY
+                      MKB.BlockName
+                '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
         return self.db_session.execute(query)
 
 

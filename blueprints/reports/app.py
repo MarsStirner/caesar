@@ -15,6 +15,8 @@ from .views import *
 from .views.patients_process import *
 from .views.more_then_21 import *
 from .views.anaesthesia_amount import *
+from .views.list_of_operations import *
+from .views.sickness_rate_blocks import *
 
 
 
