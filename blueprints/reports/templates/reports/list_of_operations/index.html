@@ -49,12 +49,12 @@
                 <td>{{ item.lastName }} {{ item.firstName }} {{ item.patrName }}</td>
                 <td>{{ item.externalId }}</td>
                 <td>{{ item.setDate }}</td>
-                <td>{{ item.DataVypiski }}</td>
+                <td>{% if item.DataVypiski %}{{ item.DataVypiski }}{% endif %}</td>
                 <td>{{ item.operName|striptags }}</td>
-                <td>{{ item.Cel }}</td>
-                <td>{{ item.Oblast }}</td>
-                <td>{{ item.operType }}</td>
-                <td>{{ item.dsbo|striptags }}</td>
+                <td>{% if item.Cel %}{{ item.Cel }}{% endif %}</td>
+                <td>{% if item.Oblast %}{{ item.Oblast }}{% endif %}</td>
+                <td>{% if item.operType %}{{ item.operType }}{% endif %}</td>
+                <td>{% if item.dsbo|striptags %}{{ item.dsbo|striptags }}{% endif %}</td>
                 <td>{{ item.begDate }}</td>
             </tr>
             {% endfor %}
