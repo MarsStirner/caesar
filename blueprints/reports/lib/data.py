@@ -130,6 +130,9 @@ class More_Then_21(object):
     def __init__(self):
         self.db_session = get_lpu_session()
 
+    def __del__(self):
+        self.db_session.close()
+
     def get_more_then_21(self):
         query = '''
                     SELECT
@@ -181,6 +184,9 @@ class AnaesthesiaAmount(object):
     def __init__(self):
         self.db_session = get_lpu_session()
 
+    def __del__(self):
+        self.db_session.close()
+
     def get_anaesthesia_amount(self, start, end):
         query = '''
                     SELECT
@@ -214,6 +220,9 @@ class List_Of_Operations(object):
 
     def __init__(self):
         self.db_session = get_lpu_session()
+
+    def __del__(self):
+        self.db_session.close()
 
     def get_list_of_operations(self, start, end):
         query = '''
@@ -557,6 +566,9 @@ class Sickness_Rate_Blocks(object):
     def __init__(self):
         self.db_session = get_lpu_session()
 
+    def __del__(self):
+        self.db_session.close()
+
     def get_sickness_rate_blocks(self, start, end):
         query = '''
                     SELECT
@@ -642,4 +654,38 @@ class Paid_Patients(object):
 
                       ORDER
                        BY Pac_prb.Prb,Client.lastName,rbFinance.name'''
+        return self.db_session.execute(query)
+
+
+class Sickness_Rate_Diagnosis(object):
+
+    def __init__(self):
+        self.db_session = get_lpu_session()
+
+    def __del__(self):
+        self.db_session.close()
+
+    def get_vypds(self, diagnosis, start, end):
+        query = '''SELECT Client.lastName
+                               , Client.firstName
+                              ,  Client.patrName
+                              , DS_zak_epic.DiagID
+                         , otd_vypis_from_dvizh.NAME as otd_vypis
+                         , Event.externalid
+                         , date(Event.setDate) as setDate
+                         , date(otd_vypis_from_dvizh.endDate) as endDate
+
+                    FROM
+                      DS_zak_epic
+
+                    INNER JOIN Event
+                    ON Event.id = DS_zak_epic.event_id AND DS_zak_epic.DiagID = '{}'
+
+                    INNER JOIN otd_vypis_from_dvizh
+                    ON otd_vypis_from_dvizh.EventID = DS_zak_epic.event_id
+                    AND (otd_vypis_from_dvizh.endDate BETWEEN '{} 00:00:00' AND '{} 23:59:59')
+
+                    INNER JOIN Client
+                    ON Client.id = Event.client_id
+                '''.format(diagnosis, start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
         return self.db_session.execute(query)

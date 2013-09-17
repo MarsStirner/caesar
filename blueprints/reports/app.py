@@ -17,10 +17,7 @@ from .views.more_then_21 import *
 from .views.anaesthesia_amount import *
 from .views.list_of_operations import *
 from .views.sickness_rate_blocks import *
-
-
-
-
+from .views.sickness_rate_diagnosis import *
 from .views.policlinic import *
 from .views.discharged import *
 from .views.paid import *

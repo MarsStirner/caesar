@@ -5,7 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from application.utils import create_config_func
 from .models import ConfigVariables
-from .config import MODULE_NAME
+from .config import MODULE_NAME, LPU_DB_CONNECT_STRING
 
 _config = create_config_func(MODULE_NAME, ConfigVariables)
 
@@ -13,8 +13,7 @@ _config = create_config_func(MODULE_NAME, ConfigVariables)
 def get_lpu_session():
     Session = None
     try:
-        LPU_DB_CONNECT_STRING = 'mysql://{}:{}@{}/{}?charset=utf8'.format(
-            _config('db_user'), _config('db_password'), _config('db_host'), _config('db_name'))
+        LPU_DB_CONNECT_STRING = LPU_DB_CONNECT_STRING
     except Exception, e:
         print e
     else:

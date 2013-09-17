@@ -15,7 +15,6 @@ def datetimeformat(value, format='%Y-%m-%d'):
 
 @module.route('/paid/', methods=['GET', 'POST'])
 def paid():
-
     current_app.jinja_env.filters['datetimeformat'] = datetimeformat
     try:
         errors = list()
