@@ -30,7 +30,6 @@ def index():
             full_number = data_obj.get_patients()
             postup = data_obj.get_postup()
             vypis = data_obj.get_vypis()
-            pat_org = data_obj.get_patients_orgStruct()
 
         return render_template('reports/index.html',
                                full_number=full_number,
@@ -40,6 +39,24 @@ def index():
                                errors=errors)
     except TemplateNotFound:
         abort(404)
+
+
+@public_endpoint
+@module.route('/ajax_pat_otd/', methods=['GET', 'POST'])
+def ajax_statistic():
+    pat_org = None
+    errors = list()
+    try:
+        data_obj = Statistics()
+    except AttributeError, e:
+        errors.append(
+            u'<strong>Не настроено подключение к БД ЛПУ.</strong> '
+            u'Заполните <a href="{}">настройки</a> подключения.'.format(url_for('.settings')))
+    else:
+        pat_org = data_obj.get_patients_orgStruct()
+    return render_template('reports/patient_otdelenie.html',
+                           pat_org=pat_org,
+                           errors=errors)
 
 
 @module.route('/settings/', methods=['GET', 'POST'])
