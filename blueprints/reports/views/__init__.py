@@ -8,13 +8,36 @@ from ..app import module
 from ..models import ConfigVariables
 from application.database import db
 from application.utils import admin_permission, public_endpoint
+from ..lib.data import Statistics
 
 
 @module.route('/')
 @public_endpoint
 def index():
     try:
-        return render_template('reports/index.html')
+        errors = list()
+        full_number = None
+        postup = None
+        vypis = None
+        pat_org = None
+        try:
+            data_obj = Statistics()
+        except AttributeError, e:
+            errors.append(
+                u'<strong>Не настроено подключение к БД ЛПУ.</strong> '
+                u'Заполните <a href="{}">настройки</a> подключения.'.format(url_for('.settings')))
+        else:
+            full_number = data_obj.get_patients()
+            postup = data_obj.get_postup()
+            vypis = data_obj.get_vypis()
+            pat_org = data_obj.get_patients_orgStruct()
+
+        return render_template('reports/index.html',
+                               full_number=full_number,
+                               postup=postup,
+                               vypis=vypis,
+                               pat_org=pat_org,
+                               errors=errors)
     except TemplateNotFound:
         abort(404)
 

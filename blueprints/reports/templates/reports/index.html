@@ -4,5 +4,40 @@
 
 {% block content %}
     {% include 'reports/_nav_menu.html' %}
-    <legend>Статистика</legend>
+    <legend><h2>Статистика</h2></legend>
+    <div class="well lead">
+        <div class="row">
+          <div class="span4 text-right">Пациентов на данный момент:</div>
+          <div class="span2"><strong>{{ full_number.number }}</strong></div>
+        </div>
+        <div class="row">
+          <div class="span4 text-right">Поступило за сутки:</div>
+          <div class="span2"><strong>{{ postup.number }}</strong></div>
+        </div>
+        <div class="row">
+          <div class="span4 text-right">Выписано за сутки:</div>
+          <div class="span2"><strong>{{ vypis.number }}</strong></div>
+        </div>
+    </div>
+    <legend>Пациенты по отделениям</legend>
+    <div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Отделение</th>
+                    <th><div class="text-right">Количество</div></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item in pat_org %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ item.name }}</td>
+                    <td><div class="text-right">{{ item.number }}</div></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock %}
