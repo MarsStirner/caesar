@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import exceptions
-from datetime import datetime, date
+from datetime import date
 
 from ..app import module, _config
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -59,14 +59,12 @@ class Statistics(object):
     def get_vypis(self):
         query = '''SELECT count(`Action`.`id`) as number
                     FROM `Action`
-                     INNER JOIN `ActionProperty`
-                        ON `Action`.`id` = `ActionProperty`.`action_id` AND `Action`.`actionType_id` = 113
-                      INNER JOIN VYPISKI
-                      ON VYPISKI.Event_id = `Action`.event_id
-                      INNER JOIN Event
-                      ON Event.id = Action.event_id
-                      WHERE `Action`.`deleted` = 0 AND Event.deleted=0 AND date(`Action`.endDate)=DATE(VYPISKI.`Data vypiski`)
-                      AND (VYPISKI.`Data vypiski` BETWEEN '{0} 08:00:00' AND '{1} 07:59:59')
+                    INNER JOIN VYPISKI
+                    ON VYPISKI.Event_id = `Action`.event_id
+                    INNER JOIN Event
+                    ON Event.id = Action.event_id
+                    WHERE `Action`.`actionType_id` = 113 AND `Action`.`deleted` = 0 AND Event.deleted=0 AND date(`Action`.endDate)=DATE(VYPISKI.`Data vypiski`)
+                    AND (VYPISKI.`Data vypiski` BETWEEN '{0} 08:00:00' AND '{1} 07:59:59')
                     '''.format(self.yesterday.strftime('%Y-%m-%d'), self.today.strftime('%Y-%m-%d'))
 
         return self.db_session.execute(query).first()
