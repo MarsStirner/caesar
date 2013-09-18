@@ -9,11 +9,14 @@ from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
 from ..app import module
 from ..lib.data import Sickness_Rate_Diagnosis
 
+from application.utils import public_endpoint
+
 
 def datetimeformat(value, format='%Y-%m-%d'):
     return value.strftime(format)
 
 
+@public_endpoint
 @module.route('/sickness_rate_diagnosis/', methods=['GET', 'POST'])
 def sickness_rate_diagnosis():
     current_app.jinja_env.filters['datetimeformat'] = datetimeformat

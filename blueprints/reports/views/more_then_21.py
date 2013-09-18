@@ -8,8 +8,10 @@ from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
 
 from ..app import module
 from ..lib.data import More_Then_21
+from application.utils import public_endpoint
 
 
+@public_endpoint
 @module.route('/more_then_21/', methods=['GET', 'POST'])
 def more_then_21():
     try:

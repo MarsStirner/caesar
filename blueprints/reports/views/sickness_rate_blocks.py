@@ -8,8 +8,10 @@ from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
 
 from ..app import module
 from ..lib.data import Sickness_Rate_Blocks
+from application.utils import public_endpoint
 
 
+@public_endpoint
 @module.route('/sickness_rate_blocks/', methods=['GET', 'POST'])
 def sickness_rate_blocks():
     try:

@@ -9,9 +9,11 @@ from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
 
 from ..app import module
 from ..lib.data import AnaesthesiaAmount
+from application.utils import public_endpoint
 
 
 @module.route('/anaesthesia_amount/', methods=['GET', 'POST'])
+@public_endpoint
 def anaesthesia_amount():
     try:
         errors = list()

@@ -13,7 +13,7 @@ from application.context_processors import general_menu
 from models import Settings, Users, Roles
 from lib.user import User
 from forms import EditUserForm, LoginForm
-from utils import admin_permission
+from utils import admin_permission, public_endpoint
 
 
 login_manager.login_view = 'login'
@@ -28,11 +28,6 @@ def check_valid_login():
             not login_valid and
             not getattr(app.view_functions[request.endpoint], 'is_public', False)):
         return redirect(url_for('login', next=url_for(request.endpoint)))
-
-
-def public_endpoint(function):
-    function.is_public = True
-    return function
 
 
 @app.route('/')

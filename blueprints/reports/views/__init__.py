@@ -7,10 +7,11 @@ from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
 from ..app import module
 from ..models import ConfigVariables
 from application.database import db
-from application.utils import admin_permission
+from application.utils import admin_permission, public_endpoint
 
 
 @module.route('/')
+@public_endpoint
 def index():
     try:
         return render_template('reports/index.html')

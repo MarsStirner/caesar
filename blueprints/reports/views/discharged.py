@@ -8,8 +8,10 @@ from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
 
 from ..app import module
 from ..lib.data import Discharged_Patients
+from application.utils import public_endpoint
 
 
+@public_endpoint
 @module.route('/discharged/', methods=['GET', 'POST'])
 def discharged():
     try:
