@@ -126,6 +126,9 @@
         </tbody>
     </table>
     {% endif %}
+    {% if priemn_postup or priemn_vypis or priemn_perevod or priemn_umerlo %}
+    <button type="button" class="btn btn-primary" id="print" onclick="window.print();"><i class="icon-print icon-white"></i> Распечатать</button>
+    {% endif %}
 
 {% endblock %}
 
