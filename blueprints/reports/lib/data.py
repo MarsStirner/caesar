@@ -8,7 +8,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from ..utils import get_lpu_session
 
 
-class Main_Window(object):
+class Statistics(object):
 
     def __init__(self):
         self.db_session = get_lpu_session()
@@ -20,18 +20,18 @@ class Main_Window(object):
 
     def get_patients(self):
         query = '''
-                    SELECT count(`Action`.`id`)
+                    SELECT count(`Action`.`id`) as number
                            FROM `Action`
                            INNER JOIN Event
                            ON Event.id = Action.event_id
                            WHERE `Action`.`deleted` = 0 AND `Action`.`actionType_id` = 113
                            and Event.deleted = 0 and `Action`.endDate is NULL;
         '''
-        return self.db_session.execute(query)
+        return self.db_session.execute(query).first()
 
     def get_patients_orgStruct(self):
         query = '''
-                    SELECT count(`Action`.`id`), OrgStructure.id
+                    SELECT count(`Action`.`id`) as number, OrgStructure.id, OrgStructure.name
                     FROM `Action`
                     INNER JOIN Event
                     ON Event.id = Action.event_id
@@ -43,20 +43,21 @@ class Main_Window(object):
                     ON ActionProperty_OrgStructure.value = OrgStructure.id
                     WHERE `Action`.`deleted` = 0 AND `Action`.`actionType_id` = 113
                     and Event.deleted = 0 and `Action`.endDate is NULL
-                    group by OrgStructure.id;
+                    group by OrgStructure.id
+                    ORDER BY OrgStructure.name;
         '''
         return self.db_session.execute(query)
 
     def get_postup(self):
-        query = '''SELECT count(`Action`.`id`)
+        query = '''SELECT count(`Action`.`id`) as number
                     FROM `Action`
                     WHERE `Action`.`deleted` = 0 AND `Action`.`actionType_id` = 112
                     AND (Action.endDate BETWEEN '{0} 08:00:00' AND '{1} 07:59:59')
                     '''.format(self.yesterday.strftime('%Y-%m-%d'), self.today.strftime('%Y-%m-%d'))
-        return self.db_session.execute(query)
+        return self.db_session.execute(query).first()
 
     def get_vypis(self):
-        query = '''SELECT count(`Action`.`id`)
+        query = '''SELECT count(`Action`.`id`) as number
                     FROM `Action`
                     INNER JOIN VYPISKI
                     ON VYPISKI.Event_id = `Action`.event_id
@@ -66,7 +67,7 @@ class Main_Window(object):
                     AND (VYPISKI.`Data vypiski` BETWEEN '{0} 08:00:00' AND '{1} 07:59:59')
                     '''.format(self.yesterday.strftime('%Y-%m-%d'), self.today.strftime('%Y-%m-%d'))
 
-        return self.db_session.execute(query)
+        return self.db_session.execute(query).first()
 
 
 class Patients_Process(object):

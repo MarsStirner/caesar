@@ -25,14 +25,11 @@
         {% endfor %}
     {% endif %}
     <hr>
+    {% if priemn_postup or priemn_vypis or priemn_perevod or priemn_umerlo %}
+    {% include 'reports/_filter_results_form.html' %}
+    {% endif %}
     {% if priemn_postup and priemn_postup is iterable %}
-    <form class="form-inline">
-        <div class="controls alert">
-            <label class="span1" for="filter_report">Фильтр:</label>
-            <input class="span10" type="text" id="filter_report"/>
-        </div>
-    </form>
-    <table id ="result_table" class="table table-striped table-bordered table-condensed">
+    <table class="table table-striped table-bordered table-condensed result_table">
         <caption><p class="lead">Поступившие</p></caption>
         <thead>
             <tr>
@@ -56,7 +53,7 @@
     {% endif %}
 
     {% if priemn_vypis and priemn_vypis is iterable %}
-    <table class="table table-striped table-bordered table-condensed">
+    <table class="table table-striped table-bordered table-condensed result_table">
         <caption><p class="lead">Выписанные</p></caption>
         <thead>
             <tr>
@@ -80,7 +77,7 @@
     {% endif %}
 
     {% if priemn_perevod and priemn_perevod is iterable %}
-    <table class="table table-striped table-bordered table-condensed">
+    <table class="table table-striped table-bordered table-condensed result_table">
         <caption><p class="lead">Переведенные</p></caption>
         <thead>
             <tr>
@@ -108,7 +105,7 @@
     {% endif %}
 
     {% if priemn_umerlo and priemn_umerlo is iterable %}
-    <table class="table table-striped table-bordered table-condensed">
+    <table class="table table-striped table-bordered table-condensed result_table">
         <caption><p class="lead">Умерло</p></caption>
         <thead>
             <tr>
