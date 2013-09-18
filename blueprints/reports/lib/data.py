@@ -1,11 +1,74 @@
 # -*- coding: utf-8 -*-
 import os
 import exceptions
-from datetime import date
+from datetime import datetime, date
 
 from ..app import module, _config
 from flask.ext.sqlalchemy import SQLAlchemy
 from ..utils import get_lpu_session
+
+
+class Main_Window(object):
+
+    def __init__(self):
+        self.db_session = get_lpu_session()
+        self.today = date.today()
+        self.yesterday = self.today.replace(day=self.today.day-1)
+
+    def __del__(self):
+        self.db_session.close()
+
+    def get_patients(self):
+        query = '''
+                    SELECT count(`Action`.`id`)
+                           FROM `Action`
+                           INNER JOIN Event
+                           ON Event.id = Action.event_id
+                           WHERE `Action`.`deleted` = 0 AND `Action`.`actionType_id` = 113
+                           and Event.deleted = 0 and `Action`.endDate is NULL;
+        '''
+        return self.db_session.execute(query)
+
+    def get_patients_orgStruct(self):
+        query = '''
+                    SELECT count(`Action`.`id`), OrgStructure.id
+                    FROM `Action`
+                    INNER JOIN Event
+                    ON Event.id = Action.event_id
+                    INNER JOIN `ActionProperty`
+                    ON `Action`.`id` = `ActionProperty`.`action_id`
+                    INNER  JOIN `ActionProperty_OrgStructure`
+                    ON ActionProperty.id = `ActionProperty_OrgStructure`.`id` AND `ActionProperty`.`type_id` = 7021
+                    INNER JOIN OrgStructure
+                    ON ActionProperty_OrgStructure.value = OrgStructure.id
+                    WHERE `Action`.`deleted` = 0 AND `Action`.`actionType_id` = 113
+                    and Event.deleted = 0 and `Action`.endDate is NULL
+                    group by OrgStructure.id;
+        '''
+        return self.db_session.execute(query)
+
+    def get_postup(self):
+        query = '''SELECT count(`Action`.`id`)
+                    FROM `Action`
+                    WHERE `Action`.`deleted` = 0 AND `Action`.`actionType_id` = 112
+                    AND (Action.endDate BETWEEN '{0} 08:00:00' AND '{1} 07:59:59')
+                    '''.format(self.yesterday.strftime('%Y-%m-%d'), self.today.strftime('%Y-%m-%d'))
+        return self.db_session.execute(query)
+
+    def get_vypis(self):
+        query = '''SELECT count(`Action`.`id`)
+                    FROM `Action`
+                     INNER JOIN `ActionProperty`
+                        ON `Action`.`id` = `ActionProperty`.`action_id` AND `Action`.`actionType_id` = 113
+                      INNER JOIN VYPISKI
+                      ON VYPISKI.Event_id = `Action`.event_id
+                      INNER JOIN Event
+                      ON Event.id = Action.event_id
+                      WHERE `Action`.`deleted` = 0 AND Event.deleted=0 AND date(`Action`.endDate)=DATE(VYPISKI.`Data vypiski`)
+                      AND (VYPISKI.`Data vypiski` BETWEEN '{0} 08:00:00' AND '{1} 07:59:59')
+                    '''.format(self.yesterday.strftime('%Y-%m-%d'), self.today.strftime('%Y-%m-%d'))
+
+        return self.db_session.execute(query)
 
 
 class Patients_Process(object):
