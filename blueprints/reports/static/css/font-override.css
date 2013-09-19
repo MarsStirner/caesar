@@ -18,3 +18,5 @@
     font: normal 92.5%/1.5em Arial, Helvetica, sans-serif;
   }
 }
+#wrap > #container { width: 116em; }
+ul, ol, table { font-size: 1.3em; }

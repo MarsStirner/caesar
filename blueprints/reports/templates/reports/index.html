@@ -19,25 +19,17 @@
           <div class="span2"><strong>{{ vypis.number }}</strong></div>
         </div>
     </div>
-    <legend>Пациенты по отделениям</legend>
-    <div>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Отделение</th>
-                    <th><div class="text-right">Количество</div></th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for item in pat_org %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ item.name }}</td>
-                    <td><div class="text-right">{{ item.number }}</div></td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    <div id="ajax_index"><p class="lead text-center"><img src="{{ url_for('.static', filename='i/ajax-loader.gif') }}"></p></div>
+{% endblock %}
+{% block modules_js %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(function() {
+            $.post("{{ url_for('.ajax_statistic') }}",
+                function(res) {
+                    $('#ajax_index').html(res);
+                }
+            );
+        });
+    </script>
 {% endblock %}

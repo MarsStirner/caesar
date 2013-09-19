@@ -42,7 +42,6 @@
                 <th>Диагноз</th>
                 <th>Область</th>
                 <th>Район</th>
-                <th>Тип нас.пункта</th>
                 <th>Нас.пункт</th>
                 <th>Улица, дом, квартира</th>
                 <th>Свободный ввод адреса</th>
@@ -63,8 +62,7 @@
                 <td>{{ item.DiagName }}</td>
                 <td>{% if item.obl not in [None, ''] %}{{ item.obl }}{% endif %}</td>
                 <td>{% if item.rai not in [None, ''] %}{{ item.rai }}{% endif %}</td>
-                <td>{% if item.SOCR not in [None, ''] %}{{ item.SOCR }}{% endif %}</td>
-                <td>{% if item.infisREGION not in [None, ''] %}{{ item.infisREGION }}{% endif %}</td>
+                <td>{% if item.SOCR not in [None, ''] %}{{ item.SOCR }}. {% endif %}{% if item.city not in [None, ''] %}{{ item.city }}{% endif %}</td>
                 <td>
                     {%- if item.street not in [None, ''] -%}{{ item.street }}{%- endif -%}
                     {%- if item.house not in [None, ''] -%} д.{{ item.house }}{%- endif -%}
