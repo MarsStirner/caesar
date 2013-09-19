@@ -3680,22 +3680,252 @@ class Contract(object):
   def __ne__(self, other):
     return not (self == other)
 
+class Schet(object):
+  """
+  Attributes:
+   - CODE
+   - CODE_MO
+   - YEAR
+   - MONTH
+   - NSCHET
+   - DSCHET
+   - PLAT
+   - SUMMAV
+   - COMENTS
+   - SUMMAP
+   - SANK_MEK
+   - SANK_MEE
+   - SANK_EKMP
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I16, 'CODE', None, None, ), # 1
+    (2, TType.STRING, 'CODE_MO', None, None, ), # 2
+    (3, TType.I16, 'YEAR', None, None, ), # 3
+    (4, TType.I16, 'MONTH', None, None, ), # 4
+    (5, TType.STRING, 'NSCHET', None, None, ), # 5
+    (6, TType.I64, 'DSCHET', None, None, ), # 6
+    (7, TType.STRING, 'PLAT', None, None, ), # 7
+    (8, TType.DOUBLE, 'SUMMAV', None, None, ), # 8
+    (9, TType.STRING, 'COMENTS', None, None, ), # 9
+    (10, TType.DOUBLE, 'SUMMAP', None, None, ), # 10
+    (11, TType.DOUBLE, 'SANK_MEK', None, None, ), # 11
+    (12, TType.DOUBLE, 'SANK_MEE', None, None, ), # 12
+    (13, TType.DOUBLE, 'SANK_EKMP', None, None, ), # 13
+  )
+
+  def __init__(self, CODE=None, CODE_MO=None, YEAR=None, MONTH=None, NSCHET=None, DSCHET=None, PLAT=None, SUMMAV=None, COMENTS=None, SUMMAP=None, SANK_MEK=None, SANK_MEE=None, SANK_EKMP=None,):
+    self.CODE = CODE
+    self.CODE_MO = CODE_MO
+    self.YEAR = YEAR
+    self.MONTH = MONTH
+    self.NSCHET = NSCHET
+    self.DSCHET = DSCHET
+    self.PLAT = PLAT
+    self.SUMMAV = SUMMAV
+    self.COMENTS = COMENTS
+    self.SUMMAP = SUMMAP
+    self.SANK_MEK = SANK_MEK
+    self.SANK_MEE = SANK_MEE
+    self.SANK_EKMP = SANK_EKMP
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I16:
+          self.CODE = iprot.readI16();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.CODE_MO = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I16:
+          self.YEAR = iprot.readI16();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.I16:
+          self.MONTH = iprot.readI16();
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.NSCHET = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.I64:
+          self.DSCHET = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.STRING:
+          self.PLAT = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 8:
+        if ftype == TType.DOUBLE:
+          self.SUMMAV = iprot.readDouble();
+        else:
+          iprot.skip(ftype)
+      elif fid == 9:
+        if ftype == TType.STRING:
+          self.COMENTS = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 10:
+        if ftype == TType.DOUBLE:
+          self.SUMMAP = iprot.readDouble();
+        else:
+          iprot.skip(ftype)
+      elif fid == 11:
+        if ftype == TType.DOUBLE:
+          self.SANK_MEK = iprot.readDouble();
+        else:
+          iprot.skip(ftype)
+      elif fid == 12:
+        if ftype == TType.DOUBLE:
+          self.SANK_MEE = iprot.readDouble();
+        else:
+          iprot.skip(ftype)
+      elif fid == 13:
+        if ftype == TType.DOUBLE:
+          self.SANK_EKMP = iprot.readDouble();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('Schet')
+    if self.CODE is not None:
+      oprot.writeFieldBegin('CODE', TType.I16, 1)
+      oprot.writeI16(self.CODE)
+      oprot.writeFieldEnd()
+    if self.CODE_MO is not None:
+      oprot.writeFieldBegin('CODE_MO', TType.STRING, 2)
+      oprot.writeString(self.CODE_MO)
+      oprot.writeFieldEnd()
+    if self.YEAR is not None:
+      oprot.writeFieldBegin('YEAR', TType.I16, 3)
+      oprot.writeI16(self.YEAR)
+      oprot.writeFieldEnd()
+    if self.MONTH is not None:
+      oprot.writeFieldBegin('MONTH', TType.I16, 4)
+      oprot.writeI16(self.MONTH)
+      oprot.writeFieldEnd()
+    if self.NSCHET is not None:
+      oprot.writeFieldBegin('NSCHET', TType.STRING, 5)
+      oprot.writeString(self.NSCHET)
+      oprot.writeFieldEnd()
+    if self.DSCHET is not None:
+      oprot.writeFieldBegin('DSCHET', TType.I64, 6)
+      oprot.writeI64(self.DSCHET)
+      oprot.writeFieldEnd()
+    if self.PLAT is not None:
+      oprot.writeFieldBegin('PLAT', TType.STRING, 7)
+      oprot.writeString(self.PLAT)
+      oprot.writeFieldEnd()
+    if self.SUMMAV is not None:
+      oprot.writeFieldBegin('SUMMAV', TType.DOUBLE, 8)
+      oprot.writeDouble(self.SUMMAV)
+      oprot.writeFieldEnd()
+    if self.COMENTS is not None:
+      oprot.writeFieldBegin('COMENTS', TType.STRING, 9)
+      oprot.writeString(self.COMENTS)
+      oprot.writeFieldEnd()
+    if self.SUMMAP is not None:
+      oprot.writeFieldBegin('SUMMAP', TType.DOUBLE, 10)
+      oprot.writeDouble(self.SUMMAP)
+      oprot.writeFieldEnd()
+    if self.SANK_MEK is not None:
+      oprot.writeFieldBegin('SANK_MEK', TType.DOUBLE, 11)
+      oprot.writeDouble(self.SANK_MEK)
+      oprot.writeFieldEnd()
+    if self.SANK_MEE is not None:
+      oprot.writeFieldBegin('SANK_MEE', TType.DOUBLE, 12)
+      oprot.writeDouble(self.SANK_MEE)
+      oprot.writeFieldEnd()
+    if self.SANK_EKMP is not None:
+      oprot.writeFieldBegin('SANK_EKMP', TType.DOUBLE, 13)
+      oprot.writeDouble(self.SANK_EKMP)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.CODE is None:
+      raise TProtocol.TProtocolException(message='Required field CODE is unset!')
+    if self.CODE_MO is None:
+      raise TProtocol.TProtocolException(message='Required field CODE_MO is unset!')
+    if self.YEAR is None:
+      raise TProtocol.TProtocolException(message='Required field YEAR is unset!')
+    if self.MONTH is None:
+      raise TProtocol.TProtocolException(message='Required field MONTH is unset!')
+    if self.NSCHET is None:
+      raise TProtocol.TProtocolException(message='Required field NSCHET is unset!')
+    if self.DSCHET is None:
+      raise TProtocol.TProtocolException(message='Required field DSCHET is unset!')
+    if self.SUMMAV is None:
+      raise TProtocol.TProtocolException(message='Required field SUMMAV is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class XMLRegisters(object):
   """
   Attributes:
    - account
    - registry
+   - data
+   - patientRegistryFILENAME
+   - serviceRegistryFILENAME
+   - schet
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'account', (Account, Account.thrift_spec), None, ), # 1
     (2, TType.MAP, 'registry', (TType.STRUCT,(Patient, Patient.thrift_spec),TType.LIST,(TType.STRUCT,(Sluch, Sluch.thrift_spec))), None, ), # 2
+    (3, TType.I64, 'data', None, None, ), # 3
+    (4, TType.STRING, 'patientRegistryFILENAME', None, None, ), # 4
+    (5, TType.STRING, 'serviceRegistryFILENAME', None, None, ), # 5
+    (6, TType.STRUCT, 'schet', (Schet, Schet.thrift_spec), None, ), # 6
   )
 
-  def __init__(self, account=None, registry=None,):
+  def __init__(self, account=None, registry=None, data=None, patientRegistryFILENAME=None, serviceRegistryFILENAME=None, schet=None,):
     self.account = account
     self.registry = registry
+    self.data = data
+    self.patientRegistryFILENAME = patientRegistryFILENAME
+    self.serviceRegistryFILENAME = serviceRegistryFILENAME
+    self.schet = schet
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3730,6 +3960,27 @@ class XMLRegisters(object):
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I64:
+          self.data = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.patientRegistryFILENAME = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.serviceRegistryFILENAME = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRUCT:
+          self.schet = Schet()
+          self.schet.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3755,6 +4006,22 @@ class XMLRegisters(object):
         oprot.writeListEnd()
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
+    if self.data is not None:
+      oprot.writeFieldBegin('data', TType.I64, 3)
+      oprot.writeI64(self.data)
+      oprot.writeFieldEnd()
+    if self.patientRegistryFILENAME is not None:
+      oprot.writeFieldBegin('patientRegistryFILENAME', TType.STRING, 4)
+      oprot.writeString(self.patientRegistryFILENAME)
+      oprot.writeFieldEnd()
+    if self.serviceRegistryFILENAME is not None:
+      oprot.writeFieldBegin('serviceRegistryFILENAME', TType.STRING, 5)
+      oprot.writeString(self.serviceRegistryFILENAME)
+      oprot.writeFieldEnd()
+    if self.schet is not None:
+      oprot.writeFieldBegin('schet', TType.STRUCT, 6)
+      self.schet.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -3763,6 +4030,14 @@ class XMLRegisters(object):
       raise TProtocol.TProtocolException(message='Required field account is unset!')
     if self.registry is None:
       raise TProtocol.TProtocolException(message='Required field registry is unset!')
+    if self.data is None:
+      raise TProtocol.TProtocolException(message='Required field data is unset!')
+    if self.patientRegistryFILENAME is None:
+      raise TProtocol.TProtocolException(message='Required field patientRegistryFILENAME is unset!')
+    if self.serviceRegistryFILENAME is None:
+      raise TProtocol.TProtocolException(message='Required field serviceRegistryFILENAME is unset!')
+    if self.schet is None:
+      raise TProtocol.TProtocolException(message='Required field schet is unset!')
     return
 
 

@@ -350,11 +350,56 @@ struct Contract{
     5:required string resolution;
 }
 
+/*
+Структура счета (для тега SCHET)
+Поля:
+    1- Код записи счета
+    2- Реестровый номер медицинской организации
+    3- Отчетный год
+    4- Отчетный месяц
+    5- Номер счёта	Формат YYMM-N/ Ni
+    6- Дата выставления счёта
+    7- Плательщик. Реестровый номер СМО.
+    8- Сумма МО, выставленная на оплату
+    9- Служебное поле к счету
+    10- Сумма, принятая к оплате СМО (ТФОМС)
+    11- Финансовые санкции (МЭК)
+    12- Финансовые санкции (МЭЭ)
+    13- Финансовые санкции (ЭКМП)
+*/
+struct Schet{
+    1:required tinyint CODE;
+    2:required string CODE_MO;
+    3:required tinyint YEAR;
+    4:required tinyint MONTH;
+    5:required string NSCHET;
+    6:required timestamp DSCHET;
+    7:optional string PLAT;
+    8:required double SUMMAV;
+    9:optional string COMENTS;
+    10:optional double SUMMAP;
+    11:optional double SANK_MEK;
+    12:optional double SANK_MEE;
+    13:optional double SANK_EKMP;
+}
 
-
+/*
+ Структура ответа на запрос по получению реестров
+ Поля:
+     1- Сформированный счет в БД
+     2- Реестры в виде (Пациент- Список его случаев)
+     3- Дата формирования реестра
+     4- Имя файла реестра пациентов
+     5- Имя файла реестра услуг
+     6- Набор значений для тега SCHET
+*/
 struct XMLRegisters{
     1:required Account account;
     2:required map<Patient, list<Sluch>> registry;
+    3:required timestamp data;
+    4:required string patientRegistryFILENAME;
+    5:required string serviceRegistryFILENAME;
+    6:required Schet schet;
 }
 
 //Exceptions
@@ -444,7 +489,8 @@ service TFOMSService{
             4:string infisCode,
             5:list<int> orgStructureIdList,
             6:set<PatientOptionalFields> patientOptionalFields,
-            7:set<SluchOptionalFields> sluchOptionalFields
+            7:set<SluchOptionalFields> sluchOptionalFields,
+            8:bool primaryAccount
             )
         throws (
             1:InvalidOrganizationInfisException infisExc,
@@ -482,17 +528,17 @@ service TFOMSService{
 		throws (1:InvalidArgumentException argExc, 2:SQLException sqlExc);
 
 	//Выгрузка в формате DBF
-	list<DBFStationary> getDBFStationary(
-			1:timestamp beginDate,
-			2:timestamp endDate,
-			3:string infisCode
-			)
-		throws (1:InvalidArgumentException argExc, 2:SQLException sqlExc, 3:NotFoundException exc);
-		
-	list<DBFPoliclinic> getDBFPoliclinic(
-			1:timestamp beginDate,
-			2:timestamp endDate,
-			3:string infisCode
-			)
-		throws (1:InvalidArgumentException argExc, 2:SQLException sqlExc, 3:NotFoundException exc);
+	//list<DBFStationary> getDBFStationary(
+    //			1:timestamp beginDate,
+    //			2:timestamp endDate,
+    //			3:string infisCode
+    //			)
+    //		throws (1:InvalidArgumentException argExc, 2:SQLException sqlExc, 3:NotFoundException exc);
+    //
+    //	list<DBFPoliclinic> getDBFPoliclinic(
+    //			1:timestamp beginDate,
+    //			2:timestamp endDate,
+    //			3:string infisCode
+    //			)
+    //		throws (1:InvalidArgumentException argExc, 2:SQLException sqlExc, 3:NotFoundException exc);
 }

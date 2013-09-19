@@ -35,7 +35,7 @@ class Iface(object):
     """
     pass
 
-  def getXMLRegisters(self, contractId, beginDate, endDate, infisCode, orgStructureIdList, patientOptionalFields, sluchOptionalFields):
+  def getXMLRegisters(self, contractId, beginDate, endDate, infisCode, orgStructureIdList, patientOptionalFields, sluchOptionalFields, primaryAccount):
     """
     Parameters:
      - contractId
@@ -45,6 +45,7 @@ class Iface(object):
      - orgStructureIdList
      - patientOptionalFields
      - sluchOptionalFields
+     - primaryAccount
     """
     pass
 
@@ -67,24 +68,6 @@ class Iface(object):
     Parameters:
      - patientId
      - newPolicy
-    """
-    pass
-
-  def getDBFStationary(self, beginDate, endDate, infisCode):
-    """
-    Parameters:
-     - beginDate
-     - endDate
-     - infisCode
-    """
-    pass
-
-  def getDBFPoliclinic(self, beginDate, endDate, infisCode):
-    """
-    Parameters:
-     - beginDate
-     - endDate
-     - infisCode
     """
     pass
 
@@ -183,7 +166,7 @@ class Client(Iface):
       return result.success
     raise TApplicationException(TApplicationException.MISSING_RESULT, "deleteAccount failed: unknown result");
 
-  def getXMLRegisters(self, contractId, beginDate, endDate, infisCode, orgStructureIdList, patientOptionalFields, sluchOptionalFields):
+  def getXMLRegisters(self, contractId, beginDate, endDate, infisCode, orgStructureIdList, patientOptionalFields, sluchOptionalFields, primaryAccount):
     """
     Parameters:
      - contractId
@@ -193,11 +176,12 @@ class Client(Iface):
      - orgStructureIdList
      - patientOptionalFields
      - sluchOptionalFields
+     - primaryAccount
     """
-    self.send_getXMLRegisters(contractId, beginDate, endDate, infisCode, orgStructureIdList, patientOptionalFields, sluchOptionalFields)
+    self.send_getXMLRegisters(contractId, beginDate, endDate, infisCode, orgStructureIdList, patientOptionalFields, sluchOptionalFields, primaryAccount)
     return self.recv_getXMLRegisters()
 
-  def send_getXMLRegisters(self, contractId, beginDate, endDate, infisCode, orgStructureIdList, patientOptionalFields, sluchOptionalFields):
+  def send_getXMLRegisters(self, contractId, beginDate, endDate, infisCode, orgStructureIdList, patientOptionalFields, sluchOptionalFields, primaryAccount):
     self._oprot.writeMessageBegin('getXMLRegisters', TMessageType.CALL, self._seqid)
     args = getXMLRegisters_args()
     args.contractId = contractId
@@ -207,6 +191,7 @@ class Client(Iface):
     args.orgStructureIdList = orgStructureIdList
     args.patientOptionalFields = patientOptionalFields
     args.sluchOptionalFields = sluchOptionalFields
+    args.primaryAccount = primaryAccount
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -335,86 +320,6 @@ class Client(Iface):
       raise result.sqlExc
     raise TApplicationException(TApplicationException.MISSING_RESULT, "changeClientPolicy failed: unknown result");
 
-  def getDBFStationary(self, beginDate, endDate, infisCode):
-    """
-    Parameters:
-     - beginDate
-     - endDate
-     - infisCode
-    """
-    self.send_getDBFStationary(beginDate, endDate, infisCode)
-    return self.recv_getDBFStationary()
-
-  def send_getDBFStationary(self, beginDate, endDate, infisCode):
-    self._oprot.writeMessageBegin('getDBFStationary', TMessageType.CALL, self._seqid)
-    args = getDBFStationary_args()
-    args.beginDate = beginDate
-    args.endDate = endDate
-    args.infisCode = infisCode
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
-
-  def recv_getDBFStationary(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = getDBFStationary_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    if result.argExc is not None:
-      raise result.argExc
-    if result.sqlExc is not None:
-      raise result.sqlExc
-    if result.exc is not None:
-      raise result.exc
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "getDBFStationary failed: unknown result");
-
-  def getDBFPoliclinic(self, beginDate, endDate, infisCode):
-    """
-    Parameters:
-     - beginDate
-     - endDate
-     - infisCode
-    """
-    self.send_getDBFPoliclinic(beginDate, endDate, infisCode)
-    return self.recv_getDBFPoliclinic()
-
-  def send_getDBFPoliclinic(self, beginDate, endDate, infisCode):
-    self._oprot.writeMessageBegin('getDBFPoliclinic', TMessageType.CALL, self._seqid)
-    args = getDBFPoliclinic_args()
-    args.beginDate = beginDate
-    args.endDate = endDate
-    args.infisCode = infisCode
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
-
-  def recv_getDBFPoliclinic(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = getDBFPoliclinic_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success is not None:
-      return result.success
-    if result.argExc is not None:
-      raise result.argExc
-    if result.sqlExc is not None:
-      raise result.sqlExc
-    if result.exc is not None:
-      raise result.exc
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "getDBFPoliclinic failed: unknown result");
-
 
 class Processor(Iface, TProcessor):
   def __init__(self, handler):
@@ -427,8 +332,6 @@ class Processor(Iface, TProcessor):
     self._processMap["getOrgStructures"] = Processor.process_getOrgStructures
     self._processMap["getAvailableContracts"] = Processor.process_getAvailableContracts
     self._processMap["changeClientPolicy"] = Processor.process_changeClientPolicy
-    self._processMap["getDBFStationary"] = Processor.process_getDBFStationary
-    self._processMap["getDBFPoliclinic"] = Processor.process_getDBFPoliclinic
 
   def process(self, iprot, oprot):
     (name, type, seqid) = iprot.readMessageBegin()
@@ -487,7 +390,7 @@ class Processor(Iface, TProcessor):
     iprot.readMessageEnd()
     result = getXMLRegisters_result()
     try:
-      result.success = self._handler.getXMLRegisters(args.contractId, args.beginDate, args.endDate, args.infisCode, args.orgStructureIdList, args.patientOptionalFields, args.sluchOptionalFields)
+      result.success = self._handler.getXMLRegisters(args.contractId, args.beginDate, args.endDate, args.infisCode, args.orgStructureIdList, args.patientOptionalFields, args.sluchOptionalFields, args.primaryAccount)
     except InvalidOrganizationInfisException as infisExc:
       result.infisExc = infisExc
     except InvalidContractException as contractExc:
@@ -543,42 +446,6 @@ class Processor(Iface, TProcessor):
     except SQLException as sqlExc:
       result.sqlExc = sqlExc
     oprot.writeMessageBegin("changeClientPolicy", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def process_getDBFStationary(self, seqid, iprot, oprot):
-    args = getDBFStationary_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = getDBFStationary_result()
-    try:
-      result.success = self._handler.getDBFStationary(args.beginDate, args.endDate, args.infisCode)
-    except InvalidArgumentException as argExc:
-      result.argExc = argExc
-    except SQLException as sqlExc:
-      result.sqlExc = sqlExc
-    except NotFoundException as exc:
-      result.exc = exc
-    oprot.writeMessageBegin("getDBFStationary", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def process_getDBFPoliclinic(self, seqid, iprot, oprot):
-    args = getDBFPoliclinic_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = getDBFPoliclinic_result()
-    try:
-      result.success = self._handler.getDBFPoliclinic(args.beginDate, args.endDate, args.infisCode)
-    except InvalidArgumentException as argExc:
-      result.argExc = argExc
-    except SQLException as sqlExc:
-      result.sqlExc = sqlExc
-    except NotFoundException as exc:
-      result.exc = exc
-    oprot.writeMessageBegin("getDBFPoliclinic", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -966,6 +833,7 @@ class getXMLRegisters_args(object):
    - orgStructureIdList
    - patientOptionalFields
    - sluchOptionalFields
+   - primaryAccount
   """
 
   thrift_spec = (
@@ -977,9 +845,10 @@ class getXMLRegisters_args(object):
     (5, TType.LIST, 'orgStructureIdList', (TType.I32,None), None, ), # 5
     (6, TType.SET, 'patientOptionalFields', (TType.I32,None), None, ), # 6
     (7, TType.SET, 'sluchOptionalFields', (TType.I32,None), None, ), # 7
+    (8, TType.BOOL, 'primaryAccount', None, None, ), # 8
   )
 
-  def __init__(self, contractId=None, beginDate=None, endDate=None, infisCode=None, orgStructureIdList=None, patientOptionalFields=None, sluchOptionalFields=None,):
+  def __init__(self, contractId=None, beginDate=None, endDate=None, infisCode=None, orgStructureIdList=None, patientOptionalFields=None, sluchOptionalFields=None, primaryAccount=None,):
     self.contractId = contractId
     self.beginDate = beginDate
     self.endDate = endDate
@@ -987,6 +856,7 @@ class getXMLRegisters_args(object):
     self.orgStructureIdList = orgStructureIdList
     self.patientOptionalFields = patientOptionalFields
     self.sluchOptionalFields = sluchOptionalFields
+    self.primaryAccount = primaryAccount
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1047,6 +917,11 @@ class getXMLRegisters_args(object):
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 8:
+        if ftype == TType.BOOL:
+          self.primaryAccount = iprot.readBool();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -1093,6 +968,10 @@ class getXMLRegisters_args(object):
       for iter64 in self.sluchOptionalFields:
         oprot.writeI32(iter64)
       oprot.writeSetEnd()
+      oprot.writeFieldEnd()
+    if self.primaryAccount is not None:
+      oprot.writeFieldBegin('primaryAccount', TType.BOOL, 8)
+      oprot.writeBool(self.primaryAccount)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -1658,388 +1537,6 @@ class changeClientPolicy_result(object):
     if self.sqlExc is not None:
       oprot.writeFieldBegin('sqlExc', TType.STRUCT, 2)
       self.sqlExc.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class getDBFStationary_args(object):
-  """
-  Attributes:
-   - beginDate
-   - endDate
-   - infisCode
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.I64, 'beginDate', None, None, ), # 1
-    (2, TType.I64, 'endDate', None, None, ), # 2
-    (3, TType.STRING, 'infisCode', None, None, ), # 3
-  )
-
-  def __init__(self, beginDate=None, endDate=None, infisCode=None,):
-    self.beginDate = beginDate
-    self.endDate = endDate
-    self.infisCode = infisCode
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.I64:
-          self.beginDate = iprot.readI64();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.I64:
-          self.endDate = iprot.readI64();
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.STRING:
-          self.infisCode = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('getDBFStationary_args')
-    if self.beginDate is not None:
-      oprot.writeFieldBegin('beginDate', TType.I64, 1)
-      oprot.writeI64(self.beginDate)
-      oprot.writeFieldEnd()
-    if self.endDate is not None:
-      oprot.writeFieldBegin('endDate', TType.I64, 2)
-      oprot.writeI64(self.endDate)
-      oprot.writeFieldEnd()
-    if self.infisCode is not None:
-      oprot.writeFieldBegin('infisCode', TType.STRING, 3)
-      oprot.writeString(self.infisCode)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class getDBFStationary_result(object):
-  """
-  Attributes:
-   - success
-   - argExc
-   - sqlExc
-   - exc
-  """
-
-  thrift_spec = (
-    (0, TType.LIST, 'success', (TType.STRUCT,(DBFStationary, DBFStationary.thrift_spec)), None, ), # 0
-    (1, TType.STRUCT, 'argExc', (InvalidArgumentException, InvalidArgumentException.thrift_spec), None, ), # 1
-    (2, TType.STRUCT, 'sqlExc', (SQLException, SQLException.thrift_spec), None, ), # 2
-    (3, TType.STRUCT, 'exc', (NotFoundException, NotFoundException.thrift_spec), None, ), # 3
-  )
-
-  def __init__(self, success=None, argExc=None, sqlExc=None, exc=None,):
-    self.success = success
-    self.argExc = argExc
-    self.sqlExc = sqlExc
-    self.exc = exc
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype82, _size79) = iprot.readListBegin()
-          for _i83 in xrange(_size79):
-            _elem84 = DBFStationary()
-            _elem84.read(iprot)
-            self.success.append(_elem84)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 1:
-        if ftype == TType.STRUCT:
-          self.argExc = InvalidArgumentException()
-          self.argExc.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRUCT:
-          self.sqlExc = SQLException()
-          self.sqlExc.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.STRUCT:
-          self.exc = NotFoundException()
-          self.exc.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('getDBFStationary_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter85 in self.success:
-        iter85.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.argExc is not None:
-      oprot.writeFieldBegin('argExc', TType.STRUCT, 1)
-      self.argExc.write(oprot)
-      oprot.writeFieldEnd()
-    if self.sqlExc is not None:
-      oprot.writeFieldBegin('sqlExc', TType.STRUCT, 2)
-      self.sqlExc.write(oprot)
-      oprot.writeFieldEnd()
-    if self.exc is not None:
-      oprot.writeFieldBegin('exc', TType.STRUCT, 3)
-      self.exc.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class getDBFPoliclinic_args(object):
-  """
-  Attributes:
-   - beginDate
-   - endDate
-   - infisCode
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.I64, 'beginDate', None, None, ), # 1
-    (2, TType.I64, 'endDate', None, None, ), # 2
-    (3, TType.STRING, 'infisCode', None, None, ), # 3
-  )
-
-  def __init__(self, beginDate=None, endDate=None, infisCode=None,):
-    self.beginDate = beginDate
-    self.endDate = endDate
-    self.infisCode = infisCode
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.I64:
-          self.beginDate = iprot.readI64();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.I64:
-          self.endDate = iprot.readI64();
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.STRING:
-          self.infisCode = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('getDBFPoliclinic_args')
-    if self.beginDate is not None:
-      oprot.writeFieldBegin('beginDate', TType.I64, 1)
-      oprot.writeI64(self.beginDate)
-      oprot.writeFieldEnd()
-    if self.endDate is not None:
-      oprot.writeFieldBegin('endDate', TType.I64, 2)
-      oprot.writeI64(self.endDate)
-      oprot.writeFieldEnd()
-    if self.infisCode is not None:
-      oprot.writeFieldBegin('infisCode', TType.STRING, 3)
-      oprot.writeString(self.infisCode)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class getDBFPoliclinic_result(object):
-  """
-  Attributes:
-   - success
-   - argExc
-   - sqlExc
-   - exc
-  """
-
-  thrift_spec = (
-    (0, TType.LIST, 'success', (TType.STRUCT,(DBFPoliclinic, DBFPoliclinic.thrift_spec)), None, ), # 0
-    (1, TType.STRUCT, 'argExc', (InvalidArgumentException, InvalidArgumentException.thrift_spec), None, ), # 1
-    (2, TType.STRUCT, 'sqlExc', (SQLException, SQLException.thrift_spec), None, ), # 2
-    (3, TType.STRUCT, 'exc', (NotFoundException, NotFoundException.thrift_spec), None, ), # 3
-  )
-
-  def __init__(self, success=None, argExc=None, sqlExc=None, exc=None,):
-    self.success = success
-    self.argExc = argExc
-    self.sqlExc = sqlExc
-    self.exc = exc
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype89, _size86) = iprot.readListBegin()
-          for _i90 in xrange(_size86):
-            _elem91 = DBFPoliclinic()
-            _elem91.read(iprot)
-            self.success.append(_elem91)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 1:
-        if ftype == TType.STRUCT:
-          self.argExc = InvalidArgumentException()
-          self.argExc.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRUCT:
-          self.sqlExc = SQLException()
-          self.sqlExc.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.STRUCT:
-          self.exc = NotFoundException()
-          self.exc.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('getDBFPoliclinic_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter92 in self.success:
-        iter92.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.argExc is not None:
-      oprot.writeFieldBegin('argExc', TType.STRUCT, 1)
-      self.argExc.write(oprot)
-      oprot.writeFieldEnd()
-    if self.sqlExc is not None:
-      oprot.writeFieldBegin('sqlExc', TType.STRUCT, 2)
-      self.sqlExc.write(oprot)
-      oprot.writeFieldEnd()
-    if self.exc is not None:
-      oprot.writeFieldBegin('exc', TType.STRUCT, 3)
-      self.exc.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
