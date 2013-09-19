@@ -7,6 +7,11 @@ from models import Settings, Users, Roles
 from app import app
 
 
+def public_endpoint(function):
+    function.is_public = True
+    return function
+
+
 def create_config_func(module_name, config_table):
 
     def _config(code):
@@ -42,9 +47,12 @@ with app.app_context():
         print e
         permissions['admin'] = Permission(RoleNeed('admin'))
     else:
-        for role in roles:
-            permissions[role.code] = Permission(RoleNeed(role.code))
-            permissions[role.code].description = role.description
+        if roles:
+            for role in roles:
+                permissions[role.code] = Permission(RoleNeed(role.code))
+                permissions[role.code].description = role.description
+        else:
+            permissions['admin'] = Permission(RoleNeed('admin'))
 
 # TODO: разобратсья как покрасивше сделать
 admin_permission = permissions.get('admin')

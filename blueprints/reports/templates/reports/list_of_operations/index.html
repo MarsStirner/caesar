@@ -1,0 +1,71 @@
+{% extends 'reports/base.html' %}
+
+{% block title %}> {{ module_name }} > Лист движения пациентов{% endblock %}
+
+{% block content %}
+
+    {% include 'reports/_nav_menu.html' %}
+    <legend>
+        Список операций {% if request.form.get('start') and request.form.get('end') %}({{ request.form.get('start') }} - {{ request.form.get('end') }}){% endif %}
+    </legend>
+    <form class="form-inline" id="filter" method="POST" action="{{ url_for('.list_of_operations') }}">
+        {{ form.hidden_tag() }}
+        <label for="from">Даты с:</label>
+        <input type="text" id="from" name="start" class="span2" />
+        <label for="to">по</label>
+        <input type="text" id="to" name="end" class="span2" />
+      <button type="submit" class="btn btn-primary">Выбрать</button>
+    </form>
+    {% if errors %}
+        {% for error in errors %}
+        <div class="alert alert-error">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          {{ error|safe }}
+        </div>
+        {% endfor %}
+    {% endif %}
+    <hr>
+    {% if list_of_operations and list_of_operations is iterable %}
+    {% include 'reports/_filter_results_form.html' %}
+    <table id ="result_table" class="table table-striped table-bordered table-condensed">
+        <thead>
+            <tr>
+                <th width="5%">№п/п</th>
+                <th>Фамилия Имя Отчество</th>
+                <th width="5%">№ИБ</th>
+                <th>Дата поступления</th>
+                <th>Дата выпискии</th>
+                <th>Наименование операции</th>
+                <th>Цель операции</th>
+                <th>Область операции</th>
+                <th>Тип операции</th>
+                <th>ДЗ до операции</th>
+                <th>Дата начала протокола</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in list_of_operations %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ item.lastName }} {{ item.firstName }} {{ item.patrName }}</td>
+                <td>{{ item.externalId }}</td>
+                <td>{{ item.setDate }}</td>
+                <td>{% if item.DataVypiski %}{{ item.DataVypiski }}{% endif %}</td>
+                <td>{{ item.operName|striptags }}</td>
+                <td>{% if item.Cel %}{{ item.Cel }}{% endif %}</td>
+                <td>{% if item.Oblast %}{{ item.Oblast }}{% endif %}</td>
+                <td>{% if item.operType %}{{ item.operType }}{% endif %}</td>
+                <td>{% if item.dsbo|striptags %}{{ item.dsbo|striptags }}{% endif %}</td>
+                <td>{{ item.begDate }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+        <button type="button" class="btn btn-primary" id="print" onclick="window.print();"><i class="icon-print icon-white"></i> Распечатать</button>
+    {% endif %}
+
+{% endblock %}
+
+{% block modules_js %}
+{{ super() }}
+{% endblock %}
