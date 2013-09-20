@@ -470,9 +470,11 @@ service TFOMSService{
 	    2 -  timestamp beginDate : начало интервала за который формируется реестр
 	    3 -  timestamp endDate : конец интервала за который формируется реестр
 	    4 -  string infisCode : Инфис код ЛПУ
-	    5 -  list<int> orgStructureIdList : Список подразделений
-	    6 -  set<PatientOptionalFields> patientOptionalFields : перечень требуемых опциональных полей реестра пациентов
-	    7 -  set<SluchOptionalFields> sluchOptionalFields : перечень требуемых опциональных полей реестра услуг
+	    5 -  string smoNumber : Номер области СМО
+	    6 -  list<int> orgStructureIdList : Список подразделений
+	    7 -  set<PatientOptionalFields> patientOptionalFields : перечень требуемых опциональных полей реестра пациентов
+	    8 -  set<SluchOptionalFields> sluchOptionalFields : перечень требуемых опциональных полей реестра услуг
+	    9 -  bool primaryAccount : признак первичного \ повторного счета
 	    Exceptions:
 	    1 - InvalidOrganizationInfisException : нету организации с таким инфис-кодом
 	    2 - InvalidContractException : нету контракта с таким идентификатором
@@ -487,10 +489,11 @@ service TFOMSService{
             2:timestamp beginDate,
             3:timestamp endDate,
             4:string infisCode,
-            5:list<int> orgStructureIdList,
-            6:set<PatientOptionalFields> patientOptionalFields,
-            7:set<SluchOptionalFields> sluchOptionalFields,
-            8:bool primaryAccount
+            5:string smoNumber,
+            6:list<int> orgStructureIdList,
+            7:set<PatientOptionalFields> patientOptionalFields,
+            8:set<SluchOptionalFields> sluchOptionalFields,
+            9:bool primaryAccount
             )
         throws (
             1:InvalidOrganizationInfisException infisExc,

@@ -73,6 +73,36 @@ class TFOMSClient(object):
                     setattr(element, attr, self.__convert_date(value))
         return data
 
+    def get_xml_registry(self,
+                         contract_id,
+                         infis_code,
+                         start,
+                         end,
+                         primary=True,
+                         departments=None,
+                         patient_optional=list(),
+                         event_optional=list()):
+        """Получает список пациентов, которому оказаны услуги в данном ЛПУ в указанный промежуток времени"""
+        result = None
+        try:
+            result = self.client.getXMLRegisters(contractId=contract_id,
+                                                 infisCode=infis_code,
+                                                 beginDate=calendar.timegm(start.timetuple()) * 1000,
+                                                 endDate=calendar.timegm(end.timetuple()) * 1000,
+                                                 orgStructureIdList=departments,
+                                                 patientOptionalFields=patient_optional,
+                                                 sluchOptionalFields=event_optional,
+                                                 primaryAccount=primary)
+        except InvalidArgumentException, e:
+            print e
+        except SQLException, e:
+            print e
+        except NotFoundException, e:
+            raise e
+        except TException, e:
+            raise e
+        return self.__unicode_result(result)
+
     def get_patients(self, infis_code, start, end, **kwargs):
         """Получает список пациентов, которому оказаны услуги в данном ЛПУ в указанный промежуток времени"""
         result = None
