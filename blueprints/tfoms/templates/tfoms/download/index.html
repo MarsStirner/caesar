@@ -23,6 +23,17 @@
                 <div class="alert alert-error hidden">
                   <strong>Внимание!</strong> <span id="error_text"></span>
                 </div>
+                <div class="control-group" id="download_contract">
+                    <label class="control-label">Постановление (основание договора):</label>
+                    <div class="controls">
+                        <select id="contract_id" name="contract_id">
+                            <option value="0">- выберите контракт для выгрузки -</option>
+                            {%- for contract in contracts -%}
+                            <option value="{{ contract.id }}">{{ contract.resolution }}</option>
+                            {%- endfor -%}
+                        </select>
+                    </div>
+                </div>
                 <div class="control-group" id="download_dates">
                     <label class="control-label">Отчетный период:</label>
                     <div class="controls">

@@ -27,7 +27,10 @@ UPLOADS_DIR = os.path.join(module.static_folder, 'uploads')
 
 
 def datetimeformat(value, format='%Y-%m-%d'):
-    return value.strftime(format)
+    if value:
+        return value.strftime(format)
+    else:
+        return None
 
 
 class Patients(object):
@@ -528,3 +531,10 @@ class Utility(object):
 
         """
         pass
+
+
+class Contracts(object):
+
+    def get_contracts(self, infis_code):
+        client = Client(_config('core_service_url'))
+        return client.get_contracts(infis_code)

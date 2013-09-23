@@ -523,11 +523,11 @@ class getAvailableAccounts_result(object):
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype33, _size30) = iprot.readListBegin()
-          for _i34 in xrange(_size30):
-            _elem35 = Account()
-            _elem35.read(iprot)
-            self.success.append(_elem35)
+          (_etype40, _size37) = iprot.readListBegin()
+          for _i41 in xrange(_size37):
+            _elem42 = Account()
+            _elem42.read(iprot)
+            self.success.append(_elem42)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -544,8 +544,8 @@ class getAvailableAccounts_result(object):
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter36 in self.success:
-        iter36.write(oprot)
+      for iter43 in self.success:
+        iter43.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -634,7 +634,7 @@ class getAccountItems_result(object):
   """
 
   thrift_spec = (
-    (0, TType.LIST, 'success', (TType.STRUCT,(AccountItem, AccountItem.thrift_spec)), None, ), # 0
+    (0, TType.STRUCT, 'success', (AccountInfo, AccountInfo.thrift_spec), None, ), # 0
     (1, TType.STRUCT, 'nfExc', (NotFoundException, NotFoundException.thrift_spec), None, ), # 1
   )
 
@@ -652,14 +652,9 @@ class getAccountItems_result(object):
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype40, _size37) = iprot.readListBegin()
-          for _i41 in xrange(_size37):
-            _elem42 = AccountItem()
-            _elem42.read(iprot)
-            self.success.append(_elem42)
-          iprot.readListEnd()
+        if ftype == TType.STRUCT:
+          self.success = AccountInfo()
+          self.success.read(iprot)
         else:
           iprot.skip(ftype)
       elif fid == 1:
@@ -679,11 +674,8 @@ class getAccountItems_result(object):
       return
     oprot.writeStructBegin('getAccountItems_result')
     if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter43 in self.success:
-        iter43.write(oprot)
-      oprot.writeListEnd()
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
       oprot.writeFieldEnd()
     if self.nfExc is not None:
       oprot.writeFieldBegin('nfExc', TType.STRUCT, 1)

@@ -13,48 +13,50 @@
     {% include 'tfoms/_nav_menu.html' %}
     <div class="print">
       <legend>Отчёты по выгрузкам в ТФОМС</legend>
-        <form class="form-inline" id="filter" method="POST" action="{{ url_for('.reports') }}">
-            {{ form.hidden_tag() }}
-            <label for="from">Даты с:</label>
-            <input type="text" id="from" name="start" class="span2" />
-            <label for="to">по</label>
-            <input type="text" id="to" name="end" class="span2" />
-          <button type="submit" class="btn btn-primary">Фильтровать</button>
-        </form>
-    {% if data and data['bills'] %}
+    {% if data %}
         {% set num_services = [] %}
         {% set sum = [] %}
         {% set confirmed_sum = [] %}
+        {% set confirmed_amount = [] %}
         {% set unconfirmed_sum = [] %}
+        {% set unconfirmed_amount = [] %}
         <table class="table table-striped table-bordered table-condensed" id="reports_table">
             <thead>
                 <tr>
+                    <th>Номер счета</th>
                     <th>Дата формирования</th>
-                    <th>Номер файла</th>
-                    <th>Номер реестра</th>
-                    <th>Количество записей</th>
+                    <th>Даты оказания услуг</th>
+                    <th>Количество случаев</th>
                     <th>УЕТ</th>
                     <th>Выставленная сумма (руб.)</th>
+                    <th>Дата отправки в ТФОМС</th>
+                    <th>Оплачено (шт.)</th>
                     <th>Оплачено (руб.)</th>
+                    <th>Отказано (шт.)</th>
                     <th>Отказано (руб.)</th>
-                    <th>Примечание</th>
+                    <th class="hidden-print"></th>
                 </tr>
             </thead>
             <tbody>
-            {% for bill in data['bills'] %}
-                {% if sum.append(bill.SUMMAV|float) %}{% endif %}
-                {% if confirmed_sum.append(data['cases_sum'][bill.id]['confirmed']) %}{% endif %}
-                {% if unconfirmed_sum.append(data['cases_sum'][bill.id]['unconfirmed']) %}{% endif %}
+            {% for bill in data %}
+                {% if sum.append(bill.sum|float) %}{% endif %}
+                {% if confirmed_amount.append(bill.payedAmount) %}{% endif %}
+                {% if confirmed_sum.append(bill.payedSum) %}{% endif %}
+                {% if unconfirmed_amount.append(bill.refusedAmount) %}{% endif %}
+                {% if unconfirmed_sum.append(bill.refusedSum) %}{% endif %}
                 <tr>
-                    <td>{{ bill.download_file.DATA|datetimeformat('%d/%m/%Y') }}</td>
-                    <td>{{ bill.download_file.FILENAME }}</td>
-                    <td><a href="{{ url_for('.report_cases', bill_id=bill.id) }}">{{ bill.NSCHET }}</a></td>
-                    <td>{{ bill.cases|length }}</td>
-                    <td>{{ data['num_services'][bill.id] }}</td>
-                    <td>{{ bill.SUMMAV|float }}</td>
-                    <td>{{ data['cases_sum'][bill.id]['confirmed'] }}</td>
-                    <td>{{ data['cases_sum'][bill.id]['unconfirmed'] }}</td>
-                    <td>{% if bill.COMENTS %}{{ bill.COMENTS }}{% endif %}</td>
+                    <td nowrap><a href="{{ url_for('.report_cases', bill_id=bill.id) }}" title="Просмотреть позиции счёта">{{ bill.number }}</a></td>
+                    <td>{% if bill.date is defined and bill.date %}{{ bill.date|datetimeformat('%d/%m/%Y') }}{% endif %}</td>
+                    <td>{% if bill.begDate is defined and bill.begDate %}{{ bill.begDate|datetimeformat('%d/%m/%Y') }}{% else %}?{% endif %}-{% if bill.endDate is defined and bill.endDate %}{{ bill.endDate|datetimeformat('%d/%m/%Y') }}{% else %}?{% endif %}</td>
+                    <td>{{ bill.amount }}</td>
+                    <td>{{ bill.uet }}</td>
+                    <td>{{ bill.sum }}</td>
+                    <td>{% if bill.exposeDate is defined and bill.exposeDate %}{{ bill.exposeDate|datetimeformat('%d/%m/%Y') }}{% endif %}</td>
+                    <td>{{ bill.payedAmount }}</td>
+                    <td>{{ bill.payedSum }}</td>
+                    <td>{{ bill.refusedAmount }}</td>
+                    <td>{{ bill.refusedSum }}</td>
+                    <td class="hidden-print"><a href="#" class="label label-important" title="Удалить счёт"><span class="icon-white icon-trash"></span></a></td>
                 </tr>
             {% endfor %}
             </tbody>
@@ -64,21 +66,29 @@
                 <table class="table table-condensed" id="summary">
                     <thead>
                         <tr>
-                            <th colspan="2">Итого:</th>
+                            <th colspan="2" class="lead">Итого:</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <th>Всего реестров (шт.)</th>
-                            <td>{{ data['bills']|length }}</td>
+                            <td>{{ data|length }}</td>
                         </tr>
                         <tr>
                             <th>Выставленная сумма (руб.)</th>
                             <td>{{ sum|sum() }}</td>
                         </tr>
                         <tr>
+                            <th>Количество оплаченных</th>
+                            <td>{{ confirmed_amount|sum() }}</td>
+                        </tr>
+                        <tr>
                             <th>Сумма оплаченных (руб.)</th>
                             <td>{{ confirmed_sum|sum() }}</td>
+                        </tr>
+                        <tr>
+                            <th>Количество отказанных</th>
+                            <td>{{ unconfirmed_amount|sum() }}</td>
                         </tr>
                         <tr>
                             <th>Сумма отказанных (руб.)</th>

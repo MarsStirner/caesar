@@ -9,7 +9,7 @@ from thrift.transport import TTransport, TSocket
 from thrift.protocol import TBinaryProtocol
 
 from thrift_service.TFOMSService import Client
-from thrift_service.ttypes import Patient, PatientOptionalFields, Sluch, SluchOptionalFields, Usl, Spokesman
+from thrift_service.ttypes import InvalidOrganizationInfisException
 from thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException, TClientPolicy
 
 
@@ -41,7 +41,12 @@ class TFOMSClient(object):
                           'DAT_PR',
                           'DAT_VV',
                           'DAT_BLVN',
-                          'DAT_ELVN']
+                          'DAT_ELVN',
+                          'date',
+                          'begDate',
+                          'endDate',
+                          'exposeDate',
+                          'exposeDate', ]
 
     def __del__(self):
         self.transport.close()
@@ -78,11 +83,12 @@ class TFOMSClient(object):
                          infis_code,
                          start,
                          end,
+                         smo_number,
                          primary=True,
                          departments=None,
                          patient_optional=list(),
                          event_optional=list()):
-        """Получает список пациентов, которому оказаны услуги в данном ЛПУ в указанный промежуток времени"""
+        """Получает список пациентов и услуг для XML-выгрузки данном ЛПУ в указанный промежуток времени"""
         result = None
         try:
             result = self.client.getXMLRegisters(contractId=contract_id,
@@ -92,8 +98,69 @@ class TFOMSClient(object):
                                                  orgStructureIdList=departments,
                                                  patientOptionalFields=patient_optional,
                                                  sluchOptionalFields=event_optional,
-                                                 primaryAccount=primary)
+                                                 primaryAccount=primary,
+                                                 smoNumber=smo_number)
         except InvalidArgumentException, e:
+            print e
+        except SQLException, e:
+            print e
+        except NotFoundException, e:
+            raise e
+        except TException, e:
+            raise e
+        return self.__unicode_result(result)
+
+    def get_departments(self, infis_code):
+        """Получает список подразделений в данном ЛПУ"""
+        result = None
+        try:
+            result = self.client.getOrgStructures(organisationInfis=infis_code)
+        except InvalidOrganizationInfisException, e:
+            print e
+        except SQLException, e:
+            print e
+        except NotFoundException, e:
+            raise e
+        except TException, e:
+            raise e
+        return self.__unicode_result(result)
+
+    def get_contracts(self, infis_code):
+        """Получает список доступных контрактов в данном ЛПУ"""
+        result = None
+        try:
+            result = self.client.getAvailableContracts(organisationInfis=infis_code)
+        except InvalidOrganizationInfisException, e:
+            print e
+        except SQLException, e:
+            print e
+        except NotFoundException, e:
+            raise e
+        except TException, e:
+            raise e
+        return self.__unicode_result(result)
+
+    def get_bills(self, infis_code):
+        """Получает список доступных счетов в данном ЛПУ"""
+        result = None
+        try:
+            result = self.client.getAvailableAccounts()
+        except InvalidOrganizationInfisException, e:
+            print e
+        except SQLException, e:
+            print e
+        except NotFoundException, e:
+            raise e
+        except TException, e:
+            raise e
+        return self.__unicode_result(result)
+
+    def get_bill_cases(self, bill_id):
+        """Получает список доступных счетов в данном ЛПУ"""
+        result = None
+        try:
+            result = self.client.getAccountItems(accountId=bill_id)
+        except InvalidOrganizationInfisException, e:
             print e
         except SQLException, e:
             print e

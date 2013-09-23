@@ -3,7 +3,6 @@
       <div class="navbar-inner">
         <div class="container">
           <ul class="nav">
-{#              #TODO: class=active когда будут готовы вьюхи#}
             <li{% if request.path == url_for('.index') %} class="active"{% endif %}><a href="{{ url_for('.index') }}" id="index">Главная</a></li>
             <li{% if request.path == url_for('.download') %} class="active"{% endif %}><a href="{{ url_for('.download') }}" id="download">Выгрузка</a></li>
             <li{% if request.path == url_for('.upload') %} class="active"{% endif %}><a href="{{ url_for('.upload') }}" id="upload">Загрузка</a></li>
@@ -14,6 +13,7 @@
                 <a id="mod_settings" class="dropdown-toggle" data-toggle="dropdown" role="button">Настройки <b class="caret"></b></a>
                 <ul class="dropdown-menu" role="menu" aria-labelledby="mod_settings" >
                   <li role="presentation" {% if request.path == url_for('.add_new_template') %} class="active"{% endif %}><a href="{{ url_for('.add_new_template') }}">Шаблоны</a></li>
+                  <li role="presentation" {% if request.path == url_for('.departments') %} class="active"{% endif %}><a href="{{ url_for('.departments') }}">Настройка подразделений</a></li>
                   <li role="presentation" {% if request.path == url_for('.settings') %} class="active"{% endif %}><a href="{{ url_for('.settings') }}">Настройки модуля</a></li>
                 </ul>
                 </div>

@@ -15,11 +15,13 @@ from app import module, _config
 
 from lib.thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException
 
-from forms import CreateTemplateForm
-from lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
-from lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR, UploadWorker, Reports, datetimeformat, UpdateWorker
-from models import Template, TagsTree, StandartTree, TemplateType, DownloadType, ConfigVariables
-from utils import save_template_tag_tree, save_new_template_tree
+from .forms import CreateTemplateForm
+from .lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
+from .lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR, UploadWorker, Reports, datetimeformat, UpdateWorker
+from .lib.data import Contracts
+from .lib.departments import Departments
+from .models import Template, TagsTree, StandartTree, TemplateType, DownloadType, ConfigVariables
+from .utils import save_template_tag_tree, save_new_template_tree
 from application.database import db
 from application.utils import admin_permission
 
@@ -34,6 +36,22 @@ def index():
         return render_template('{0}/index.html'.format(module.name))
     except TemplateNotFound:
         abort(404)
+
+
+@module.route('/ajax_update_tables/', methods=['GET', 'POST'])
+def ajax_update_tables():
+    worker = UpdateWorker()
+    error, message = None, None
+
+    try:
+        result = worker.update_tables()
+    except NotFoundException, e:
+        error = u'Ошибка при обновлении таблиц: %s' % e.message
+    except TException, e:
+        error = u'Ошибка при обновлении таблиц: %s' % e.message
+    else:
+        message = u'Обновление таблицы прошло успешно'
+    return jsonify(message=message, error=error)
 
 
 @module.route('/ajax_download/', methods=['GET', 'POST'])
@@ -60,22 +78,6 @@ def ajax_download():
     return render_template('{0}/download/result.html'.format(module.name), files=result, errors=errors)
 
 
-@module.route('/ajax_update_tables/', methods=['GET', 'POST'])
-def ajax_update_tables():
-    worker = UpdateWorker()
-    error, message = None, None
-
-    try:
-        result = worker.update_tables()
-    except NotFoundException, e:
-        error = u'Ошибка при обновлении таблиц: %s' % e.message
-    except TException, e:
-        error = u'Ошибка при обновлении таблиц: %s' % e.message
-    else:
-        message = u'Обновление таблицы прошло успешно'
-    return jsonify(message=message, error=error)
-
-
 @module.route('/download/')
 @module.route('/download/<string:template_type>/')
 def download(template_type='xml'):
@@ -84,7 +86,8 @@ def download(template_type='xml'):
                      .filter(Template.is_active == True,
                              Template.type.has(TemplateType.download_type.has(DownloadType.code == template_type)))
                      .all())
-        return render_template('{0}/download/index.html'.format(module.name), templates=templates)
+        contracts = Contracts().get_contracts(_config('lpu_infis_code'))
+        return render_template('{0}/download/index.html'.format(module.name), templates=templates, contracts=contracts)
     except TemplateNotFound:
         abort(404)
 
@@ -134,11 +137,11 @@ def reports():
     start = None
     end = None
     report = Reports()
-    if request.method == 'POST':
-        start = datetime.strptime(request.form['start'], '%d.%m.%Y')
-        end = datetime.strptime(request.form['end'], '%d.%m.%Y')
+    # if request.method == 'POST':
+    #     start = datetime.strptime(request.form['start'], '%d.%m.%Y')
+    #     end = datetime.strptime(request.form['end'], '%d.%m.%Y')
 
-    data = report.get_bills(start, end)
+    data = report.get_bills(_config('lpu_infis_code'))
     try:
         current_app.jinja_env.filters['datetimeformat'] = datetimeformat
         return render_template('{0}/reports/index.html'.format(module.name), data=data, form=Form())
@@ -150,17 +153,11 @@ def reports():
 @module.route('/reports/<int:bill_id>/page/<int:page>/', methods=['GET'])
 def report_cases(bill_id, page):
     report = Reports()
-    bill = report.get_bill(bill_id)
-    if bill:
-        query, data = report.get_cases(bill_id, page, PER_PAGE)
-        pagination = Pagination(query, page, PER_PAGE, query.count(), data)
-        try:
-            current_app.jinja_env.filters['datetimeformat'] = datetimeformat
-            return render_template('{0}/reports/cases.html'.format(module.name),
-                                   cases=data, bill=bill, pagination=pagination)
-        except TemplateNotFound:
-            abort(404)
-    else:
+    data = report.get_bill_cases(bill_id)
+    try:
+        current_app.jinja_env.filters['datetimeformat'] = datetimeformat
+        return render_template('{0}/reports/cases.html'.format(module.name), cases=data)
+    except TemplateNotFound:
         abort(404)
 
 
@@ -363,5 +360,19 @@ def activate(template_type):
 def show_page(page):
     try:
         return render_template('{0}/{1}.html'.format(module.name, page))
+    except TemplateNotFound:
+        abort(404)
+
+
+@module.route('/departments/')
+@admin_permission.require(http_exception=403)
+def departments():
+    try:
+        departments = list()
+        obj = Departments(_config('lpu_infis_code'))
+        departments = obj.get_departments()
+
+        return render_template('{0}/settings_templates/departments.html'.format(module.name))
+
     except TemplateNotFound:
         abort(404)

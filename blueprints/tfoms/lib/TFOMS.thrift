@@ -263,7 +263,7 @@ struct DBFPoliclinic{
     9-Дата отправки счета в ТФОМС
     10-Число оплаченных позиции счета
     11-Сумма оплаченых услуг
-    12- Число отказаных в оплате позиций
+    12-Число отказаных в оплате позиций
     13-Сумма всех отказанных в оплате услуг
 */
 struct Account{
@@ -317,6 +317,11 @@ struct AccountItem{
     13:optional string refuseTypeName;
     14:optional tinyint refuseTypeCode;
     15:optional string note;
+}
+
+struct AccountInfo {
+    1:required Account account;
+    2:required list<AccountItem> items;
 }
 
 /*
@@ -451,7 +456,7 @@ service TFOMSService{
         Return:
         Список позиций счета или пустой список если на счет нету ни одной позиции
     */
-    list<AccountItem> getAccountItems(1:int accountId) throws (1:NotFoundException nfExc);
+    AccountInfo getAccountItems(1:int accountId) throws (1:NotFoundException nfExc);
 
     /*
         Удаление счета

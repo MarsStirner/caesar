@@ -24,7 +24,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print ''
   print 'Functions:'
   print '   getAvailableAccounts()'
-  print '   getAccountItems(int accountId)'
+  print '  AccountInfo getAccountItems(int accountId)'
   print '  bool deleteAccount(int accountId)'
   print '  XMLRegisters getXMLRegisters(int contractId, timestamp beginDate, timestamp endDate, string infisCode, string smoNumber,  orgStructureIdList,  patientOptionalFields,  sluchOptionalFields, bool primaryAccount)'
   print '   getOrgStructures(string organisationInfis)'
