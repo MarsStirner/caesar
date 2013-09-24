@@ -149,6 +149,16 @@ def reports():
         abort(404)
 
 
+@module.route('/reports/delete/<int:id>/', methods=['GET', 'POST'])
+def delete_report(id):
+    report = Reports()
+    try:
+        report.delete_bill(id)
+    except TemplateNotFound:
+        flash(u'Произошла ошибка удаления счёта')
+    return redirect(url_for('.reports'))
+
+
 @module.route('/reports/<int:bill_id>/', defaults={'page': 1}, methods=['GET'])
 @module.route('/reports/<int:bill_id>/page/<int:page>/', methods=['GET'])
 def report_cases(bill_id, page):
@@ -156,7 +166,7 @@ def report_cases(bill_id, page):
     data = report.get_bill_cases(bill_id)
     try:
         current_app.jinja_env.filters['datetimeformat'] = datetimeformat
-        return render_template('{0}/reports/cases.html'.format(module.name), cases=data)
+        return render_template('{0}/reports/cases.html'.format(module.name), data=data)
     except TemplateNotFound:
         abort(404)
 

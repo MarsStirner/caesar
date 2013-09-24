@@ -46,7 +46,7 @@ class TFOMSClient(object):
                           'begDate',
                           'endDate',
                           'exposeDate',
-                          'exposeDate', ]
+                          'serviceDate', ]
 
     def __del__(self):
         self.transport.close()
@@ -59,13 +59,27 @@ class TFOMSClient(object):
 
     def __convert_dates(self, data):
         #TODO: унифицировать для обеих выборок, учесть вложенность
-        for item in data:
-            for element in data[item]:
-                for attr, value in element.__dict__.iteritems():
+        if isinstance(data, list):
+            for item in data:
+                if isinstance(item, list):
+                    for element in item:
+                        for attr, value in element.__dict__.iteritems():
+                            if attr in self.date_tags and isinstance(value, (int, long)) and value:
+                                setattr(element, attr, self.__convert_date(value))
+                            elif isinstance(value, basestring):
+                                setattr(element, attr, value.strip().decode('utf8'))
+                else:
+                    for attr, value in item.__dict__.iteritems():
+                        if attr in self.date_tags and isinstance(value, (int, long)) and value:
+                            setattr(item, attr, self.__convert_date(value))
+                        elif isinstance(value, basestring):
+                            setattr(item, attr, value.strip().decode('utf8'))
+        elif isinstance(data, object):
+            for attr, value in data.__dict__.iteritems():
                     if attr in self.date_tags and isinstance(value, (int, long)) and value:
-                        setattr(element, attr, self.__convert_date(value))
+                        setattr(data, attr, self.__convert_date(value))
                     elif isinstance(value, basestring):
-                        setattr(element, attr, value.strip().decode('utf8'))
+                        setattr(data, attr, value.strip().decode('utf8'))
         return data
 
     def __unicode_result(self, data):
@@ -168,7 +182,22 @@ class TFOMSClient(object):
             raise e
         except TException, e:
             raise e
-        return self.__unicode_result(result)
+        return result
+
+    def delete_bill(self, bill_id):
+        """Получает список доступных счетов в данном ЛПУ"""
+        result = None
+        try:
+            result = self.client.deleteAccount(accountId=bill_id)
+        except InvalidOrganizationInfisException, e:
+            print e
+        except SQLException, e:
+            print e
+        except NotFoundException, e:
+            raise e
+        except TException, e:
+            raise e
+        return result
 
     def get_patients(self, infis_code, start, end, **kwargs):
         """Получает список пациентов, которому оказаны услуги в данном ЛПУ в указанный промежуток времени"""

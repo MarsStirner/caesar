@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 import os
 import exceptions
-from datetime import date
+from datetime import date, datetime, timedelta
 from zipfile import ZipFile, ZIP_DEFLATED
 import dbf
 from flask import current_app
@@ -26,9 +26,18 @@ DOWNLOADS_DIR = os.path.join(module.static_folder, 'downloads')
 UPLOADS_DIR = os.path.join(module.static_folder, 'uploads')
 
 
-def datetimeformat(value, format='%Y-%m-%d'):
-    if value:
-        return value.strftime(format)
+def __convert_date(timestamp):
+    if os.name == 'nt':
+        # Hack for Win (http://stackoverflow.com/questions/10588027/converting-timestamps-larger-than-maxint-into-datetime-objects)
+        return date.fromtimestamp(0) + timedelta(seconds=timestamp / 1000)
+    return date.fromtimestamp(timestamp / 1000)
+
+
+def datetimeformat(value, _format='%Y-%m-%d'):
+    if isinstance(value, datetime):
+        return value.strftime(_format)
+    elif isinstance(value, int):
+        return __convert_date(value).strftime(_format)
     else:
         return None
 

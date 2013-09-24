@@ -4,5 +4,6 @@
 {{ super() }}
 {%- if request.endpoint -%}
     <script src="{{ url_for('.static', filename='js/docs/' + request.endpoint|replace(request.blueprint + '.', '') + '.js') }}"></script>
+    <script src="{{ url_for('.static', filename='js/script.js') }}"></script>
 {%- endif -%}
 {% endblock %}

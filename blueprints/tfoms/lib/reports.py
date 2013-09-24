@@ -17,3 +17,6 @@ class Reports(object):
 
     def get_bill_cases(self, bill_id):
         return self.client.get_bill_cases(bill_id)
+
+    def delete_bill(self, bill_id):
+        return self.client.delete_bill(bill_id)
