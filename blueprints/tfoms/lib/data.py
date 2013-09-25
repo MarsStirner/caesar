@@ -308,14 +308,10 @@ class UploadWorker(object):
                 for child in element:
                     if child.tag == 'FILENAME':
                         filename = child.text
-            for element in root.iter('SCHET'):
-                self.__update_bill(element)
             for element in root.iter('ZAP'):
                 for child in element:
                     if child.tag == 'PACIENT':
                         self.__patient(child)
-                    elif child.tag == 'SLUCH':
-                        self.__update_case(child, filename)
 
 
 class File(object):
