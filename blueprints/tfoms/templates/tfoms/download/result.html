@@ -6,6 +6,8 @@
     {%- endfor -%}
     </div>
 {% endif %}
-{% for file in files %}
-    <i class="icon-download"></i> <a href="{{ url_for('.download_file', filename=file['url']) }}">{{ file['url'] }}</a><br/>
-{% endfor %}
+{% if files is mapping %}
+    {% for type, file in files.iteritems() %}
+        <i class="icon-download"></i> <a href="{{ url_for('.download_file', filename=file['url']) }}">{{ file['url'] }}</a><br/>
+    {% endfor %}
+{% endif %}

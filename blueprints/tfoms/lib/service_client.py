@@ -122,7 +122,7 @@ class TFOMSClient(object):
             raise e
         except TException, e:
             raise e
-        return self.__unicode_result(result)
+        return result
 
     def get_departments(self, infis_code):
         """Получает список подразделений в данном ЛПУ"""
@@ -137,7 +137,7 @@ class TFOMSClient(object):
             raise e
         except TException, e:
             raise e
-        return self.__unicode_result(result)
+        return result
 
     def get_contracts(self, infis_code):
         """Получает список доступных контрактов в данном ЛПУ"""
@@ -152,7 +152,7 @@ class TFOMSClient(object):
             raise e
         except TException, e:
             raise e
-        return self.__unicode_result(result)
+        return result
 
     def get_bills(self, infis_code):
         """Получает список доступных счетов в данном ЛПУ"""
@@ -167,7 +167,7 @@ class TFOMSClient(object):
             raise e
         except TException, e:
             raise e
-        return self.__unicode_result(result)
+        return result
 
     def get_bill_cases(self, bill_id):
         """Получает список доступных счетов в данном ЛПУ"""

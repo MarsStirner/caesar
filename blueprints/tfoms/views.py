@@ -17,7 +17,7 @@ from lib.thrift_service.ttypes import InvalidArgumentException, NotFoundExceptio
 
 from .forms import CreateTemplateForm
 from .lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
-from .lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR, UploadWorker, Reports, datetimeformat, UpdateWorker
+from .lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR, UploadWorker, Reports, datetimeformat
 from .lib.data import Contracts
 from .lib.departments import Departments
 from .models import Template, TagsTree, StandartTree, TemplateType, DownloadType, ConfigVariables
@@ -38,43 +38,28 @@ def index():
         abort(404)
 
 
-@module.route('/ajax_update_tables/', methods=['GET', 'POST'])
-def ajax_update_tables():
-    worker = UpdateWorker()
-    error, message = None, None
-
-    try:
-        result = worker.update_tables()
-    except NotFoundException, e:
-        error = u'Ошибка при обновлении таблиц: %s' % e.message
-    except TException, e:
-        error = u'Ошибка при обновлении таблиц: %s' % e.message
-    else:
-        message = u'Обновление таблицы прошло успешно'
-    return jsonify(message=message, error=error)
-
-
 @module.route('/ajax_download/', methods=['GET', 'POST'])
 def ajax_download():
     result = list()
     errors = list()
-    templates = request.form.getlist('templates[]')
+    template_ids = request.form.getlist('templates[]')
     start = datetime.strptime(request.form['start'], '%d.%m.%Y')
     end = datetime.strptime(request.form['end'], '%d.%m.%Y')
+    contract_id = int(request.form.get('contract_id'))
+    primary = bool(request.form.get('primary'))
     #TODO: как-то покрасивее сделать?
     worker = DownloadWorker()
-    for template_id in templates:
-        try:
-            file_url = worker.do_download(template_id, start, end, _config('lpu_infis_code'))
-        except NotFoundException, e:
-            template = db.session.query(Template).get(template_id)
-            errors.append(u'<b>%s</b>: данных для выгрузки в заданный период не найдено (%s)' %
-                          (template.name, e.message))
-        except TException, e:
-            template = db.session.query(Template).get(template_id)
-            errors.append(u'<b>%s</b>: внутренняя ошибка ядра во время выборки данных (%s)' % (template.name, e))
-        else:
-            result.append(dict(url=file_url))
+    try:
+        result = worker.do_download(template_ids=template_ids,
+                                    infis_code=_config('lpu_infis_code'),
+                                    contract_id=contract_id,
+                                    start=start,
+                                    end=end,
+                                    primary=primary)
+    except NotFoundException, e:
+        errors.append(u'Данных для выгрузки в заданный период не найдено (%s)' % e.message)
+    except TException, e:
+        errors.append(u'Во время выборки данных возникла внутренняя ошибка ядра (%s)' % e)
     return render_template('{0}/download/result.html'.format(module.name), files=result, errors=errors)
 
 

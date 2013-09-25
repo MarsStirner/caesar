@@ -14,7 +14,7 @@
         <legend>Формирование реестров, предназначенных для выгрузки в ТФОМС</legend>
         <ul class="nav nav-tabs">
             <li{% if request.path == url_for('.download', template_type='xml') or request.path == url_for('.download') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='xml') }}" id="download_xml">Выгрузка сведений в формате XML</a></li>
-            <li{% if request.path == url_for('.download', template_type='dbf') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='dbf') }}" id="download_dbf">Выгрузка  сведений в формате DBF</a></li>
+{#            <li{% if request.path == url_for('.download', template_type='dbf') %} class="active"{% endif %}><a href="{{ url_for('.download', template_type='dbf') }}" id="download_dbf">Выгрузка  сведений в формате DBF</a></li>#}
         </ul>
         <form class="form-horizontal" id="download_form">
             <legend><small>Укажите параметры выгрузки</small></legend>
@@ -26,8 +26,8 @@
                 <div class="control-group" id="download_contract">
                     <label class="control-label">Постановление (основание договора):</label>
                     <div class="controls">
-                        <select id="contract_id" name="contract_id">
-                            <option value="0">- выберите контракт для выгрузки -</option>
+                        <select id="contract_id" name="contract_id" class="span4" required>
+                            <option value="">- выберите контракт для выгрузки -</option>
                             {%- for contract in contracts -%}
                             <option value="{{ contract.id }}">{{ contract.resolution }}</option>
                             {%- endfor -%}
@@ -45,6 +45,12 @@
                             <span class="add-on">по</span>
                             <input type="text" id="to" name="end" required class="input-small" />
                         </div>
+                    </div>
+                </div>
+                <div class="control-group" id="download_contract">
+                    <label class="control-label">Первичный счёт:</label>
+                    <div class="controls">
+                        <input type="checkbox" name="primary" id="primary" value="1" checked> <small>(если выбран, то первичная выгрузка)</small>
                     </div>
                 </div>
                 <div class="control-group" id="download_templates">
@@ -92,7 +98,7 @@ $(document).ready(function(){
     $('#download_form').submit(function(){
         var $this = $(this);
         var templates = [];
-        $this.find('input:checkbox').each(function(){
+        $('#download_templates').find('input:checkbox').each(function(){
             if ($(this).is(':checked')){
                 templates.push($(this).val());
             }
@@ -101,11 +107,20 @@ $(document).ready(function(){
             show_error('Не выбран ни один шаблон для выгрузки');
             return false;
         }
+        if(!$('#contract_id').val()){
+            show_error('Не выбрано постановление (основание договора)');
+            return false;
+        }
         $this.hide();
         $('#download_result').show();
         $('#result').html('Подождите, идёт генерация файлов...');
         $.post("{{ url_for('.ajax_download') }}",
-                { templates: templates, start: $('#from').val(), end: $('#to').val() },
+                { templates: templates,
+                    start: $('#from').val(),
+                    end: $('#to').val(),
+                    primary: $('#primary').val(),
+                    contract_id: $('#contract_id').val()
+                },
                 function(res) {
                     if (res.error){
                         show_error(res.error);
@@ -117,19 +132,6 @@ $(document).ready(function(){
                 }
         );
         return false;
-    });
-    $('#update_tables').click(function(){
-        $.post("{{ url_for('.ajax_update_tables') }}",
-            function(res) {
-                if (res.error){
-                    $('#update_tables_result>#origin_text').hide();
-                    $('#update_tables_result>#info').text(res.error);
-                    $('#update_tables_result').removeClass('alert-success').addClass('alert-error');
-                }else if (res.message){
-                    $('#update_tables_result').removeClass('alert-error').addClass('alert-success').html(res.message);
-                }
-            }
-        );
     });
 });
 $(function() {

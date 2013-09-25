@@ -11,8 +11,8 @@ from service_client import TFOMSClient as Client
 from thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException
 from thrift_service.ttypes import PatientOptionalFields, SluchOptionalFields, TClientPolicy
 from ..app import module, _config
-from ..models import Template, TagsTree, Tag, DownloadCases, DownloadBills
-from reports import Reports
+from ..models import Template, TagsTree, Tag
+from ..lib.reports import Reports
 
 try:
     from lxml import etree
@@ -42,18 +42,41 @@ def datetimeformat(value, _format='%Y-%m-%d'):
         return None
 
 
-class Patients(object):
+class XML_Registry(object):
 
-    def __init__(self, start, end, infis_code, tags):
+    def __init__(self,
+                 contract_id,
+                 start,
+                 end,
+                 infis_code,
+                 primary,
+                 tags,
+                 departments=list()):
+
         self.client = Client(_config('core_service_url'))
+        self.contract_id = contract_id
         self.start = start
         self.end = end
         self.infis_code = infis_code
-        self.tags = tags
+        self.patient_tags = tags.get('patients', list())
+        self.event_tags = tags.get('services', list())
+        self.primary = primary
+        self.departments = departments
 
-    def __filter_tags(self, tags):
+    def __patient_optional_tags(self):
         result = []
-        for tag in tags:
+        for tag in self.patient_tags:
+            try:
+                attr = getattr(PatientOptionalFields, tag)
+            except exceptions.AttributeError:
+                pass
+            else:
+                result.append(attr)
+        return result
+
+    def __event_optional_tags(self):
+        result = []
+        for tag in self.event_tags:
             try:
                 attr = getattr(PatientOptionalFields, tag)
             except exceptions.AttributeError:
@@ -63,10 +86,15 @@ class Patients(object):
         return result
 
     def get_data(self):
-        data = self.client.get_patients(infis_code=self.infis_code,
-                                        start=self.start,
-                                        end=self.end,
-                                        optional=self.__filter_tags(self.tags))
+        data = self.client.get_xml_registry(contract_id=self.contract_id,
+                                            infis_code=self.infis_code,
+                                            start=self.start,
+                                            end=self.end,
+                                            smo_number=_config('smo_number'),
+                                            primary=self.primary,
+                                            departments=self.departments,
+                                            patient_optional=self.__patient_optional_tags(),
+                                            event_optional=self.__event_optional_tags())
         return data
 
 
@@ -112,23 +140,6 @@ class Services(object):
                     SUMMAV=self.__get_ammount(services))
         return data
 
-    def get_data(self):
-        patients = Patients(self.start, self.end, self.infis_code, self.tags)
-        patients_data = patients.get_data()
-
-        patient_ids = []
-        patients = dict()
-        for patient in patients_data:
-            patient_ids.append(patient.patientId)
-            patients[patient.patientId] = patient
-
-        data = self.client.get_patient_events(infis_code=self.infis_code,
-                                              start=self.start,
-                                              end=self.end,
-                                              patients=patient_ids,
-                                              optional=self.__filter_tags(self.tags))
-        return dict(patients=patients, services=data, bill=self.__get_bill(data))
-
 
 class DBF_Data(object):
 
@@ -162,8 +173,12 @@ class DBF_Hospital(DBF_Data):
 
 class DownloadWorker(object):
 
-    def __get_template(self, id):
-        return db.session.query(Template).get(id)
+    def __get_download_type(self, template_ids):
+        template = db.session.query(Template).filter(Template.id.in_(template_ids)).first()
+        return getattr(getattr(template.type, 'download_type', None), 'code', None)
+
+    def __get_templates(self, template_ids):
+        return db.session.query(Template).filter(Template.id.in_(template_ids)).all()
 
     def __get_template_tree(self, template_id):
         root = (db.session.query(TagsTree)
@@ -187,16 +202,14 @@ class DownloadWorker(object):
     def __get_conditions(self):
         return None
 
-    def get_data(self, template_type, **kwargs):
-        if template_type == ('xml', 'patients'):
-            data = Patients(**kwargs).get_data()
-        elif template_type == ('xml', 'services'):
-            data = Services(**kwargs).get_data()
-        elif template_type == ('dbf', 'policlinic'):
+    def get_data(self, download_type, **kwargs):
+        if download_type == 'xml':
+            data = XML_Registry(**kwargs).get_data()
+        elif download_type == ('dbf', 'policlinic'):
             if 'tags' in kwargs:
                 del kwargs['tags']
             data = DBF_Policlinic(**kwargs).get_data()
-        elif template_type == ('dbf', 'hospital'):
+        elif download_type == ('dbf', 'hospital'):
             if 'tags' in kwargs:
                 del kwargs['tags']
             data = DBF_Hospital(**kwargs).get_data()
@@ -207,55 +220,45 @@ class DownloadWorker(object):
     def __get_file_object(self, template_type, end, tags):
         return File.provider(data_type=template_type[1], end=end, file_type=template_type[0], tags=tags)
 
-    def do_download(self, template_id, start, end, infis_code):
-        template = self.__get_template(template_id)
-        template_type = (template.type.download_type.code, template.type.code)
-        tree = self.__get_template_tree(template_id)
-        if tree is None:
+    def do_download(self, template_ids, infis_code, contract_id, start, end, primary):
+        tags, tree, files = dict(), dict(), dict()
+        template, download_type = None, None
+        templates = self.__get_templates(template_ids)
+        for template in templates:
+            tags[template.type.code] = self.__tags_list(template.id)
+            tree[template.type.code] = self.__get_template_tree(template.id)
+
+        if not tree:
             return None
-        conditions = self.__get_conditions()
-        tags = self.__tags_list(template_id)
-        data = self.get_data(template_type,
+
+        if template:
+            download_type = getattr(getattr(template.type, 'download_type', None), 'code', None)
+
+        data = self.get_data(download_type=download_type,
+                             infis_code=infis_code,
+                             contract_id=int(contract_id),
                              start=start,
                              end=end,
-                             infis_code=infis_code,
+                             primary=primary,
                              tags=tags)
-                             # conditions=conditions)
-        file_obj = self.__get_file_object(template_type, end=end, tags=tags)
-        file_url = file_obj.save_file(tree, data)
-        if template_type == ('xml', 'services'):
-            reports = Reports()
-            data.update(dict(template_id=template_id, file=file_obj.head, start=start, end=end))
-            try:
-                reports.save_data(data)
-            except Exception, e:
-                print e
-        elif template_type == ('xml', 'patients'):
-            reports = Reports()
-            try:
-                reports.add_patients(data)
-            except Exception, e:
-                import logging, sys
-                h1 = logging.StreamHandler(sys.stdout)
-                h2 = logging.StreamHandler(sys.stderr)
-                logger = logging.getLogger()
-                logger.addHandler(h1)
-                logger.addHandler(h2)
-                logger.error(e)
-                print e
 
-        if template.archive:
-            file_url = file_obj.archive_file()
-        return file_url
+        for template in templates:
+            files[template.type.code] = dict()
+            file_obj = self.__get_file_object((download_type, template.type.code),
+                                              end=end,
+                                              tags=tags[template.type.code])
+            files[template.type.code]['url'] = file_obj.save_file(tree[template.type.code], data)
+
+            if template.archive:
+                files[template.type.code]['url'] = file_obj.archive_file()
+
+        return files
 
 
-class UpdateWorker(object):
+class DownloadHistory(object):
 
-    def __init__(self):
-        self.client = Client(_config('core_service_url'))
-
-    def update_tables(self):
-        return self.client.prepare_tables()
+    def add_file(self):
+        pass
 
 
 class UploadWorker(object):
@@ -296,43 +299,6 @@ class UploadWorker(object):
             else:
                 pass
 
-    def __update_case(self, element, filename):
-        data = dict()
-        case_id = None
-        case = None
-        for child in element:
-            if child.tag == 'IDCASE':
-                case_id = int(child.text)
-            elif child.tag == 'REFREASON':
-                data[child.tag] = child.text
-                if child.text == '0':
-                    data['confirmed'] = True
-            elif child.tag == 'COMENTSL':
-                data[child.tag] = child.text
-        if case_id:
-            case = db.session.query(DownloadCases).get(case_id)
-        if case and data:
-            data['confirmed_date'] = date.today()
-            data['uploaded_file'] = filename
-            for key, value in data.iteritems():
-                if hasattr(case, key):
-                    setattr(case, key, value)
-            db.session.commit()
-        return data.get('confirmed', False)
-
-    def __update_bill(self, element):
-        data = dict()
-        for child in element:
-            if child.text:
-                data[child.tag] = child.text
-        if data:
-            bill = db.session.query(DownloadBills).filter(DownloadBills.NSCHET == data.get('NSCHET')).first()
-            if bill:
-                for key, value in data.iteritems():
-                    if hasattr(bill, key):
-                        setattr(bill, key, value)
-            db.session.commit()
-
     def parse(self, file_path):
         filename = None
         if os.path.isfile(file_path):
@@ -372,25 +338,23 @@ class XML(object):
     def __init__(self, data_type, end):
         self.data_type = data_type
         self.end = end
+        self.file_name = None
+        self.head = None
 
         if self.data_type == 'patients':
-            self.file_name = 'L'
             self.template = 'tfoms/xml/patients.xml'
         elif self.data_type == 'services':
-            self.file_name = 'H'
             self.template = 'tfoms/xml/services.xml'
         else:
             raise exceptions.NameError
 
-    def generate_filename(self):
-        self.file_name += 'M'
-        self.file_name += _config('old_lpu_infis_code')[0:3]
-        self.file_name += 'T'
-        self.file_name += _config('smo_number')
-        self.file_name += '_'
-        self.file_name += '%s' % self.end.strftime("%y%m")
-        #TODO: инкрементировать номер пакета (01)?
-        self.file_name += '01'
+    def generate_filename(self, data):
+        if self.data_type == 'patients':
+            self.file_name = data.patientRegistryFILENAME
+        elif self.data_type == 'services':
+            self.file_name = data.serviceRegistryFILENAME
+        else:
+            raise exceptions.NameError
 
     def generate_file(self, tags_tree, data):
         env = Environment(loader=PackageLoader(module.import_name,
@@ -399,15 +363,18 @@ class XML(object):
 
         template = env.get_template(self.template)
         linked_file = XML(data_type='services', end=self.end)
-        linked_file.generate_filename()
+        linked_file.generate_filename(data)
         self.head = dict(VERSION='1.0',
                          DATA=date.today().strftime('%Y-%m-%d'),
                          FILENAME=self.file_name,
                          FILENAME1=linked_file.file_name)
+
+        if self.data_type == 'patients':
+            data = data.registry.keys()
         return template.render(encoding=_config('xml_encoding'), head=self.head, tags_tree=tags_tree, data=data)
 
     def save_file(self, tags_tree, data):
-        self.generate_filename()
+        self.generate_filename(data)
         content = self.generate_file(tags_tree, data)
         f = open(os.path.join(DOWNLOADS_DIR, '%s.xml' % self.file_name), 'w')
         f.write(content.encode(_config('xml_encoding')))
