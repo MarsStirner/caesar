@@ -25,7 +25,7 @@
                     <th>Количество оказанных услуг</th>
                     <th>Единица учета услуги</th>
                     <th>Дата загрузки из ТФОМС</th>
-                    <th>Файл, загруженный из ТФОМС</th>
+                    <th>Файл выгрузки</th>
                     <th>Причина отказа</th>
                     <th>Примечание</th>
                 </tr>
@@ -36,7 +36,7 @@
                     <td>{{ case.id }}</td>
                     <td>{{ case.serviceDate|datetimeformat('%d/%m/%Y') }}</td>
                     <td>{{ case.lastName }} {{ case.firstName }} {{ case.patrName }}</td>
-                    <td>{% if case.sex == '1' %}М{% elif case.sex == '2' %}Ж{% endif %}</td>
+                    <td>{% if case.sex == 1 %}М{% elif case.sex == 2 %}Ж{% endif %}</td>
                     <td>{% if case.birthDate %}{{ case.birthDate|datetimeformat('%d/%m/%Y') }}{% endif %}</td>
                     <td>{{ case.price|float }}</td>
                     <td>{{ case.amount|float }}</td>
