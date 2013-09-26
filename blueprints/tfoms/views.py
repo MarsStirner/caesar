@@ -79,6 +79,10 @@ def download_result():
     return render_template('{0}/download/result.html'.format(module.name), files=result, errors=errors)
 
 
+@module.route('/secondary/')
+def secondary():
+    pass
+
 @module.route('/download/')
 @module.route('/download/<string:template_type>/')
 def download(template_type='xml'):
@@ -108,11 +112,11 @@ def download(template_type='xml'):
         abort(404)
 
 
-@module.route('/download_file/<string:filename>')
-def download_file(filename):
+@module.route('/download_file/<string:dir>/<string:filename>')
+def download_file(dir, filename):
     """Выдаёт файлы на скачивание"""
     if filename:
-        return send_from_directory(DOWNLOADS_DIR, filename, as_attachment=True, cache_timeout=0)
+        return send_from_directory(os.path.join(DOWNLOADS_DIR, dir), filename, as_attachment=True, cache_timeout=0)
 
 
 @module.route('/upload/')
@@ -148,19 +152,32 @@ def ajax_upload():
         return render_template('{0}/upload/result.html'.format(module.name), errors=errors, messages=messages)
 
 
+def get_files(root, _dir):
+    path = os.path.join(root, _dir)
+    if os.path.isdir(path):
+        return [(_dir, f) for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+    return None
+
+
 @module.route('/reports/', methods=['GET', 'POST'])
 def reports():
     start = None
     end = None
+    files = dict()
     report = Reports()
     # if request.method == 'POST':
     #     start = datetime.strptime(request.form['start'], '%d.%m.%Y')
     #     end = datetime.strptime(request.form['end'], '%d.%m.%Y')
 
     data = report.get_bills(_config('lpu_infis_code'))
+    for bill in data:
+        files[bill.id] = get_files(DOWNLOADS_DIR, str(bill.id))
     try:
         current_app.jinja_env.filters['datetimeformat'] = datetimeformat
-        return render_template('{0}/reports/index.html'.format(module.name), data=data, form=Form())
+        return render_template('{0}/reports/index.html'.format(module.name),
+                               data=data,
+                               files=files,
+                               form=Form())
     except TemplateNotFound:
         abort(404)
 

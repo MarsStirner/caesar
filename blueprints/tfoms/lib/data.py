@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 import os
+import errno
 import exceptions
 from datetime import date, datetime, timedelta
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -249,14 +250,13 @@ class DownloadWorker(object):
             raise exception
 
         for template in templates:
-            files[template.type.code] = dict()
             file_obj = self.__get_file_object((download_type, template.type.code),
                                               end=end,
                                               tags=tags[template.type.code])
-            files[template.type.code]['url'] = file_obj.save_file(tree[template.type.code], data)
+            files[template.type.code] = file_obj.save_file(tree[template.type.code], data)
 
             if template.archive:
-                files[template.type.code]['url'] = file_obj.archive_file()
+                files[template.type.code] = file_obj.archive_file()
 
         return files
 
@@ -342,6 +342,7 @@ class XML(object):
         self.end = end
         self.file_name = None
         self.head = None
+        self.dir_name = None
 
         if self.data_type == 'patients':
             self.template = 'tfoms/xml/patients.xml'
@@ -375,18 +376,35 @@ class XML(object):
             data = data.registry.keys()
         return template.render(encoding=_config('xml_encoding'), head=self.head, tags_tree=tags_tree, data=data)
 
+    def __create_download_dir(self, account):
+        self.dir_name = str(account.id)
+        path = os.path.join(DOWNLOADS_DIR, self.dir_name)
+        try:
+            os.makedirs(path)
+        except OSError as exc:  # Python >2.5
+            if exc.errno == errno.EEXIST and os.path.isdir(path):
+                pass
+            else:
+                raise
+
     def save_file(self, tags_tree, data):
         self.generate_filename(data)
         content = self.generate_file(tags_tree, data)
-        f = open(os.path.join(DOWNLOADS_DIR, '%s.xml' % self.file_name), 'w')
+        self.__create_download_dir(data.account)
+        f = open(os.path.join(DOWNLOADS_DIR, self.dir_name, '%s.xml' % self.file_name), 'w')
         f.write(content.encode(_config('xml_encoding')))
         f.close()
-        return '%s.xml' % self.file_name
+        return self.dir_name, '{0}.xml'.format(self.file_name)
 
     def archive_file(self):
-        with ZipFile(os.path.join(DOWNLOADS_DIR, '%s.xml.zip' % self.file_name), 'w', ZIP_DEFLATED) as archive:
-            archive.write(os.path.join(DOWNLOADS_DIR, '%s.xml' % self.file_name), '%s.xml' % self.file_name)
-        return '%s.xml.zip' % self.file_name
+        with ZipFile(
+                os.path.join(DOWNLOADS_DIR, self.dir_name, '{0}.xml.zip'.format(self.file_name)),
+                'w',
+                ZIP_DEFLATED) as archive:
+            archive.write(
+                os.path.join(DOWNLOADS_DIR, self.dir_name, '{0}.xml'.format(self.file_name)),
+                '%s.xml' % self.file_name)
+        return self.dir_name, '{0}.xml.zip'.format(self.file_name)
 
 
 class DBF(object):

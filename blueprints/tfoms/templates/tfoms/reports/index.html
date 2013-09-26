@@ -32,12 +32,14 @@
         <table class="table table-striped table-bordered table-condensed" id="reports_table">
             <thead>
                 <tr>
+                    <th class="hidden-print"></th>
                     <th>Номер счета</th>
                     <th>Дата формирования</th>
                     <th>Даты оказания услуг</th>
                     <th>Количество случаев</th>
                     <th>УЕТ</th>
                     <th>Выставленная сумма (руб.)</th>
+                    <th class="hidden-print">Файлы</th>
                     <th>Дата отправки в ТФОМС</th>
                     <th>Оплачено (шт.)</th>
                     <th>Оплачено (руб.)</th>
@@ -54,12 +56,20 @@
                 {% if unconfirmed_amount.append(bill.refusedAmount) %}{% endif %}
                 {% if unconfirmed_sum.append(bill.refusedSum) %}{% endif %}
                 <tr>
+                    <td class="hidden-print"><a href="{{ url_for('.secondary', bill_id=bill.id) }}" class="label label-success" title="Выставить повторный счёт"><span class="icon-white icon-repeat"></span></a></td>
                     <td nowrap><a href="{{ url_for('.report_cases', bill_id=bill.id) }}" title="Просмотреть позиции счёта">{{ bill.number }}</a></td>
                     <td>{% if bill.date is defined and bill.date %}{{ bill.date|datetimeformat('%d/%m/%Y')|default("", True) }}{% endif %}</td>
                     <td>{% if bill.begDate is defined and bill.begDate %}{{ bill.begDate|datetimeformat('%d/%m/%Y')|default("?", True) }}{% else %}?{% endif %}-{% if bill.endDate is defined and bill.endDate %}{{ bill.endDate|datetimeformat('%d/%m/%Y')|default("?", True) }}{% else %}?{% endif %}</td>
                     <td>{{ bill.amount }}</td>
                     <td>{{ bill.uet }}</td>
                     <td>{{ bill.sum }}</td>
+                    <td nowrap class="hidden-print">
+                        {% if files and files[bill.id] is iterable %}
+                            {% for file in files[bill.id] %}
+                                <i class="icon-download"></i> <a href="{{ url_for('.download_file', dir=file[0], filename=file[1]) }}" title="Скачать файл">{{ file[1] }}</a><br/>
+                            {% endfor %}
+                        {% endif %}
+                    </td>
                     <td>{% if bill.exposeDate is defined and bill.exposeDate %}{{ bill.exposeDate|datetimeformat('%d/%m/%Y')|default("", True) }}{% endif %}</td>
                     <td>{{ bill.payedAmount }}</td>
                     <td>{{ bill.payedSum }}</td>
