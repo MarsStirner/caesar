@@ -24,6 +24,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print ''
   print 'Functions:'
   print '   getAvailableAccounts()'
+  print '  Account getAccount(int accountId)'
   print '  AccountInfo getAccountItems(int accountId)'
   print '  bool deleteAccount(int accountId)'
   print '  XMLRegisters getXMLRegisters(int contractId, timestamp beginDate, timestamp endDate, string infisCode, string smoNumber,  orgStructureIdList,  patientOptionalFields,  sluchOptionalFields, bool primaryAccount)'
@@ -86,6 +87,12 @@ if cmd == 'getAvailableAccounts':
     print 'getAvailableAccounts requires 0 args'
     sys.exit(1)
   pp.pprint(client.getAvailableAccounts())
+
+elif cmd == 'getAccount':
+  if len(args) != 1:
+    print 'getAccount requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.getAccount(eval(args[0]),))
 
 elif cmd == 'getAccountItems':
   if len(args) != 1:

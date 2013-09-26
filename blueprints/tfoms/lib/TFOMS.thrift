@@ -183,7 +183,7 @@ struct DBFStationary{
 	43:required tinyint KOD_DOK = 0;
 	44:required string SER_DOK = ""; 
 	45:required string NOM_DOK = ""; 
-	46:required tinyint VMP = "";
+	46:required tinyint VMP = 0;
 	47:required timestamp DAT_BLVN = 0; 
 	48:required timestamp DAT_ELVN = 0; 
 	49:required bool DAMAGE = false;
@@ -446,6 +446,17 @@ service TFOMSService{
         Получение всех доступных счетов (deleted = 0), в случае если счетов нету - пустой сисок.
     */
     list<Account> getAvailableAccounts();
+
+    /*
+        Получение одного счета по его идентификатору
+        Arguments:
+        1 -  int accountId : идентификатор счета
+        Exceptions:
+        1 - NotFoundException nfExc : Если нету счета с таким идентификатором
+        Return:
+        Счет / Ошибка
+    */
+    Account getAccount(1:int accountId) throws (1:NotFoundException nfExc);
 
     /*
         Получение всех позиций счета по идентификатору счета
