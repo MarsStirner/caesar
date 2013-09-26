@@ -13,7 +13,6 @@
                 <a id="mod_settings" class="dropdown-toggle" data-toggle="dropdown" role="button">Настройки <b class="caret"></b></a>
                 <ul class="dropdown-menu" role="menu" aria-labelledby="mod_settings" >
                   <li role="presentation" {% if request.path == url_for('.add_new_template') %} class="active"{% endif %}><a href="{{ url_for('.add_new_template') }}">Шаблоны</a></li>
-                  <li role="presentation" {% if request.path == url_for('.departments') %} class="active"{% endif %}><a href="{{ url_for('.departments') }}">Настройка подразделений</a></li>
                   <li role="presentation" {% if request.path == url_for('.settings') %} class="active"{% endif %}><a href="{{ url_for('.settings') }}">Настройки модуля</a></li>
                 </ul>
                 </div>

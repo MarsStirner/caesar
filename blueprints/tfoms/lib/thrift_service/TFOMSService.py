@@ -217,6 +217,8 @@ class Client(Iface):
       raise result.contractExc
     if result.datesExc is not None:
       raise result.datesExc
+    if result.invExc is not None:
+      raise result.invExc
     if result.nfExc is not None:
       raise result.nfExc
     if result.sqlExc is not None:
@@ -400,6 +402,8 @@ class Processor(Iface, TProcessor):
       result.contractExc = contractExc
     except InvalidDateIntervalException as datesExc:
       result.datesExc = datesExc
+    except InvalidArgumentException as invExc:
+      result.invExc = invExc
     except NotFoundException as nfExc:
       result.nfExc = nfExc
     except SQLException as sqlExc:
@@ -1005,6 +1009,7 @@ class getXMLRegisters_result(object):
    - infisExc
    - contractExc
    - datesExc
+   - invExc
    - nfExc
    - sqlExc
   """
@@ -1014,15 +1019,17 @@ class getXMLRegisters_result(object):
     (1, TType.STRUCT, 'infisExc', (InvalidOrganizationInfisException, InvalidOrganizationInfisException.thrift_spec), None, ), # 1
     (2, TType.STRUCT, 'contractExc', (InvalidContractException, InvalidContractException.thrift_spec), None, ), # 2
     (3, TType.STRUCT, 'datesExc', (InvalidDateIntervalException, InvalidDateIntervalException.thrift_spec), None, ), # 3
-    (4, TType.STRUCT, 'nfExc', (NotFoundException, NotFoundException.thrift_spec), None, ), # 4
-    (5, TType.STRUCT, 'sqlExc', (SQLException, SQLException.thrift_spec), None, ), # 5
+    (4, TType.STRUCT, 'invExc', (InvalidArgumentException, InvalidArgumentException.thrift_spec), None, ), # 4
+    (5, TType.STRUCT, 'nfExc', (NotFoundException, NotFoundException.thrift_spec), None, ), # 5
+    (6, TType.STRUCT, 'sqlExc', (SQLException, SQLException.thrift_spec), None, ), # 6
   )
 
-  def __init__(self, success=None, infisExc=None, contractExc=None, datesExc=None, nfExc=None, sqlExc=None,):
+  def __init__(self, success=None, infisExc=None, contractExc=None, datesExc=None, invExc=None, nfExc=None, sqlExc=None,):
     self.success = success
     self.infisExc = infisExc
     self.contractExc = contractExc
     self.datesExc = datesExc
+    self.invExc = invExc
     self.nfExc = nfExc
     self.sqlExc = sqlExc
 
@@ -1061,11 +1068,17 @@ class getXMLRegisters_result(object):
           iprot.skip(ftype)
       elif fid == 4:
         if ftype == TType.STRUCT:
+          self.invExc = InvalidArgumentException()
+          self.invExc.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRUCT:
           self.nfExc = NotFoundException()
           self.nfExc.read(iprot)
         else:
           iprot.skip(ftype)
-      elif fid == 5:
+      elif fid == 6:
         if ftype == TType.STRUCT:
           self.sqlExc = SQLException()
           self.sqlExc.read(iprot)
@@ -1097,12 +1110,16 @@ class getXMLRegisters_result(object):
       oprot.writeFieldBegin('datesExc', TType.STRUCT, 3)
       self.datesExc.write(oprot)
       oprot.writeFieldEnd()
+    if self.invExc is not None:
+      oprot.writeFieldBegin('invExc', TType.STRUCT, 4)
+      self.invExc.write(oprot)
+      oprot.writeFieldEnd()
     if self.nfExc is not None:
-      oprot.writeFieldBegin('nfExc', TType.STRUCT, 4)
+      oprot.writeFieldBegin('nfExc', TType.STRUCT, 5)
       self.nfExc.write(oprot)
       oprot.writeFieldEnd()
     if self.sqlExc is not None:
-      oprot.writeFieldBegin('sqlExc', TType.STRUCT, 5)
+      oprot.writeFieldBegin('sqlExc', TType.STRUCT, 6)
       self.sqlExc.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

@@ -71,7 +71,7 @@
                                         {%- elif event_field.tag.code == 'IDDOKT' and event|attr('IDDOKT') -%}
                                             <{{ event_field.tag.code }}>{{ event|attr('IDDOKT')|wordwrap(3, wrapstring="-") }}</{{ event_field.tag.code }}>
                                         {%- elif event|attr(event_field.tag.code) is defined and event_field.tag.code in ['DATE_1', 'DATE_2'] -%}
-                                            <{{ event_field.tag.code }}>{{ event|attr(event_field.tag.code) }}</{{ event_field.tag.code }}>
+                                            <{{ event_field.tag.code }}>{{ event|attr(event_field.tag.code)|datetimeformat('%Y-%m-%d') }}</{{ event_field.tag.code }}>
                                         {%- elif event|attr(event_field.tag.code) is defined and event|attr(event_field.tag.code) not in [None, ''] -%}
                                             <{{ event_field.tag.code }}>{{ event|attr(event_field.tag.code) }}</{{ event_field.tag.code }}>
                                         {%- endif -%}

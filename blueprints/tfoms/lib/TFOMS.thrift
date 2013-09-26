@@ -484,8 +484,9 @@ service TFOMSService{
 	    1 - InvalidOrganizationInfisException : нету организации с таким инфис-кодом
 	    2 - InvalidContractException : нету контракта с таким идентификатором
 	    3 - InvalidDateIntervalException : некорректный диапозон дат
-	    4 - NotFoundException : не найдено ни одной оказанной услуги
-	    5 - SQLException : ошибка при обращении к БД
+	    4 - InvalidArgumentException : некорректное значение параметра   9(primaryAccount)
+	    5 - NotFoundException : не найдено ни одной оказанной услуги
+	    6 - SQLException : ошибка при обращении к БД
 	    Return:
 	    XMLRegisters - набор реестров и заголовок
 	*/
@@ -504,8 +505,9 @@ service TFOMSService{
             1:InvalidOrganizationInfisException infisExc,
             2:InvalidContractException contractExc,
             3:InvalidDateIntervalException datesExc,
-            4:NotFoundException nfExc,
-            5:SQLException sqlExc
+            4:InvalidArgumentException invExc,
+            5:NotFoundException nfExc,
+            6:SQLException sqlExc
             );
 
 //Работа с подразделениями ЛПУ

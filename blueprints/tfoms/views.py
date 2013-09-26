@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 
 from flask import render_template, abort, request, redirect, jsonify, send_from_directory, url_for, json, current_app
-from flask import flash
+from flask import flash, session
 from wtforms import TextField, BooleanField, IntegerField, SelectField
 from flask_wtf import Form
 from wtforms.validators import Required
@@ -38,15 +38,18 @@ def index():
         abort(404)
 
 
-@module.route('/ajax_download/', methods=['GET', 'POST'])
-def ajax_download():
+@module.route('/download_result/', methods=['POST'])
+def download_result():
     result = list()
     errors = list()
-    template_ids = request.form.getlist('templates[]')
-    start = datetime.strptime(request.form['start'], '%d.%m.%Y')
-    end = datetime.strptime(request.form['end'], '%d.%m.%Y')
-    contract_id = int(request.form.get('contract_id'))
+    session['templates'] = template_ids = [int(_id) for _id in request.form.getlist('templates[]')]
+    department_ids = [int(_id) for _id in request.form.getlist('departments[]') if _id]
+    session['departments'] = [int(_id) for _id in request.form.getlist('departments[]')]
+    session['start'] = start = datetime.strptime(request.form['start'], '%d.%m.%Y')
+    session['end'] = end = datetime.strptime(request.form['end'], '%d.%m.%Y')
+    session['contract_id'] = contract_id = int(request.form.get('contract_id'))
     primary = bool(request.form.get('primary'))
+    session['primary'] = request.form.get('primary')
     #TODO: как-то покрасивее сделать?
     worker = DownloadWorker()
     try:
@@ -55,24 +58,52 @@ def ajax_download():
                                     contract_id=contract_id,
                                     start=start,
                                     end=end,
-                                    primary=primary)
+                                    primary=primary,
+                                    departments=department_ids)
+    except ValueError, e:
+        errors.append(u'Данных для выгрузки в заданный период не найдено (%s)' % e.message)
     except NotFoundException, e:
         errors.append(u'Данных для выгрузки в заданный период не найдено (%s)' % e.message)
     except TException, e:
         errors.append(u'Во время выборки данных возникла внутренняя ошибка ядра (%s)' % e)
+    if errors:
+        for error in errors:
+            flash(error)
+        return redirect(request.referrer)
+    form_data = dict(templates=session.pop('templates', None),
+                     departments=session.pop('departments', None),
+                     start=session.pop('start', None),
+                     end=session.pop('end', None),
+                     contract_id=session.pop('contract_id', None),
+                     primary=session.pop('primary', None))
     return render_template('{0}/download/result.html'.format(module.name), files=result, errors=errors)
 
 
 @module.route('/download/')
 @module.route('/download/<string:template_type>/')
 def download(template_type='xml'):
+    current_app.jinja_env.filters['datetimeformat'] = datetimeformat
     try:
         templates = (db.session.query(Template)
                      .filter(Template.is_active == True,
                              Template.type.has(TemplateType.download_type.has(DownloadType.code == template_type)))
                      .all())
         contracts = Contracts().get_contracts(_config('lpu_infis_code'))
-        return render_template('{0}/download/index.html'.format(module.name), templates=templates, contracts=contracts)
+        obj = Departments(_config('lpu_infis_code'))
+        departments = obj.get_departments()
+
+        form_data = dict(templates=session.pop('templates', None),
+                         departments=session.pop('departments', None),
+                         start=session.pop('start', None),
+                         end=session.pop('end', None),
+                         contract_id=session.pop('contract_id', None),
+                         primary=session.pop('primary', None))
+
+        return render_template('{0}/download/index.html'.format(module.name),
+                               templates=templates,
+                               contracts=contracts,
+                               departments=departments,
+                               form_data=form_data)
     except TemplateNotFound:
         abort(404)
 
@@ -355,19 +386,5 @@ def activate(template_type):
 def show_page(page):
     try:
         return render_template('{0}/{1}.html'.format(module.name, page))
-    except TemplateNotFound:
-        abort(404)
-
-
-@module.route('/departments/')
-@admin_permission.require(http_exception=403)
-def departments():
-    try:
-        departments = list()
-        obj = Departments(_config('lpu_infis_code'))
-        departments = obj.get_departments()
-
-        return render_template('{0}/settings_templates/departments.html'.format(module.name))
-
     except TemplateNotFound:
         abort(404)

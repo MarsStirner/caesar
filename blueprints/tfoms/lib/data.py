@@ -220,7 +220,7 @@ class DownloadWorker(object):
     def __get_file_object(self, template_type, end, tags):
         return File.provider(data_type=template_type[1], end=end, file_type=template_type[0], tags=tags)
 
-    def do_download(self, template_ids, infis_code, contract_id, start, end, primary):
+    def do_download(self, template_ids, infis_code, contract_id, start, end, primary, departments=list()):
         tags, tree, files = dict(), dict(), dict()
         template, download_type = None, None
         templates = self.__get_templates(template_ids)
@@ -240,7 +240,13 @@ class DownloadWorker(object):
                              start=start,
                              end=end,
                              primary=primary,
-                             tags=tags)
+                             tags=tags,
+                             departments=departments)
+
+        if not data.registry:
+            exception = exceptions.ValueError()
+            exception.message = u'За указанный период услуг не найдено'
+            raise exception
 
         for template in templates:
             files[template.type.code] = dict()
