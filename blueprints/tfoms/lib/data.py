@@ -244,7 +244,7 @@ class DownloadWorker(object):
                              tags=tags,
                              departments=departments)
 
-        if not data.registry:
+        if not getattr(data, 'registry', None):
             exception = exceptions.ValueError()
             exception.message = u'За указанный период услуг не найдено'
             raise exception

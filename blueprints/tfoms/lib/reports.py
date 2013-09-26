@@ -1,10 +1,6 @@
 # -*- encoding: utf-8 -*-
-from datetime import datetime
-from application.database import db
-from thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException
-from thrift_service.ttypes import PatientOptionalFields, SluchOptionalFields, TClientPolicy
 from ..lib.service_client import TFOMSClient as Client
-from ..app import module, _config
+from ..app import _config
 
 
 class Reports(object):
@@ -20,3 +16,6 @@ class Reports(object):
 
     def delete_bill(self, bill_id):
         return self.client.delete_bill(bill_id)
+
+    def get_bill(self, bill_id):
+        return self.client.get_bill(bill_id)

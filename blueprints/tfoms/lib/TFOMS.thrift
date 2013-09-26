@@ -265,6 +265,7 @@ struct DBFPoliclinic{
     11-Сумма оплаченых услуг
     12-Число отказаных в оплате позиций
     13-Сумма всех отказанных в оплате услуг
+    14- идентификатор контракта для этого счета
 */
 struct Account{
     1:required int id;
@@ -280,6 +281,7 @@ struct Account{
     11:required double payedSum;
     12:required int refusedAmount;
     13:required double refusedSum;
+    14:required int contractId;
 }
 
 /*

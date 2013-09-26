@@ -33,7 +33,7 @@
             {% endwith %}
             <div class="row">
                 <div class="span5">
-                    <input type="hidden" name="primary" id="primary" value="{% if form_data.get('primary') %}{{ form_data.get('primary') }}{% else %}1{% endif %}">
+                    <input type="hidden" name="primary" id="primary" value="{% if form_data.get('primary') is defined %}{{ form_data.get('primary') }}{% else %}1{% endif %}">
                     <div class="row">
                         <div class="span6">
                             <div class="control-group" id="download_contract">

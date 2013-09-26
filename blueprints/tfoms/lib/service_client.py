@@ -116,6 +116,7 @@ class TFOMSClient(object):
                                                  smoNumber=smo_number)
         except InvalidArgumentException, e:
             print e
+            raise e
         except SQLException, e:
             print e
         except NotFoundException, e:
@@ -161,6 +162,19 @@ class TFOMSClient(object):
             result = self.client.getAvailableAccounts()
         except InvalidOrganizationInfisException, e:
             print e
+        except SQLException, e:
+            print e
+        except NotFoundException, e:
+            raise e
+        except TException, e:
+            raise e
+        return result
+
+    def get_bill(self, bill_id):
+        """Получает счет по id"""
+        result = None
+        try:
+            result = self.client.getAccount(accountId=bill_id)
         except SQLException, e:
             print e
         except NotFoundException, e:

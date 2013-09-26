@@ -2998,6 +2998,7 @@ class Account(object):
    - payedSum
    - refusedAmount
    - refusedSum
+   - contractId
   """
 
   thrift_spec = (
@@ -3015,9 +3016,10 @@ class Account(object):
     (11, TType.DOUBLE, 'payedSum', None, None, ), # 11
     (12, TType.I32, 'refusedAmount', None, None, ), # 12
     (13, TType.DOUBLE, 'refusedSum', None, None, ), # 13
+    (14, TType.I32, 'contractId', None, None, ), # 14
   )
 
-  def __init__(self, id=None, number=None, date=None, begDate=None, endDate=None, amount=None, uet=None, sum=None, exposeDate=None, payedAmount=None, payedSum=None, refusedAmount=None, refusedSum=None,):
+  def __init__(self, id=None, number=None, date=None, begDate=None, endDate=None, amount=None, uet=None, sum=None, exposeDate=None, payedAmount=None, payedSum=None, refusedAmount=None, refusedSum=None, contractId=None,):
     self.id = id
     self.number = number
     self.date = date
@@ -3031,6 +3033,7 @@ class Account(object):
     self.payedSum = payedSum
     self.refusedAmount = refusedAmount
     self.refusedSum = refusedSum
+    self.contractId = contractId
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3106,6 +3109,11 @@ class Account(object):
           self.refusedSum = iprot.readDouble();
         else:
           iprot.skip(ftype)
+      elif fid == 14:
+        if ftype == TType.I32:
+          self.contractId = iprot.readI32();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3168,6 +3176,10 @@ class Account(object):
       oprot.writeFieldBegin('refusedSum', TType.DOUBLE, 13)
       oprot.writeDouble(self.refusedSum)
       oprot.writeFieldEnd()
+    if self.contractId is not None:
+      oprot.writeFieldBegin('contractId', TType.I32, 14)
+      oprot.writeI32(self.contractId)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -3196,6 +3208,8 @@ class Account(object):
       raise TProtocol.TProtocolException(message='Required field refusedAmount is unset!')
     if self.refusedSum is None:
       raise TProtocol.TProtocolException(message='Required field refusedSum is unset!')
+    if self.contractId is None:
+      raise TProtocol.TProtocolException(message='Required field contractId is unset!')
     return
 
 

@@ -48,7 +48,7 @@ def download_result():
     session['start'] = start = datetime.strptime(request.form['start'], '%d.%m.%Y')
     session['end'] = end = datetime.strptime(request.form['end'], '%d.%m.%Y')
     session['contract_id'] = contract_id = int(request.form.get('contract_id'))
-    primary = bool(request.form.get('primary'))
+    primary = bool(int(request.form.get('primary')))
     session['primary'] = request.form.get('primary')
     #TODO: как-то покрасивее сделать?
     worker = DownloadWorker()
@@ -62,8 +62,10 @@ def download_result():
                                     departments=department_ids)
     except ValueError, e:
         errors.append(u'Данных для выгрузки в заданный период не найдено (%s)' % e.message)
+    except InvalidArgumentException, e:
+        errors.append(u'Переданы некорректные данные ({0}:{1})'.format(e.code, e.message))
     except NotFoundException, e:
-        errors.append(u'Данных для выгрузки в заданный период не найдено (%s)' % e.message)
+        errors.append(u'Данных для выгрузки в заданный период не найдено ({0}:{1})'.format(e.code, e.message))
     except TException, e:
         errors.append(u'Во время выборки данных возникла внутренняя ошибка ядра (%s)' % e)
     if errors:
@@ -79,9 +81,32 @@ def download_result():
     return render_template('{0}/download/result.html'.format(module.name), files=result, errors=errors)
 
 
-@module.route('/secondary/')
-def secondary():
-    pass
+@module.route('/secondary/<int:bill_id>/')
+def secondary(bill_id):
+    errors = list()
+    report = Reports()
+    try:
+        bill = report.get_bill(bill_id)
+    except ValueError, e:
+        errors.append(u'Не найден указанный счёт (%s)' % e.message)
+    except NotFoundException, e:
+        errors.append(u'Не найден указанный счёт (%s)' % e.message)
+    except TException, e:
+        errors.append(u'Во время выборки данных возникла внутренняя ошибка ядра (%s)' % e)
+    else:
+        # TODO: add departments, after adding it's support in Core
+        #session['departments'] = [int(_id) for _id in request.form.getlist('departments[]')]
+        session['start'] = bill.begDate
+        session['end'] = bill.endDate
+        session['contract_id'] = int(getattr(bill, 'contractId', 0))
+        session['primary'] = 0
+
+    if errors:
+        for error in errors:
+            flash(error)
+
+    return redirect(url_for('.download'))
+
 
 @module.route('/download/')
 @module.route('/download/<string:template_type>/')
