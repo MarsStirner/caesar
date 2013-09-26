@@ -159,20 +159,3 @@ class ConfigVariables(db.Model):
     def __unicode__(self):
         return self.code
 
-
-class DownloadedFiles(db.Model):
-    __tablename__ = '%s_downloaded_files' % TABLE_PREFIX
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-
-    template_id = db.Column(db.Integer, db.ForeignKey(Template.id, deferrable=True), index=True)
-    name = db.Column(db.String(50), nullable=False)
-    created = db.Column(db.DateTime, default=db.text('NOW()'), nullable=False)
-    start = db.Column(db.Date)
-    end = db.Column(db.Date)
-    contract_id = db.Column(db.Integer)
-    primary = db.Column(db.Boolean)
-    file_url = db.Column(db.String(255))
-
-    # db.UniqueConstraint(FILENAME, DATA)
-
