@@ -42,7 +42,7 @@
                                                     {%- elif service_field.tag.code == 'DATE_OUT' -%}
                                                         <{{ service_field.tag.code }}>{{ event|attr('DATE_2')|datetimeformat('%Y-%m-%d') }}</{{ service_field.tag.code }}>
                                                     {%- elif service_field.tag.code == 'CODE_MD' and event|attr('IDDOKT') -%}
-                                                        <{{ service_field.tag.code }}>{{ event|attr('IDDOKT')|wordwrap(3, wrapstring="-") }}</{{ service_field.tag.code }}>
+                                                        <{{ service_field.tag.code }}>{{ event|attr('IDDOKT')|wordwrap(3, wrapstring="-")|reverse()|replace('-', ' ', 1)|reverse() }}</{{ service_field.tag.code }}>
                                                     {%- elif service|attr(service_field.tag.code) is defined and service|attr(service_field.tag.code) not in [None, ''] -%}
                                                         <{{ service_field.tag.code }}>{{ service|attr(service_field.tag.code) }}</{{ service_field.tag.code }}>
                                                     {%- elif event|attr(service_field.tag.code) is defined and event|attr(service_field.tag.code) not in [None, ''] -%}
@@ -69,7 +69,7 @@
                                             {%- endif -%}
                                             </{{ event_field.tag.code }}>
                                         {%- elif event_field.tag.code == 'IDDOKT' and event|attr('IDDOKT') -%}
-                                            <{{ event_field.tag.code }}>{{ event|attr('IDDOKT')|wordwrap(3, wrapstring="-") }}</{{ event_field.tag.code }}>
+                                            <{{ event_field.tag.code }}>{{ event|attr('IDDOKT')|wordwrap(3, wrapstring="-")|reverse()|replace('-', ' ', 1)|reverse() }}</{{ event_field.tag.code }}>
                                         {%- elif event|attr(event_field.tag.code) is defined and event_field.tag.code in ['DATE_1', 'DATE_2'] -%}
                                             <{{ event_field.tag.code }}>{{ event|attr(event_field.tag.code)|datetimeformat('%Y-%m-%d') }}</{{ event_field.tag.code }}>
                                         {%- elif event|attr(event_field.tag.code) is defined and event|attr(event_field.tag.code) not in [None, ''] -%}
