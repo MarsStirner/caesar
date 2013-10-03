@@ -37,7 +37,7 @@ def __convert_date(timestamp):
 def datetimeformat(value, _format='%Y-%m-%d'):
     if isinstance(value, datetime):
         return value.strftime(_format)
-    elif isinstance(value, int):
+    elif isinstance(value, int) or isinstance(value, long):
         return __convert_date(value).strftime(_format)
     else:
         return None
