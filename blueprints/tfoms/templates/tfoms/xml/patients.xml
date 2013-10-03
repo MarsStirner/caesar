@@ -15,6 +15,8 @@
                     {%- elif node.tag.code in ['IM_P', 'FAM_P', 'OT_P', 'W_P', 'DR_P'] and person|attr('spokesman') is defined and person.spokesman|attr(node.tag.code) is defined -%}
                         {%- if node.tag.code in ['DR_P'] -%}
                             <{{ node.tag.code }}>{{ person.spokesman|attr(node.tag.code)|datetimeformat('%Y-%m-%d') }}</{{ node.tag.code }}>
+                        {%- elif node.tag.code in ['IM_P', 'FAM_P', 'OT_P'] -%}
+                            <{{ node.tag.code }}>{{ person.spokesman|attr(node.tag.code)|upper }}</{{ node.tag.code }}>
                         {%- else -%}
                             <{{ node.tag.code }}>{{ person.spokesman|attr(node.tag.code) }}</{{ node.tag.code }}>
                         {%- endif -%}
@@ -22,6 +24,8 @@
                     <{{ node.tag.code }}>
                         {%- if node.tag.code in ['DR'] -%}
                             {{ person|attr(node.tag.code)|datetimeformat('%Y-%m-%d') }}
+                        {%- elif node.tag.code in ['IM', 'FAM', 'OT'] -%}
+                            {{ person|attr(node.tag.code)|upper }}
                         {%- else -%}
                             {{ person|attr(node.tag.code) }}
                         {%- endif -%}
