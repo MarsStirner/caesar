@@ -79,7 +79,7 @@ class XML_Registry(object):
         result = []
         for tag in self.event_tags:
             try:
-                attr = getattr(PatientOptionalFields, tag)
+                attr = getattr(SluchOptionalFields, tag)
             except exceptions.AttributeError:
                 pass
             else:
