@@ -43,7 +43,7 @@ def download_result():
     result = list()
     errors = list()
     session['templates'] = template_ids = [int(_id) for _id in request.form.getlist('templates[]')]
-    department_ids = [int(_id) for _id in request.form.getlist('departments[]') if _id]
+    department_ids = [int(_id) for _id in request.form.getlist('departments[]') if int(_id)]
     session['departments'] = [int(_id) for _id in request.form.getlist('departments[]')]
     session['start'] = start = datetime.strptime(request.form['start'], '%d.%m.%Y')
     session['end'] = end = datetime.strptime(request.form['end'], '%d.%m.%Y')
