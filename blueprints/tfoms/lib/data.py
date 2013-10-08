@@ -66,7 +66,9 @@ class XML_Registry(object):
 
     def __patient_optional_tags(self):
         result = []
-        for tag in self.patient_tags:
+        patient_events_tags = self.patient_tags
+        patient_events_tags.extend(self.event_tags)
+        for tag in patient_events_tags:
             try:
                 attr = getattr(PatientOptionalFields, tag)
             except exceptions.AttributeError:
