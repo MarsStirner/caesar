@@ -100,7 +100,7 @@
                 {%- if child.tag.code in ['DSCHET'] -%}
                     <{{ child.tag.code }}>{{ data.schet|attr(child.tag.code)|datetimeformat('%Y-%m-%d') }}</{{ child.tag.code }}>
                 {%- else -%}
-                    <{{ child.tag.code }}>{{ data.schet|attr(child.tag.code) }}</{{ child.tag.code }}>
+                    <{{ child.tag.code }}>{{ data.schet|attr(child.tag.code)|default('', true) }}</{{ child.tag.code }}>
                 {%- endif -%}
             {%- endfor -%}
         {%- endif -%}
