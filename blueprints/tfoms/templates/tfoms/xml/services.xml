@@ -8,7 +8,7 @@
                     {%- if node.tag.code == 'N_ZAP' -%}
                         <{{ node.tag.code }}>{{ outer_loop.index }}</{{ node.tag.code }}>
                     {%- elif node.tag.code == 'PR_NOV' -%}
-                        <{{ node.tag.code }}>{{ data.schet|attr(node.tag.code) }}</{{ node.tag.code }}>
+                        <{{ node.tag.code }}>{{ data|attr(node.tag.code) }}</{{ node.tag.code }}>
                     {%- elif node.tag.code == 'PACIENT' and node.children -%}
                         <{{ node.tag.code }}>
                         {%- for patient_field in node.children -%}
