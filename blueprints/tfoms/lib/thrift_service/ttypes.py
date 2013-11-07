@@ -117,6 +117,14 @@ class SluchOptionalFields(object):
 
 class Spokesman(object):
   """
+  Представитель пациента
+  @param patientId         1)Идентификатор пациента
+  @param FAM_P             2)Фамилия
+  @param IM_P              3)Имя
+  @param OT_P              4)Отчество
+  @param DR_P              5)Дата рождения
+  @param W_P               6)Пол
+
   Attributes:
    - patientId
    - FAM_P
@@ -3560,6 +3568,97 @@ class AccountInfo(object):
   def __ne__(self, other):
     return not (self == other)
 
+class Payment(object):
+  """
+  Структура с данными об оплате выгруженного случая
+  @param accountItemId                1)Уникальный идентификатор позиции счета (SLUCH:IDCASE)
+  @param refuseTypeCode               2)Код причины отказа в оплате            (SLUCH:REFREASON)
+  @param comment                      3)Комментарий к оплате случая            (SLUCH:COMENTSL)
+
+  Attributes:
+   - accountItemId
+   - refuseTypeCode
+   - comment
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'accountItemId', None, None, ), # 1
+    (2, TType.STRING, 'refuseTypeCode', None, None, ), # 2
+    (3, TType.STRING, 'comment', None, None, ), # 3
+  )
+
+  def __init__(self, accountItemId=None, refuseTypeCode=None, comment=None,):
+    self.accountItemId = accountItemId
+    self.refuseTypeCode = refuseTypeCode
+    self.comment = comment
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.accountItemId = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.refuseTypeCode = iprot.readString().decode('utf-8')
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.comment = iprot.readString().decode('utf-8')
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('Payment')
+    if self.accountItemId is not None:
+      oprot.writeFieldBegin('accountItemId', TType.I32, 1)
+      oprot.writeI32(self.accountItemId)
+      oprot.writeFieldEnd()
+    if self.refuseTypeCode is not None:
+      oprot.writeFieldBegin('refuseTypeCode', TType.STRING, 2)
+      oprot.writeString(self.refuseTypeCode.encode('utf-8'))
+      oprot.writeFieldEnd()
+    if self.comment is not None:
+      oprot.writeFieldBegin('comment', TType.STRING, 3)
+      oprot.writeString(self.comment.encode('utf-8'))
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.accountItemId is None:
+      raise TProtocol.TProtocolException(message='Required field accountItemId is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class OrgStructure(object):
   """
   Attributes:
@@ -4007,6 +4106,7 @@ class XMLRegisters(object):
    - patientRegistryFILENAME
    - serviceRegistryFILENAME
    - schet
+   - PR_NOV
   """
 
   thrift_spec = (
@@ -4017,15 +4117,17 @@ class XMLRegisters(object):
     (4, TType.STRING, 'patientRegistryFILENAME', None, None, ), # 4
     (5, TType.STRING, 'serviceRegistryFILENAME', None, None, ), # 5
     (6, TType.STRUCT, 'schet', (Schet, Schet.thrift_spec), None, ), # 6
+    (7, TType.I16, 'PR_NOV', None, None, ), # 7
   )
 
-  def __init__(self, account=None, registry=None, data=None, patientRegistryFILENAME=None, serviceRegistryFILENAME=None, schet=None,):
+  def __init__(self, account=None, registry=None, data=None, patientRegistryFILENAME=None, serviceRegistryFILENAME=None, schet=None, PR_NOV=None,):
     self.account = account
     self.registry = registry
     self.data = data
     self.patientRegistryFILENAME = patientRegistryFILENAME
     self.serviceRegistryFILENAME = serviceRegistryFILENAME
     self.schet = schet
+    self.PR_NOV = PR_NOV
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4081,6 +4183,11 @@ class XMLRegisters(object):
           self.schet.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.I16:
+          self.PR_NOV = iprot.readI16();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -4122,6 +4229,10 @@ class XMLRegisters(object):
       oprot.writeFieldBegin('schet', TType.STRUCT, 6)
       self.schet.write(oprot)
       oprot.writeFieldEnd()
+    if self.PR_NOV is not None:
+      oprot.writeFieldBegin('PR_NOV', TType.I16, 7)
+      oprot.writeI16(self.PR_NOV)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -4138,6 +4249,8 @@ class XMLRegisters(object):
       raise TProtocol.TProtocolException(message='Required field serviceRegistryFILENAME is unset!')
     if self.schet is None:
       raise TProtocol.TProtocolException(message='Required field schet is unset!')
+    if self.PR_NOV is None:
+      raise TProtocol.TProtocolException(message='Required field PR_NOV is unset!')
     return
 
 

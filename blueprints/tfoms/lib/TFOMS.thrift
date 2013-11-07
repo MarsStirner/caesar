@@ -6,7 +6,15 @@ typedef i64 timestamp
 typedef i16 tinyint
 
 //OUTPUT STRUCTS
-//Представитель пациента
+/**
+ * Представитель пациента
+ * @param patientId         1)Идентификатор пациента
+ * @param FAM_P             2)Фамилия
+ * @param IM_P              3)Имя
+ * @param OT_P              4)Отчество
+ * @param DR_P              5)Дата рождения
+ * @param W_P               6)Пол
+ */
 struct Spokesman{
 	1:optional int patientId;
 	2:optional string FAM_P;
@@ -326,6 +334,18 @@ struct AccountInfo {
     2:required list<AccountItem> items;
 }
 
+/**
+ * Структура с данными об оплате выгруженного случая
+ * @param accountItemId                1)Уникальный идентификатор позиции счета (SLUCH:IDCASE)
+ * @param refuseTypeCode               2)Код причины отказа в оплате            (SLUCH:REFREASON)
+ * @param comment                      3)Комментарий к оплате случая            (SLUCH:COMENTSL)
+ */
+struct Payment{
+    1:required i32 accountItemId;
+    2:optional string refuseTypeCode;
+    3:optional string comment;
+}
+
 /*
 Структура подразделения ЛПУ
 Поля:
@@ -399,6 +419,7 @@ struct Schet{
      4- Имя файла реестра пациентов
      5- Имя файла реестра услуг
      6- Набор значений для тега SCHET
+     7- Значение тега PR_NOV, которое будет выставляться во все ZAP в итоговом XML-файле
 */
 struct XMLRegisters{
     1:required Account account;
@@ -407,6 +428,7 @@ struct XMLRegisters{
     4:required string patientRegistryFILENAME;
     5:required string serviceRegistryFILENAME;
     6:required Schet schet;
+    7:required i16 PR_NOV;
 }
 
 //Exceptions
@@ -444,31 +466,26 @@ exception InvalidDateIntervalException{
 service TFOMSService{
 
 //Работа со счетами
-    /*
-        Получение всех доступных счетов (deleted = 0), в случае если счетов нету - пустой сисок.
-    */
+    /**
+     * Получение всех доступных счетов (deleted = 0), в случае если счетов нету - пустой сисок.
+     * @return список счетов
+     */
     list<Account> getAvailableAccounts();
 
-    /*
-        Получение одного счета по его идентификатору
-        Arguments:
-        1 -  int accountId : идентификатор счета
-        Exceptions:
-        1 - NotFoundException nfExc : Если нету счета с таким идентификатором
-        Return:
-        Счет / Ошибка
-    */
+    /**
+     * Получение одного счета по его идентификатору
+     * @param accountId : идентификатор счета
+     * @throw NotFoundException nfExc : Если нету счета с таким идентификатором
+     * @return Счет / Ошибка
+     */
     Account getAccount(1:int accountId) throws (1:NotFoundException nfExc);
 
-    /*
-        Получение всех позиций счета по идентификатору счета
-        Arguments:
-        1 -  int accountId : идентификатор счета по которому будут возвращены позиции
-        Exceptions:
-        1 - NotFoundException nfExc : Если нету счета с таким идентификатором
-        Return:
-        Список позиций счета или пустой список если на счет нету ни одной позиции
-    */
+    /**
+     * Получение всех позиций счета по идентификатору счета
+     * @param accountId : идентификатор счета по которому будут возвращены позиции
+     * @throw NotFoundException nfExc : Если нету счета с таким идентификатором
+     * @return Список позиций счета или пустой список если на счет нету ни одной позиции
+     */
     AccountInfo getAccountItems(1:int accountId) throws (1:NotFoundException nfExc);
 
     /*
@@ -524,31 +541,54 @@ service TFOMSService{
             );
 
 //Работа с подразделениями ЛПУ
-    /*
-        Получение всех подразделений у которых  инфис-код ЛПУ совпадает с заданным
-        Arguments:
-        1 -  string organisationInfis : Инфис код ЛПУ для которого необходимо вернуть подразделения
-        Exceptions:
-        1 - InvalidOrganizationInfisException : нету организации с таким инфис-кодом
-    */
+    /**
+     * Получение всех подразделений у которых  инфис-код ЛПУ совпадает с заданным
+     * @param organisationInfis             1)Инфис код ЛПУ для которого необходимо вернуть подразделения
+     * @throw InvalidOrganizationInfisException  когда нету организации с таким инфис-кодом
+     */
     list<OrgStructure> getOrgStructures(1:string organisationInfis)
         throws (1:InvalidOrganizationInfisException infisExc);
 
 //Работа с контрактами
-    /*
-        Получение всех контрактов, где получателем является заданное ЛПУ
-        Arguments:
-        1 -  string organisationInfis : Инфис код ЛПУ для которого необходимо вернуть контракту
-        Exceptions:
-        1 - InvalidOrganizationInfisException : нету организации с таким инфис-кодом
-    */
+    /**
+     * Получение всех контрактов, где получателем является заданное ЛПУ
+     * @param organisationInfis            1)Инфис код ЛПУ для которого необходимо вернуть контракту
+     * @throw InvalidOrganizationInfisException  когда нету организации с таким инфис-кодом
+     */
     list<Contract> getAvailableContracts(1:string organisationInfis)
         throws (1:InvalidOrganizationInfisException infisExc);
 
 //Работа с ответом из тфомса
-	//Загрузка измененных данных от ТФОМС
+	/**
+	 * Загрузка измененных данных от ТФОМС
+	 */
 	int changeClientPolicy(1:int patientId, 2:TClientPolicy newPolicy)  
 		throws (1:InvalidArgumentException argExc, 2:SQLException sqlExc);
+
+	/**
+	 * загрузка результатов оплаты случаев из ТФОМС
+	 * @param fileName имя файла в котором содержатся результаты ответа из ТФОМС
+	 * @param payments список структур с данными об оплате случая
+	 * @param refusedAmount количество отказанных случаев
+	 * @param payedAmount количество оплаченных случаев
+	 * @param payedSum  оплаченная сумма
+	 * @param refusedSum отказнная в оплате сумма
+	 * @param accountNumber номер счета
+	 * @param comment   комментарий к счету
+	 * @return map<int, string> карта вида <идентификатор позиции счета, текст ошибки>
+	 * или пустой список если все ок
+	 * @throw  NotFoundException когда в БД ЛПУ нету счета с таким номером
+	 */
+	map<i32, string> loadTfomsPayments( 1:string fileName,
+                                        2:list<Payment> payments,
+                                        3:i32 refusedAmount,
+                                        4:i32 payedAmount,
+                                        5:double payedSum,
+                                        6:double refusedSum,
+                                        7:string accountNumber,
+                                        8:string comment
+    ) throws (1:NotFoundException nfExc);
+
 
 	//Выгрузка в формате DBF
 	//list<DBFStationary> getDBFStationary(
