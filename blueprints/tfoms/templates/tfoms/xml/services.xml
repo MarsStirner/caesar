@@ -46,7 +46,7 @@
                                                     {%- elif service|attr(service_field.tag.code) is defined and service|attr(service_field.tag.code) not in [None, ''] -%}
                                                         <{{ service_field.tag.code }}>{{ service|attr(service_field.tag.code) }}</{{ service_field.tag.code }}>
                                                     {%- elif event|attr(service_field.tag.code) is defined and event|attr(service_field.tag.code) not in [None, ''] -%}
-                                                        <{{ service_field.tag.code }}>{{ event|attr(service_field.tag.code) }}</{{ service_field.tag.code }}>
+                                                        <{{ service_field.tag.code }}>{{ event|attr(service_field.tag.code)|striptags }}</{{ service_field.tag.code }}>
                                                     {%- endif -%}
                                                 {%- endfor -%}
                                                 </{{ event_field.tag.code }}>
