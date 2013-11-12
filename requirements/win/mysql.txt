@@ -16,3 +16,5 @@ selenium
 mysql-python
 dbf
 patool
+
+-r ../../pysimplelogs/requirements.txt

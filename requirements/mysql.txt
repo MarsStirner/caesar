@@ -18,3 +18,5 @@ dbf
 patool
 fabric
 lxml
+
+-r ../pysimplelogs/requirements.txt
