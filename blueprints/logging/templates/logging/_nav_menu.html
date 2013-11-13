@@ -3,15 +3,7 @@
       <div class="navbar-inner">
         <div class="container">
           <ul class="nav">
-            <li{% if request.path == url_for('.index') %} class="active"{% endif %}><a href="{{ url_for('.index') }}">Главная</a></li>
-            <li>
-                <div class="dropdown">
-                <a id="drop1" class="dropdown-toggle" data-toggle="dropdown" role="button">Тарифы <b class="caret"></b></a>
-                <ul class="dropdown-menu" role="menu" aria-labelledby="drop1" >
-                    <li{% if request.path == url_for('.tariff_upload') %} class="active"{% endif %}><a href="{{ url_for('.tariff_upload') }}">Загрузка</a></li>
-                </ul>
-                </div>
-            </li>
+            <li{% if request.path == url_for('.index') %} class="active"{% endif %}><a href="{{ url_for('.index') }}">Журнал</a></li>
             {%  if current_user.role == 'admin' %}
               <li{% if request.path == url_for('.settings') %} class="active"{% endif %}><a href="{{ url_for('.settings') }}">Настройки</a></li>
             {% endif %}

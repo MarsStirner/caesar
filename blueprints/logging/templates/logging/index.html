@@ -1,35 +1,131 @@
-{% extends 'base.html' %}
+{% extends 'logging/base.html' %}
 
 {% block title %}> {{ module_name }}{% endblock %}
 
 {% block modules_css %}
-<link href="{{ url_for('.static', filename='css/style.css') }}" media="screen" rel="stylesheet">
+<link href="{{ url_for('.static', filename='css/style.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='jquery-ui/css/cupertino/jquery-ui-1.10.2.custom.min.css') }}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
+    {% include 'logging/_nav_menu.html' %}
 
-    {% include 'dict/_nav_menu.html' %}
+    <legend>Просмотр журнала</legend>
 
-      <div class="jumbotron">
-        <h1>Подсистема Справочников</h1>
-        <p class="lead"></p>
-      </div>
-       <br/>
-      <hr>
-       <br/>
+    <form class="form-inline" id="filter" method="POST" action="">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="alert alert-error">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            {% for message in messages %}
+              <div>{{ message }}</div>
+            {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
 
-      <div class="row-fluid">
-        <div class="span4">
-          <h2>Загрузка Тарифов</h2>
-          <p>Полученные из ТФОМС данные по тарифам загружаются в БД ЛПУ.</p>
-          <p><a class="btn" href="{{ url_for('.tariff_upload') }}">Загрузить тарифы &raquo;</a></p>
-       </div>
-      {%  if current_user.role == 'admin' %}
-        <div class="span4">
-          <h2>Настройки</h2>
-          <p>Настройки подсистемы справочников.</p>
-          <p><a class="btn" href="{{ url_for('.settings') }}">Перейти &raquo;</a></p>
+        <select name="owner">
+        <option>- все подсистемы -</option>
+        {% if owners %}
+        {% for owner in owners %}
+            <option value="{{ owner }}">
+            {%- if 'name' in owner -%}
+                {{ owner.name }}{% if 'ip' in owner %} (ip: {{ owner.ip }}){% endif %}
+            {%- else -%}
+                {{ owner }}
+            {%- endif -%}
+            </option>
+        {% endfor %}
+        {% endif %}
+        </select>
+        <select name="level">
+        <option>- все типы -</option>
+        {% if levels %}
+        {% for level in levels %}
+            <option value="{{ level }}">{{ level }}</option>
+        {% endfor %}
+        {% endif %}
+        </select>
+        <label for="from">Даты с:</label>
+        <input type="text" id="from" name="start" class="span2" />
+        <label for="to">по</label>
+        <input type="text" id="to" name="end" class="span2" />
+      <button type="submit" class="btn btn-primary">Выбрать</button>
+    </form>
+    {% if data %}
+        <table class="table table-striped table-bordered table-condensed" id="table_cases">
+            <thead>
+                <tr>
+                    <th>Подсистема</th>
+                    <th>Уровень</th>
+                    <th>Дата</th>
+                    <th>Содержимое</th>
+                    <th>Теги</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item in data %}
+                {% set class='' %}
+                {% if item.level in ['crirical', 'error'] %}
+                    {% set class='error' %}
+                {% elif item.level in ['warning'] %}
+                    {% set class='warning' %}
+                {% elif item.level in ['notice', 'debug'] %}
+                    {% set class='info' %}
+                {% elif item.level in ['info'] %}
+                    {% set class='success' %}
+                {% endif %}
+                <tr class="{{ class }}">
+                    <td>
+                        {%- if 'name' in item.owner -%}
+                            {{ item.owner.name }}{% if 'ip' in item.owner %} (ip: {{ item.owner.ip }}){% endif %}
+                        {%- else -%}
+                            {{ item.owner }}
+                        {%- endif -%}
+                    </td>
+                    <td>{{ item.level }}</td>
+                    <td>{{ item.datetimestamp|strptime|datetimeformat('%d.%m.%y %H:%M:%S') }}</td>
+                    <td>{{ item.data }}</td>
+                    <td>{{ item.tags }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          По указанным параметрам логов не обнаружено
         </div>
-      {% endif %}
-      </div>
+    {% endif %}
+{% endblock %}
+
+{% block modules_js %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='jquery-ui/js/jquery-ui-1.10.2.custom.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery-ui/js/i18n/jquery.ui.datepicker-ru.js') }}"></script>
+    <script src="{{ url_for('.static', filename='js/script.js') }}"></script>
+    <script type="text/javascript">
+    $(function() {
+        $( "#from" ).datepicker({
+          changeMonth: true,
+          onClose: function( selectedDate ) {
+            $( "#to" ).datepicker( "option", "minDate", selectedDate );
+          }
+        });
+        {% if request.form.get('start') %}
+            $('#from').datepicker("setDate", '{{ request.form.get('start') }}');
+        {% endif %}
+        $( "#to" ).datepicker({
+          defaultDate: "+1w",
+          changeMonth: true,
+          onClose: function( selectedDate ) {
+            $( "#from" ).datepicker( "option", "maxDate", selectedDate );
+          }
+        });
+        {% if request.form.get('end') %}
+            $('#to').datepicker("setDate", '{{ request.form.get('end') }}');
+        {% endif %}
+    });
+    </script>
+    <div class="loader"></div>
 {% endblock %}

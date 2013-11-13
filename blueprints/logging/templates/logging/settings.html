@@ -8,7 +8,7 @@
 
 {% block content %}
 
-    {% include 'dict/_nav_menu.html' %}
+    {% include 'logging/_nav_menu.html' %}
         <form class="form-horizontal" method="post">
             {{ form.hidden_tag() }}
             <legend>Настройки</legend>
@@ -27,6 +27,7 @@
             <div class="control-group">
                 <div class="controls">
                     <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <a href="{{ url_for('.index') }}" class="btn">Отмена</a>
                 </div>
             </div>
         </form>

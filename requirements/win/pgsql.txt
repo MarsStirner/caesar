@@ -16,5 +16,6 @@ selenium
 psycopg2
 dbf
 patool
+dateutils
 
 -r ../../pysimplelogs/requirements.txt

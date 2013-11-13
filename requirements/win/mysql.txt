@@ -16,5 +16,6 @@ selenium
 mysql-python
 dbf
 patool
+dateutils
 
 -r ../../pysimplelogs/requirements.txt
