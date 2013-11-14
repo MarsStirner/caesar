@@ -9,8 +9,11 @@
 
 {% block content %}
     {% include 'logging/_nav_menu.html' %}
-
-    <legend>Просмотр журнала</legend>
+    {% set msg = '(последние 100 записей)' %}
+    {% if request.method == 'POST' %}
+        {% set msg = '(отфильтрован по параметрам)' %}
+    {% endif %}
+    <legend>Просмотр журнала <small>{{ msg }}</small></legend>
 
     <form class="form-inline" id="filter" method="POST" action="">
         {% with messages = get_flashed_messages() %}
@@ -23,12 +26,11 @@
             </div>
           {% endif %}
         {% endwith %}
-
         <select name="owner">
-        <option>- все подсистемы -</option>
+        <option value="">- все подсистемы -</option>
         {% if owners %}
         {% for owner in owners %}
-            <option value="{{ owner }}">
+            <option value="{{ owner|safe }}"{% if request.form.get('owner') == owner|string %} selected="selected"{% endif %}>
             {%- if 'name' in owner -%}
                 {{ owner.name }}{% if 'ip' in owner %} (ip: {{ owner.ip }}){% endif %}
             {%- else -%}
@@ -39,21 +41,21 @@
         {% endif %}
         </select>
         <select name="level">
-        <option>- все типы -</option>
+        <option value="">- все типы -</option>
         {% if levels %}
         {% for level in levels %}
-            <option value="{{ level }}">{{ level }}</option>
+            <option value="{{ level }}"{% if request.form.get('level') == level %} selected="selected"{% endif %}>{{ level }}</option>
         {% endfor %}
         {% endif %}
         </select>
         <label for="from">Даты с:</label>
-        <input type="text" id="from" name="start" class="span2" />
+        <input type="text" id="from" name="start" class="span2" value="{{ request.form|attr('start') }}" />
         <label for="to">по</label>
-        <input type="text" id="to" name="end" class="span2" />
+        <input type="text" id="to" name="end" class="span2" value="{{ request.form|attr('end') }}" />
       <button type="submit" class="btn btn-primary">Выбрать</button>
     </form>
     {% if data %}
-        <table class="table table-striped table-bordered table-condensed" id="table_cases">
+        <table class="table table-bordered table-condensed" id="result_table">
             <thead>
                 <tr>
                     <th>Подсистема</th>
@@ -61,6 +63,9 @@
                     <th>Дата</th>
                     <th>Содержимое</th>
                     <th>Теги</th>
+                </tr>
+                <tr>
+                    <th colspan="5">{% include 'logging/_filter_results_form.html' %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -70,10 +75,8 @@
                     {% set class='error' %}
                 {% elif item.level in ['warning'] %}
                     {% set class='warning' %}
-                {% elif item.level in ['notice', 'debug'] %}
+                {% elif item.level in ['notice', 'info'] %}
                     {% set class='info' %}
-                {% elif item.level in ['info'] %}
-                    {% set class='success' %}
                 {% endif %}
                 <tr class="{{ class }}">
                     <td>
@@ -83,10 +86,10 @@
                             {{ item.owner }}
                         {%- endif -%}
                     </td>
-                    <td>{{ item.level }}</td>
-                    <td>{{ item.datetimestamp|strptime|datetimeformat('%d.%m.%y %H:%M:%S') }}</td>
-                    <td>{{ item.data }}</td>
-                    <td>{{ item.tags }}</td>
+                    <td>{{ item['level'] }}</td>
+                    <td>{% if item['datetimestamp'] %}{{ item['datetimestamp']|strptime|datetimeformat('%d.%m.%y %H:%M:%S') }}{% endif %}</td>
+                    <td>{{ item['data'] }}</td>
+                    <td>{{ item['tags']|join(', ') }}</td>
                 </tr>
             {% endfor %}
             </tbody>

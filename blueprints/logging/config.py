@@ -5,4 +5,4 @@ import os
 MODULE_NAME = os.path.basename(os.path.dirname(__file__))
 
 # Русское название модуля для отображения в главном меню
-RUS_NAME = u'Журналирование'
+RUS_NAME = u'Журнал'
