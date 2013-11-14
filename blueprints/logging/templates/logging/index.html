@@ -83,7 +83,7 @@
                         {%- if 'name' in item.owner -%}
                             {{ item.owner.name }}{% if 'ip' in item.owner %} (ip: {{ item.owner.ip }}){% endif %}
                         {%- else -%}
-                            {{ item.owner }}
+                            {{ item.owner|join('<br>') }}
                         {%- endif -%}
                     </td>
                     <td>{{ item['level'] }}</td>
