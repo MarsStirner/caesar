@@ -82,10 +82,10 @@
                     <td>
                         {%- if item.owner is iterable -%}
                             {% for k, v in item.owner.iteritems() %}
-                            <b>{{ k }}:</b> {{ v }}
-                                {% if not loop.last %}
+                            <b>{{ k }}:</b> <nobr>{{ v }}</nobr>
+                                {%- if not loop.last -%}
                                     <br>
-                                {% endif %}
+                                {%- endif -%}
                             {% endfor %}
                         {%- elif item -%}
                             {{ item.owner }}
