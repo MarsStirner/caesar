@@ -81,13 +81,12 @@
                 <tr class="{{ class }}">
                     <td>
                         {%- if item.owner is iterable -%}
-                            <dl class="dl-horizontal">
                             {% for k, v in item.owner.iteritems() %}
-                                  <dt>{{ k }}</dt>
-                                  <dd>{{ v }}</dd>
+                            <b>{{ k }}:</b> {{ v }}
+                                {% if not loop.last %}
+                                    <br>
+                                {% endif %}
                             {% endfor %}
-                            </dl>
-                            {{ item.owner.name }}{% if 'ip' in item.owner %} (ip: {{ item.owner.ip }}){% endif %}
                         {%- elif item -%}
                             {{ item.owner }}
                         {%- endif -%}
