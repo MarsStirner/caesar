@@ -31,7 +31,7 @@
         {% if owners %}
         {% for owner in owners %}
             <option value="{{ owner|safe }}"{% if request.form.get('owner') == owner|string %} selected="selected"{% endif %}>
-            {%- if owner is iterable -%}
+            {%- if owner is mapping -%}
                 {% for k, v in owner.iteritems() %}
                 {{ k }}: {{ v }}{%- if not loop.last -%} | {%- endif -%}
                 {% endfor %}
@@ -82,7 +82,7 @@
                 {% endif %}
                 <tr class="{{ class }}">
                     <td>
-                        {%- if item.owner is iterable -%}
+                        {%- if item.owner is mapping -%}
                             {% for k, v in item.owner.iteritems() %}
                             <nobr><b>{{ k }}:</b> {{ v }}</nobr>
                                 {%- if not loop.last -%}
