@@ -95,7 +95,7 @@
                     </td>
                     <td>{{ item['level'] }}</td>
                     <td>{% if item['datetimestamp'] %}{{ item['datetimestamp']|strptime|datetimeformat('%d.%m.%y %H:%M:%S') }}{% endif %}</td>
-                    <td>{{ item['data']|nl2br|safe }}</td>
+                    <td>{{ item['data']|nl2br }}</td>
                     <td>{{ item['tags']|join(', ') }}</td>
                 </tr>
             {% endfor %}
