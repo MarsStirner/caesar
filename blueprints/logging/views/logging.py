@@ -6,7 +6,7 @@ from jinja2 import TemplateNotFound, Environment, PackageLoader
 
 from ..app import module, _config
 from ..lib.data import Log_Data
-from ..lib.helpers import datetimeformat_filter, strpdatetime_filter
+from ..lib.helpers import datetimeformat_filter, strpdatetime_filter, nl2br_filter
 from datetime import datetime
 
 
@@ -14,6 +14,7 @@ from datetime import datetime
 def index():
     current_app.jinja_env.filters['datetimeformat'] = datetimeformat_filter
     current_app.jinja_env.filters['strptime'] = strpdatetime_filter
+    current_app.jinja_env.filters['nl2br'] = nl2br_filter
     log_obj = Log_Data()
     levels = log_obj.get_levels()
     owners = log_obj.get_owners()
