@@ -33,8 +33,7 @@
             <option value="{{ owner|safe }}"{% if request.form.get('owner') == owner|string %} selected="selected"{% endif %}>
             {%- if owner is iterable -%}
                 {% for k, v in owner.iteritems() %}
-                <nobr><b>{{ k }}:</b> {{ v }}</nobr>
-                    {%- if not loop.last -%} | {%- endif -%}
+                {{ k }}: {{ v }}{%- if not loop.last -%} | {%- endif -%}
                 {% endfor %}
             {%- else -%}
                 {{ owner }}
