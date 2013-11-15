@@ -31,16 +31,11 @@
         {% if owners %}
         {% for owner in owners %}
             <option value="{{ owner|safe }}"{% if request.form.get('owner') == owner|string %} selected="selected"{% endif %}>
-            {%- if item.owner is iterable -%}
-                {% for k, v in item.owner.iteritems() %}
+            {%- if owner is iterable -%}
+                {% for k, v in owner.iteritems() %}
                 <nobr><b>{{ k }}:</b> {{ v }}</nobr>
                     {%- if not loop.last -%} | {%- endif -%}
                 {% endfor %}
-            {%- else -%}
-                {{ item.owner }}
-            {%- endif -%}
-            {%- if 'name' in owner -%}
-                {{ owner.name }}{% if 'ip' in owner %} (ip: {{ owner.ip }}){% endif %}
             {%- else -%}
                 {{ owner }}
             {%- endif -%}
