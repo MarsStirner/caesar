@@ -41,8 +41,8 @@ def index():
     data = log_obj.get_list(find=find)
     try:
         return render_template('logging/index.html',
-                               levels=levels.get('level'),
-                               owners=owners.get('result'),
-                               data=data.get('result'))
+                               levels=levels.get('level') if levels else None,
+                               owners=owners.get('result') if owners else None,
+                               data=data.get('result') if data else None)
     except TemplateNotFound:
         abort(404)
