@@ -11,6 +11,7 @@ from thrift.protocol import TBinaryProtocol
 from thrift_service.TFOMSService import Client
 from thrift_service.ttypes import InvalidOrganizationInfisException
 from thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException, TClientPolicy
+from thrift_service.ttypes import Payment
 
 
 class TFOMSClient(object):
@@ -310,6 +311,21 @@ class TFOMSClient(object):
                     if isinstance(value, basestring):
                         setattr(data, key, value.encode('utf-8'))
             result = self.client.changeClientPolicy(patientId=patient_id, newPolicy=data)
+        except InvalidArgumentException, e:
+            print e
+        except SQLException, e:
+            print e
+        except NotFoundException, e:
+            raise e
+        except TException, e:
+            raise e
+        return result
+
+    def load_tfoms_payments(self, data):
+        """Отправка данных, полученных из ТФОМС"""
+        result = None
+        try:
+            result = self.client.loadTfomsPayments(**data)
         except InvalidArgumentException, e:
             print e
         except SQLException, e:

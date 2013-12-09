@@ -10,7 +10,7 @@ from jinja2 import Environment, PackageLoader
 from application.database import db
 from service_client import TFOMSClient as Client
 from thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException
-from thrift_service.ttypes import PatientOptionalFields, SluchOptionalFields, TClientPolicy
+from thrift_service.ttypes import PatientOptionalFields, SluchOptionalFields, TClientPolicy, Payment
 from ..app import module, _config
 from ..models import Template, TagsTree, Tag
 from ..lib.reports import Reports
@@ -276,10 +276,12 @@ class UploadWorker(object):
     def __init__(self):
         self.client = Client(_config('core_service_url'))
 
-    def do_upload(self):
-        pass
+    def do_upload(self, file_path):
+        data = self.__parse(file_path)
+        return self.client.load_tfoms_payments(data)
 
     def __patient(self, element):
+        # TODO: legagy, clean
         data = dict()
         patient_id = None
         for child in element:
@@ -307,19 +309,69 @@ class UploadWorker(object):
             else:
                 pass
 
-    def parse(self, file_path):
-        filename = None
+    def __get_filename(self, root):
+        for element in root.iter('ZGL'):
+            for child in element:
+                if child.tag.lower() == 'filename':
+                    filename = child.text
+                    return filename
+
+    def __get_nschet(self, root):
+        for element in root.iter('SCHET'):
+            for child in element:
+                if child.tag.lower() == 'nschet':
+                    nschet = child.text
+                    return nschet
+
+    def __get_case(self, element):
+        # TODO: переделать перебор тегов на find?
+        payment = Payment()
+        confirmed = False
+        sumv = 0.0
+        for child in element:
+            if child.tag.lower() == 'idcase':
+                payment.accountItemId = int(child.text)
+            elif child.tag.lower() == 'refreason':
+                payment.refuseTypeCode = child.text
+                if child.text == '0':
+                    confirmed = True
+                else:
+                    confirmed = False
+            elif child.tag.lower() == 'comentsl':
+                payment.comment = child.text
+            elif child.tag.lower() == 'sumv':
+                sumv = float(child.text)
+        return payment, confirmed, sumv
+
+    def __parse(self, file_path):
+        data = dict(payments=list(), refusedAmount=0, payedAmount=0, payedSum=0.0, refusedSum=0.0, comment='')
+
         if os.path.isfile(file_path):
             tree = etree.parse(file_path)
             root = tree.getroot()
-            for element in root.iter('ZGL'):
-                for child in element:
-                    if child.tag == 'FILENAME':
-                        filename = child.text
+            filename = self.__get_filename(root)
+            if filename:
+                #data['fileName'] = '{0}.xml'.format(filename)
+                data['fileName'] = filename
+            else:
+                raise AttributeError(u'Не заполнен тег FILENAME')
+            nschet = self.__get_nschet(root)
+            if nschet:
+                data['accountNumber'] = nschet
+            else:
+                raise AttributeError(u'Не заполнен тег NSCHET')
             for element in root.iter('ZAP'):
                 for child in element:
-                    if child.tag == 'PACIENT':
-                        self.__patient(child)
+                    if child.tag.lower() == 'sluch':
+                        payment, confirmed, sumv = self.__get_case(child)
+                        data['payments'].append(payment)
+                        if confirmed is True:
+                            data['payedAmount'] += 1
+                            data['payedSum'] += sumv
+                        else:
+                            data['refusedAmount'] += 1
+                            data['refusedSum'] += sumv
+        return data
 
 
 class File(object):

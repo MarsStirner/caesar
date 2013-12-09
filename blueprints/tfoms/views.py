@@ -156,6 +156,7 @@ def upload():
 def ajax_upload():
     messages = list()
     errors = list()
+    result = list()
     if request.method == 'POST':
         data_file = request.files.get('upload_file')
         file_path = os.path.join(UPLOADS_DIR, data_file.filename)
@@ -165,16 +166,22 @@ def ajax_upload():
             f.close()
             worker = UploadWorker()
             try:
-                result = worker.parse(file_path)
+                result = worker.do_upload(file_path)
             except TException, e:
-                errors.append(u'<b>%s</b>: внутренняя ошибка ядра во время обновления данных (%s)'
-                              % (data_file.filename, e))
+                errors.append(
+                    u'<b>{0}</b>: внутренняя ошибка ядра во время обновления данных ({1})'
+                    .format(data_file.filename, e))
+            except AttributeError, e:
+                errors.append(u'<b>{0}</b>: некорректный XML-файл ({1})'.format(data_file.filename, e))
             else:
                 #TODO: добавить вывод подробной информации
                 messages.append(u'Загрузка прошла успешно')
         else:
             errors.append(u'<b>%s</b>: не является XML-файлом' % data_file.filename)
-        return render_template('{0}/upload/result.html'.format(module.name), errors=errors, messages=messages)
+        return render_template('{0}/upload/result.html'.format(module.name),
+                               errors=errors,
+                               messages=messages,
+                               result=result)
 
 
 def get_files(root, _dir):
