@@ -29,7 +29,7 @@ class TemplateType(db.Model):
     name = db.Column(db.Unicode(45), unique=True, nullable=False)
 
     download_type_id = db.Column(db.Integer,
-                                 db.ForeignKey('%s_download_type.id' % TABLE_PREFIX, deferrable=True),
+                                 db.ForeignKey('%s_download_type.id' % TABLE_PREFIX),
                                  index=True)
     download_type = db.relationship(DownloadType)
 
@@ -39,7 +39,7 @@ class TemplateType(db.Model):
     def __unicode__(self):
         return self.name
 
-    
+
 class Template(db.Model):
     """Шаблоны"""
     __tablename__ = '%s_template' % TABLE_PREFIX
@@ -48,9 +48,9 @@ class Template(db.Model):
     name = db.Column(db.Unicode(80), unique=True, nullable=False)
     archive = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=False)
-    
+
     #user = db.Column(db.Integer, db.ForeignKey('.id'))
-    type_id = db.Column(db.Integer, db.ForeignKey('%s_template_type.id' % TABLE_PREFIX, deferrable=True), index=True)
+    type_id = db.Column(db.Integer, db.ForeignKey('%s_template_type.id' % TABLE_PREFIX), index=True)
     type = db.relation(TemplateType)
 
     tag_tree = db.relationship('TagsTree', backref='template', cascade="all, delete, delete-orphan")
@@ -66,12 +66,12 @@ class TagTemplateType(db.Model):
     __tablename__ = '%s_tag_template_type' % TABLE_PREFIX
 
     tag_id = db.Column(db.Integer,
-                       db.ForeignKey('%s_tag.id' % TABLE_PREFIX, deferrable=True),
+                       db.ForeignKey('%s_tag.id' % TABLE_PREFIX),
                        primary_key=True,
                        autoincrement=True,
                        nullable=False)
     template_type_id = db.Column(db.Integer,
-                                 db.ForeignKey('%s_template_type.id' % TABLE_PREFIX, deferrable=True),
+                                 db.ForeignKey('%s_template_type.id' % TABLE_PREFIX),
                                  primary_key=True,
                                  nullable=False)
 
@@ -86,7 +86,7 @@ class Tag(db.Model):
     code = db.Column(db.String(80), unique=True, nullable=False)
     name = db.Column(db.Unicode(80))
     is_leaf = db.Column(db.Boolean, default=False)
-    
+
     # many to many TemplateType<->Tag
     template_types = db.relationship(TemplateType,
                                      secondary='%s_tag_template_type' % TABLE_PREFIX,
@@ -98,16 +98,16 @@ class Tag(db.Model):
     def __unicode__(self):
         return self.code
 
- 
+
 class StandartTree(db.Model):
     """Эталонная структура дерева для каждого из типов шаблонов, с использованием всех тегов"""
     __tablename__ = '%s_standart_tree' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    tag_id = db.Column(db.Integer, db.ForeignKey('%s_tag.id' % TABLE_PREFIX, deferrable=True), index=True)
-    parent_id = db.Column(db.Integer, db.ForeignKey('%s_standart_tree.id' % TABLE_PREFIX, deferrable=True), index=True)
+    tag_id = db.Column(db.Integer, db.ForeignKey('%s_tag.id' % TABLE_PREFIX), index=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey('%s_standart_tree.id' % TABLE_PREFIX), index=True)
     template_type_id = db.Column(db.Integer,
-                                 db.ForeignKey('%s_template_type.id' % TABLE_PREFIX, deferrable=True),
+                                 db.ForeignKey('%s_template_type.id' % TABLE_PREFIX),
                                  index=True)
     is_necessary = db.Column(db.Boolean)
     ordernum = db.Column(db.Integer, doc=u'Поле для сортировки тегов')
@@ -121,18 +121,18 @@ class StandartTree(db.Model):
     def __unicode__(self):
         return self.tag.code
 
-    
-class TagsTree(db.Model): 
+
+class TagsTree(db.Model):
     """Древовидная структура тегов"""
     __tablename__ = '%s_tags_tree' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     tag_id = db.Column(db.Integer,
-                       db.ForeignKey('%s_tag.id' % TABLE_PREFIX, deferrable=True),
+                       db.ForeignKey('%s_tag.id' % TABLE_PREFIX),
                        index=True)
-    parent_id = db.Column(db.Integer, db.ForeignKey('%s.id' % __tablename__, deferrable=True), index=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey('%s.id' % __tablename__), index=True)
     template_id = db.Column(db.Integer,
-                            db.ForeignKey('%s_template.id' % TABLE_PREFIX, deferrable=True),
+                            db.ForeignKey('%s_template.id' % TABLE_PREFIX),
                             nullable=False,
                             index=True)
     ordernum = db.Column(db.Integer, doc=u'Поле для сортировки тегов')
