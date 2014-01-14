@@ -29,7 +29,7 @@ class TemplateType(db.Model):
     name = db.Column(db.Unicode(45), unique=True, nullable=False)
 
     download_type_id = db.Column(db.Integer,
-                                 db.ForeignKey('%s_download_type.id' % TABLE_PREFIX, deferrable=True),
+                                 db.ForeignKey('%s_download_type.id' % TABLE_PREFIX),
                                  index=True)
     download_type = db.relationship(DownloadType)
 
@@ -50,7 +50,7 @@ class Template(db.Model):
     is_active = db.Column(db.Boolean, default=False)
 
     #user = db.Column(db.Integer, db.ForeignKey('.id'))
-    type_id = db.Column(db.Integer, db.ForeignKey('%s_template_type.id' % TABLE_PREFIX), index=True)
+    type_id = db.Column(db.Integer, db.ForeignKey('%s_template_type.id' % TABLE_PREFIX, deferrable=True), index=True)
     type = db.relation(TemplateType)
 
     tag_tree = db.relationship('TagsTree', backref='template', cascade="all, delete, delete-orphan")
