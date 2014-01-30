@@ -13,14 +13,14 @@ Base = declarative_base()
 metadata = Base.metadata
 
 
-class ConfigVariables(db.Model):
+class ConfigVariables(Base):
     __tablename__ = '%s_config' % TABLE_PREFIX
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    code = db.Column(db.String(25), unique=True, nullable=False)
-    name = db.Column(db.Unicode(50), unique=True, nullable=False)
-    value = db.Column(db.Unicode(100))
-    value_type = db.Column(db.String(30))
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    code = Column(String(25), unique=True, nullable=False)
+    name = Column(Unicode(50), unique=True, nullable=False)
+    value = Column(Unicode(100))
+    value_type = Column(String(30))
 
     def __unicode__(self):
         return self.code
@@ -49,6 +49,49 @@ class Info(object):
 class RBInfo(Info):
     def __unicode__(self):
         return self.name
+
+
+class CInfoList(Info):
+    u"""Базовый класс для представления списков (массивов) объектов при передаче в шаблоны печати"""
+
+    def __len__(self):
+        return len(self._items)
+
+    def __getitem__(self, key):
+        return self._items[key]
+
+    def __iter__(self):
+        return iter(self._items)
+
+    def __str__(self):
+        return u', '.join([unicode(x) for x in self._items])
+
+    def __nonzero__(self):
+        return bool(self._items)
+
+    # def filter(self, **kw):
+    #     result = CInfoList(self.context)
+    #     result._loaded = True
+    #     result._ok = True
+    #
+    #     for item in self._items:
+    #         if all([item.__getattribute__(key) == value for key, value in kw.iteritems()]):
+    #             result._items.append(item)
+    #     return result
+    #
+    # def __add__(self, right):
+    #     if isinstance(right, CInfoList):
+    #         right.load()
+    #         rightItems = right._items
+    #     elif isinstance(right, list):
+    #         rightItems = right
+    #     else:
+    #         raise TypeError(u'can only concatenate CInfoList or list (not "%s") to CInfoList' % type(right).__name__)
+    #     result = CInfoList(self.context)
+    #     result._loaded = True
+    #     result._ok = True
+    #     result._items = self._items + rightItems
+    #     return result
 
 
 class Account(Base):
@@ -904,7 +947,7 @@ class Clientallergy(Base):
     client = relationship(u'Client')
 
 
-class Clientattach(Base):
+class Clientattach(Base, Info):
     __tablename__ = u'ClientAttach'
 
     id = Column(Integer, primary_key=True)
@@ -914,14 +957,48 @@ class Clientattach(Base):
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     client_id = Column(ForeignKey('Client.id'), nullable=False, index=True)
-    attachType_id = Column(Integer, nullable=False, index=True)
-    LPU_id = Column(Integer, nullable=False, index=True)
-    orgStructure_id = Column(Integer, index=True)
+    attachType_id = Column(ForeignKey('rbAttachType.id'), nullable=False, index=True)
+    LPU_id = Column(ForeignKey('Organisation.id'), nullable=False, index=True)
+    orgStructure_id = Column(ForeignKey('OrgStructure.id'), index=True)
     begDate = Column(Date, nullable=False)
     endDate = Column(Date)
-    document_id = Column(Integer, index=True)
+    document_id = Column(ForeignKey('ClientDocument.id'), index=True)
 
     client = relationship(u'Client')
+    document = relationship(u'Clientdocument')
+    org = relationship(u'Organisation')
+    orgStructure = relationship(u'Orgstructure')
+    attachType = relationship(u'Rbattachtype')
+
+    def __unicode__(self):
+        if self._ok:
+            result = self.name
+            if self._outcome:
+                result += ' ' + unicode(self.endDate)
+            elif self.temporary:  # ??
+                result += ' ' + self.org.shortName
+                if self.begDate:
+                    result += u' c ' + unicode(self.begDate)
+                if self.endDate:
+                    result += u' по ' + unicode(self.endDate)
+            else:
+                result += ' ' + self.org.shortName
+        else:
+            result = ''
+        return result
+
+    def getCode(self):
+        return self.attachType.code
+
+    def getName(self):
+        return self.attachType.name
+
+    def getOutcome(self):
+        return self.attachType.outcome
+
+    code = property(getCode)
+    name = property(getName)
+    outcome = property(getOutcome)
 
 
 class Clientcontact(Base):
@@ -1084,7 +1161,7 @@ class Clientrelation(Base):
     client = relationship(u'Client')
 
 
-class Clientsocstatu(Base):
+class Clientsocstatus(Base):
     __tablename__ = u'ClientSocStatus'
 
     id = Column(Integer, primary_key=True)
@@ -1094,16 +1171,31 @@ class Clientsocstatu(Base):
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     client_id = Column(ForeignKey('Client.id'), nullable=False, index=True)
-    socStatusClass_id = Column(Integer, index=True)
-    socStatusType_id = Column(Integer, nullable=False, index=True)
+    socStatusClass_id = Column(ForeignKey('rbSocStatusClass.id'), index=True)
+    socStatusType_id = Column(ForeignKey('rbSocStatusType.id'), nullable=False, index=True)
     begDate = Column(Date, nullable=False)
     endDate = Column(Date)
-    document_id = Column(Integer, index=True)
+    document_id = Column(ForeignKey('ClientDocument.id'), index=True)
     version = Column(Integer, nullable=False)
     note = Column(String(256), nullable=False, server_default=u"''")
     benefitCategory_id = Column(Integer)
 
     client = relationship(u'Client')
+    socStatusType = relationship(u'Rbsocstatustype')
+    document = relationship(u'Clientdocument')
+
+    def socStatusClasses(self):
+        return self.socStatusType.classes
+
+    def getSocStatusTypeCode(self):
+        return self.socStatusType.code
+
+    def getSocStatusTypeName(self):
+        return self.socStatusType.name
+
+    code = property(getSocStatusTypeCode)
+    name = property(getSocStatusTypeName)
+    classes = property(socStatusClasses)
 
 
 class Clientwork(Base):
@@ -1116,8 +1208,8 @@ class Clientwork(Base):
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     client_id = Column(ForeignKey('Client.id'), nullable=False, index=True)
-    org_id = Column(Integer, index=True)
-    freeInput = Column(String(200), nullable=False)
+    org_id = Column(ForeignKey('Organisation.id'), index=True)
+    shortName = Column(String(200), nullable=False)
     post = Column(String(200), nullable=False)
     stage = Column(Integer, nullable=False)
     OKVED = Column(String(10), nullable=False)
@@ -1126,27 +1218,60 @@ class Clientwork(Base):
     arm_id = Column(Integer, nullable=False)
 
     client = relationship(u'Client')
+    organisation = relationship(u'Organisation')
+    hurts = relationship(u'ClientworkHurt')
+
+    def __unicode__(self):
+        parts = []
+        if self.shortName:
+            parts.append(self.shortName)
+        if self.post:
+            parts.append(self.post)
+        if self.OKVED:
+            parts.append(u'ОКВЭД: '+self._OKVED)
+        return ', '.join(parts)
 
 
-class ClientworkHurt(Base):
+class ClientworkHurt(Base, Info):
     __tablename__ = u'ClientWork_Hurt'
 
     id = Column(Integer, primary_key=True)
-    master_id = Column(ForeignKey('Client.id'), nullable=False, index=True)
-    hurtType_id = Column(Integer, nullable=False, index=True)
+    master_id = Column(ForeignKey('ClientWork.id'), nullable=False, index=True)
+    hurtType_id = Column(ForeignKey('rbHurtType.id'), nullable=False, index=True)
     stage = Column(Integer, nullable=False)
 
-    master = relationship(u'Client')
+    clientWork = relationship(u'Clientwork')
+    hurtType = relationship(u'Rbhurttype')
+    factors = relationship(u'ClientworkHurtFactor')
+
+    def hurtTypeCode(self):
+        return self.hurtType.code
+
+    def hurtTypeName(self):
+        return self.hurtType.name
+
+    code = property(hurtTypeCode)
+    name = property(hurtTypeName)
 
 
-class ClientworkHurtFactor(Base):
+class ClientworkHurtFactor(Base, Info):
     __tablename__ = u'ClientWork_Hurt_Factor'
 
     id = Column(Integer, primary_key=True)
-    master_id = Column(ForeignKey('Client.id'), nullable=False, index=True)
-    factorType_id = Column(Integer, nullable=False, index=True)
+    master_id = Column(ForeignKey('ClientWork_Hurt.id'), nullable=False, index=True)
+    factorType_id = Column(ForeignKey('rbHurtFactorType.id'), nullable=False, index=True)
 
-    master = relationship(u'Client')
+    master = relationship(u'ClientworkHurt')
+    factorType = relationship(u'Rbhurtfactortype')
+
+    def factorTypeCode(self):
+        return self.factorType.code
+
+    def factorTypeName(self):
+        return self.factorType.name
+
+    code = property(factorTypeCode)
+    name = property(factorTypeName)
 
 
 class ClientQuoting(Base):
@@ -1998,12 +2123,12 @@ class Orgstructure(Base, Info):
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    organisation_id = Column(ForeignKey('Organisation.id'), nullable=False, index=True)
+    organisation_id = Column(Integer, ForeignKey('Organisation.id'), nullable=False, index=True)
     code = Column(Unicode(255), nullable=False)
     name = Column(Unicode(255), nullable=False)
-    parent_id = Column(ForeignKey('OrgStructure.id'), index=True)
+    parent_id = Column(Integer, ForeignKey('OrgStructure.id'), index=True)
     type = Column(Integer, nullable=False, server_default=u"'0'")
-    net_id = Column(ForeignKey('rbNet.id'), index=True)
+    net_id = Column(Integer, ForeignKey('rbNet.id'), index=True)
     isArea = Column(Integer, nullable=False, server_default=u"'0'")
     hasHospitalBeds = Column(Integer, nullable=False, server_default=u"'0'")
     hasStocks = Column(Integer, nullable=False, server_default=u"'0'")
@@ -2190,7 +2315,7 @@ class Organisation(Base, Info):
     fullName = Column(String(255), nullable=False)
     shortName = Column(String(255), nullable=False)
     title = Column(String(255), nullable=False, index=True)
-    net_id = Column(ForeignKey('rbNet.id'), index=True)
+    net_id = Column(Integer, ForeignKey('rbNet.id'), index=True)
     infisCode = Column(String(12), nullable=False, index=True)
     obsoleteInfisCode = Column(String(60), nullable=False)
     OKVED = Column(String(64), nullable=False, index=True)
@@ -2199,9 +2324,9 @@ class Organisation(Base, Info):
     OGRN = Column(String(15), nullable=False, index=True)
     OKATO = Column(String(15), nullable=False)
     OKPF_code = Column(String(4), nullable=False)
-    OKPF_id = Column(ForeignKey('rbOKPF.id'), index=True)
+    OKPF_id = Column(Integer, ForeignKey('rbOKPF.id'), index=True)
     OKFS_code = Column(Integer, nullable=False)
-    OKFS_id = Column(ForeignKey('rbOKFS.id'), index=True)
+    OKFS_id = Column(Integer, ForeignKey('rbOKFS.id'), index=True)
     OKPO = Column(String(15), nullable=False)
     FSS = Column(String(10), nullable=False)
     region = Column(String(40), nullable=False)
@@ -3624,7 +3749,7 @@ class Rbhurtfactortype(Base):
     name = Column(String(250), nullable=False, index=True)
 
 
-class Rbhurttype(Base):
+class Rbhurttype(Base, RBInfo):
     __tablename__ = u'rbHurtType'
 
     id = Column(Integer, primary_key=True)
@@ -4103,27 +4228,35 @@ class RbserviceProfile(Base):
     speciality = relationship(u'Rbspeciality')
 
 
-class Rbsocstatusclas(Base):
+class Rbsocstatusclass(Base, Info):
     __tablename__ = u'rbSocStatusClass'
 
     id = Column(Integer, primary_key=True)
-    group_id = Column(Integer, index=True)
+    group_id = Column(ForeignKey('rbSocStatusClass.id'), index=True)
     code = Column(String(8), nullable=False, index=True)
     name = Column(String(64), nullable=False, index=True)
 
+    group = relationship(u'Rbsocstatusclass', remote_side=[id])
 
-class Rbsocstatusclasstypeassoc(Base):
-    __tablename__ = u'rbSocStatusClassTypeAssoc'
-    __table_args__ = (
-        Index(u'type_id', u'type_id', u'class_id'),
+    def __unicode__(self):
+        return self.name
+
+# class Rbsocstatusclasstypeassoc(Base):
+#     __tablename__ = u'rbSocStatusClassTypeAssoc'
+#     __table_args__ = (
+#         Index(u'type_id', u'type_id', u'class_id'),
+#     )
+#
+#     id = Column(Integer, primary_key=True)
+#     class_id = Column(Integer, ForeignKey('rbSocStatusClass.id'), nullable=False, index=True)
+#     type_id = Column(Integer, ForeignKey('rbSocStatusType.id'), nullable=False)
+Rbsocstatusclasstypeassoc = Table('rbSocStatusClassTypeAssoc', Base.metadata,
+    Column('class_id', Integer, ForeignKey('rbSocStatusClass.id')),
+    Column('type_id', Integer, ForeignKey('rbSocStatusType.id'))
     )
 
-    id = Column(Integer, primary_key=True)
-    class_id = Column(Integer, nullable=False, index=True)
-    type_id = Column(Integer, nullable=False)
 
-
-class Rbsocstatustype(Base):
+class Rbsocstatustype(Base, Info):
     __tablename__ = u'rbSocStatusType'
 
     id = Column(Integer, primary_key=True)
@@ -4132,6 +4265,8 @@ class Rbsocstatustype(Base):
     socCode = Column(String(8), nullable=False, index=True)
     TFOMSCode = Column(Integer)
     regionalCode = Column(String(8), nullable=False)
+
+    classes = relationship(u'Rbsocstatusclass', secondary=Rbsocstatusclasstypeassoc)
 
 
 class Rbspecialvariablespreference(Base):

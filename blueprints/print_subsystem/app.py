@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
+from .config import MODULE_NAME, RUS_NAME
 from flask import Blueprint
 from .utils import _config
-from .config import MODULE_NAME, RUS_NAME
 
 module = Blueprint(MODULE_NAME, __name__, template_folder='templates', static_folder='static')
 
