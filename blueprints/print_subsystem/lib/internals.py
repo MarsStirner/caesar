@@ -8,7 +8,7 @@ from jinja2 import Environment, FileSystemLoader, Template
 # from PyQt4.QtCore import QSizeF
 
 from info.PrintInfo import CInfo, CInfoContext
-#from context import CTemplateContext
+from context import CTemplateContext
 #from html import escape, escapenl, HTMLRipper, date_toString, time_toString
 #from renderer import CTemplateParser
 
@@ -70,20 +70,21 @@ def renderTemplate(template, data, pageFormat=None, render=1):
     #     'tuple', 'unichr', 'unicode', 'xrange', 'zip'))
     # global_vars.update(useful_builtins)
 
-    #execContext = CTemplateContext(global_vars, data, infoContext)
+    # execContext = CTemplateContext(global_vars, data, infoContext)
+    execContext = CTemplateContext(data)
 
     if render == Render.jinja2:
         try:
-            # context = {}
-            # context.update(execContext.builtin)
+            context = {}
+            context.update(execContext.builtin)
             # context.update(execContext.globals)
-            # context.update(execContext.data)
+            context.update(execContext.data)
             # context.update({"now": execContext.now,
             #                 "page": pageFormat,
             #                 "date_toString": date_toString,
             #                 "time_toString": time_toString,
             #                 })
-            result = Template(template).render(data)
+            result = Template(template).render(context)
         except Exception:
             print "ERROR: template.render(data)"
             # QtGui.qApp.log('Template code failed', str(context))

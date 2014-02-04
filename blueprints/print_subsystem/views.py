@@ -7,7 +7,7 @@ from flask import render_template, abort, request, redirect, jsonify, send_from_
 from flask.ext.sqlalchemy import Pagination
 
 from jinja2 import TemplateNotFound, Environment, PackageLoader
-from app import module, _config
+from app import module
 
 from application.database import db
 from application.utils import public_endpoint
@@ -39,11 +39,12 @@ def template_meta():
 @public_endpoint
 @module.route('/print_template', methods=["POST", "GET"])
 def print_template():
-    try:
-        data = json.loads(request.data)
-        template_id = data['id']
-        client_id = data['client_id']
-        print_obj = Print_Template()
-        return print_obj.print_template(template_id, client_id)
-    except TemplateNotFound:
-        abort(404)
+    # try:
+    data = json.loads(request.data)
+    template_id = data['id']
+    client_id = data['client_id']
+    additional_context = data['additional_context']
+    print_obj = Print_Template()
+    return print_obj.print_template(template_id, client_id, additional_context)
+    # except TemplateNotFound:
+    #     abort(404)

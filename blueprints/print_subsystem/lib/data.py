@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from datetime import date
 
+from ..app import module, _config
 from ..utils import get_lpu_session
-from ..models import Rbprinttemplate, Rbbloodtype, Client, Orgstructure
+from ..models import Client, Orgstructure, Person, Organisation
 from gui import applyTemplate
 from info.OrgInfo import CClientInfo
 from info.PrintInfo import CInfoContext
@@ -22,15 +23,20 @@ class Print_Template(object):
 
         return self.db_session.execute(query)
 
-    def print_template(self, template_id, client_id):
+    def print_template(self, template_id, client_id, additional_context):
         #template_record = self.get_template(template_id)
         # context = CInfoContext()
-        # client = context.getInstance(CClientInfo, client_id)
-        #bloodType = self.db_session.query(Rbbloodtype).get(2)
-        client = self.db_session.query(Client).get(client_id)
-        orgstructure = self.db_session.query(Orgstructure).get(34)
-        data = {'client': client,
-                'orgstructure': orgstructure,
+        client = self.db_session.query(Client).get(18)
+        currentOrganisation = self.db_session.query(Organisation).get(additional_context['currentOrganisation']) if \
+            additional_context['currentOrganisation'] else ""
+        currentOrgStructure = self.db_session.query(Orgstructure).get(additional_context['currentOrgStructure']) if \
+            additional_context['currentOrgStructure'] else ""
+        currentPerson = self.db_session.query(Person).get(additional_context['currentPerson']) if \
+            additional_context['currentPerson'] else ""
+        data = {'currentOrganisation': currentOrganisation,
+                'currentOrgStructure': currentOrgStructure,
+                'currentPerson': currentPerson,
+                'client': client,
                 'currentActionIndex': 0,  # на самом деле мы ничего не знаем о текущем индексе действия
                 }
         return applyTemplate(template_id, data)

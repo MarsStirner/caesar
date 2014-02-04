@@ -880,7 +880,7 @@ class Client(Base, Info):
     firstName = Column(Unicode(30), nullable=False)
     patrName = Column(Unicode(30), nullable=False)
     birthDate = Column(Date, nullable=False, index=True)
-    sex = Column(Integer, nullable=False)
+    sexCode = Column("sex", Integer, nullable=False)
     SNILS = Column(String(11), nullable=False, index=True)
     bloodType_id = Column(ForeignKey('rbBloodType.id'), index=True)
     bloodDate = Column(Date)
@@ -894,9 +894,127 @@ class Client(Base, Info):
     uuid_id = Column(Integer, nullable=False, index=True, server_default=u"'0'")
 
     bloodType = relationship(u'Rbbloodtype')
+    client_attachments = relationship(u'Clientattach')
+    socStatusesAll = relationship(u'Clientsocstatus')
+    documentsAll = relationship(u'Clientdocument')
+    intolerancesAll = relationship(u'Clientintolerancemedicament')
+    allergiesAll = relationship(u'Clientallergy')
+    contacts = relationship(u'Clientcontact')
+    direct_relations = relationship(u'DirectClientRelation', foreign_keys='Clientrelation.client_id')
+    reversed_relations = relationship(u'ReversedClientRelation', foreign_keys='Clientrelation.relative_id')
+    policies = relationship(u'Clientpolicy')
+    works = relationship(u'Clientwork')
+
+    # TODO: date
+
+    @property
+    def nameText(self):
+        return u' '.join((u'%s %s %s' % (self.lastName, self.firstName, self.patrName)).split())
+
+    @property
+    def sex(self):
+        """
+        Делаем из пола строку
+        sexCode - код пола (1 мужской, 2 женский)
+        """
+        if self.sexCode == 1:
+            return u'М'
+        elif self.sexCode == 2:
+            return u'Ж'
+        else:
+            return u''
+
+    @property
+    def SNILS(self):
+        if self.SNILS:
+            s = self.SNILS+' '*14
+            return s[0:3]+'-'+s[3:6]+'-'+s[6:9]+' '+s[9:11]
+        else:
+            return u''
+
+    @property
+    def permanentAttach(self):
+        for attach in self.client_attachments:
+            if attach.deleted == 0 and attach.attachType.temporary == 0:
+                return attach
+
+    @property
+    def temporaryAttach(self):
+        for attach in self.client_attachments:
+            if attach.deleted == 0 and attach.attachType.temporary != 0:
+                return attach
+
+    @property
+    def socStatuses(self):
+        # TODO: db.joinOr([table['endDate'].isNull(), table['endDate'].ge(QDate.currentDate())])
+        return [socStatus for socStatus in self.socStatusesAll if socStatus.deleted == 0]
+
+    @property
+    def document(self):
+        # TODO: отстортировать по дате
+        for document in self.documents:
+            if document.deleted == 0 and document.documentType.group.code == '1':
+                return document
+
+    @property
+    def intolerances(self):
+        return [intolerance for intolerance in self.intolerancesAll if intolerance.deleted == 0]
+
+    @property
+    def allergies(self):
+        return [allergie for allergie in self.allergiesAll if allergie.deleted == 0]
+
+    @property
+    def relations(self):
+        return self.reversed_relations + self.direct_relations
+
+    @property
+    def phones(self):
+        contacts = [(contact.name, contact.contact, contact.notes) for contact in self.contacts if contact.deleted == 0]
+        return ', '.join([(phone[0]+': '+phone[1]+' ('+phone[2]+')') if phone[2] else (phone[0]+': '+phone[1])
+                          for phone in contacts])
+
+    @property
+    def compulsoryPolicy(self):
+        # TODO: order by date code?
+        for policy in self.policies:
+            if not policy.policyType or u"ОМС" in policy.policyType.name:
+                return policy
+
+    @property
+    def voluntaryPolicy(self):
+        # TODO: order by date code?
+        for policy in self.policies:
+            if policy.policyType and policy.policyType.name.startswith(u"ДМС"):
+                return policy
+    @property
+    def policy(self):
+        return self.compulsoryPolicy
+
+    @property
+    def policyDMS(self):
+        return self.voluntaryPolicy
+
+    @property
+    def fullName(self):
+        return formatNameInt(self.lastName, self.firstName, self.patrName)
+
+    @property
+    def shortName(self):
+        return formatShortNameInt(self.lastName, self.firstName, self.patrName)
+
+    @property
+    def work(self):
+        # TODO: order by date
+        for work in self.works:
+            if work.deleted == 0:
+                return work
+
+    def __unicode__(self):
+        return self.formatShortNameInt(self.lastName, self.firstName, self.patrName)
 
 
-class Patientstoh(Client):
+class Patientstohs(Base):
     __tablename__ = u'PatientsToHS'
 
     client_id = Column(ForeignKey('Client.id'), primary_key=True)
@@ -928,7 +1046,7 @@ class Clientaddres(Base):
     client = relationship(u'Client')
 
 
-class Clientallergy(Base):
+class Clientallergy(Base, Info):
     __tablename__ = u'ClientAllergy'
 
     id = Column(Integer, primary_key=True)
@@ -938,13 +1056,16 @@ class Clientallergy(Base):
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     client_id = Column(ForeignKey('Client.id'), nullable=False, index=True)
-    nameSubstance = Column(String(128), nullable=False)
+    name = Column(String(128), nullable=False)
     power = Column(Integer, nullable=False)
     createDate = Column(Date)
     notes = Column(String, nullable=False)
     version = Column(Integer, nullable=False)
 
     client = relationship(u'Client')
+
+    def __unicode__(self):
+        return self.name
 
 
 class Clientattach(Base, Info):
@@ -1001,7 +1122,7 @@ class Clientattach(Base, Info):
     outcome = property(getOutcome)
 
 
-class Clientcontact(Base):
+class Clientcontact(Base, Info):
     __tablename__ = u'ClientContact'
 
     id = Column(Integer, primary_key=True)
@@ -1011,12 +1132,17 @@ class Clientcontact(Base):
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     client_id = Column(ForeignKey('Client.id'), nullable=False, index=True)
-    contactType_id = Column(Integer, nullable=False, index=True)
+    contactType_id = Column(Integer, ForeignKey('rbContactType.id'), nullable=False, index=True)
     contact = Column(String(32), nullable=False)
-    notes = Column(String(64), nullable=False)
+    notes = Column(Unicode(64), nullable=False)
     version = Column(Integer, nullable=False)
 
     client = relationship(u'Client')
+    contactType = relationship(u'Rbcontacttype')
+
+    @property
+    def name(self):
+        return self.contactType.names
 
 
 class Clientdocument(Base):
@@ -1025,14 +1151,14 @@ class Clientdocument(Base):
         Index(u'Ser_Numb', u'serial', u'number'),
     )
 
-    id = Column(Integer, primary_key=True)
+    documentId = Column("id", Integer, primary_key=True)
     createDatetime = Column(DateTime, nullable=False)
     createPerson_id = Column(Integer, index=True)
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    client_id = Column(ForeignKey('Client.id'), nullable=False, index=True)
-    documentType_id = Column(Integer, nullable=False, index=True)
+    clientId = Column("client_id", ForeignKey('Client.id'), nullable=False, index=True)
+    documentType_id = Column(Integer, ForeignKey('rbDocumentType.id'), nullable=False, index=True)
     serial = Column(String(8), nullable=False)
     number = Column(String(16), nullable=False)
     date = Column(Date, nullable=False)
@@ -1041,6 +1167,14 @@ class Clientdocument(Base):
     endDate = Column(Date)
 
     client = relationship(u'Client')
+    documentType = relationship(u'Rbdocumenttype')
+
+    @property
+    def documentTypeCode(self):
+        return self.documentType.regionalCode
+
+    def __unicode__(self):
+        return (' '.join([self.documentType, self.serial, self.number])).strip()
 
 
 class Clientfdproperty(Base):
@@ -1077,7 +1211,7 @@ class Clientflatdirectory(Base):
     fdRecord = relationship(u'Fdrecord')
 
 
-class Clientidentification(Base):
+class Clientidentification(Base, Info):
     __tablename__ = u'ClientIdentification'
     __table_args__ = (
         Index(u'accountingSystem_id', u'accountingSystem_id', u'identifier'),
@@ -1090,15 +1224,27 @@ class Clientidentification(Base):
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     client_id = Column(ForeignKey('Client.id'), nullable=False, index=True)
-    accountingSystem_id = Column(Integer, nullable=False)
+    accountingSystem_id = Column(Integer, ForeignKey('rbAccountingSystem.id'), nullable=False)
     identifier = Column(String(16), nullable=False)
     checkDate = Column(Date)
     version = Column(Integer, nullable=False)
 
     client = relationship(u'Client')
+    accountingSystem = relationship(u'Rbaccountingsystem')
+
+    def getAccountingSystemCode(self):
+        return self.attachType.code
+
+    def getAccountingSystemName(self):
+        return self.attachType.name
+
+    code = property(getAccountingSystemCode)
+    name = property(getAccountingSystemName)
+    # byCode = {code: identifier}
+    # nameDict = {code: name}
 
 
-class Clientintolerancemedicament(Base):
+class Clientintolerancemedicament(Base, Info):
     __tablename__ = u'ClientIntoleranceMedicament'
 
     id = Column(Integer, primary_key=True)
@@ -1108,7 +1254,7 @@ class Clientintolerancemedicament(Base):
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     client_id = Column(ForeignKey('Client.id'), nullable=False, index=True)
-    nameMedicament = Column(String(128), nullable=False)
+    name = Column(String(128), nullable=False)
     power = Column(Integer, nullable=False)
     createDate = Column(Date)
     notes = Column(String, nullable=False)
@@ -1116,8 +1262,11 @@ class Clientintolerancemedicament(Base):
 
     client = relationship(u'Client')
 
+    def __unicode__(self):
+        return self.name
 
-class Clientpolicy(Base):
+
+class Clientpolicy(Base, Info):
     __tablename__ = u'ClientPolicy'
     __table_args__ = (
         Index(u'Serial_Num', u'serial', u'number'),
@@ -1130,21 +1279,26 @@ class Clientpolicy(Base):
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    client_id = Column(ForeignKey('Client.id'), nullable=False)
-    insurer_id = Column(Integer, index=True)
-    policyType_id = Column(Integer, index=True)
+    clientId = Column("client_id", ForeignKey('Client.id'), nullable=False)
+    insurer_id = Column(Integer, ForeignKey('Organisation.id'), index=True)
+    policyType_id = Column(Integer, ForeignKey('rbPolicyType.id'), index=True)
     serial = Column(String(16), nullable=False)
     number = Column(String(16), nullable=False)
     begDate = Column(Date, nullable=False)
     endDate = Column(Date)
-    name = Column(String(64), nullable=False, server_default=u"''")
+    name = Column(Unicode(64), nullable=False, server_default=u"''")
     note = Column(String(200), nullable=False, server_default=u"''")
     version = Column(Integer, nullable=False)
 
     client = relationship(u'Client')
+    insurer = relationship(u'Organisation')
+    policyType = relationship(u'Rbpolicytype')
+
+    def __unicode__(self):
+        return (' '.join([self.policyType, unicode(self.insurer), self.serial, self.number])).strip()
 
 
-class Clientrelation(Base):
+class Clientrelation(Base, Info):
     __tablename__ = u'ClientRelation'
 
     id = Column(Integer, primary_key=True)
@@ -1154,14 +1308,141 @@ class Clientrelation(Base):
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     client_id = Column(ForeignKey('Client.id'), nullable=False, index=True)
-    relativeType_id = Column(Integer, index=True)
-    relative_id = Column(Integer, nullable=False, index=True)
+    relativeType_id = Column(Integer, ForeignKey('rbRelationType.id'), index=True)
+    relative_id = Column(Integer, ForeignKey('Client.id'), nullable=False, index=True)
     version = Column(Integer, nullable=False)
 
-    client = relationship(u'Client')
+    relativeType = relationship(u'Rbrelationtype')
+
+    @property
+    def leftName(self):
+        return self.relativeType.leftName
+
+    @property
+    def rightName(self):
+        return self.relativeType.rightName
+
+    @property
+    def code(self):
+        return self.relativeType.code
+
+    @property
+    def name(self):
+        return self.role + ' -> ' + self.otherRole
 
 
-class Clientsocstatus(Base):
+class DirectClientRelation(Clientrelation):
+
+    other = relationship(u'Client', foreign_keys='Clientrelation.relative_id')
+
+    @property
+    def role(self):
+        return self.rightName
+
+    @property
+    def otherRole(self):
+        return self.leftName
+
+    @property
+    def regionalCode(self):
+        return self.relativeType.regionalCode
+
+    @property
+    def clientId(self):
+        return self.relative_id
+
+    @property
+    def isDirectGenetic(self):
+        return self.relativeType.isDirectGenetic
+
+    @property
+    def isBackwardGenetic(self):
+        return self.relativeType.isBackwardGenetic
+
+    @property
+    def isDirectRepresentative(self):
+        return self.relativeType.isDirectRepresentative
+
+    @property
+    def isBackwardRepresentative(self):
+        return self.relativeType.isBackwardRepresentative
+
+    @property
+    def isDirectEpidemic(self):
+        return self.relativeType.isDirectEpidemic
+
+    @property
+    def isBackwardEpidemic(self):
+        return self.relativeType.isBackwardEpidemic
+
+    @property
+    def isDirectDonation(self):
+        return self.relativeType.isDirectDonation
+
+    @property
+    def isBackwardDonation(self):
+        return self.relativeType.isBackwardDonation
+
+    def __unicode__(self):
+        return self.name + ' ' + self.other
+
+
+class ReversedClientRelation(Clientrelation):
+
+    other = relationship(u'Client', foreign_keys='Clientrelation.client_id')
+
+    @property
+    def role(self):
+        return self.leftName
+
+    @property
+    def otherRole(self):
+        return self.rightName
+
+    @property
+    def regionalCode(self):
+        return self.relativeType.regionalReverseCode
+
+    @property
+    def clientId(self):
+        return self.client_id
+    @property
+    def isDirectGenetic(self):
+        return self.relativeType.isBackwardGenetic
+
+    @property
+    def isBackwardGenetic(self):
+        return self.relativeType.isDirectGenetic
+
+    @property
+    def isDirectRepresentative(self):
+        return self.relativeType.isBackwardRepresentative
+
+    @property
+    def isBackwardRepresentative(self):
+        return self.relativeType.isDirectRepresentative
+
+    @property
+    def isDirectEpidemic(self):
+        return self.relativeType.isBackwardEpidemic
+
+    @property
+    def isBackwardEpidemic(self):
+        return self.relativeType.isDirectEpidemic
+
+    @property
+    def isDirectDonation(self):
+        return self.relativeType.isBackwardDonation
+
+    @property
+    def isBackwardDonation(self):
+        return self.relativeType.isDirectDonation
+
+    def __unicode__(self):
+        return self.name + ' ' + self.other
+
+
+class Clientsocstatus(Base, Info):
     __tablename__ = u'ClientSocStatus'
 
     id = Column(Integer, primary_key=True)
@@ -1197,6 +1478,9 @@ class Clientsocstatus(Base):
     name = property(getSocStatusTypeName)
     classes = property(socStatusClasses)
 
+    def __unicode__(self):
+        return self.name
+
 
 class Clientwork(Base):
     __tablename__ = u'ClientWork'
@@ -1209,7 +1493,7 @@ class Clientwork(Base):
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     client_id = Column(ForeignKey('Client.id'), nullable=False, index=True)
     org_id = Column(ForeignKey('Organisation.id'), index=True)
-    shortName = Column(String(200), nullable=False)
+    shortName = Column('freeInput', String(200), nullable=False)
     post = Column(String(200), nullable=False)
     stage = Column(Integer, nullable=False)
     OKVED = Column(String(10), nullable=False)
@@ -1230,6 +1514,8 @@ class Clientwork(Base):
         if self.OKVED:
             parts.append(u'ОКВЭД: '+self._OKVED)
         return ', '.join(parts)
+
+    #TODO: насл от OrgInfo
 
 
 class ClientworkHurt(Base, Info):
@@ -2385,19 +2671,19 @@ class Person(Base):
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     code = Column(String(12), nullable=False)
-    federalCode = Column(String(255), nullable=False)
+    federalCode = Column(Unicode(255), nullable=False)
     regionalCode = Column(String(16), nullable=False)
-    lastName = Column(String(30), nullable=False)
-    firstName = Column(String(30), nullable=False)
-    patrName = Column(String(30), nullable=False)
-    post_id = Column(Integer, index=True)
-    speciality_id = Column(Integer, index=True)
-    org_id = Column(Integer, index=True)
-    orgStructure_id = Column(Integer, index=True)
-    office = Column(String(8), nullable=False)
-    office2 = Column(String(8), nullable=False)
-    tariffCategory_id = Column(Integer, index=True)
-    finance_id = Column(Integer, index=True)
+    lastName = Column(Unicode(30), nullable=False)
+    firstName = Column(Unicode(30), nullable=False)
+    patrName = Column(Unicode(30), nullable=False)
+    post_id = Column(Integer, ForeignKey('rbPost.id'), index=True)
+    speciality_id = Column(Integer, ForeignKey('rbSpeciality.id'), index=True)
+    org_id = Column(Integer, ForeignKey('Organisation.id'), index=True)
+    orgStructure_id = Column(Integer, ForeignKey('OrgStructure.id'), index=True)
+    office = Column(Unicode(8), nullable=False)
+    office2 = Column(Unicode(8), nullable=False)
+    tariffCategory_id = Column(Integer, ForeignKey('rbTariffCategory.id'), index=True)
+    finance_id = Column(Integer, ForeignKey('rbFinance.id'), index=True)
     retireDate = Column(Date, index=True)
     ambPlan = Column(SmallInteger, nullable=False)
     ambPlan2 = Column(SmallInteger, nullable=False)
@@ -2407,7 +2693,7 @@ class Person(Base):
     homNorm = Column(SmallInteger, nullable=False)
     expPlan = Column(SmallInteger, nullable=False)
     expNorm = Column(SmallInteger, nullable=False)
-    login = Column(String(32), nullable=False)
+    login = Column(Unicode(32), nullable=False)
     password = Column(String(32), nullable=False)
     userProfile_id = Column(Integer, index=True)
     retired = Column(Integer, nullable=False)
@@ -2427,8 +2713,38 @@ class Person(Base):
     maxOverQueue = Column(Integer, server_default=u"'0'")
     maxCito = Column(Integer, server_default=u"'0'")
     quotUnit = Column(Integer, server_default=u"'0'")
-    academicdegree_id = Column(Integer)
-    academicTitle_id = Column(Integer)
+    academicdegree_id = Column(Integer, ForeignKey('rbAcademicDegree.id'))
+    academicTitle_id = Column(Integer, ForeignKey('rbAcademicTitle.id'))
+
+    post = relationship(u'Rbpost')
+    speciality = relationship(u'Rbspeciality')
+    organisation = relationship(u'Organisation')
+    orgStructure = relationship(u'Orgstructure')
+    academicDegree = relationship(u'Rbacademicdegree')
+    academicTitle = relationship(u'Rbacademictitle')
+    tariffCategory = relationship(u'Rbtariffcategory')
+
+    @property
+    def fullName(self):
+        return formatNameInt(self.lastName, self.firstName, self.patrName)
+
+    @property
+    def shortName(self):
+        return formatShortNameInt(self.lastName, self.firstName, self.patrName)
+
+    @property
+    def longName(self):
+        return formatNameInt(self.lastName, self.firstName, self.patrName)
+
+    @property
+    def name(self):
+        return formatShortNameInt(self.lastName, self.firstName, self.patrName)
+
+    def __unicode__(self):
+        result = formatShortNameInt(self._lastName, self._firstName, self._patrName)
+        if self.speciality:
+            result += ', '+self.speciality.name
+        return unicode(result)
 
 
 class Personaddres(Base):
@@ -3251,20 +3567,20 @@ class Rbaptablefield(Base):
     master = relationship(u'Rbaptable')
 
 
-class Rbacademicdegree(Base):
+class Rbacademicdegree(Base, RBInfo):
     __tablename__ = u'rbAcademicDegree'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False)
-    name = Column(String(64), nullable=False)
+    name = Column(Unicode(64), nullable=False)
 
 
-class Rbacademictitle(Base):
+class Rbacademictitle(Base, RBInfo):
     __tablename__ = u'rbAcademicTitle'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
+    name = Column(Unicode(64), nullable=False, index=True)
 
 
 class Rbaccountexportformat(Base):
@@ -3281,7 +3597,7 @@ class Rbaccountexportformat(Base):
     message = Column(Text, nullable=False)
 
 
-class Rbaccountingsystem(Base):
+class Rbaccountingsystem(Base, RBInfo):
     __tablename__ = u'rbAccountingSystem'
 
     id = Column(Integer, primary_key=True)
@@ -3434,12 +3750,12 @@ class Rbcomplain(Base):
     name = Column(String(120), nullable=False, index=True)
 
 
-class Rbcontacttype(Base):
+class Rbcontacttype(Base, RBInfo):
     __tablename__ = u'rbContactType'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
+    name = Column(Unicode(64), nullable=False, index=True)
 
 
 class Rbcoreactionproperty(Base):
@@ -3511,7 +3827,7 @@ class Rbdiseasestage(Base):
     characterRelation = Column(Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbdispanser(Base):
+class Rbdispanser(Base, RBInfo):
     __tablename__ = u'rbDispanser'
 
     id = Column(Integer, primary_key=True)
@@ -3520,22 +3836,24 @@ class Rbdispanser(Base):
     observed = Column(Integer, nullable=False)
 
 
-class Rbdocumenttype(Base):
+class Rbdocumenttype(Base, RBInfo):
     __tablename__ = u'rbDocumentType'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
     regionalCode = Column(String(16), nullable=False)
     name = Column(String(64), nullable=False, index=True)
-    group_id = Column(Integer, nullable=False, index=True)
+    group_id = Column(Integer, ForeignKey('rbDocumentTypeGroup.id'), nullable=False, index=True)
     serial_format = Column(Integer, nullable=False)
     number_format = Column(Integer, nullable=False)
     federalCode = Column(String(16), nullable=False)
     socCode = Column(String(8), nullable=False, index=True)
     TFOMSCode = Column(Integer)
 
+    group = relationship(u'Rbdocumenttypegroup')
 
-class Rbdocumenttypegroup(Base):
+
+class Rbdocumenttypegroup(Base, RBInfo):
     __tablename__ = u'rbDocumentTypeGroup'
 
     id = Column(Integer, primary_key=True)
@@ -4008,21 +4326,21 @@ class Rbpaytype(Base):
     name = Column(String(64, u'utf8_unicode_ci'), nullable=False)
 
 
-class Rbpolicytype(Base):
+class Rbpolicytype(Base, RBInfo):
     __tablename__ = u'rbPolicyType'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(64), nullable=False, unique=True)
-    name = Column(String(256), nullable=False, index=True)
+    name = Column(Unicode(256), nullable=False, index=True)
     TFOMSCode = Column(String(8))
 
 
-class Rbpost(Base):
+class Rbpost(Base, RBInfo):
     __tablename__ = u'rbPost'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
+    name = Column(Unicode(64), nullable=False, index=True)
     regionalCode = Column(String(8), nullable=False)
     key = Column(String(6), nullable=False, index=True)
     high = Column(String(6), nullable=False)
@@ -4058,7 +4376,7 @@ class Rbreasonofabsence(Base):
     name = Column(String(64), nullable=False, index=True)
 
 
-class Rbrelationtype(Base):
+class Rbrelationtype(Base, RBInfo):
     __tablename__ = u'rbRelationType'
 
     id = Column(Integer, primary_key=True)
@@ -4277,13 +4595,13 @@ class Rbspecialvariablespreference(Base):
     query = Column(Text, nullable=False)
 
 
-class Rbspeciality(Base):
+class Rbspeciality(Base, RBInfo):
     __tablename__ = u'rbSpeciality'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
-    OKSOName = Column(String(60), nullable=False)
+    name = Column(Unicode(64), nullable=False, index=True)
+    OKSOName = Column(Unicode(60), nullable=False)
     OKSOCode = Column(String(8), nullable=False)
     service_id = Column(Integer, index=True)
     sex = Column(Integer, nullable=False)
@@ -4308,7 +4626,7 @@ class Rbstorage(Base):
     orgStructure = relationship(u'Orgstructure')
 
 
-class Rbtariffcategory(Base):
+class Rbtariffcategory(Base, RBInfo):
     __tablename__ = u'rbTariffCategory'
 
     id = Column(Integer, primary_key=True)
@@ -5049,3 +5367,13 @@ class Trfuorderissueresult(Base):
     comp_type = relationship(u'Rbtrfubloodcomponenttype')
 
 
+def trim(s):
+    return u' '.join(unicode(s).split())
+
+
+def formatShortNameInt(lastName, firstName, patrName):
+    return trim(lastName + ' ' + ((firstName[:1]+'.') if firstName else '') + ((patrName[:1]+'.') if patrName else ''))
+
+
+def formatNameInt(lastName, firstName, patrName):
+    return trim(lastName+' '+firstName+' '+patrName)
