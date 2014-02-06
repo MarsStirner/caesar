@@ -2952,8 +2952,11 @@ class Quotatype(Base):
     class_ = Column(u'class', Integer, nullable=False)
     group_code = Column(String(16))
     code = Column(String(16), nullable=False)
-    name = Column(String(255), nullable=False)
+    name = Column(Unicode(255), nullable=False)
     teenOlder = Column(Integer, nullable=False)
+
+    def __unicode__(self):
+        return self.name
 
 
 class Quoting(Base):
@@ -4297,7 +4300,7 @@ class Rboperationtype(Base):
     name = Column(String(64), nullable=False, index=True)
 
 
-class Rbpacientmodel(Base):
+class Rbpacientmodel(Base, RBInfo):
     __tablename__ = u'rbPacientModel'
 
     id = Column(Integer, primary_key=True)
@@ -4778,7 +4781,7 @@ class Rbtraumatype(Base):
     name = Column(String(64), nullable=False, index=True)
 
 
-class Rbtreatment(Base):
+class Rbtreatment(Base, RBInfo):
     __tablename__ = u'rbTreatment'
 
     id = Column(Integer, primary_key=True)
@@ -5365,6 +5368,44 @@ class Trfuorderissueresult(Base):
     action = relationship(u'Action')
     blood_type = relationship(u'Rbbloodtype')
     comp_type = relationship(u'Rbtrfubloodcomponenttype')
+
+
+class v_Client_Quoting(Base):
+    __tablename__ = u'vClient_Quoting'
+
+    quotaId = Column(u'id', Integer, primary_key=True)
+    createDatetime = Column(u'createDatetime', DateTime)
+    createPerson_id = Column(u'createPerson_id', Integer)
+    modifyDatetime = Column(u'modifyDatetime', DateTime)
+    modifyPerson_id = Column(u'modifyPerson_id', Integer)
+    deleted = Column(u'deleted', Integer, server_default=u"'0'")
+    clientId = Column(u'master_id', Integer, ForeignKey("Client.id"))
+    identifier = Column(u'identifier', String(16))
+    quotaTicket = Column(u'quotaTicket', String(20))
+    quotaType_id = Column(u'quotaType_id', Integer, ForeignKey("QuotaType.id"))
+    stage = Column(u'stage', Integer)
+    directionDate = Column(u'directionDate', DateTime)
+    freeInput = Column(u'freeInput', String(128))
+    org_id = Column(u'org_id', Integer, ForeignKey("Organisation.id"))
+    amount = Column(u'amount', Integer, server_default=u"'0'")
+    MKB = Column(u'MKB', String(8))
+    status = Column(u'status', Integer, server_default=u"'0'")
+    request = Column(u'request', Integer, server_default=u"'0'")
+    statment = Column(u'statment', String(255))
+    dateRegistration = Column(u'dateRegistration', DateTime)
+    dateEnd = Column(u'dateEnd', DateTime)
+    orgStructure_id = Column(u'orgStructure_id', Integer, ForeignKey("OrgStructure.id"))
+    regionCode = Column(u'regionCode', String(13))
+    pacientModel_id = Column(u'pacientModel_id', Integer, ForeignKey("rbPacientModel.id"))
+    treatment_id = Column(u'treatment_id', Integer, ForeignKey("rbTreatment.id"))
+    event_id = Column(u'event_id', Integer, ForeignKey("Event.id"))
+    prevTalon_event_id = Column(u'prevTalon_event_id', Integer)
+
+    quotaType = relationship(u"Quotatype")
+    organisation = relationship(u"Organisation")
+    orgstructure = relationship(u"Orgstructure")
+    pacientModel = relationship(u"Rbpacientmodel")
+    treatment = relationship(u"Rbtreatment")
 
 
 def trim(s):

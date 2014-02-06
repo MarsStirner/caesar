@@ -6,7 +6,7 @@ from urllib import urlencode
 # from PyQt4.QtCore import QDateTime, QDate
 # from pychart import *
 from info.OrgInfo import COrgInfo, COrgStructureInfo
-from info.PersonInfo import CPersonInfo
+# from info.PersonInfo import CPersonInfo
 # from library.PrintDialog import CDialogsInfo
 from info.PrintInfo import CDateInfo, CTimeInfo
 # from library.Utils import forceDate, unformatSNILS, forceDouble, forceString
