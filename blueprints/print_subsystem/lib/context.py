@@ -35,9 +35,8 @@ class CTemplateHelpers(object):
 
 
 class CTemplateContext(object):
-    #def __init__(self, globals, infoContext):
-    def __init__(self, data):
-        # self.globals = globals
+    def __init__(self, globals, data):
+        self.globals = globals
         self.data = data
         # self.locals = {}
         # self.now = QDateTime.currentDateTime()
@@ -51,12 +50,8 @@ class CTemplateContext(object):
         #                  'pdf417'     : self.pdf417,
         #                  'p38code'    : self.p38code,
         #                  'p38test'    : self.p38test,
-        #                  'currentOrganisation' : infoContext.getInstance(COrgInfo, QtGui.qApp.currentOrgId()),
-        #                  'currentOrgStructure' : infoContext.getInstance(COrgStructureInfo, QtGui.qApp.currentOrgStructureId()),
-        #                  'currentPerson'       : infoContext.getInstance(CPersonInfo,  QtGui.qApp.userId),
         #                  'Canvas'     : CCanvas,
         #                  'Plot'       : CChart,
-        #                  'dialogs'    : infoContext.getInstance(CDialogsInfo),
         #                  'helpers'    : CTemplateHelpers,
         #                }
 

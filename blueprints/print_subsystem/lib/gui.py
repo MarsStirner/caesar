@@ -179,8 +179,6 @@ def applyTemplate(templateId, data):
 
 def applyTemplateInt(template, data, render=1):
     u"""Выводит на печать шаблон печати по имени name с кодом template и данными data"""
-    # pageFormat = CPageFormat(pageSize=CPageFormat.A4, orientation=CPageFormat.Portrait, leftMargin=5, topMargin=5,
-    #                          rightMargin=5,  bottomMargin=5)
     html = renderTemplate(template, data, render)
     return html
 
