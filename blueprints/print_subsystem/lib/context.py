@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 # from PyQt4 import QtGui
-from base64 import b64encode
-import re
-from urllib import urlencode
+#from base64 import b64encode
+#import re
+#from urllib import urlencode
 # from PyQt4.QtCore import QDateTime, QDate
 # from pychart import *
-from info.OrgInfo import COrgInfo, COrgStructureInfo
+#from info.OrgInfo import COrgInfo, COrgStructureInfo
 # from info.PersonInfo import CPersonInfo
 # from library.PrintDialog import CDialogsInfo
-from info.PrintInfo import CDateInfo, CTimeInfo
+#from info.PrintInfo import CDateInfo, CTimeInfo
 # from library.Utils import forceDate, unformatSNILS, forceDouble, forceString
 # from library.chart import areaToQPaintDevice, createTimeChart
 
@@ -40,9 +40,8 @@ class CTemplateContext(object):
         self.data = data
         # self.locals = {}
         # self.now = QDateTime.currentDateTime()
-        self.builtin = {
-
-        }
+        self.builtin = {'helpers': CTemplateHelpers,
+                        }
         # self.builtin = { 'currentDate': CDateInfo(self.now.date()),
         #                  'currentTime': CTimeInfo(self.now.time()),
         #                  'date'       : self.date,
@@ -497,54 +496,54 @@ class CTemplateContext(object):
 #
 #     def __sub__(self, days):
 #         return CDateProxy(self.date.addDays(-days))
-
-
-class CDictProxy(object):
-    def __init__(self, path, data):
-        object.__setattr__(self, 'path', path)
-        object.__setattr__(self, 'data', data)
-
-
-    def __getattr__(self, name):
-        if self.data.has_key(name):
-            result = self.data[name]
-            if type(result) == dict:
-                return CDictProxy(self.path+'.'+name, result)
-            else:
-                return result
-        else:
-            s = self.path+'.'+name
-            QtGui.qApp.log(u'Ошибка при печати шаблона',
-                           u'Переменная или функция "%s" не определена.\nвозвращается строка'%s)
-            return '['+s+']'
-
-
-    def __setattr__(self, name, value):
-        self.data[name] = value
-
-
-def getTimedClientActionsByFlatCode(clientId, actionTypeFlatCode, fromDate, toDate):
-    from Events.Action import CActionTypeCache
-
-    db = QtGui.qApp.db
-    tableAction = db.table('Action')
-    tableEvent = db.table('Event')
-    join = tableAction.innerJoin(tableEvent, tableAction['event_id'].eq(tableEvent['id']))
-
-    actionTypes = CActionTypeCache.getTypesByFlatcode(actionTypeFlatCode)
-    actionTypeIds = [ actionType.id for actionType in actionTypes ]
-    cond = [
-        tableEvent['client_id'].eq(clientId),
-        tableAction['actionType_id'].inlist(actionTypeIds),
-    ]
-
-    if(toDate):
-        cond.append(tableAction['begDate'].dateLe(toDate))
-    if(fromDate):
-        cond.append(tableAction['begDate'].dateGe(fromDate))
-
-    records = db.getRecordList(join, '*', cond)
-
-    from Events.Action import CAction as Action
-
-    return [ Action(record=record) for record in records ]
+#
+#
+# class CDictProxy(object):
+#     def __init__(self, path, data):
+#         object.__setattr__(self, 'path', path)
+#         object.__setattr__(self, 'data', data)
+#
+#
+#     def __getattr__(self, name):
+#         if self.data.has_key(name):
+#             result = self.data[name]
+#             if type(result) == dict:
+#                 return CDictProxy(self.path+'.'+name, result)
+#             else:
+#                 return result
+#         else:
+#             s = self.path+'.'+name
+#             # QtGui.qApp.log(u'Ошибка при печати шаблона',
+#             #                u'Переменная или функция "%s" не определена.\nвозвращается строка'%s)
+#             return '['+s+']'
+#
+#
+#     def __setattr__(self, name, value):
+#         self.data[name] = value
+#
+#
+# def getTimedClientActionsByFlatCode(clientId, actionTypeFlatCode, fromDate, toDate):
+#     from Events.Action import CActionTypeCache
+#
+#     db = QtGui.qApp.db
+#     tableAction = db.table('Action')
+#     tableEvent = db.table('Event')
+#     join = tableAction.innerJoin(tableEvent, tableAction['event_id'].eq(tableEvent['id']))
+#
+#     actionTypes = CActionTypeCache.getTypesByFlatcode(actionTypeFlatCode)
+#     actionTypeIds = [ actionType.id for actionType in actionTypes ]
+#     cond = [
+#         tableEvent['client_id'].eq(clientId),
+#         tableAction['actionType_id'].inlist(actionTypeIds),
+#     ]
+#
+#     if(toDate):
+#         cond.append(tableAction['begDate'].dateLe(toDate))
+#     if(fromDate):
+#         cond.append(tableAction['begDate'].dateGe(fromDate))
+#
+#     records = db.getRecordList(join, '*', cond)
+#
+#     from Events.Action import CAction as Action
+#
+#     return [ Action(record=record) for record in records ]
