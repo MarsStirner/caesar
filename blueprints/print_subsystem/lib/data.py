@@ -3,9 +3,8 @@ from datetime import date
 
 from ..app import module, _config
 from ..utils import get_lpu_session
-from ..models import Client, Orgstructure, Person, Organisation, v_Client_Quoting
+from ..models import Client, Orgstructure, Person, Organisation, v_Client_Quoting, Event, Action
 from gui import applyTemplate
-from info.OrgInfo import CClientInfo
 from info.PrintInfo import CInfoContext
 
 
@@ -23,9 +22,11 @@ class Print_Template(object):
 
         return self.db_session.execute(query)
 
-    def print_template(self, template_id, event_id, client_id, additional_context):
+    def print_template(self, template_id, event_id, action_id, client_id, additional_context):
         # context = CInfoContext()
         client = self.db_session.query(Client).get(18)
+        event = self.db_session.query(Event).get(event_id)
+        action = self.db_session.query(Action).get(action_id)
         quota = self.db_session.query(v_Client_Quoting).filter_by(event_id=event_id).filter_by(clientId=client_id).first()
         currentOrganisation = self.db_session.query(Organisation).get(additional_context['currentOrganisation']) if \
             additional_context['currentOrganisation'] else ""
@@ -36,6 +37,8 @@ class Print_Template(object):
         data = {'currentOrganisation': currentOrganisation,
                 'currentOrgStructure': currentOrgStructure,
                 'currentPerson': currentPerson,
+                'event': event,
+                'action': action,
                 'client': client,
                 'quota': quota,
                 'currentActionIndex': 0,  # на самом деле мы ничего не знаем о текущем индексе действия

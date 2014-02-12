@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+import struct
 from application.database import db
 from config import MODULE_NAME
 from sqlalchemy import BigInteger, Column, Date, DateTime, Enum, Float, ForeignKey, Index, Integer, SmallInteger, \
-    String, Table, Text, Time, Unicode
+    String, Table, Text, Time, Unicode, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.mysql.base import LONGBLOB, MEDIUMBLOB
 from sqlalchemy.ext.declarative import declarative_base
@@ -154,25 +155,25 @@ class Action(Base):
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    actionType_id = Column(Integer, nullable=False, index=True)
-    event_id = Column(Integer, index=True)
+    actionType_id = Column(Integer, ForeignKey('ActionType.id'), nullable=False, index=True)
+    event_id = Column(Integer, ForeignKey('Event.id'), index=True)
     idx = Column(Integer, nullable=False, server_default=u"'0'")
     directionDate = Column(DateTime)
     status = Column(Integer, nullable=False)
-    setPerson_id = Column(Integer, index=True)
-    isUrgent = Column(Integer, nullable=False, server_default=u"'0'")
+    setPerson_id = Column(Integer, ForeignKey('Person.id'), index=True)
+    isUrgent = Column(Boolean, nullable=False, server_default=u"'0'")
     begDate = Column(DateTime)
     plannedEndDate = Column(DateTime, nullable=False)
     endDate = Column(DateTime)
     note = Column(Text, nullable=False)
-    person_id = Column(Integer, index=True)
+    person_id = Column(Integer, ForeignKey('Person.id'), index=True)
     office = Column(String(16), nullable=False)
     amount = Column(Float(asdecimal=True), nullable=False)
     uet = Column(Float(asdecimal=True), server_default=u"'0'")
-    expose = Column(Integer, nullable=False, server_default=u"'1'")
+    expose = Column(Boolean, nullable=False, server_default=u"'1'")
     payStatus = Column(Integer, nullable=False)
-    account = Column(Integer, nullable=False)
-    finance_id = Column(Integer, index=True)
+    account = Column(Boolean, nullable=False)
+    finance_id = Column(Integer, ForeignKey('rbFinance.id'), index=True)
     prescription_id = Column(Integer, index=True)
     takenTissueJournal_id = Column(ForeignKey('TakenTissueJournal.id'), index=True)
     contract_id = Column(Integer, index=True)
@@ -188,8 +189,34 @@ class Action(Base):
     uuid_id = Column(Integer, nullable=False, index=True, server_default=u"'0'")
     dcm_study_uid = Column(String(50))
 
+    actionType = relationship(u'Actiontype')
+    event = relationship(u'Event')
+    person = relationship(u'Person', foreign_keys='Action.person_id')
+    setPerson = relationship(u'Person', foreign_keys='Action.setPerson_id')
     takenTissueJournal = relationship(u'Takentissuejournal')
     tissues = relationship(u'Tissue', secondary=u'ActionTissue')
+    properties = relationship(u'Actionproperty')
+
+    # def getPrice(self, tariffCategoryId=None):
+    #     if self.price is None:
+    #         event = self.getEventInfo()
+    #         tariffDescr = event.getTariffDescr()
+    #         tariffList = tariffDescr.actionTariffList
+    #         serviceId = self.service.id
+    #         tariffCategoryId = self.person.tariffCategory.id
+    #         self._price = CContractTariffCache.getPrice(tariffList, serviceId, tariffCategoryId)
+    #     return self._price
+
+    @property
+    def finance(self):
+        if self.finance_id:
+            return relationship(u'Rbfinance')
+        else:
+            return self.event.eventType.finance
+
+    def __iter__(self):
+        for property in self.properties:
+            yield property
 
 
 class Bbtresponse(Action):
@@ -204,7 +231,7 @@ class Bbtresponse(Action):
     doctor = relationship(u'Person')
 
 
-class Actionproperty(Base):
+class Actionproperty(Base, Info):
     __tablename__ = u'ActionProperty'
 
     id = Column(Integer, primary_key=True)
@@ -213,13 +240,53 @@ class Actionproperty(Base):
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    action_id = Column(Integer, nullable=False, index=True)
-    type_id = Column(Integer, nullable=False, index=True)
-    unit_id = Column(Integer, index=True)
+    action_id = Column(Integer, ForeignKey('Action.id'), nullable=False, index=True)
+    type_id = Column(Integer, ForeignKey('ActionPropertyType.id'), nullable=False, index=True)
+    unit_id = Column(Integer, ForeignKey('rbUnit.id'), index=True)
     norm = Column(String(64), nullable=False)
-    isAssigned = Column(Integer, nullable=False, server_default=u"'0'")
+    isAssigned = Column(Boolean, nullable=False, server_default=u"'0'")
     evaluation = Column(Integer)
     version = Column(Integer, nullable=False, server_default=u"'0'")
+
+    type = relationship(u'Actionpropertytype')
+    unit_all = relationship(u'Rbunit')
+
+    @property
+    def name(self):
+        return self.type.name
+
+    @property
+    def descr(self):
+        return self.type.descr
+
+    @property
+    def unit(self):
+        return self.unit_all.code
+
+    @property
+    def isAssignable(self):
+        return self.type.isAssignable
+
+    @property
+    def value(self):
+        from blueprints.print_subsystem.utils import get_lpu_session
+        db_session = get_lpu_session()
+        class_name = u'Actionproperty{}'.format(u"String" if (self.type.typeName == "Text" or
+                                                              self.type.typeName == "Constructor" or
+                                                              self.type.typeName == "Html") else self.type.typeName.capitalize())
+        cl = globals()[class_name]
+        values = db_session.query(cl).filter(cl.id == self.id).all()
+        if values and self.type.isVector:
+            return [value.value for value in values]
+        elif values:
+            return values[0].value
+        else:
+            return ""
+
+    def __unicode__(self):
+        return unicode(self.value)
+    # image = property(lambda self: self._property.getImage())
+    # imageUrl = property(_getImageUrl)
 
 
 class Actionpropertytemplate(Base):
@@ -247,7 +314,7 @@ class Actionpropertytemplate(Base):
     service_id = Column(Integer, index=True)
 
 
-class Actionpropertytype(Base):
+class Actionpropertytype(Base, Info):
     __tablename__ = u'ActionPropertyType'
 
     id = Column(Integer, primary_key=True)
@@ -287,31 +354,40 @@ class Actionpropertytype(Base):
 class ActionpropertyAction(Base):
     __tablename__ = u'ActionProperty_Action'
 
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Integer, index=True)
+
+    def __unicode__(self):
+        return self.value
 
 
 class ActionpropertyDate(Base):
     __tablename__ = u'ActionProperty_Date'
 
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Date)
+
+    def __unicode__(self):
+        return self.value
 
 
 class ActionpropertyDouble(Base):
     __tablename__ = u'ActionProperty_Double'
 
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Float(asdecimal=True), nullable=False)
+
+    def __unicode__(self):
+        return self.value
 
 
 class ActionpropertyFdrecord(Base):
     __tablename__ = u'ActionProperty_FDRecord'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True)
     index = Column(Integer, nullable=False, server_default=u"'0'")
     value = Column(ForeignKey('FDRecord.id'), nullable=False, index=True)
 
@@ -332,7 +408,7 @@ class ActionpropertyHospitalbed(Base):
 class ActionpropertyHospitalbedprofile(Base):
     __tablename__ = u'ActionProperty_HospitalBedProfile'
 
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Integer, index=True)
 
@@ -340,7 +416,7 @@ class ActionpropertyHospitalbedprofile(Base):
 class ActionpropertyImage(Base):
     __tablename__ = u'ActionProperty_Image'
 
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(MEDIUMBLOB)
 
@@ -348,23 +424,26 @@ class ActionpropertyImage(Base):
 class ActionpropertyImagemap(Base):
     __tablename__ = u'ActionProperty_ImageMap'
 
-    id = Column(Integer, primary_key=True)
-    index = Column(Integer, nullable=False, server_default=u"'0'")
+    id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True)
+    index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(String)
 
 
 class ActionpropertyInteger(Base):
     __tablename__ = u'ActionProperty_Integer'
 
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Integer, nullable=False)
+
+    def __unicode__(self):
+        return self.value
 
 
 class ActionpropertyJobTicket(Base):
     __tablename__ = u'ActionProperty_Job_Ticket'
 
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Integer, index=True)
 
@@ -372,7 +451,7 @@ class ActionpropertyJobTicket(Base):
 class ActionpropertyMkb(Base):
     __tablename__ = u'ActionProperty_MKB'
 
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Integer, index=True)
 
@@ -380,24 +459,30 @@ class ActionpropertyMkb(Base):
 class ActionpropertyOrgstructure(Base):
     __tablename__ = u'ActionProperty_OrgStructure'
 
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Integer, index=True)
+
+    def __unicode__(self):
+        return self.value
 
 
 class ActionpropertyOrganisation(Base):
     __tablename__ = u'ActionProperty_Organisation'
 
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Integer, index=True)
+
+    def __unicode__(self):
+        return self.value
 
 
 class ActionpropertyOtherlpurecord(Base):
     __tablename__ = u'ActionProperty_OtherLPURecord'
 
-    id = Column(Integer, primary_key=True)
-    index = Column(Integer, nullable=False, server_default=u"'0'")
+    id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True)
+    index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Text(collation=u'utf8_unicode_ci'), nullable=False)
 
 
@@ -405,27 +490,36 @@ class ActionpropertyPerson(Base):
     __tablename__ = u'ActionProperty_Person'
 
     id = Column(ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
-    index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
+    index = Column(Integer, nullable=False, server_default=u"'0'")
     value = Column(ForeignKey('Person.id'), index=True)
 
     ActionProperty = relationship(u'Actionproperty')
     Person = relationship(u'Person')
 
+    def __unicode__(self):
+        return self.value
+
 
 class ActionpropertyString(Base):
     __tablename__ = u'ActionProperty_String'
 
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Text, nullable=False)
+
+    def __unicode__(self):
+        return self.value
 
 
 class ActionpropertyTime(Base):
     __tablename__ = u'ActionProperty_Time'
 
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Time, nullable=False)
+
+    def __unicode__(self):
+        return self.value
 
 
 class ActionpropertyRbbloodcomponenttype(Base):
@@ -482,7 +576,7 @@ t_ActionTissue = Table(
 )
 
 
-class Actiontype(Base):
+class Actiontype(Base, Info):
     __tablename__ = u'ActionType'
 
     id = Column(Integer, primary_key=True)
@@ -495,8 +589,8 @@ class Actiontype(Base):
     class_ = Column(u'class', Integer, nullable=False, index=True)
     group_id = Column(Integer, index=True)
     code = Column(String(25), nullable=False)
-    name = Column(String(255), nullable=False)
-    title = Column(String(255), nullable=False)
+    name = Column(Unicode(255), nullable=False)
+    title = Column(Unicode(255), nullable=False)
     flatCode = Column(String(64), nullable=False, index=True)
     sex = Column(Integer, nullable=False)
     age = Column(String(9), nullable=False)
@@ -507,7 +601,7 @@ class Actiontype(Base):
     office = Column(String(32), nullable=False)
     showInForm = Column(Integer, nullable=False)
     genTimetable = Column(Integer, nullable=False)
-    service_id = Column(Integer, index=True)
+    service_id = Column(Integer, ForeignKey('rbService.id'), index=True)
     quotaType_id = Column(Integer, index=True)
     context = Column(String(64), nullable=False)
     amount = Column(Float(asdecimal=True), nullable=False, server_default=u"'1'")
@@ -522,7 +616,7 @@ class Actiontype(Base):
     maxOccursInEvent = Column(Integer, nullable=False, server_default=u"'0'")
     showTime = Column(Integer, nullable=False, server_default=u"'0'")
     isMES = Column(Integer)
-    nomenclativeService_id = Column(Integer, index=True)
+    nomenclativeService_id = Column(Integer, ForeignKey('rbService.id'), index=True)
     isPreferable = Column(Integer, nullable=False, server_default=u"'1'")
     prescribedType_id = Column(Integer, index=True)
     shedule_id = Column(Integer, index=True)
@@ -531,6 +625,9 @@ class Actiontype(Base):
     testTubeType_id = Column(Integer, index=True)
     jobType_id = Column(Integer, index=True)
     mnem = Column(String(32), server_default=u"''")
+
+    service = relationship(u'Rbservice', foreign_keys='Actiontype.service_id')
+    nomenclatureService = relationship(u'Rbservice', foreign_keys='Actiontype.nomenclativeService_id')
 
 
 class ActiontypeEventtypeCheck(Base):
@@ -683,7 +780,7 @@ t_AssignmentHour = Table(
 )
 
 
-class Bank(Base):
+class Bank(Base, Info):
     __tablename__ = u'Bank'
 
     id = Column(Integer, primary_key=True)
@@ -693,8 +790,8 @@ class Bank(Base):
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     BIK = Column(String(10), nullable=False, index=True)
-    name = Column(String(100), nullable=False, index=True)
-    branchName = Column(String(100), nullable=False)
+    name = Column(Unicode(100), nullable=False, index=True)
+    branchName = Column(Unicode(100), nullable=False)
     corrAccount = Column(String(20), nullable=False)
     subAccount = Column(String(20), nullable=False)
 
@@ -1614,7 +1711,7 @@ class ClientQuotingdiscussion(Base):
     master = relationship(u'Client')
 
 
-class Contract(Base):
+class Contract(Base, Info):
     __tablename__ = u'Contract'
 
     id = Column(Integer, primary_key=True)
@@ -1625,15 +1722,15 @@ class Contract(Base):
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     number = Column(String(64), nullable=False)
     date = Column(Date, nullable=False)
-    recipient_id = Column(Integer, nullable=False, index=True)
-    recipientAccount_id = Column(Integer, index=True)
+    recipient_id = Column(Integer, ForeignKey('Organisation.id'), nullable=False, index=True)
+    recipientAccount_id = Column(Integer, ForeignKey('Organisation_Account.id'), index=True)
     recipientKBK = Column(String(30), nullable=False)
-    payer_id = Column(Integer, index=True)
-    payerAccount_id = Column(Integer, index=True)
+    payer_id = Column(Integer, ForeignKey('Organisation.id'), index=True)
+    payerAccount_id = Column(Integer, ForeignKey('Organisation_Account.id'), index=True)
     payerKBK = Column(String(30), nullable=False)
     begDate = Column(Date, nullable=False)
     endDate = Column(Date, nullable=False)
-    finance_id = Column(Integer, nullable=False, index=True)
+    finance_id = Column(Integer, ForeignKey('rbFinance.id'), nullable=False, index=True)
     grouping = Column(String(64), nullable=False)
     resolution = Column(String(64), nullable=False)
     format_id = Column(Integer, index=True)
@@ -1645,6 +1742,15 @@ class Contract(Base):
     priceList_id = Column(Integer)
     coefficient = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
     coefficientEx = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
+
+    recipient = relationship(u'Organisation', foreign_keys='Contract.recipient_id')
+    payer = relationship(u'Organisation', foreign_keys='Contract.payer_id')
+    finance = relationship(u'Rbfinance')
+    recipientAccount = relationship(u'OrganisationAccount', foreign_keys='Contract.recipientAccount_id')
+    payerAccount = relationship(u'OrganisationAccount', foreign_keys='Contract.payerAccount_id')
+
+    def __unicode__(self):
+        return self.number + ' ' + self.date
 
 
 class ContractContingent(Base):
@@ -1887,7 +1993,7 @@ class Emergencycall(Base):
     noteCall = Column(Text, nullable=False)
 
 
-class Event(Base):
+class Event(Base, Info):
     __tablename__ = u'Event'
 
     id = Column(Integer, primary_key=True)
@@ -1897,24 +2003,24 @@ class Event(Base):
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     externalId = Column(String(30), nullable=False)
-    eventType_id = Column(Integer, nullable=False, index=True)
-    org_id = Column(Integer)
-    client_id = Column(Integer, index=True)
-    contract_id = Column(Integer, index=True)
+    eventType_id = Column(Integer, ForeignKey('EventType.id'), nullable=False, index=True)
+    org_id = Column(Integer, ForeignKey('Organisation.id'))
+    client_id = Column(Integer, ForeignKey('Client.id'), index=True)
+    contract_id = Column(Integer, ForeignKey('Contract.id'), index=True)
     prevEventDate = Column(DateTime)
     setDate = Column(DateTime, nullable=False, index=True)
     setPerson_id = Column(Integer, index=True)
     execDate = Column(DateTime, index=True)
-    execPerson_id = Column(Integer, index=True)
-    isPrimary = Column(Integer, nullable=False)
+    execPerson_id = Column(Integer, ForeignKey('Person.id'), index=True)
+    isPrimaryCode = Column("isPrimary", Integer, nullable=False)
     order = Column(Integer, nullable=False)
-    result_id = Column(Integer, index=True)
+    result_id = Column(Integer, ForeignKey('rbResult.id'), index=True)
     nextEventDate = Column(DateTime)
     payStatus = Column(Integer, nullable=False)
-    typeAsset_id = Column(Integer, index=True)
+    typeAsset_id = Column(Integer, ForeignKey('rbEmergencyTypeAsset.id'), index=True)
     note = Column(Text, nullable=False)
-    curator_id = Column(Integer, index=True)
-    assistant_id = Column(Integer, index=True)
+    curator_id = Column(Integer, ForeignKey('Person.id'), index=True)
+    assistant_id = Column(Integer, ForeignKey('Person.id'), index=True)
     pregnancyWeek = Column(Integer, nullable=False, server_default=u"'0'")
     MES_id = Column(Integer, index=True)
     mesSpecification_id = Column(ForeignKey('rbMesSpecification.id'), index=True)
@@ -1922,12 +2028,38 @@ class Event(Base):
     version = Column(Integer, nullable=False, server_default=u"'0'")
     privilege = Column(Integer, server_default=u"'0'")
     urgent = Column(Integer, server_default=u"'0'")
-    orgStructure_id = Column(Integer)
+    orgStructure_id = Column(Integer, ForeignKey('Person.orgStructure_id'))
     uuid_id = Column(Integer, nullable=False, index=True, server_default=u"'0'")
     lpu_transfer = Column(String(100))
 
+    actions = relationship(u'Action')
+    eventType = relationship(u'Eventtype')
+    execPerson = relationship(u'Person', foreign_keys='Event.execPerson_id')
+    curator = relationship(u'Person', foreign_keys='Event.curator_id')
+    assistant = relationship(u'Person', foreign_keys='Event.assistant_id')
+    persons = relationship(u'Person', foreign_keys='Event.orgStructure_id')
+    client = relationship(u'Client')
+    contract = relationship(u'Contract')
+    organisation = relationship(u'Organisation')
     mesSpecification = relationship(u'Rbmesspecification')
     rbAcheResult = relationship(u'Rbacheresult')
+    result = relationship(u'Rbresult')
+    typeAsset = relationship(u'Rbemergencytypeasset')
+    localContract = relationship(u'EventLocalcontract')
+
+    @property
+    def isPrimary(self):
+        return self.isPrimaryCode == 1
+
+    @property
+    def departmentManager(self):
+        for person in self.persons:
+            if person.post.flatCode == u'departmentManager':
+                return person
+        return None
+
+    def __unicode__(self):
+        return unicode(self.eventType)
 
 
 class Hsintegration(Event):
@@ -1938,7 +2070,7 @@ class Hsintegration(Event):
     info = Column(String(1024))
 
 
-class Eventtype(Base):
+class Eventtype(Base, RBInfo):
     __tablename__ = u'EventType'
 
     id = Column(Integer, primary_key=True)
@@ -1949,8 +2081,8 @@ class Eventtype(Base):
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     code = Column(String(8), nullable=False, index=True)
     name = Column(String(64), nullable=False)
-    purpose_id = Column(Integer, index=True)
-    finance_id = Column(Integer, index=True)
+    purpose_id = Column(Integer, ForeignKey('rbEventTypePurpose.id'), index=True)
+    finance_id = Column(Integer, ForeignKey('rbFinance.id'), index=True)
     scene_id = Column(Integer, index=True)
     visitServiceModifier = Column(String(128), nullable=False)
     visitServiceFilter = Column(String(32), nullable=False)
@@ -1960,8 +2092,8 @@ class Eventtype(Base):
     singleInPeriod = Column(Integer, nullable=False)
     isLong = Column(Integer, nullable=False, server_default=u"'0'")
     dateInput = Column(Integer, nullable=False, server_default=u"'0'")
-    service_id = Column(Integer, index=True)
-    context = Column(String(64), nullable=False)
+    service_id = Column(Integer, ForeignKey('rbService.id'), index=True)
+    printContext = Column("context", String(64), nullable=False)
     form = Column(String(64), nullable=False)
     minDuration = Column(Integer, nullable=False, server_default=u"'0'")
     maxDuration = Column(Integer, nullable=False, server_default=u"'0'")
@@ -1994,10 +2126,14 @@ class Eventtype(Base):
     age_bc = Column(SmallInteger)
     age_eu = Column(Integer)
     age_ec = Column(SmallInteger)
-    requestType_id = Column(Integer)
+    requestType_id = Column(Integer, ForeignKey('rbRequestType.id'))
 
     counter = relationship(u'Rbcounter')
     rbMedicalKind = relationship(u'Rbmedicalkind')
+    purpose = relationship(u'Rbeventtypepurpose')
+    finance = relationship(u'Rbfinance')
+    service = relationship(u'Rbservice')
+    requestType = relationship(u'Rbrequesttype')
 
 
 class Eventtypeform(Base):
@@ -2072,7 +2208,7 @@ class EventFeed(Base):
     diet_id = Column(Integer, index=True)
 
 
-class EventLocalcontract(Base):
+class EventLocalcontract(Base, Info):
     __tablename__ = u'Event_LocalContract'
     __table_args__ = (
         Index(u'lastName', u'lastName', u'firstName', u'patrName', u'birthDate', u'id'),
@@ -2084,24 +2220,53 @@ class EventLocalcontract(Base):
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False)
-    master_id = Column(Integer, nullable=False, index=True)
+    master_id = Column(Integer, ForeignKey('Event.id'), nullable=False, index=True)
     coordDate = Column(DateTime)
     coordAgent = Column(String(128), nullable=False, server_default=u"''")
     coordInspector = Column(String(128), nullable=False, server_default=u"''")
     coordText = Column(String, nullable=False)
     dateContract = Column(Date, nullable=False)
-    numberContract = Column(String(64), nullable=False)
+    numberContract = Column(Unicode(64), nullable=False)
     sumLimit = Column(Float(asdecimal=True), nullable=False)
-    lastName = Column(String(30), nullable=False)
-    firstName = Column(String(30), nullable=False)
-    patrName = Column(String(30), nullable=False)
+    lastName = Column(Unicode(30), nullable=False)
+    firstName = Column(Unicode(30), nullable=False)
+    patrName = Column(Unicode(30), nullable=False)
     birthDate = Column(Date, nullable=False, index=True)
-    documentType_id = Column(Integer, index=True)
-    serialLeft = Column(String(8), nullable=False)
-    serialRight = Column(String(8), nullable=False)
+    documentType_id = Column(Integer, ForeignKey('rbDocumentType.id'), index=True)
+    serialLeft = Column(Unicode(8), nullable=False)
+    serialRight = Column(Unicode(8), nullable=False)
     number = Column(String(16), nullable=False)
-    regAddress = Column(String(64), nullable=False)
-    org_id = Column(Integer, index=True)
+    regAddress = Column(Unicode(64), nullable=False)
+    org_id = Column(Integer, ForeignKey('Organisation.id'), index=True)
+
+    org = relationship(u'Organisation')
+    documentType = relationship(u'Rbdocumenttype')
+
+    def __unicode__(self):
+        parts = []
+        if self.coordDate:
+            parts.append(u'согласовано ' + self.coordDate)
+        if self.coordText:
+            parts.append(self.coordText)
+        if self.number:
+            parts.append(u'№ ' + self.number)
+        if self.date:
+            parts.append(u'от ' + self.date)
+        if self.org:
+            parts.append(unicode(self.org))
+        else:
+            parts.append(self.lastName)
+            parts.append(self.firstName)
+            parts.append(self.patrName)
+        return ' '.join(parts)
+
+    @property
+    def document(self):
+        document = Clientdocument()
+        document.documentType = self.documentType
+        document.serial = self.serialLeft + u' ' + self.serialRight
+        document.number = self.number
+        return document
 
 
 class EventPayment(Base):
@@ -2532,19 +2697,19 @@ class OrgstructureGap(Base):
     person_id = Column(Integer, index=True)
 
 
-class OrgstructureHospitalbed(Base):
+class OrgstructureHospitalbed(Base, Info):
     __tablename__ = u'OrgStructure_HospitalBed'
 
     id = Column(Integer, primary_key=True)
-    master_id = Column(Integer, nullable=False, index=True)
+    master_id = Column(Integer, ForeignKey('OrgStructure.id'), nullable=False, index=True)
     idx = Column(Integer, nullable=False, server_default=u"'0'")
     code = Column(String(16), nullable=False, server_default=u"''")
     name = Column(String(64), nullable=False, server_default=u"''")
-    isPermanent = Column(Integer, nullable=False, server_default=u"'0'")
-    type_id = Column(Integer, index=True)
-    profile_id = Column(Integer, index=True)
+    isPermanentCode = Column("isPermanent", Integer, nullable=False, server_default=u"'0'")
+    type_id = Column(Integer, ForeignKey('rbHospitalBedType.id'), index=True)
+    profile_id = Column(Integer, ForeignKey('rbHospitalBedProfile.id'), index=True)
     relief = Column(Integer, nullable=False, server_default=u"'0'")
-    schedule_id = Column(Integer, index=True)
+    schedule_id = Column(Integer, ForeignKey('rbHospitalBedShedule.id'), index=True)
     begDate = Column(Date)
     endDate = Column(Date)
     sex = Column(Integer, nullable=False, server_default=u"'0'")
@@ -2556,6 +2721,15 @@ class OrgstructureHospitalbed(Base):
     involution = Column(Integer, nullable=False, server_default=u"'0'")
     begDateInvolute = Column(Date)
     endDateInvolute = Column(Date)
+
+    orgStructure = relationship(u'Orgstructure')
+    type = relationship(u'Rbhospitalbedtype')
+    profile = relationship(u'Rbhospitalbedprofile')
+    schedule = relationship(u'Rbhospitalbedshedule')
+
+    @property
+    def isPermanent(self):
+        return self.isPermanentCode == 1
 
 
 class OrgstructureJob(Base):
@@ -2637,16 +2811,19 @@ class Organisation(Base, Info):
     OKFS = relationship(u'Rbokfs')
 
 
-class OrganisationAccount(Base):
+class OrganisationAccount(Base, Info):
     __tablename__ = u'Organisation_Account'
 
     id = Column(Integer, primary_key=True)
-    organisation_id = Column(Integer, nullable=False, index=True)
-    bankName = Column(String(128), nullable=False)
+    organisation_id = Column(Integer, ForeignKey('Organisation.id'), nullable=False, index=True)
+    bankName = Column(Unicode(128), nullable=False)
     name = Column(String(20), nullable=False)
     notes = Column(String, nullable=False)
-    bank_id = Column(Integer, nullable=False, index=True)
+    bank_id = Column(Integer, ForeignKey('Bank.id'), nullable=False, index=True)
     cash = Column(Integer, nullable=False)
+
+    org = relationship(u'Organisation')
+    bank = relationship(u'Bank')
 
 
 class OrganisationPolicyserial(Base):
@@ -3207,6 +3384,10 @@ class Takentissuejournal(Base):
     tissueType = relationship(u'Rbtissuetype')
     unit = relationship(u'Rbunit')
 
+    @property
+    def barcode_s(self):
+        return code128C(self.barcode).decode('windows-1252')
+
 
 class Tempinvalid(Base):
     __tablename__ = u'TempInvalid'
@@ -3610,7 +3791,7 @@ class Rbaccountingsystem(Base, RBInfo):
     showInClientInfo = Column(Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbacheresult(Base):
+class Rbacheresult(Base, RBInfo):
     __tablename__ = u'rbAcheResult'
 
     id = Column(Integer, primary_key=True)
@@ -3973,12 +4154,12 @@ class Rbemergencytransferredtransportation(Base):
     codeRegional = Column(String(8), nullable=False, index=True)
 
 
-class Rbemergencytypeasset(Base):
+class Rbemergencytypeasset(Base, RBInfo):
     __tablename__ = u'rbEmergencyTypeAsset'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
+    name = Column(Unicode(64), nullable=False, index=True)
     codeRegional = Column(String(8), nullable=False, index=True)
 
 
@@ -3991,21 +4172,21 @@ class Rbeventprofile(Base):
     name = Column(String(64), nullable=False, index=True)
 
 
-class Rbeventtypepurpose(Base):
+class Rbeventtypepurpose(Base, RBInfo):
     __tablename__ = u'rbEventTypePurpose'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
+    name = Column(Unicode(64), nullable=False, index=True)
     codePlace = Column(String(2))
 
 
-class Rbfinance(Base):
+class Rbfinance(Base, RBInfo):
     __tablename__ = u'rbFinance'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
+    name = Column(Unicode(64), nullable=False, index=True)
 
 
 class Rbfinance1c(Base):
@@ -4026,12 +4207,12 @@ class Rbhealthgroup(Base):
     name = Column(String(64), nullable=False, index=True)
 
 
-class Rbhospitalbedprofile(Base):
+class Rbhospitalbedprofile(Base, RBInfo):
     __tablename__ = u'rbHospitalBedProfile'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
+    name = Column(Unicode(64), nullable=False, index=True)
     service_id = Column(Integer, index=True)
 
 
@@ -4046,20 +4227,20 @@ class RbhospitalbedprofileService(Base):
     rbService = relationship(u'Rbservice')
 
 
-class Rbhospitalbedshedule(Base):
+class Rbhospitalbedshedule(Base, RBInfo):
     __tablename__ = u'rbHospitalBedShedule'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
+    name = Column(Unicode(64), nullable=False, index=True)
 
 
-class Rbhospitalbedtype(Base):
+class Rbhospitalbedtype(Base, RBInfo):
     __tablename__ = u'rbHospitalBedType'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
+    name = Column(Unicode(64), nullable=False, index=True)
 
 
 class Rbhurtfactortype(Base):
@@ -4371,12 +4552,12 @@ class Rbquotastatu(Base):
     name = Column(String(50), nullable=False, index=True)
 
 
-class Rbreasonofabsence(Base):
+class Rbreasonofabsence(Base, RBInfo):
     __tablename__ = u'rbReasonOfAbsence'
 
     id = Column(Integer, primary_key=True)
-    code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
+    code = Column(Unicode(8), nullable=False, index=True)
+    name = Column(Unicode(64), nullable=False, index=True)
 
 
 class Rbrelationtype(Base, RBInfo):
@@ -4400,22 +4581,22 @@ class Rbrelationtype(Base, RBInfo):
     regionalReverseCode = Column(String(64), nullable=False)
 
 
-class Rbrequesttype(Base):
+class Rbrequesttype(Base, RBInfo):
     __tablename__ = u'rbRequestType'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(16), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
+    name = Column(Unicode(64), nullable=False, index=True)
     relevant = Column(Integer, nullable=False, server_default=u"'1'")
 
 
-class Rbresult(Base):
+class Rbresult(Base, RBInfo):
     __tablename__ = u'rbResult'
 
     id = Column(Integer, primary_key=True)
     eventPurpose_id = Column(Integer, nullable=False, index=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
+    name = Column(Unicode(64), nullable=False, index=True)
     continued = Column(Integer, nullable=False)
     regionalCode = Column(String(8), nullable=False)
 
@@ -4429,7 +4610,7 @@ class Rbscene(Base):
     serviceModifier = Column(String(128), nullable=False)
 
 
-class Rbservice(Base):
+class Rbservice(Base, RBInfo):
     __tablename__ = u'rbService'
     __table_args__ = (
         Index(u'infis', u'infis', u'eisLegacy'),
@@ -4439,9 +4620,9 @@ class Rbservice(Base):
     id = Column(Integer, primary_key=True)
     code = Column(String(31), nullable=False, index=True)
     name = Column(String(255), nullable=False, index=True)
-    eisLegacy = Column(Integer, nullable=False)
+    eisLegacy = Column(Boolean, nullable=False)
     nomenclatureLegacy = Column(Integer, nullable=False, server_default=u"'0'")
-    license = Column(Integer, nullable=False)
+    license = Column(Boolean, nullable=False)
     infis = Column(String(31), nullable=False)
     begDate = Column(Date, nullable=False)
     endDate = Column(Date, nullable=False)
@@ -4753,16 +4934,22 @@ class Rbtimequotingtype(Base):
     name = Column(Text(collation=u'utf8_unicode_ci'), nullable=False)
 
 
-class Rbtissuetype(Base):
+class Rbtissuetype(Base, RBInfo):
     __tablename__ = u'rbTissueType'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(64), nullable=False)
     name = Column(String(128), nullable=False)
     group_id = Column(ForeignKey('rbTissueType.id'), index=True)
-    sex = Column(Integer, nullable=False, server_default=u"'0'")
+    sexCode = Column("sex", Integer, nullable=False, server_default=u"'0'")
 
     group = relationship(u'Rbtissuetype', remote_side=[id])
+
+    @property
+    def sex(self):
+        return {0: u'Любой',
+                1: u'М',
+                2: u'Ж'}[self.sexCode]
 
 
 class Rbtransferdatetype(Base):
@@ -4827,12 +5014,12 @@ class Rbufm(Base):
     name = Column(String(256, u'utf8_bin'), nullable=False)
 
 
-class Rbunit(Base):
+class Rbunit(Base, RBInfo):
     __tablename__ = u'rbUnit'
 
     id = Column(Integer, primary_key=True)
-    code = Column(String(256), index=True)
-    name = Column(String(256), index=True)
+    code = Column(Unicode(256), index=True)
+    name = Column(Unicode(256), index=True)
 
 
 class Rbuserprofile(Base):
@@ -5418,3 +5605,22 @@ def formatShortNameInt(lastName, firstName, patrName):
 
 def formatNameInt(lastName, firstName, patrName):
     return trim(lastName+' '+firstName+' '+patrName)
+
+
+def code128C(barcode):
+    """Make Code 128C of integer barcode (100000 - 999999)"""
+    b_struct = struct.Struct(">BBBBBB")
+    if not (100000 <= barcode <= 999999):
+        # Этого не должно случиться.
+        return None
+    # Стартовый и стоповый символы в нашей таблице символов имеют иные коды (+64)
+    start = 0xcd
+    stop = 0xce
+    c, c3 = divmod(barcode, 100)
+    c, c2 = divmod(c, 100)
+    c, c1 = divmod(c, 100)
+    cs = reduce(lambda x, (y, c): (x + y*c) % 103, [(c1, 1), (c2, 2), (c3, 3)], 2)
+    # Транслируем коды символов
+    c1, c2, c3, cs = tuple(map(lambda w: w + 100 if w > 94 else w + 32, (c1, c2, c3, cs)))
+    barcode_char = b_struct.pack(start, c1, c2, c3, cs, stop)
+    return barcode_char

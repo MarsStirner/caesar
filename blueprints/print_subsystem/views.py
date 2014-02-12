@@ -42,10 +42,11 @@ def print_template():
     # try:
     data = json.loads(request.data)
     template_id = data['id']
+    action_id = data['action_id']
     event_id = data['event_id']
     client_id = data['client_id']
     additional_context = data['additional_context']
     print_obj = Print_Template()
-    return print_obj.print_template(template_id, event_id, client_id, additional_context)
+    return print_obj.print_template(template_id, event_id, action_id, client_id, additional_context)
     # except TemplateNotFound:
     #     abort(404)

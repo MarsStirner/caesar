@@ -21,6 +21,14 @@ def renderTemplate(template, data, render=1):
         'HTMLRipper': HTMLRipper,
         'hard_rip': HTMLRipper.hard_rip,
         'soft_rip': HTMLRipper.soft_rip,
+        'setPageSize': setPageSize,
+        'setOrientation': setOrientation,
+        'setPageOrientation': setOrientation,
+        'setMargins': setMargins,
+        'setLeftMargin': setLeftMargin,
+        'setTopMargin': setTopMargin,
+        'setRightMargin': setRightMargin,
+        'setBottomMargin': setBottomMargin,
     }
     #
     # useful_builtins = dict((key, __builtins__[key]) for key in (
@@ -54,3 +62,31 @@ def renderTemplate(template, data, render=1):
     # for k in canvases:
     #     print k, canvases[k]
     return result
+
+
+def setPageSize(page_size):
+    pass
+
+
+def setOrientation(orientation):
+    pass
+
+
+def setMargins(margin):
+    pass
+
+
+def setLeftMargin(left_margin):
+    pass
+
+
+def setTopMargin(top_margin):
+    pass
+
+
+def setRightMargin(right_margin):
+    pass
+
+
+def setBottomMargin(bottom_margin):
+    pass
