@@ -65,28 +65,28 @@ def renderTemplate(template, data, render=1):
 
 
 def setPageSize(page_size):
-    pass
+    return ''
 
 
 def setOrientation(orientation):
-    pass
+    return ''
 
 
 def setMargins(margin):
-    pass
+    return ''
 
 
 def setLeftMargin(left_margin):
-    pass
+    return ''
 
 
 def setTopMargin(top_margin):
-    pass
+    return ''
 
 
 def setRightMargin(right_margin):
-    pass
+    return ''
 
 
 def setBottomMargin(bottom_margin):
-    pass
+    return ''

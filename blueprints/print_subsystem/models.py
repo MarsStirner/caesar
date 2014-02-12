@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-import struct
 from application.database import db
 from config import MODULE_NAME
+from lib.html import escape, convenience_HtmlRip, replace_first_paragraph
+from models_utils import *
 from sqlalchemy import BigInteger, Column, Date, DateTime, Enum, Float, ForeignKey, Index, Integer, SmallInteger, \
     String, Table, Text, Time, Unicode, Boolean
 from sqlalchemy.orm import relationship
@@ -271,15 +272,19 @@ class Actionproperty(Base, Info):
     def value(self):
         from blueprints.print_subsystem.utils import get_lpu_session
         db_session = get_lpu_session()
-        class_name = u'Actionproperty{}'.format(u"String" if (self.type.typeName == "Text" or
-                                                              self.type.typeName == "Constructor" or
-                                                              self.type.typeName == "Html") else self.type.typeName.capitalize())
+        if self.type.typeName == "Constructor":
+            class_name = u'ActionpropertyText'
+        elif self.type.typeName == "AnalysisStatus":
+            class_name = u'ActionpropertyInteger'
+        else:
+            class_name = u'Actionproperty{}'.format(self.type.typeName.capitalize())
+
         cl = globals()[class_name]
         values = db_session.query(cl).filter(cl.id == self.id).all()
         if values and self.type.isVector:
-            return [value.value for value in values]
+            return [value.get_value() for value in values]
         elif values:
-            return values[0].value
+            return values[0].get_value()
         else:
             return ""
 
@@ -358,6 +363,9 @@ class ActionpropertyAction(Base):
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Integer, index=True)
 
+    def get_value(self):
+        return self.value if self.value else ''
+
     def __unicode__(self):
         return self.value
 
@@ -369,6 +377,9 @@ class ActionpropertyDate(Base):
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Date)
 
+    def get_value(self):
+        self.value if self.value else ''
+
     def __unicode__(self):
         return self.value
 
@@ -378,7 +389,10 @@ class ActionpropertyDouble(Base):
 
     id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = Column(Float(asdecimal=True), nullable=False)
+    value = Column(Float(asdecimal=True, decimal_return_scale=2), nullable=False)
+
+    def get_value(self):
+        return round(self.value, 2) if self.value else 0.0
 
     def __unicode__(self):
         return self.value
@@ -393,6 +407,9 @@ class ActionpropertyFdrecord(Base):
 
     FDRecord = relationship(u'Fdrecord')
 
+    def get_value(self):
+        return self.value if self.value else ''
+
 
 class ActionpropertyHospitalbed(Base):
     __tablename__ = u'ActionProperty_HospitalBed'
@@ -404,6 +421,12 @@ class ActionpropertyHospitalbed(Base):
     ActionProperty = relationship(u'Actionproperty')
     OrgStructure_HospitalBed = relationship(u'OrgstructureHospitalbed')
 
+    def get_value(self):
+        from blueprints.print_subsystem.utils import get_lpu_session
+        db_session = get_lpu_session()
+        value = db_session.query(OrgstructureHospitalbed).filter(OrgstructureHospitalbed.id == self.value).first()
+        return value
+
 
 class ActionpropertyHospitalbedprofile(Base):
     __tablename__ = u'ActionProperty_HospitalBedProfile'
@@ -411,6 +434,10 @@ class ActionpropertyHospitalbedprofile(Base):
     id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Integer, index=True)
+
+    def get_value(self):
+        #    TODO: переделать
+        return self.value if self.value else ''
 
 
 class ActionpropertyImage(Base):
@@ -420,6 +447,9 @@ class ActionpropertyImage(Base):
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(MEDIUMBLOB)
 
+    def get_value(self):
+        return self.value if self.value else ''
+
 
 class ActionpropertyImagemap(Base):
     __tablename__ = u'ActionProperty_ImageMap'
@@ -427,6 +457,9 @@ class ActionpropertyImagemap(Base):
     id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(String)
+
+    def get_value(self):
+        return self.value if self.value else ''
 
 
 class ActionpropertyInteger(Base):
@@ -436,8 +469,35 @@ class ActionpropertyInteger(Base):
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Integer, nullable=False)
 
+    def get_value(self):
+        return self.value if self.value else 0
+
     def __unicode__(self):
         return self.value
+
+
+class ActionpropertyRLS(ActionpropertyInteger):
+
+    def get_value(self):
+        from blueprints.print_subsystem.utils import get_lpu_session
+        db_session = get_lpu_session()
+        value = db_session.query(v_Nomen).filter(v_Nomen.code == self.value).first()
+        return value
+
+
+class ActionpropertyOperationType(ActionpropertyInteger):
+
+    def get_value(self):
+        from blueprints.print_subsystem.utils import get_lpu_session
+        db_session = get_lpu_session()
+        value = db_session.query(Rboperationtype).filter(Rboperationtype.code == self.value).first()
+        if self.value and value.name:
+            text = '(%s) %s' % (value.code, value.name)
+        elif self.value:
+            text = '{%s}' % self.value
+        else:
+            text = ''
+        return text
 
 
 class ActionpropertyJobTicket(Base):
@@ -447,6 +507,9 @@ class ActionpropertyJobTicket(Base):
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Integer, index=True)
 
+    def get_value(self):
+        return self.value if self.value else ''
+
 
 class ActionpropertyMkb(Base):
     __tablename__ = u'ActionProperty_MKB'
@@ -455,6 +518,9 @@ class ActionpropertyMkb(Base):
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Integer, index=True)
 
+    def get_value(self):
+        return self.value if self.value else ''
+
 
 class ActionpropertyOrgstructure(Base):
     __tablename__ = u'ActionProperty_OrgStructure'
@@ -462,6 +528,12 @@ class ActionpropertyOrgstructure(Base):
     id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Integer, index=True)
+
+    def get_value(self):
+        from blueprints.print_subsystem.utils import get_lpu_session
+        db_session = get_lpu_session()
+        value = db_session.query(Orgstructure).filter(Orgstructure.id == self.value).first()
+        return value
 
     def __unicode__(self):
         return self.value
@@ -474,6 +546,12 @@ class ActionpropertyOrganisation(Base):
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Integer, index=True)
 
+    def get_value(self):
+        from blueprints.print_subsystem.utils import get_lpu_session
+        db_session = get_lpu_session()
+        value = db_session.query(Organisation).filter(Organisation.id == self.value).first()
+        return value
+
     def __unicode__(self):
         return self.value
 
@@ -484,6 +562,9 @@ class ActionpropertyOtherlpurecord(Base):
     id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Text(collation=u'utf8_unicode_ci'), nullable=False)
+
+    def get_value(self):
+        return self.value if self.value else ''
 
 
 class ActionpropertyPerson(Base):
@@ -496,6 +577,12 @@ class ActionpropertyPerson(Base):
     ActionProperty = relationship(u'Actionproperty')
     Person = relationship(u'Person')
 
+    def get_value(self):
+        from blueprints.print_subsystem.utils import get_lpu_session
+        db_session = get_lpu_session()
+        value = db_session.query(Person).filter(Person.id == self.value).first()
+        return value
+
     def __unicode__(self):
         return self.value
 
@@ -507,8 +594,23 @@ class ActionpropertyString(Base):
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Text, nullable=False)
 
+    def get_value(self):
+        return escape(self.value)
+
     def __unicode__(self):
         return self.value
+
+
+class ActionpropertyText(ActionpropertyString):
+
+    def get_value(self):
+        return replace_first_paragraph(convenience_HtmlRip(self.value)) if self.value else ''
+
+
+class ActionpropertyHtml(ActionpropertyString):
+
+    def get_value(self):
+        return convenience_HtmlRip(self.value) if self.value else ''
 
 
 class ActionpropertyTime(Base):
@@ -517,6 +619,9 @@ class ActionpropertyTime(Base):
     id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Time, nullable=False)
+
+    def get_value(self):
+        return self.value if self.value else ''
 
     def __unicode__(self):
         return self.value
@@ -529,6 +634,9 @@ class ActionpropertyRbbloodcomponenttype(Base):
     index = Column(Integer, primary_key=True, nullable=False)
     value = Column(Integer, nullable=False)
 
+    def get_value(self):
+        return self.value if self.value else ''
+
 
 class ActionpropertyRbfinance(Base):
     __tablename__ = u'ActionProperty_rbFinance'
@@ -537,6 +645,9 @@ class ActionpropertyRbfinance(Base):
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Integer, index=True)
 
+    def get_value(self):
+        return self.value if self.value else ''
+
 
 class ActionpropertyRbreasonofabsence(Base):
     __tablename__ = u'ActionProperty_rbReasonOfAbsence'
@@ -544,6 +655,9 @@ class ActionpropertyRbreasonofabsence(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = Column(Integer, index=True)
+
+    def get_value(self):
+        return self.value if self.value else ''
 
 
 class Actiontemplate(Base):
@@ -5595,32 +5709,29 @@ class v_Client_Quoting(Base):
     treatment = relationship(u"Rbtreatment")
 
 
-def trim(s):
-    return u' '.join(unicode(s).split())
+class v_Nomen(Base):
+    __tablename__ = u'vNomen'
 
+    id = Column(u'id', Integer, primary_key=True)
+    tradeName = Column(u'tradeName', String(255))
+    tradeLocalName = Column(u'tradeLocalName', String(255))
+    tradeName_id = Column(u'tradeName_id', Integer)
+    actMattersName = Column(u'actMattersName', String(255))
+    actMattersLocalName = Column(u'actMattersLocalName', String(255))
+    actMatters_id = Column(u'actMatters_id', Integer)
+    form = Column(u'form', String(128))
+    packing = Column(u'packing', String(128))
+    filling = Column(u'filling', String(128))
+    unit_id = Column(u'unit_id', Integer)
+    unitCode = Column(u'unitCode', String(256))
+    unitName = Column(u'unitName', String(256))
+    dosageValue = Column(u'dosageValue', String(128))
+    dosageUnit_id = Column(u'dosageUnit_id', Integer)
+    dosageUnitCode = Column(u'dosageUnitCode', String(256))
+    dosageUnitName = Column(u'dosageUnitName', String(256))
+    regDate = Column(u'regDate', Date)
+    annDate = Column(u'annDate', Date)
+    drugLifetime = Column(u'drugLifetime', Integer)
 
-def formatShortNameInt(lastName, firstName, patrName):
-    return trim(lastName + ' ' + ((firstName[:1]+'.') if firstName else '') + ((patrName[:1]+'.') if patrName else ''))
-
-
-def formatNameInt(lastName, firstName, patrName):
-    return trim(lastName+' '+firstName+' '+patrName)
-
-
-def code128C(barcode):
-    """Make Code 128C of integer barcode (100000 - 999999)"""
-    b_struct = struct.Struct(">BBBBBB")
-    if not (100000 <= barcode <= 999999):
-        # Этого не должно случиться.
-        return None
-    # Стартовый и стоповый символы в нашей таблице символов имеют иные коды (+64)
-    start = 0xcd
-    stop = 0xce
-    c, c3 = divmod(barcode, 100)
-    c, c2 = divmod(c, 100)
-    c, c1 = divmod(c, 100)
-    cs = reduce(lambda x, (y, c): (x + y*c) % 103, [(c1, 1), (c2, 2), (c3, 3)], 2)
-    # Транслируем коды символов
-    c1, c2, c3, cs = tuple(map(lambda w: w + 100 if w > 94 else w + 32, (c1, c2, c3, cs)))
-    barcode_char = b_struct.pack(start, c1, c2, c3, cs, stop)
-    return barcode_char
+    def __unicode__(self):
+        return ', '.join([field for field in [self.tradeName, self.form, self.dosageValue, self.filling]])
