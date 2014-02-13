@@ -24,7 +24,7 @@ class Print_Template(object):
 
     def print_template(self, template_id, event_id, action_id, client_id, additional_context):
         # context = CInfoContext()
-        client = self.db_session.query(Client).get(18)
+        client = self.db_session.query(Client).get(client_id)
         event = self.db_session.query(Event).get(event_id)
         action = self.db_session.query(Action).get(action_id)
         quota = self.db_session.query(v_Client_Quoting).filter_by(event_id=event_id).filter_by(clientId=client_id).first()
