@@ -8,10 +8,10 @@ MODULE_NAME = os.path.basename(os.path.dirname(__file__))
 RUS_NAME = u'Подсистема печати'
 
 
-LPU_DB_HOST = '127.0.0.1:3306'
-LPU_DB_USER = 'root'
-LPU_DB_PASSWORD = 'koruspassM'
-LPU_DB_NAME = 'hospital_ntk'
+LPU_DB_HOST = '192.168.1.100:3306'
+LPU_DB_USER = 'tmis'
+LPU_DB_PASSWORD = 'q1w2e3r4t5'
+LPU_DB_NAME = 'pnz_det_filatova_ntk'
 
 try:
     from .config_local import *

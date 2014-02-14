@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
+import datetime
 from application.database import db
 from config import MODULE_NAME
 from lib.html import escape, convenience_HtmlRip, replace_first_paragraph
 from models_utils import *
 from sqlalchemy import BigInteger, Column, Date, DateTime, Enum, Float, ForeignKey, Index, Integer, SmallInteger, \
     String, Table, Text, Time, Unicode, Boolean
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.dialects.mysql.base import LONGBLOB, MEDIUMBLOB
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -1211,7 +1212,7 @@ class Client(Base, Info):
     @property
     def document(self):
         # TODO: отстортировать по дате
-        for document in self.documents:
+        for document in self.documentsAll:
             if document.deleted == 0 and document.documentType.group.code == '1':
                 return document
 
@@ -1268,6 +1269,50 @@ class Client(Base, Info):
         for work in self.works:
             if work.deleted == 0:
                 return work
+
+    @property
+    def date(self):
+        if self.event:
+            return self.event.date
+        else:
+            datetime.date.today()
+
+    @property
+    def ageTuple(self):
+
+        return ""
+
+    # def calcAgeTuple(birthDay, today):
+    #     if not today or today.isNull():
+    #         today_ = QDate.currentDate()
+    #     elif isinstance(today, QDateTime):
+    #         today_ = today.date()
+    #     else:
+    #         today_ = today
+    #     d = calcAgeInDays(birthDay, today_)
+    #     if d>=0:
+    #         return (d,
+    #                 d/7,
+    #                 calcAgeInMonths(birthDay, today_),
+    #                 calcAgeInYears(birthDay, today_)
+    #                )
+    #     else:
+    #         return None
+    #
+    # def formatAgeTuple(ageTuple, bd, td):
+    #     if not ageTuple:
+    #         return u'ещё не родился'
+    #     (days, weeks, months, years) = ageTuple
+    #     if years>7 :
+    #         return formatYears(years)
+    #     elif years>1 :
+    #         return formatYearsMonths(years, months-12*years)
+    #     elif months>1 :
+    #         if not td:
+    #             td = QDate.currentDate()
+    #         return formatMonthsWeeks(months, bd.addMonths(months).daysTo(td)/7)
+    #     else:
+    #         return formatDays(days)
 
     def __unicode__(self):
         return self.formatShortNameInt(self.lastName, self.firstName, self.patrName)
@@ -2200,7 +2245,7 @@ class Event(Base, Info):
     curator = relationship(u'Person', foreign_keys='Event.curator_id')
     assistant = relationship(u'Person', foreign_keys='Event.assistant_id')
     persons = relationship(u'Person', foreign_keys='Event.orgStructure_id')
-    client = relationship(u'Client')
+    client = relationship(u'Client', backref=backref("event", uselist=False))
     contract = relationship(u'Contract')
     organisation = relationship(u'Organisation')
     mesSpecification = relationship(u'Rbmesspecification')
@@ -2214,11 +2259,20 @@ class Event(Base, Info):
         return self.isPrimaryCode == 1
 
     @property
+    def finance(self):
+        return self.eventType.finance
+
+    @property
     def departmentManager(self):
         for person in self.persons:
             if person.post.flatCode == u'departmentManager':
                 return person
         return None
+
+    @property
+    def date(self):
+        date = self.execDate if self.execDate is not None else datetime.date.today()
+        return date
 
     def __unicode__(self):
         return unicode(self.eventType)

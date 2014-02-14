@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# from PyQt4 import QtGui
+import datetime
 #from base64 import b64encode
 #import re
 #from urllib import urlencode
@@ -39,8 +39,9 @@ class CTemplateContext(object):
         self.globals = globals
         self.data = data
         # self.locals = {}
-        # self.now = QDateTime.currentDateTime()
-        self.builtin = {'helpers': CTemplateHelpers,
+        self.builtin = {'currentDate': datetime.date.today(),
+                        'currentTime': datetime.datetime.now().time().strftime("%H:%M:%S"),
+                        'helpers': CTemplateHelpers,
                         }
         # self.builtin = { 'currentDate': CDateInfo(self.now.date()),
         #                  'currentTime': CTimeInfo(self.now.time()),
