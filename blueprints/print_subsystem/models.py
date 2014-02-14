@@ -215,9 +215,33 @@ class Action(Base):
         else:
             return self.event.eventType.finance
 
+    def get_property_by_code(self, code):
+        for property in self.properties:
+            if property.type.code == code:
+                return property
+        property_type = self.actionType.get_property_type_by_code(code)
+        if property_type:
+            return property_type.default_value()
+        return None
+
+    def get_property_by_name(self, name):
+        for property in self.properties:
+            if property.type.name == unicode(name):
+                return property
+        property_type = self.actionType.get_property_type_by_name(name)
+        if property_type:
+            return property_type.default_value()
+        return None
+
     def __iter__(self):
         for property in self.properties:
             yield property
+
+    def __getitem__(self, key):
+        if isinstance(key, basestring):
+            return self.get_property_by_name(unicode(key))
+        elif isinstance(key, tuple):
+            return self.get_property_by_code(unicode(key[0]))
 
 
 class Bbtresponse(Action):
@@ -324,7 +348,7 @@ class Actionpropertytype(Base, Info):
 
     id = Column(Integer, primary_key=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    actionType_id = Column(Integer, nullable=False, index=True)
+    actionType_id = Column(Integer, ForeignKey('ActionType.id'), nullable=False, index=True)
     idx = Column(Integer, nullable=False, server_default=u"'0'")
     template_id = Column(Integer, index=True)
     name = Column(String(128), nullable=False)
@@ -354,6 +378,17 @@ class Actionpropertytype(Base, Info):
     createPerson_id = Column(Integer)
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer)
+
+    def default_value(self):
+        if self.typeName == "Constructor":
+            class_name = u'ActionpropertyText'
+        elif self.typeName == "AnalysisStatus":
+            class_name = u'ActionpropertyInteger'
+        else:
+            class_name = u'Actionproperty{}'.format(self.typeName.capitalize())
+
+        cl = globals()[class_name]
+        return cl().get_value()
 
 
 class ActionpropertyAction(Base):
@@ -742,6 +777,19 @@ class Actiontype(Base, Info):
 
     service = relationship(u'Rbservice', foreign_keys='Actiontype.service_id')
     nomenclatureService = relationship(u'Rbservice', foreign_keys='Actiontype.nomenclativeService_id')
+    property_types = relationship(u'Actionpropertytype')
+
+    def get_property_type_by_name(self, name):
+        for property_type in self.property_types:
+            if property_type.name == unicode(name):
+                return property_type
+        return None
+
+    def get_property_type_by_code(self, code):
+        for property_type in self.property_types:
+            if property_type.name == code:
+                return property_type
+        return None
 
 
 class ActiontypeEventtypeCheck(Base):
@@ -1092,7 +1140,7 @@ class Client(Base, Info):
     patrName = Column(Unicode(30), nullable=False)
     birthDate = Column(Date, nullable=False, index=True)
     sexCode = Column("sex", Integer, nullable=False)
-    SNILS = Column(String(11), nullable=False, index=True)
+    SNILS_short = Column("SNILS", String(11), nullable=False, index=True)
     bloodType_id = Column(ForeignKey('rbBloodType.id'), index=True)
     bloodDate = Column(Date)
     bloodNotes = Column(String, nullable=False)
@@ -1137,8 +1185,8 @@ class Client(Base, Info):
 
     @property
     def SNILS(self):
-        if self.SNILS:
-            s = self.SNILS+' '*14
+        if self.SNILS_short:
+            s = self.SNILS_short+' '*14
             return s[0:3]+'-'+s[3:6]+'-'+s[6:9]+' '+s[9:11]
         else:
             return u''
