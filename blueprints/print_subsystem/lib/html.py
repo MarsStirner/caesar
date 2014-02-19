@@ -200,6 +200,14 @@ def escape(s):
 def escapenl(s):
     return escape(s).replace('\n', '<BR/>')
 
+
+def date_toString(object_QDate, format):
+    return object_QDate
+
+
+def time_toString(object_QTime, format):
+    return object_QTime
+
 #
 # def date_toString(object_QDate, format):
 #     return QDate.toString(object_QDate, format)

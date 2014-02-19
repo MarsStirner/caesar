@@ -26,6 +26,8 @@ class Print_Template(object):
         # context = CInfoContext()
         event = self.db_session.query(Event).get(event_id)
         action = self.db_session.query(Action).get(action_id)
+        client = event.client
+        client.date = event.execDate.date() if event.execDate else date.today()
         quota = self.db_session.query(v_Client_Quoting).filter_by(event_id=event_id).\
             filter_by(clientId=event.client.id).first()
         currentOrganisation = self.db_session.query(Organisation).get(additional_context['currentOrganisation']) if \
@@ -39,7 +41,7 @@ class Print_Template(object):
                 'currentPerson': currentPerson,
                 'event': event,
                 'action': action,
-                'client': event.client,
+                'client': client,
                 'quota': quota,
                 'currentActionIndex': 0,  # на самом деле мы ничего не знаем о текущем индексе действия
                 }

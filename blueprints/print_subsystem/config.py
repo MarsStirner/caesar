@@ -21,3 +21,6 @@ except ImportError:
 
 LPU_DB_CONNECT_STRING = 'mysql://{}:{}@{}/{}?charset=utf8'.format(
     LPU_DB_USER, LPU_DB_PASSWORD, LPU_DB_HOST, LPU_DB_NAME)
+
+KLADR_DB_CONNECT_STRING = 'mysql://{}:{}@{}/{}?charset=utf8'.format(
+    LPU_DB_USER, LPU_DB_PASSWORD, LPU_DB_HOST, 'kladr')

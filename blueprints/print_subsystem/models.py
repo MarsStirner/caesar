@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 import datetime
+import jinja2
 from application.database import db
 from config import MODULE_NAME
 from lib.html import escape, convenience_HtmlRip, replace_first_paragraph
 from models_utils import *
+from kladr_models import *
 from sqlalchemy import BigInteger, Column, Date, DateTime, Enum, Float, ForeignKey, Index, Integer, SmallInteger, \
     String, Table, Text, Time, Unicode, Boolean
 from sqlalchemy.orm import relationship, backref
@@ -185,7 +187,8 @@ class Action(Base):
     coordText = Column(String, nullable=False)
     hospitalUidFrom = Column(String(128), nullable=False, server_default=u"'0'")
     pacientInQueueType = Column(Integer, server_default=u"'0'")
-    AppointmentType = Column(Enum(u'0', u'amb', u'hospital', u'polyclinic', u'diagnostics', u'portal', u'otherLPU'), nullable=False)
+    AppointmentType = Column(Enum(u'0', u'amb', u'hospital', u'polyclinic', u'diagnostics', u'portal', u'otherLPU'),
+                             nullable=False)
     version = Column(Integer, nullable=False, server_default=u"'0'")
     parentAction_id = Column(Integer, index=True)
     uuid_id = Column(Integer, nullable=False, index=True, server_default=u"'0'")
@@ -306,12 +309,15 @@ class Actionproperty(Base, Info):
 
         cl = globals()[class_name]
         values = db_session.query(cl).filter(cl.id == self.id).all()
-        if values and self.type.isVector:
-            return [value.get_value() for value in values]
-        elif values:
-            return values[0].get_value()
+        if self.type.typeName == "Table":
+            return values[0].get_value(self.type.valueDomain) if values else ""
         else:
-            return ""
+            if values and self.type.isVector:
+                return [value.get_value() for value in values]
+            elif values:
+                return values[0].get_value()
+            else:
+                return ""
 
     def __unicode__(self):
         return unicode(self.value)
@@ -649,6 +655,35 @@ class ActionpropertyHtml(ActionpropertyString):
         return convenience_HtmlRip(self.value) if self.value else ''
 
 
+class ActionpropertyTable(ActionpropertyInteger):
+
+    def get_value(self, table_code):
+        from blueprints.print_subsystem.utils import get_lpu_session
+
+        trfu_tables = {"trfuOrderIssueResult": Trfuorderissueresult, "trfuLaboratoryMeasure": Trfulaboratorymeasure,
+                       "trfuFinalVolume": Trfufinalvolume}
+
+        db_session = get_lpu_session()
+        table = db_session.query(Rbaptable).filter(Rbaptable.code == table_code).first()
+        field_names = [field.name for field in table.fields]
+        table_filed_names = [field.fieldName for field in table.fields]
+        value_table_name = table.tableName
+        master_field = table.masterField
+        values = db_session.query(trfu_tables[value_table_name]).filter("{0}.{1} = {2}".format(value_table_name,
+                                                                                               master_field, self.value)).all()
+        template = u'''
+                    <table width="100%" border="1" align="center" style="border-style:solid;" cellspacing="0">
+                        <thead><tr>{% for col in field_names %}<th>{{ col }}</th>{% endfor %}</tr></thead>
+                        {% for row in range(values|length) %}<tr>
+                            {% for col in table_filed_names %}<td align="center" valign="middle">
+                            {{values[row][col]}}
+                            </td>{% endfor %}
+                        </tr>{% endfor %}
+                    </table>
+                    '''
+        return jinja2.Template(template).render(field_names=field_names, table_filed_names=table_filed_names, values=values)
+
+
 class ActionpropertyTime(Base):
     __tablename__ = u'ActionProperty_Time'
 
@@ -859,7 +894,7 @@ class ActiontypeUser(Base):
     profile = relationship(u'Rbuserprofile')
 
 
-class Addres(Base):
+class Address(Base, Info):
     __tablename__ = u'Address'
     __table_args__ = (
         Index(u'house_id', u'house_id', u'flat'),
@@ -871,8 +906,72 @@ class Addres(Base):
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    house_id = Column(Integer, nullable=False)
+    house_id = Column(Integer, ForeignKey('AddressHouse.id'), nullable=False)
     flat = Column(String(6), nullable=False)
+
+    house = relationship(u'Addresshouse')
+
+    @property
+    def KLADRCode(self):
+        return self.house.KLADRCode
+
+    @property
+    def KLADRStreetCode(self):
+        return self.house.KLADRStreetCode
+
+    @property
+    def city(self):
+        from blueprints.print_subsystem.utils import get_kladr_session
+        if self.KLADRCode:
+            kladr_session = get_kladr_session()
+            record = kladr_session.query(Kladr).filter(Kladr.CODE == self.KLADRCode).first()
+            name = [" ".join([record.NAME, record.SOCR])]
+            parent = record.parent
+            while parent:
+                record = kladr_session.query(Kladr).filter(Kladr.CODE == parent.ljust(13, "0")).first()
+                name.insert(0, " ".join([record.NAME, record.SOCR]))
+                parent = record.parent
+            return ", ".join(name)
+        else:
+            return ''
+
+    @property
+    def town(self):
+        return self.city
+
+    @property
+    def text(self):
+        parts = [self.city]
+        if self.street:
+            parts.append(self.street)
+        if self.number:
+            parts.append(u'д.'+self.number)
+        if self.corpus:
+            parts.append(u'к.'+self.corpus)
+        if self.flat:
+            parts.append(u'кв.'+self.flat)
+        return (', '.join(parts)).strip()
+
+    @property
+    def number(self):
+        return self.house.number
+
+    @property
+    def corpus(self):
+        return self.house.corpus
+
+    @property
+    def street(self):
+        from blueprints.print_subsystem.utils import get_kladr_session
+        if self.KLADRStreetCode:
+            kladr_session = get_kladr_session()
+            record = kladr_session.query(Street).filter(Street.CODE == self.KLADRStreetCode).first()
+            return record.NAME + " " + record.SOCR
+        else:
+            return ''
+
+    def __unicode__(self):
+        return self.text
 
 
 class Addressareaitem(Base):
@@ -1164,6 +1263,12 @@ class Client(Base, Info):
     reversed_relations = relationship(u'ReversedClientRelation', foreign_keys='Clientrelation.relative_id')
     policies = relationship(u'Clientpolicy')
     works = relationship(u'Clientwork')
+    reg_addresses = relationship(u'Clientaddress',
+                                 primaryjoin="and_(Client.id==Clientaddress.client_id, Clientaddress.type==0)",
+                                 order_by="desc(Clientaddress.createDatetime)")
+    loc_addresses = relationship(u'Clientaddress',
+                                 primaryjoin="and_(Client.id==Clientaddress.client_id, Clientaddress.type==1)",
+                                 order_by="desc(Clientaddress.id)")
 
     # TODO: date
 
@@ -1271,48 +1376,41 @@ class Client(Base, Info):
                 return work
 
     @property
-    def date(self):
-        if self.event:
-            return self.event.date
-        else:
-            datetime.date.today()
-
-    @property
     def ageTuple(self):
-
+        date = self.date
+        if not date:
+            date = datetime.date.today()
+        d = calcAgeInDays(self.birthDate, date)
+        if d >= 0:
+            return (d,
+                    d/7,
+                    calcAgeInMonths(self.birthDate, date),
+                    calcAgeInYears(self.birthDate, date))
+        else:
+            return None
         return ""
 
-    # def calcAgeTuple(birthDay, today):
-    #     if not today or today.isNull():
-    #         today_ = QDate.currentDate()
-    #     elif isinstance(today, QDateTime):
-    #         today_ = today.date()
-    #     else:
-    #         today_ = today
-    #     d = calcAgeInDays(birthDay, today_)
-    #     if d>=0:
-    #         return (d,
-    #                 d/7,
-    #                 calcAgeInMonths(birthDay, today_),
-    #                 calcAgeInYears(birthDay, today_)
-    #                )
-    #     else:
-    #         return None
-    #
-    # def formatAgeTuple(ageTuple, bd, td):
-    #     if not ageTuple:
-    #         return u'ещё не родился'
-    #     (days, weeks, months, years) = ageTuple
-    #     if years>7 :
-    #         return formatYears(years)
-    #     elif years>1 :
-    #         return formatYearsMonths(years, months-12*years)
-    #     elif months>1 :
-    #         if not td:
-    #             td = QDate.currentDate()
-    #         return formatMonthsWeeks(months, bd.addMonths(months).daysTo(td)/7)
-    #     else:
-    #         return formatDays(days)
+    @property
+    def age(self):
+        if not self.ageTuple:
+            return u'ещё не родился'
+        (days, weeks, months, years) = self.ageTuple
+        if years > 7:
+            return formatYears(years)
+        elif years > 1:
+            return formatYearsMonths(years, months-12*years)
+        elif months > 1:
+            return formatMonthsWeeks(months, weeks)
+        else:
+            return formatDays(days)
+
+    @property
+    def regAddress(self):
+        return self.reg_addresses[0]
+
+    @property
+    def locAddress(self):
+        return self.loc_addresses[0]
 
     def __unicode__(self):
         return self.formatShortNameInt(self.lastName, self.firstName, self.patrName)
@@ -1327,7 +1425,7 @@ class Patientstohs(Base):
     info = Column(String(1024))
 
 
-class Clientaddres(Base):
+class Clientaddress(Base, Info):
     __tablename__ = u'ClientAddress'
     __table_args__ = (
         Index(u'address_id', u'address_id', u'type'),
@@ -1342,12 +1440,46 @@ class Clientaddres(Base):
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     client_id = Column(ForeignKey('Client.id'), nullable=False)
     type = Column(Integer, nullable=False)
-    address_id = Column(Integer)
+    address_id = Column(Integer, ForeignKey('Address.id'))
     freeInput = Column(String(200), nullable=False)
     version = Column(Integer, nullable=False)
     localityType = Column(Integer, nullable=False)
 
-    client = relationship(u'Client')
+    address = relationship(u'Address')
+
+    @property
+    def KLADRCode(self):
+        return self.address.house.KLADRCode
+
+    @property
+    def KLADRStreetCode(self):
+        return self.address.house.KLADRStreetCode
+
+    @property
+    def city(self):
+        return self.address.city
+
+    @property
+    def town(self):
+        return self.address.town
+
+    @property
+    def text(self):
+        return self.address.text
+
+    @property
+    def number(self):
+        return self.address.number
+
+    @property
+    def corpus(self):
+        return self.address.corpus
+
+    def __unicode__(self):
+        if self.text:
+            return self.text
+        else:
+            return self.freeInput
 
 
 class Clientallergy(Base, Info):
@@ -2245,7 +2377,6 @@ class Event(Base, Info):
     curator = relationship(u'Person', foreign_keys='Event.curator_id')
     assistant = relationship(u'Person', foreign_keys='Event.assistant_id')
     persons = relationship(u'Person', foreign_keys='Event.orgStructure_id')
-    client = relationship(u'Client', backref=backref("event", uselist=False))
     contract = relationship(u'Contract')
     organisation = relationship(u'Organisation')
     mesSpecification = relationship(u'Rbmesspecification')
@@ -2253,6 +2384,7 @@ class Event(Base, Info):
     result = relationship(u'Rbresult')
     typeAsset = relationship(u'Rbemergencytypeasset')
     localContract = relationship(u'EventLocalcontract')
+    client = relationship(u'Client')
 
     @property
     def isPrimary(self):
@@ -3134,7 +3266,7 @@ class Person(Base):
         return formatShortNameInt(self.lastName, self.firstName, self.patrName)
 
     def __unicode__(self):
-        result = formatShortNameInt(self._lastName, self._firstName, self._patrName)
+        result = formatShortNameInt(self.lastName, self.firstName, self.patrName)
         if self.speciality:
             result += ', '+self.speciality.name
         return unicode(result)
@@ -3964,7 +4096,7 @@ class Rbaptablefield(Base):
     fieldName = Column(String(256), nullable=False)
     referenceTable = Column(String(256))
 
-    master = relationship(u'Rbaptable')
+    master = relationship(u'Rbaptable', backref="fields")
 
 
 class Rbacademicdegree(Base, RBInfo):
@@ -5195,7 +5327,7 @@ class Rbtreatment(Base, RBInfo):
     pacientModel = relationship(u'Rbpacientmodel')
 
 
-class Rbtrfubloodcomponenttype(Base):
+class Rbtrfubloodcomponenttype(Base, RBInfo):
     __tablename__ = u'rbTrfuBloodComponentType'
 
     id = Column(Integer, primary_key=True)
@@ -5755,6 +5887,57 @@ class Rlstradename(Base):
     localName = Column(String(255))
 
 
+class Trfufinalvolume(Base):
+    __tablename__ = u'trfuFinalVolume'
+
+    id = Column(Integer, primary_key=True)
+    action_id = Column(ForeignKey('Action.id'), nullable=False, index=True)
+    time = Column(Float(asdecimal=True))
+    anticoagulantVolume = Column(Float(asdecimal=True))
+    inletVolume = Column(Float(asdecimal=True))
+    plasmaVolume = Column(Float(asdecimal=True))
+    collectVolume = Column(Float(asdecimal=True))
+    anticoagulantInCollect = Column(Float(asdecimal=True))
+    anticoagulantInPlasma = Column(Float(asdecimal=True))
+
+    action = relationship(u'Action')
+
+    def __getitem__(self, name):
+        columns = {'time': self.time,
+                   'anticoagulantVolume': self.anticoagulantVolume,
+                   'inletVolume': self.inletVolume,
+                   'plasmaVolume': self.plasmaVolume,
+                   'collectVolume': self.collectVolume,
+                   'anticoagulantInCollect': self.anticoagulantInCollect,
+                   'anticoagulantInPlasma': self.anticoagulantInPlasma}
+        return columns[name]
+
+
+class Trfulaboratorymeasure(Base):
+    __tablename__ = u'trfuLaboratoryMeasure'
+
+    id = Column(Integer, primary_key=True)
+    action_id = Column(ForeignKey('Action.id'), nullable=False, index=True)
+    trfu_lab_measure_id = Column(ForeignKey('rbTrfuLaboratoryMeasureTypes.id'), index=True)
+    time = Column(Float(asdecimal=True))
+    beforeOperation = Column(String(255))
+    duringOperation = Column(String(255))
+    inProduct = Column(String(255))
+    afterOperation = Column(String(255))
+
+    action = relationship(u'Action')
+    trfu_lab_measure = relationship(u'Rbtrfulaboratorymeasuretype')
+
+    def __getitem__(self, name):
+        columns = {'trfu_lab_measure_id': self.trfu_lab_measure,
+                   'time': self.time,
+                   'beforeOperation': self.beforeOperation,
+                   'duringOperation': self.duringOperation,
+                   'inProduct': self.inProduct,
+                   'afterOperation': self.afterOperation}
+        return columns[name]
+
+
 class Trfuorderissueresult(Base):
     __tablename__ = u'trfuOrderIssueResult'
 
@@ -5771,6 +5954,16 @@ class Trfuorderissueresult(Base):
     action = relationship(u'Action')
     blood_type = relationship(u'Rbbloodtype')
     comp_type = relationship(u'Rbtrfubloodcomponenttype')
+
+    def __getitem__(self, name):
+        columns = {'trfu_blood_comp': self.trfu_blood_comp,
+                   'comp_number': self.comp_number,
+                   'comp_type_id': self.comp_type,
+                   'blood_type_id': self.blood_type,
+                   'volume': self.volume,
+                   'dose_count': self.dose_count,
+                   'trfu_donor_id': self.trfu_donor_id}
+        return columns[name]
 
 
 class v_Client_Quoting(Base):
