@@ -3,7 +3,7 @@
 <{{ item.tag.code }}>
     {%- if item.children -%}
         {%- if item.tag.code == 'PERS' -%}
-            {%- for person in data -%}
+            {%- for person, events in data.registry.iteritems() -%}
                 {%- if not loop.first -%}
                 </{{ item.tag.code }}><{{ item.tag.code }}>
                 {%- endif -%}
@@ -30,7 +30,11 @@
                             {{ person|attr(node.tag.code) }}
                         {%- endif -%}
                     </{{ node.tag.code }}>
-                        {%- endif -%}
+                    {%- elif events[0].patient|attr(node.tag.code) is defined and events[0].patient|attr(node.tag.code) not in [None, ''] -%}
+                    <{{ node.tag.code }}>
+                        {{ events[0].patient|attr(node.tag.code) }}
+                    </{{ node.tag.code }}>
+                    {%- endif -%}
                 {%- endfor -%}
             {%- endfor -%}
         {%- else -%}

@@ -426,8 +426,6 @@ class XML(object):
                          FILENAME=self.file_name,
                          FILENAME1=linked_file.file_name)
 
-        if self.data_type == 'patients':
-            data = data.registry.keys()
         return template.render(encoding=_config('xml_encoding'), head=self.head, tags_tree=tags_tree, data=data)
 
     def __create_download_dir(self, account):
