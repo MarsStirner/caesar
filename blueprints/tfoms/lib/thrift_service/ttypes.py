@@ -34,6 +34,7 @@ class PatientOptionalFields(object):
   OT_P = 13
   DR_P = 14
   W_P = 15
+  VNOV_D = 16
 
   _VALUES_TO_NAMES = {
     0: "SNILS",
@@ -52,6 +53,7 @@ class PatientOptionalFields(object):
     13: "OT_P",
     14: "DR_P",
     15: "W_P",
+    16: "VNOV_D",
   }
 
   _NAMES_TO_VALUES = {
@@ -71,6 +73,7 @@ class PatientOptionalFields(object):
     "OT_P": 13,
     "DR_P": 14,
     "W_P": 15,
+    "VNOV_D": 16,
   }
 
 class SluchOptionalFields(object):
@@ -243,8 +246,26 @@ class Spokesman(object):
   def __ne__(self, other):
     return not (self == other)
 
-class Patient(object):
+class Person(object):
   """
+  Person
+  Данные о пациенте
+  *****************
+  Данные для тега PERS  (Не зависящие от даты оказания услуги)
+  *********
+  @param patientId     внутренний идентфикатор пациента в БД ЛПУ
+  @param FAM       Фамилия пациента
+  @param IM        Имя пациента
+  @param OT        Отчество пациента
+  @param DR        Дата рождения пациента
+  @param W         Пол пациента
+  @param SNILS     Номер снилс
+  @param MR        Место рождения
+  @param OKATOP    адрес проживания
+  @param OKATOG    адрес регистрации
+  @param VNOV_D    данные о весе ребенка при рождении (в случае оказания помощи маловесным и недоношенным детям)  Client.weight
+  @param spokesman         Представитель пациента
+
   Attributes:
    - patientId
    - FAM
@@ -256,19 +277,8 @@ class Patient(object):
    - MR
    - OKATOG
    - OKATOP
+   - VNOV_D
    - spokesman
-   - DOCTYPE
-   - DOCSER
-   - DOCNUM
-   - VPOLIS
-   - SPOLIS
-   - NPOLIS
-   - SMO
-   - SMO_OGRN
-   - SMO_NAM
-   - SMO_OK
-   - clientDocumentId
-   - clientPolicyId
   """
 
   thrift_spec = (
@@ -283,25 +293,11 @@ class Patient(object):
     (8, TType.STRING, 'MR', None, None, ), # 8
     (9, TType.STRING, 'OKATOG', None, None, ), # 9
     (10, TType.STRING, 'OKATOP', None, None, ), # 10
-    (11, TType.STRUCT, 'spokesman', (Spokesman, Spokesman.thrift_spec), None, ), # 11
-    (12, TType.STRING, 'DOCTYPE', None, None, ), # 12
-    (13, TType.STRING, 'DOCSER', None, None, ), # 13
-    (14, TType.STRING, 'DOCNUM', None, None, ), # 14
-    (15, TType.I16, 'VPOLIS', None, -1, ), # 15
-    (16, TType.STRING, 'SPOLIS', None, None, ), # 16
-    (17, TType.STRING, 'NPOLIS', None, "", ), # 17
-    (18, TType.STRING, 'SMO', None, "", ), # 18
-    (19, TType.STRING, 'SMO_OGRN', None, None, ), # 19
-    (20, TType.STRING, 'SMO_NAM', None, None, ), # 20
-    (21, TType.STRING, 'SMO_OK', None, None, ), # 21
-    None, # 22
-    None, # 23
-    None, # 24
-    (25, TType.I32, 'clientDocumentId', None, 0, ), # 25
-    (26, TType.I32, 'clientPolicyId', None, 0, ), # 26
+    (11, TType.I32, 'VNOV_D', None, None, ), # 11
+    (12, TType.STRUCT, 'spokesman', (Spokesman, Spokesman.thrift_spec), None, ), # 12
   )
 
-  def __init__(self, patientId=thrift_spec[1][4], FAM=None, IM=None, OT=None, DR=None, W=None, SNILS=None, MR=None, OKATOG=None, OKATOP=None, spokesman=None, DOCTYPE=None, DOCSER=None, DOCNUM=None, VPOLIS=thrift_spec[15][4], SPOLIS=None, NPOLIS=thrift_spec[17][4], SMO=thrift_spec[18][4], SMO_OGRN=None, SMO_NAM=None, SMO_OK=None, clientDocumentId=thrift_spec[25][4], clientPolicyId=thrift_spec[26][4],):
+  def __init__(self, patientId=thrift_spec[1][4], FAM=None, IM=None, OT=None, DR=None, W=None, SNILS=None, MR=None, OKATOG=None, OKATOP=None, VNOV_D=None, spokesman=None,):
     if patientId is self.thrift_spec[1][4]:
       patientId = -1
     self.patientId = patientId
@@ -314,25 +310,8 @@ class Patient(object):
     self.MR = MR
     self.OKATOG = OKATOG
     self.OKATOP = OKATOP
+    self.VNOV_D = VNOV_D
     self.spokesman = spokesman
-    self.DOCTYPE = DOCTYPE
-    self.DOCSER = DOCSER
-    self.DOCNUM = DOCNUM
-    if VPOLIS is self.thrift_spec[15][4]:
-      VPOLIS = -1
-    self.VPOLIS = VPOLIS
-    self.SPOLIS = SPOLIS
-    self.NPOLIS = NPOLIS
-    self.SMO = SMO
-    self.SMO_OGRN = SMO_OGRN
-    self.SMO_NAM = SMO_NAM
-    self.SMO_OK = SMO_OK
-    if clientDocumentId is self.thrift_spec[25][4]:
-      clientDocumentId = 0
-    self.clientDocumentId = clientDocumentId
-    if clientPolicyId is self.thrift_spec[26][4]:
-      clientPolicyId = 0
-    self.clientPolicyId = clientPolicyId
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -394,69 +373,14 @@ class Patient(object):
         else:
           iprot.skip(ftype)
       elif fid == 11:
-        if ftype == TType.STRUCT:
-          self.spokesman = Spokesman()
-          self.spokesman.read(iprot)
+        if ftype == TType.I32:
+          self.VNOV_D = iprot.readI32();
         else:
           iprot.skip(ftype)
       elif fid == 12:
-        if ftype == TType.STRING:
-          self.DOCTYPE = iprot.readString().decode('utf-8')
-        else:
-          iprot.skip(ftype)
-      elif fid == 13:
-        if ftype == TType.STRING:
-          self.DOCSER = iprot.readString().decode('utf-8')
-        else:
-          iprot.skip(ftype)
-      elif fid == 14:
-        if ftype == TType.STRING:
-          self.DOCNUM = iprot.readString().decode('utf-8')
-        else:
-          iprot.skip(ftype)
-      elif fid == 15:
-        if ftype == TType.I16:
-          self.VPOLIS = iprot.readI16();
-        else:
-          iprot.skip(ftype)
-      elif fid == 16:
-        if ftype == TType.STRING:
-          self.SPOLIS = iprot.readString().decode('utf-8')
-        else:
-          iprot.skip(ftype)
-      elif fid == 17:
-        if ftype == TType.STRING:
-          self.NPOLIS = iprot.readString().decode('utf-8')
-        else:
-          iprot.skip(ftype)
-      elif fid == 18:
-        if ftype == TType.STRING:
-          self.SMO = iprot.readString().decode('utf-8')
-        else:
-          iprot.skip(ftype)
-      elif fid == 19:
-        if ftype == TType.STRING:
-          self.SMO_OGRN = iprot.readString().decode('utf-8')
-        else:
-          iprot.skip(ftype)
-      elif fid == 20:
-        if ftype == TType.STRING:
-          self.SMO_NAM = iprot.readString().decode('utf-8')
-        else:
-          iprot.skip(ftype)
-      elif fid == 21:
-        if ftype == TType.STRING:
-          self.SMO_OK = iprot.readString().decode('utf-8')
-        else:
-          iprot.skip(ftype)
-      elif fid == 25:
-        if ftype == TType.I32:
-          self.clientDocumentId = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 26:
-        if ftype == TType.I32:
-          self.clientPolicyId = iprot.readI32();
+        if ftype == TType.STRUCT:
+          self.spokesman = Spokesman()
+          self.spokesman.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -468,7 +392,7 @@ class Patient(object):
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('Patient')
+    oprot.writeStructBegin('Person')
     if self.patientId is not None:
       oprot.writeFieldBegin('patientId', TType.I32, 1)
       oprot.writeI32(self.patientId)
@@ -509,57 +433,13 @@ class Patient(object):
       oprot.writeFieldBegin('OKATOP', TType.STRING, 10)
       oprot.writeString(self.OKATOP.encode('utf-8'))
       oprot.writeFieldEnd()
+    if self.VNOV_D is not None:
+      oprot.writeFieldBegin('VNOV_D', TType.I32, 11)
+      oprot.writeI32(self.VNOV_D)
+      oprot.writeFieldEnd()
     if self.spokesman is not None:
-      oprot.writeFieldBegin('spokesman', TType.STRUCT, 11)
+      oprot.writeFieldBegin('spokesman', TType.STRUCT, 12)
       self.spokesman.write(oprot)
-      oprot.writeFieldEnd()
-    if self.DOCTYPE is not None:
-      oprot.writeFieldBegin('DOCTYPE', TType.STRING, 12)
-      oprot.writeString(self.DOCTYPE.encode('utf-8'))
-      oprot.writeFieldEnd()
-    if self.DOCSER is not None:
-      oprot.writeFieldBegin('DOCSER', TType.STRING, 13)
-      oprot.writeString(self.DOCSER.encode('utf-8'))
-      oprot.writeFieldEnd()
-    if self.DOCNUM is not None:
-      oprot.writeFieldBegin('DOCNUM', TType.STRING, 14)
-      oprot.writeString(self.DOCNUM.encode('utf-8'))
-      oprot.writeFieldEnd()
-    if self.VPOLIS is not None:
-      oprot.writeFieldBegin('VPOLIS', TType.I16, 15)
-      oprot.writeI16(self.VPOLIS)
-      oprot.writeFieldEnd()
-    if self.SPOLIS is not None:
-      oprot.writeFieldBegin('SPOLIS', TType.STRING, 16)
-      oprot.writeString(self.SPOLIS.encode('utf-8'))
-      oprot.writeFieldEnd()
-    if self.NPOLIS is not None:
-      oprot.writeFieldBegin('NPOLIS', TType.STRING, 17)
-      oprot.writeString(self.NPOLIS.encode('utf-8'))
-      oprot.writeFieldEnd()
-    if self.SMO is not None:
-      oprot.writeFieldBegin('SMO', TType.STRING, 18)
-      oprot.writeString(self.SMO.encode('utf-8'))
-      oprot.writeFieldEnd()
-    if self.SMO_OGRN is not None:
-      oprot.writeFieldBegin('SMO_OGRN', TType.STRING, 19)
-      oprot.writeString(self.SMO_OGRN.encode('utf-8'))
-      oprot.writeFieldEnd()
-    if self.SMO_NAM is not None:
-      oprot.writeFieldBegin('SMO_NAM', TType.STRING, 20)
-      oprot.writeString(self.SMO_NAM.encode('utf-8'))
-      oprot.writeFieldEnd()
-    if self.SMO_OK is not None:
-      oprot.writeFieldBegin('SMO_OK', TType.STRING, 21)
-      oprot.writeString(self.SMO_OK.encode('utf-8'))
-      oprot.writeFieldEnd()
-    if self.clientDocumentId is not None:
-      oprot.writeFieldBegin('clientDocumentId', TType.I32, 25)
-      oprot.writeI32(self.clientDocumentId)
-      oprot.writeFieldEnd()
-    if self.clientPolicyId is not None:
-      oprot.writeFieldBegin('clientPolicyId', TType.I32, 26)
-      oprot.writeI32(self.clientPolicyId)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -577,16 +457,224 @@ class Patient(object):
       raise TProtocol.TProtocolException(message='Required field DR is unset!')
     if self.W is None:
       raise TProtocol.TProtocolException(message='Required field W is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class Patient(object):
+  """
+  Patient
+  Данные о пациенте
+  *****************
+  Данные для тега Pacient  (Зависящие от даты оказания услуги)
+  *********
+  @param patientId     внутренний идентфикатор пациента в БД ЛПУ
+  @param NOVOR         Признак новорожденного
+  @param DOCTYPE       Тип документа
+  @param DOCSER        Серия документа
+  @param DOCNUM        Номер документа
+  @param VPOLIS        Тип полиса
+  @param SPOLIS        Серия полиса
+  @param NPOLIS        Номер полиса
+  @param SMO           Инфис-код страховщика
+  @param SMO_OGRN      ОГРН страховщика
+  @param SMO_OK        Код окато страховщика
+  @param SMO_NAM       Полное наименование страховщика
+
+  Attributes:
+   - NOVOR
+   - DOCTYPE
+   - DOCSER
+   - DOCNUM
+   - VPOLIS
+   - SPOLIS
+   - NPOLIS
+   - SMO
+   - SMO_OGRN
+   - SMO_OK
+   - SMO_NAM
+   - patientId
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'NOVOR', None, "0", ), # 1
+    (2, TType.STRING, 'DOCTYPE', None, None, ), # 2
+    (3, TType.STRING, 'DOCSER', None, None, ), # 3
+    (4, TType.STRING, 'DOCNUM', None, None, ), # 4
+    (5, TType.I16, 'VPOLIS', None, None, ), # 5
+    (6, TType.STRING, 'SPOLIS', None, None, ), # 6
+    (7, TType.STRING, 'NPOLIS', None, None, ), # 7
+    (8, TType.STRING, 'SMO', None, None, ), # 8
+    (9, TType.STRING, 'SMO_OGRN', None, None, ), # 9
+    (10, TType.STRING, 'SMO_OK', None, None, ), # 10
+    (11, TType.STRING, 'SMO_NAM', None, None, ), # 11
+    (12, TType.I32, 'patientId', None, None, ), # 12
+  )
+
+  def __init__(self, NOVOR=thrift_spec[1][4], DOCTYPE=None, DOCSER=None, DOCNUM=None, VPOLIS=None, SPOLIS=None, NPOLIS=None, SMO=None, SMO_OGRN=None, SMO_OK=None, SMO_NAM=None, patientId=None,):
+    self.NOVOR = NOVOR
+    self.DOCTYPE = DOCTYPE
+    self.DOCSER = DOCSER
+    self.DOCNUM = DOCNUM
+    self.VPOLIS = VPOLIS
+    self.SPOLIS = SPOLIS
+    self.NPOLIS = NPOLIS
+    self.SMO = SMO
+    self.SMO_OGRN = SMO_OGRN
+    self.SMO_OK = SMO_OK
+    self.SMO_NAM = SMO_NAM
+    self.patientId = patientId
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.NOVOR = iprot.readString().decode('utf-8')
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.DOCTYPE = iprot.readString().decode('utf-8')
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.DOCSER = iprot.readString().decode('utf-8')
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.DOCNUM = iprot.readString().decode('utf-8')
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.I16:
+          self.VPOLIS = iprot.readI16();
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRING:
+          self.SPOLIS = iprot.readString().decode('utf-8')
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.STRING:
+          self.NPOLIS = iprot.readString().decode('utf-8')
+        else:
+          iprot.skip(ftype)
+      elif fid == 8:
+        if ftype == TType.STRING:
+          self.SMO = iprot.readString().decode('utf-8')
+        else:
+          iprot.skip(ftype)
+      elif fid == 9:
+        if ftype == TType.STRING:
+          self.SMO_OGRN = iprot.readString().decode('utf-8')
+        else:
+          iprot.skip(ftype)
+      elif fid == 10:
+        if ftype == TType.STRING:
+          self.SMO_OK = iprot.readString().decode('utf-8')
+        else:
+          iprot.skip(ftype)
+      elif fid == 11:
+        if ftype == TType.STRING:
+          self.SMO_NAM = iprot.readString().decode('utf-8')
+        else:
+          iprot.skip(ftype)
+      elif fid == 12:
+        if ftype == TType.I32:
+          self.patientId = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('Patient')
+    if self.NOVOR is not None:
+      oprot.writeFieldBegin('NOVOR', TType.STRING, 1)
+      oprot.writeString(self.NOVOR.encode('utf-8'))
+      oprot.writeFieldEnd()
+    if self.DOCTYPE is not None:
+      oprot.writeFieldBegin('DOCTYPE', TType.STRING, 2)
+      oprot.writeString(self.DOCTYPE.encode('utf-8'))
+      oprot.writeFieldEnd()
+    if self.DOCSER is not None:
+      oprot.writeFieldBegin('DOCSER', TType.STRING, 3)
+      oprot.writeString(self.DOCSER.encode('utf-8'))
+      oprot.writeFieldEnd()
+    if self.DOCNUM is not None:
+      oprot.writeFieldBegin('DOCNUM', TType.STRING, 4)
+      oprot.writeString(self.DOCNUM.encode('utf-8'))
+      oprot.writeFieldEnd()
+    if self.VPOLIS is not None:
+      oprot.writeFieldBegin('VPOLIS', TType.I16, 5)
+      oprot.writeI16(self.VPOLIS)
+      oprot.writeFieldEnd()
+    if self.SPOLIS is not None:
+      oprot.writeFieldBegin('SPOLIS', TType.STRING, 6)
+      oprot.writeString(self.SPOLIS.encode('utf-8'))
+      oprot.writeFieldEnd()
+    if self.NPOLIS is not None:
+      oprot.writeFieldBegin('NPOLIS', TType.STRING, 7)
+      oprot.writeString(self.NPOLIS.encode('utf-8'))
+      oprot.writeFieldEnd()
+    if self.SMO is not None:
+      oprot.writeFieldBegin('SMO', TType.STRING, 8)
+      oprot.writeString(self.SMO.encode('utf-8'))
+      oprot.writeFieldEnd()
+    if self.SMO_OGRN is not None:
+      oprot.writeFieldBegin('SMO_OGRN', TType.STRING, 9)
+      oprot.writeString(self.SMO_OGRN.encode('utf-8'))
+      oprot.writeFieldEnd()
+    if self.SMO_OK is not None:
+      oprot.writeFieldBegin('SMO_OK', TType.STRING, 10)
+      oprot.writeString(self.SMO_OK.encode('utf-8'))
+      oprot.writeFieldEnd()
+    if self.SMO_NAM is not None:
+      oprot.writeFieldBegin('SMO_NAM', TType.STRING, 11)
+      oprot.writeString(self.SMO_NAM.encode('utf-8'))
+      oprot.writeFieldEnd()
+    if self.patientId is not None:
+      oprot.writeFieldBegin('patientId', TType.I32, 12)
+      oprot.writeI32(self.patientId)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.NOVOR is None:
+      raise TProtocol.TProtocolException(message='Required field NOVOR is unset!')
     if self.VPOLIS is None:
       raise TProtocol.TProtocolException(message='Required field VPOLIS is unset!')
     if self.NPOLIS is None:
       raise TProtocol.TProtocolException(message='Required field NPOLIS is unset!')
     if self.SMO is None:
       raise TProtocol.TProtocolException(message='Required field SMO is unset!')
-    if self.clientDocumentId is None:
-      raise TProtocol.TProtocolException(message='Required field clientDocumentId is unset!')
-    if self.clientPolicyId is None:
-      raise TProtocol.TProtocolException(message='Required field clientPolicyId is unset!')
     return
 
 
@@ -723,12 +811,49 @@ class Usl(object):
 
 class Sluch(object):
   """
+  * Sluch
+  * Структура с данными о случае оказания мед помощи
+  * *******
+  * @param IDCASE    Идентификатор выставленной позиции счета
+  * @param USL_OK
+  * @param VIDPOM
+  * @param NPR_MO
+  * @param EXTR
+  * @param FOR_POM
+         Данные о форме оказания помощи  (Event.order -> rbAppointmentOrder.id -> rbAppointmentOrder.TFOMScode_account)
+                         Возможные значения:
+                         1-плановая;
+                         2-экстренная;
+                         3-неотложная.
+  * @param LPU
+  * @param LPU_1
+  * @param PODR
+  * @param PROFIL
+  * @param DET
+  * @param NHISTORY
+  * @param DATE_1
+  * @param DATE_2
+  * @param DS0
+  * @param DS1
+  * @param DS2
+  * @param CODE_MES1
+  * @param CODE_MES2
+  * @param RSLT
+  * @param ISHOD
+  * @param PRVS
+  * @param IDDOKT
+  * @param OS_SLUCH
+  * @param IDSP
+  * @param
+  * *******
+
   Attributes:
    - IDCASE
    - USL_OK
    - VIDPOM
    - NPR_MO
    - EXTR
+   - FOR_POM
    - LPU
    - LPU_1
    - PODR
@@ -746,16 +871,12 @@ class Sluch(object):
    - ISHOD
    - PRVS
    - IDDOKT
+   - OS_SLUCH
    - IDSP
+   - patient
    - ED_COL
    - SUMV
-   - OPLATA
    - USL
-   - NOVOR
-   - OS_SLUCH
-   - actionId
-   - eventId
-   - rbServiceId
   """
 
   thrift_spec = (
@@ -765,41 +886,42 @@ class Sluch(object):
     (3, TType.I16, 'VIDPOM', None, None, ), # 3
     (4, TType.STRING, 'NPR_MO', None, None, ), # 4
     (5, TType.I16, 'EXTR', None, None, ), # 5
-    (6, TType.STRING, 'LPU', None, None, ), # 6
-    (7, TType.STRING, 'LPU_1', None, None, ), # 7
-    (8, TType.STRING, 'PODR', None, None, ), # 8
-    (9, TType.I16, 'PROFIL', None, None, ), # 9
-    (10, TType.BOOL, 'DET', None, None, ), # 10
-    (11, TType.STRING, 'NHISTORY', None, None, ), # 11
-    (12, TType.I64, 'DATE_1', None, None, ), # 12
-    (13, TType.I64, 'DATE_2', None, None, ), # 13
-    (14, TType.STRING, 'DS0', None, "0", ), # 14
-    (15, TType.STRING, 'DS1', None, "", ), # 15
-    (16, TType.STRING, 'DS2', None, None, ), # 16
-    (17, TType.STRING, 'CODE_MES1', None, None, ), # 17
-    (18, TType.STRING, 'CODE_MES2', None, None, ), # 18
-    (19, TType.I16, 'RSLT', None, -1, ), # 19
-    (20, TType.I16, 'ISHOD', None, -1, ), # 20
-    (21, TType.I32, 'PRVS', None, -1, ), # 21
-    (22, TType.STRING, 'IDDOKT', None, "", ), # 22
-    (23, TType.I16, 'IDSP', None, -1, ), # 23
-    (24, TType.DOUBLE, 'ED_COL', None, -1, ), # 24
-    (25, TType.DOUBLE, 'SUMV', None, -1, ), # 25
-    (26, TType.I16, 'OPLATA', None, None, ), # 26
-    (27, TType.LIST, 'USL', (TType.STRUCT,(Usl, Usl.thrift_spec)), None, ), # 27
-    (28, TType.STRING, 'NOVOR', None, "0", ), # 28
-    (29, TType.LIST, 'OS_SLUCH', (TType.I32,None), None, ), # 29
-    (30, TType.I32, 'actionId', None, None, ), # 30
-    (31, TType.I32, 'eventId', None, None, ), # 31
-    (32, TType.I32, 'rbServiceId', None, None, ), # 32
+    (6, TType.I16, 'FOR_POM', None, None, ), # 6
+    (7, TType.STRING, 'LPU', None, None, ), # 7
+    (8, TType.STRING, 'LPU_1', None, None, ), # 8
+    (9, TType.STRING, 'PODR', None, None, ), # 9
+    (10, TType.I16, 'PROFIL', None, None, ), # 10
+    (11, TType.BOOL, 'DET', None, None, ), # 11
+    (12, TType.STRING, 'NHISTORY', None, None, ), # 12
+    (13, TType.I64, 'DATE_1', None, None, ), # 13
+    (14, TType.I64, 'DATE_2', None, None, ), # 14
+    (15, TType.STRING, 'DS0', None, None, ), # 15
+    (16, TType.STRING, 'DS1', None, None, ), # 16
+    (17, TType.STRING, 'DS2', None, None, ), # 17
+    (18, TType.STRING, 'CODE_MES1', None, None, ), # 18
+    (19, TType.STRING, 'CODE_MES2', None, None, ), # 19
+    (20, TType.I16, 'RSLT', None, None, ), # 20
+    (21, TType.I16, 'ISHOD', None, None, ), # 21
+    (22, TType.I32, 'PRVS', None, -1, ), # 22
+    (23, TType.STRING, 'IDDOKT', None, "", ), # 23
+    (24, TType.LIST, 'OS_SLUCH', (TType.I32,None), None, ), # 24
+    (25, TType.I16, 'IDSP', None, None, ), # 25
+    (26, TType.STRUCT, 'patient', (Patient, Patient.thrift_spec), None, ), # 26
+    None, # 27
+    None, # 28
+    None, # 29
+    (30, TType.DOUBLE, 'ED_COL', None, -1, ), # 30
+    (31, TType.DOUBLE, 'SUMV', None, -1, ), # 31
+    (32, TType.LIST, 'USL', (TType.STRUCT,(Usl, Usl.thrift_spec)), None, ), # 32
   )
 
-  def __init__(self, IDCASE=None, USL_OK=None, VIDPOM=None, NPR_MO=None, EXTR=None, LPU=None, LPU_1=None, PODR=None, PROFIL=None, DET=None, NHISTORY=None, DATE_1=None, DATE_2=None, DS0=thrift_spec[14][4], DS1=thrift_spec[15][4], DS2=None, CODE_MES1=None, CODE_MES2=None, RSLT=thrift_spec[19][4], ISHOD=thrift_spec[20][4], PRVS=thrift_spec[21][4], IDDOKT=thrift_spec[22][4], IDSP=thrift_spec[23][4], ED_COL=thrift_spec[24][4], SUMV=thrift_spec[25][4], OPLATA=None, USL=None, NOVOR=thrift_spec[28][4], OS_SLUCH=None, actionId=None, eventId=None, rbServiceId=None,):
+  def __init__(self, IDCASE=None, USL_OK=None, VIDPOM=None, NPR_MO=None, EXTR=None, FOR_POM=None, LPU=None, LPU_1=None, PODR=None, PROFIL=None, DET=None, NHISTORY=None, DATE_1=None, DATE_2=None, DS0=None, DS1=None, DS2=None, CODE_MES1=None, CODE_MES2=None, RSLT=None, ISHOD=None, PRVS=thrift_spec[22][4], IDDOKT=thrift_spec[23][4], OS_SLUCH=None, IDSP=None, patient=None, ED_COL=thrift_spec[30][4], SUMV=thrift_spec[31][4], USL=None,):
     self.IDCASE = IDCASE
     self.USL_OK = USL_OK
     self.VIDPOM = VIDPOM
     self.NPR_MO = NPR_MO
     self.EXTR = EXTR
+    self.FOR_POM = FOR_POM
     self.LPU = LPU
     self.LPU_1 = LPU_1
     self.PODR = PODR
@@ -813,28 +935,18 @@ class Sluch(object):
     self.DS2 = DS2
     self.CODE_MES1 = CODE_MES1
     self.CODE_MES2 = CODE_MES2
-    if RSLT is self.thrift_spec[19][4]:
-      RSLT = -1
     self.RSLT = RSLT
-    if ISHOD is self.thrift_spec[20][4]:
-      ISHOD = -1
     self.ISHOD = ISHOD
-    if PRVS is self.thrift_spec[21][4]:
+    if PRVS is self.thrift_spec[22][4]:
       PRVS = -1
     self.PRVS = PRVS
     self.IDDOKT = IDDOKT
-    if IDSP is self.thrift_spec[23][4]:
-      IDSP = -1
+    self.OS_SLUCH = OS_SLUCH
     self.IDSP = IDSP
+    self.patient = patient
     self.ED_COL = ED_COL
     self.SUMV = SUMV
-    self.OPLATA = OPLATA
     self.USL = USL
-    self.NOVOR = NOVOR
-    self.OS_SLUCH = OS_SLUCH
-    self.actionId = actionId
-    self.eventId = eventId
-    self.rbServiceId = rbServiceId
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -871,149 +983,135 @@ class Sluch(object):
         else:
           iprot.skip(ftype)
       elif fid == 6:
-        if ftype == TType.STRING:
-          self.LPU = iprot.readString().decode('utf-8')
+        if ftype == TType.I16:
+          self.FOR_POM = iprot.readI16();
         else:
           iprot.skip(ftype)
       elif fid == 7:
         if ftype == TType.STRING:
-          self.LPU_1 = iprot.readString().decode('utf-8')
+          self.LPU = iprot.readString().decode('utf-8')
         else:
           iprot.skip(ftype)
       elif fid == 8:
         if ftype == TType.STRING:
-          self.PODR = iprot.readString().decode('utf-8')
+          self.LPU_1 = iprot.readString().decode('utf-8')
         else:
           iprot.skip(ftype)
       elif fid == 9:
+        if ftype == TType.STRING:
+          self.PODR = iprot.readString().decode('utf-8')
+        else:
+          iprot.skip(ftype)
+      elif fid == 10:
         if ftype == TType.I16:
           self.PROFIL = iprot.readI16();
         else:
           iprot.skip(ftype)
-      elif fid == 10:
+      elif fid == 11:
         if ftype == TType.BOOL:
           self.DET = iprot.readBool();
         else:
           iprot.skip(ftype)
-      elif fid == 11:
+      elif fid == 12:
         if ftype == TType.STRING:
           self.NHISTORY = iprot.readString().decode('utf-8')
         else:
           iprot.skip(ftype)
-      elif fid == 12:
+      elif fid == 13:
         if ftype == TType.I64:
           self.DATE_1 = iprot.readI64();
         else:
           iprot.skip(ftype)
-      elif fid == 13:
+      elif fid == 14:
         if ftype == TType.I64:
           self.DATE_2 = iprot.readI64();
         else:
           iprot.skip(ftype)
-      elif fid == 14:
+      elif fid == 15:
         if ftype == TType.STRING:
           self.DS0 = iprot.readString().decode('utf-8')
         else:
           iprot.skip(ftype)
-      elif fid == 15:
+      elif fid == 16:
         if ftype == TType.STRING:
           self.DS1 = iprot.readString().decode('utf-8')
         else:
           iprot.skip(ftype)
-      elif fid == 16:
+      elif fid == 17:
         if ftype == TType.STRING:
           self.DS2 = iprot.readString().decode('utf-8')
         else:
           iprot.skip(ftype)
-      elif fid == 17:
+      elif fid == 18:
         if ftype == TType.STRING:
           self.CODE_MES1 = iprot.readString().decode('utf-8')
         else:
           iprot.skip(ftype)
-      elif fid == 18:
+      elif fid == 19:
         if ftype == TType.STRING:
           self.CODE_MES2 = iprot.readString().decode('utf-8')
         else:
           iprot.skip(ftype)
-      elif fid == 19:
+      elif fid == 20:
         if ftype == TType.I16:
           self.RSLT = iprot.readI16();
         else:
           iprot.skip(ftype)
-      elif fid == 20:
+      elif fid == 21:
         if ftype == TType.I16:
           self.ISHOD = iprot.readI16();
         else:
           iprot.skip(ftype)
-      elif fid == 21:
+      elif fid == 22:
         if ftype == TType.I32:
           self.PRVS = iprot.readI32();
         else:
           iprot.skip(ftype)
-      elif fid == 22:
+      elif fid == 23:
         if ftype == TType.STRING:
           self.IDDOKT = iprot.readString().decode('utf-8')
         else:
           iprot.skip(ftype)
-      elif fid == 23:
+      elif fid == 24:
+        if ftype == TType.LIST:
+          self.OS_SLUCH = []
+          (_etype3, _size0) = iprot.readListBegin()
+          for _i4 in xrange(_size0):
+            _elem5 = iprot.readI32();
+            self.OS_SLUCH.append(_elem5)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 25:
         if ftype == TType.I16:
           self.IDSP = iprot.readI16();
         else:
           iprot.skip(ftype)
-      elif fid == 24:
+      elif fid == 26:
+        if ftype == TType.STRUCT:
+          self.patient = Patient()
+          self.patient.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 30:
         if ftype == TType.DOUBLE:
           self.ED_COL = iprot.readDouble();
         else:
           iprot.skip(ftype)
-      elif fid == 25:
+      elif fid == 31:
         if ftype == TType.DOUBLE:
           self.SUMV = iprot.readDouble();
         else:
           iprot.skip(ftype)
-      elif fid == 26:
-        if ftype == TType.I16:
-          self.OPLATA = iprot.readI16();
-        else:
-          iprot.skip(ftype)
-      elif fid == 27:
+      elif fid == 32:
         if ftype == TType.LIST:
           self.USL = []
-          (_etype3, _size0) = iprot.readListBegin()
-          for _i4 in xrange(_size0):
-            _elem5 = Usl()
-            _elem5.read(iprot)
-            self.USL.append(_elem5)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 28:
-        if ftype == TType.STRING:
-          self.NOVOR = iprot.readString().decode('utf-8')
-        else:
-          iprot.skip(ftype)
-      elif fid == 29:
-        if ftype == TType.LIST:
-          self.OS_SLUCH = []
           (_etype9, _size6) = iprot.readListBegin()
           for _i10 in xrange(_size6):
-            _elem11 = iprot.readI32();
-            self.OS_SLUCH.append(_elem11)
+            _elem11 = Usl()
+            _elem11.read(iprot)
+            self.USL.append(_elem11)
           iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 30:
-        if ftype == TType.I32:
-          self.actionId = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 31:
-        if ftype == TType.I32:
-          self.eventId = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 32:
-        if ftype == TType.I32:
-          self.rbServiceId = iprot.readI32();
         else:
           iprot.skip(ftype)
       else:
@@ -1046,119 +1144,107 @@ class Sluch(object):
       oprot.writeFieldBegin('EXTR', TType.I16, 5)
       oprot.writeI16(self.EXTR)
       oprot.writeFieldEnd()
+    if self.FOR_POM is not None:
+      oprot.writeFieldBegin('FOR_POM', TType.I16, 6)
+      oprot.writeI16(self.FOR_POM)
+      oprot.writeFieldEnd()
     if self.LPU is not None:
-      oprot.writeFieldBegin('LPU', TType.STRING, 6)
+      oprot.writeFieldBegin('LPU', TType.STRING, 7)
       oprot.writeString(self.LPU.encode('utf-8'))
       oprot.writeFieldEnd()
     if self.LPU_1 is not None:
-      oprot.writeFieldBegin('LPU_1', TType.STRING, 7)
+      oprot.writeFieldBegin('LPU_1', TType.STRING, 8)
       oprot.writeString(self.LPU_1.encode('utf-8'))
       oprot.writeFieldEnd()
     if self.PODR is not None:
-      oprot.writeFieldBegin('PODR', TType.STRING, 8)
+      oprot.writeFieldBegin('PODR', TType.STRING, 9)
       oprot.writeString(self.PODR.encode('utf-8'))
       oprot.writeFieldEnd()
     if self.PROFIL is not None:
-      oprot.writeFieldBegin('PROFIL', TType.I16, 9)
+      oprot.writeFieldBegin('PROFIL', TType.I16, 10)
       oprot.writeI16(self.PROFIL)
       oprot.writeFieldEnd()
     if self.DET is not None:
-      oprot.writeFieldBegin('DET', TType.BOOL, 10)
+      oprot.writeFieldBegin('DET', TType.BOOL, 11)
       oprot.writeBool(self.DET)
       oprot.writeFieldEnd()
     if self.NHISTORY is not None:
-      oprot.writeFieldBegin('NHISTORY', TType.STRING, 11)
+      oprot.writeFieldBegin('NHISTORY', TType.STRING, 12)
       oprot.writeString(self.NHISTORY.encode('utf-8'))
       oprot.writeFieldEnd()
     if self.DATE_1 is not None:
-      oprot.writeFieldBegin('DATE_1', TType.I64, 12)
+      oprot.writeFieldBegin('DATE_1', TType.I64, 13)
       oprot.writeI64(self.DATE_1)
       oprot.writeFieldEnd()
     if self.DATE_2 is not None:
-      oprot.writeFieldBegin('DATE_2', TType.I64, 13)
+      oprot.writeFieldBegin('DATE_2', TType.I64, 14)
       oprot.writeI64(self.DATE_2)
       oprot.writeFieldEnd()
     if self.DS0 is not None:
-      oprot.writeFieldBegin('DS0', TType.STRING, 14)
+      oprot.writeFieldBegin('DS0', TType.STRING, 15)
       oprot.writeString(self.DS0.encode('utf-8'))
       oprot.writeFieldEnd()
     if self.DS1 is not None:
-      oprot.writeFieldBegin('DS1', TType.STRING, 15)
+      oprot.writeFieldBegin('DS1', TType.STRING, 16)
       oprot.writeString(self.DS1.encode('utf-8'))
       oprot.writeFieldEnd()
     if self.DS2 is not None:
-      oprot.writeFieldBegin('DS2', TType.STRING, 16)
+      oprot.writeFieldBegin('DS2', TType.STRING, 17)
       oprot.writeString(self.DS2.encode('utf-8'))
       oprot.writeFieldEnd()
     if self.CODE_MES1 is not None:
-      oprot.writeFieldBegin('CODE_MES1', TType.STRING, 17)
+      oprot.writeFieldBegin('CODE_MES1', TType.STRING, 18)
       oprot.writeString(self.CODE_MES1.encode('utf-8'))
       oprot.writeFieldEnd()
     if self.CODE_MES2 is not None:
-      oprot.writeFieldBegin('CODE_MES2', TType.STRING, 18)
+      oprot.writeFieldBegin('CODE_MES2', TType.STRING, 19)
       oprot.writeString(self.CODE_MES2.encode('utf-8'))
       oprot.writeFieldEnd()
     if self.RSLT is not None:
-      oprot.writeFieldBegin('RSLT', TType.I16, 19)
+      oprot.writeFieldBegin('RSLT', TType.I16, 20)
       oprot.writeI16(self.RSLT)
       oprot.writeFieldEnd()
     if self.ISHOD is not None:
-      oprot.writeFieldBegin('ISHOD', TType.I16, 20)
+      oprot.writeFieldBegin('ISHOD', TType.I16, 21)
       oprot.writeI16(self.ISHOD)
       oprot.writeFieldEnd()
     if self.PRVS is not None:
-      oprot.writeFieldBegin('PRVS', TType.I32, 21)
+      oprot.writeFieldBegin('PRVS', TType.I32, 22)
       oprot.writeI32(self.PRVS)
       oprot.writeFieldEnd()
     if self.IDDOKT is not None:
-      oprot.writeFieldBegin('IDDOKT', TType.STRING, 22)
+      oprot.writeFieldBegin('IDDOKT', TType.STRING, 23)
       oprot.writeString(self.IDDOKT.encode('utf-8'))
       oprot.writeFieldEnd()
+    if self.OS_SLUCH is not None:
+      oprot.writeFieldBegin('OS_SLUCH', TType.LIST, 24)
+      oprot.writeListBegin(TType.I32, len(self.OS_SLUCH))
+      for iter12 in self.OS_SLUCH:
+        oprot.writeI32(iter12)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
     if self.IDSP is not None:
-      oprot.writeFieldBegin('IDSP', TType.I16, 23)
+      oprot.writeFieldBegin('IDSP', TType.I16, 25)
       oprot.writeI16(self.IDSP)
       oprot.writeFieldEnd()
+    if self.patient is not None:
+      oprot.writeFieldBegin('patient', TType.STRUCT, 26)
+      self.patient.write(oprot)
+      oprot.writeFieldEnd()
     if self.ED_COL is not None:
-      oprot.writeFieldBegin('ED_COL', TType.DOUBLE, 24)
+      oprot.writeFieldBegin('ED_COL', TType.DOUBLE, 30)
       oprot.writeDouble(self.ED_COL)
       oprot.writeFieldEnd()
     if self.SUMV is not None:
-      oprot.writeFieldBegin('SUMV', TType.DOUBLE, 25)
+      oprot.writeFieldBegin('SUMV', TType.DOUBLE, 31)
       oprot.writeDouble(self.SUMV)
       oprot.writeFieldEnd()
-    if self.OPLATA is not None:
-      oprot.writeFieldBegin('OPLATA', TType.I16, 26)
-      oprot.writeI16(self.OPLATA)
-      oprot.writeFieldEnd()
     if self.USL is not None:
-      oprot.writeFieldBegin('USL', TType.LIST, 27)
+      oprot.writeFieldBegin('USL', TType.LIST, 32)
       oprot.writeListBegin(TType.STRUCT, len(self.USL))
-      for iter12 in self.USL:
-        iter12.write(oprot)
+      for iter13 in self.USL:
+        iter13.write(oprot)
       oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.NOVOR is not None:
-      oprot.writeFieldBegin('NOVOR', TType.STRING, 28)
-      oprot.writeString(self.NOVOR.encode('utf-8'))
-      oprot.writeFieldEnd()
-    if self.OS_SLUCH is not None:
-      oprot.writeFieldBegin('OS_SLUCH', TType.LIST, 29)
-      oprot.writeListBegin(TType.I32, len(self.OS_SLUCH))
-      for iter13 in self.OS_SLUCH:
-        oprot.writeI32(iter13)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.actionId is not None:
-      oprot.writeFieldBegin('actionId', TType.I32, 30)
-      oprot.writeI32(self.actionId)
-      oprot.writeFieldEnd()
-    if self.eventId is not None:
-      oprot.writeFieldBegin('eventId', TType.I32, 31)
-      oprot.writeI32(self.eventId)
-      oprot.writeFieldEnd()
-    if self.rbServiceId is not None:
-      oprot.writeFieldBegin('rbServiceId', TType.I32, 32)
-      oprot.writeI32(self.rbServiceId)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -1170,6 +1256,8 @@ class Sluch(object):
       raise TProtocol.TProtocolException(message='Required field USL_OK is unset!')
     if self.VIDPOM is None:
       raise TProtocol.TProtocolException(message='Required field VIDPOM is unset!')
+    if self.FOR_POM is None:
+      raise TProtocol.TProtocolException(message='Required field FOR_POM is unset!')
     if self.LPU is None:
       raise TProtocol.TProtocolException(message='Required field LPU is unset!')
     if self.PROFIL is None:
@@ -1192,18 +1280,14 @@ class Sluch(object):
       raise TProtocol.TProtocolException(message='Required field IDDOKT is unset!')
     if self.IDSP is None:
       raise TProtocol.TProtocolException(message='Required field IDSP is unset!')
+    if self.patient is None:
+      raise TProtocol.TProtocolException(message='Required field patient is unset!')
     if self.ED_COL is None:
       raise TProtocol.TProtocolException(message='Required field ED_COL is unset!')
     if self.SUMV is None:
       raise TProtocol.TProtocolException(message='Required field SUMV is unset!')
-    if self.NOVOR is None:
-      raise TProtocol.TProtocolException(message='Required field NOVOR is unset!')
-    if self.actionId is None:
-      raise TProtocol.TProtocolException(message='Required field actionId is unset!')
-    if self.eventId is None:
-      raise TProtocol.TProtocolException(message='Required field eventId is unset!')
-    if self.rbServiceId is None:
-      raise TProtocol.TProtocolException(message='Required field rbServiceId is unset!')
+    if self.USL is None:
+      raise TProtocol.TProtocolException(message='Required field USL is unset!')
     return
 
 
@@ -3484,6 +3568,11 @@ class AccountItem(object):
 
 class AccountInfo(object):
   """
+  AccountInfo
+  Структура с данными о счете и его позициях
+  @param account Вложенная структура с данными о счете
+  @param items  Список вложенных структур с данными о позициях счета
+
   Attributes:
    - account
    - items
@@ -4112,7 +4201,7 @@ class XMLRegisters(object):
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'account', (Account, Account.thrift_spec), None, ), # 1
-    (2, TType.MAP, 'registry', (TType.STRUCT,(Patient, Patient.thrift_spec),TType.LIST,(TType.STRUCT,(Sluch, Sluch.thrift_spec))), None, ), # 2
+    (2, TType.MAP, 'registry', (TType.STRUCT,(Person, Person.thrift_spec),TType.LIST,(TType.STRUCT,(Sluch, Sluch.thrift_spec))), None, ), # 2
     (3, TType.I64, 'data', None, None, ), # 3
     (4, TType.STRING, 'patientRegistryFILENAME', None, None, ), # 4
     (5, TType.STRING, 'serviceRegistryFILENAME', None, None, ), # 5
@@ -4149,7 +4238,7 @@ class XMLRegisters(object):
           self.registry = {}
           (_ktype22, _vtype23, _size21 ) = iprot.readMapBegin() 
           for _i25 in xrange(_size21):
-            _key26 = Patient()
+            _key26 = Person()
             _key26.read(iprot)
             _val27 = []
             (_etype31, _size28) = iprot.readListBegin()

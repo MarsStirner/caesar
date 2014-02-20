@@ -1,11 +1,20 @@
 namespace java ru.korus.tmis.tfoms.thriftgen
 //Namespace=package name for java
 
+/**
+ * Список используемых сокращений и аббревиатур
+ * СМО - Страховая Медицинская Организация
+ * ОКАТО - Общероссийский Классификатор Административно-Территориальных Объектов
+ * ОГРН - Основной Государственный Регистрационный Номер
+ * ЛПУ - Лечебно-Профилактичесое Учреждение
+*/
+
+// Переопределения типов
 typedef i32 int
 typedef i64 timestamp
 typedef i16 tinyint
 
-//OUTPUT STRUCTS
+//OUTPUT STRUCTURES
 /**
  * Представитель пациента
  * @param patientId         1)Идентификатор пациента
@@ -24,9 +33,26 @@ struct Spokesman{
 	6:optional tinyint W_P;
 }
 
-//Данные о пациенте
-struct Patient{
-	//Данные для тега PERS
+/**
+ * Person
+ * Данные о пациенте
+ * *****************
+ * Данные для тега PERS  (Не зависящие от даты оказания услуги)
+ * *********
+ * @param patientId     внутренний идентфикатор пациента в БД ЛПУ
+ * @param FAM       Фамилия пациента
+ * @param IM        Имя пациента
+ * @param OT        Отчество пациента
+ * @param DR        Дата рождения пациента
+ * @param W         Пол пациента
+ * @param SNILS     Номер снилс
+ * @param MR        Место рождения
+ * @param OKATOP    адрес проживания
+ * @param OKATOG    адрес регистрации
+ * @param VNOV_D    данные о весе ребенка при рождении (в случае оказания помощи маловесным и недоношенным детям)  Client.weight
+ * @param spokesman         Представитель пациента
+ */
+struct Person{
 	1:required int patientId = -1; 	
 	2:required string FAM;
 	3:required string IM;
@@ -37,22 +63,44 @@ struct Patient{
 	8:optional string MR;
 	9:optional string OKATOG;
 	10:optional string OKATOP;
-	11:optional Spokesman spokesman;
-	12:optional string DOCTYPE;
-	13:optional string DOCSER;
-	14:optional string DOCNUM;
-	// Данные для тега PATIENT
-	15:required tinyint VPOLIS  = -1;
-	16:optional string SPOLIS;
-	17:required string NPOLIS = "";
-	18:required string SMO = "";
-	19:optional string SMO_OGRN;
-	20:optional string SMO_NAM;
-	21:optional string SMO_OK;
-	//Внутренние идентификаторы
-	25:required int clientDocumentId = 0;
-	26:required int clientPolicyId = 0;
+	11:optional int VNOV_D;
+	12:optional Spokesman spokesman;
 }
+
+/**
+ * Patient
+ * Данные о пациенте
+ * *****************
+ * Данные для тега Pacient  (Зависящие от даты оказания услуги)
+ * *********
+ * @param patientId     внутренний идентфикатор пациента в БД ЛПУ
+ * @param NOVOR         Признак новорожденного
+ * @param DOCTYPE       Тип документа
+ * @param DOCSER        Серия документа
+ * @param DOCNUM        Номер документа
+ * @param VPOLIS        Тип полиса
+ * @param SPOLIS        Серия полиса
+ * @param NPOLIS        Номер полиса
+ * @param SMO           Инфис-код страховщика
+ * @param SMO_OGRN      ОГРН страховщика
+ * @param SMO_OK        Код окато страховщика
+ * @param SMO_NAM       Полное наименование страховщика
+ */
+ struct Patient{
+     1:required string NOVOR = "0";
+     2:optional string DOCTYPE;
+     3:optional string DOCSER;
+     4:optional string DOCNUM;
+     5:required tinyint VPOLIS;
+     6:optional string SPOLIS;
+     7:required string NPOLIS;
+     8:required string SMO;
+     9:optional string SMO_OGRN;
+     10:optional string SMO_OK;
+     11:optional string SMO_NAM;
+     //внутренний идентификатор пациентав БД ЛПУ
+     12:optional int patientId;
+ }
 
 //Данные о услуге
 struct Usl{
@@ -63,61 +111,114 @@ struct Usl{
 	//Внутренние идентификаторы
 	5:required int contract_TariffId;
 }
-
+/**
+ * Sluch
+ * Структура с данными о случае оказания мед помощи
+ * *******
+ * @param IDCASE    Идентификатор выставленной позиции счета
+ * @param USL_OK
+ * @param VIDPOM
+ * @param NPR_MO
+ * @param EXTR
+ * @param FOR_POM
+        Данные о форме оказания помощи  (Event.order -> rbAppointmentOrder.id -> rbAppointmentOrder.TFOMScode_account)
+                        Возможные значения:
+                        1-плановая;
+                        2-экстренная;
+                        3-неотложная.
+ * @param LPU
+ * @param LPU_1
+ * @param PODR
+ * @param PROFIL
+ * @param DET
+ * @param NHISTORY
+ * @param DATE_1
+ * @param DATE_2
+ * @param DS0
+ * @param DS1
+ * @param DS2
+ * @param CODE_MES1
+ * @param CODE_MES2
+ * @param RSLT
+ * @param ISHOD
+ * @param PRVS
+ * @param IDDOKT
+ * @param OS_SLUCH
+ * @param IDSP
+ * @param
+ * *******
+*/
 struct Sluch{
 	1:required int IDCASE;
 	2:required tinyint USL_OK;
 	3:required tinyint VIDPOM;
 	4:optional string NPR_MO;
 	5:optional tinyint EXTR;
-	6:required string LPU;
-	7:optional string LPU_1;
-	8:optional string PODR;
-	9:required tinyint PROFIL;
-	10:optional bool DET;
-	11:required string NHISTORY;
-	12:required timestamp DATE_1;
-	13:required timestamp DATE_2;
-	14:optional string DS0 ="0";
-	15:required string DS1 = "";
-	16:optional string DS2;
-	17:optional string CODE_MES1;
-	18:optional string CODE_MES2;
-	19:required tinyint RSLT = -1;
-	20:required tinyint ISHOD = -1;
-	21:required int PRVS = -1;
-	22:required string IDDOKT = "";
-	23:required tinyint IDSP = -1;
-	24:required double ED_COL = -1.0;
-	25:required double SUMV = -1.0;
-	26:optional tinyint OPLATA;
-	27:optional list<Usl> USL;
-	28:required string NOVOR = "0";
-	29:optional list<int> OS_SLUCH;
-	//Внутренние идентификаторы
-	30:required int actionId;
-	31:required int eventId;
-	32:required int rbServiceId;
-	
+	6:required tinyint FOR_POM;
+	7:required string LPU;
+	8:optional string LPU_1;
+	9:optional string PODR;
+	10:required tinyint PROFIL;
+	11:optional bool DET;
+	12:required string NHISTORY;
+	13:required timestamp DATE_1;
+	14:required timestamp DATE_2;
+	15:optional string DS0;
+	16:required string DS1;
+	17:optional string DS2;
+	18:optional string CODE_MES1;
+	19:optional string CODE_MES2;
+	20:required tinyint RSLT;
+	21:required tinyint ISHOD;
+	22:required int PRVS = -1;
+	23:required string IDDOKT = "";
+    24:optional list<int> OS_SLUCH;
+	25:required tinyint IDSP;
+	// параметры относящиеся больше к пациенту,
+	26:required Patient patient;
+
+	30:required double ED_COL = -1.0;
+	31:required double SUMV = -1.0;
+
+	32:required list<Usl> USL;
 }
+
 //Перечисление с названиями требуемых опциональных полей
 enum PatientOptionalFields{
+    // Снилс пациента
 	SNILS,
+	// Место рождения пациента
 	MR,
+	// Код ОКАТО адреса регистрации пациента
 	OKATOG,
+	// Код ОКАТО адреса  проживания пациента
 	OKATOP,
+	// Тип документа пациента
 	DOCTYPE,
+	// Серия документа пациента
 	DOCSER,
+	// Номер документа пациента
 	DOCNUM,
+    // Серия полиса пациента
 	SPOLIS,
+	// ОГРН СМО
 	SMO_OGRN,
+	// Наименование СМО
 	SMO_NAM,
+	// Код ОКАТО территории страхования
 	SMO_OK,
+	// Фамилия предствателя пациента
 	FAM_P,
+	// Имя представителя пациента
 	IM_P,
+	// Отчество представителя пациента
 	OT_P,
+	// Дата рождения представителя пациента
 	DR_P,
-	W_P
+	// Пол представителя пациента
+	W_P,
+	// данные о весе ребенка при рождении (в случае оказания помощи маловесным и недоношенным детям)
+	VNOV_D
 }
 
 enum SluchOptionalFields{
@@ -329,6 +430,12 @@ struct AccountItem{
     15:optional string note;
 }
 
+/**
+ * AccountInfo
+ * Структура с данными о счете и его позициях
+ * @param account Вложенная структура с данными о счете
+ * @param items  Список вложенных структур с данными о позициях счета
+*/
 struct AccountInfo {
     1:required Account account;
     2:required list<AccountItem> items;
@@ -423,7 +530,7 @@ struct Schet{
 */
 struct XMLRegisters{
     1:required Account account;
-    2:required map<Patient, list<Sluch>> registry;
+    2:required map<Person, list<Sluch>> registry;
     3:required timestamp data;
     4:required string patientRegistryFILENAME;
     5:required string serviceRegistryFILENAME;
