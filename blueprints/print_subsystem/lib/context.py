@@ -39,8 +39,9 @@ class CTemplateContext(object):
         self.globals = globals
         self.data = data
         # self.locals = {}
-        self.builtin = {'currentDate': datetime.date.today(),
-                        'currentTime': datetime.datetime.now().time().strftime("%H:%M:%S"),
+        self.now = datetime.datetime.now()
+        self.builtin = {'currentDate': self.now.date(),
+                        'currentTime': self.now.time().strftime("%H:%M:%S"),
                         'helpers': CTemplateHelpers,
                         }
         # self.builtin = { 'currentDate': CDateInfo(self.now.date()),

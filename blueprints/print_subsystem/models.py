@@ -4,6 +4,7 @@ import jinja2
 from application.database import db
 from config import MODULE_NAME
 from lib.html import escape, convenience_HtmlRip, replace_first_paragraph
+from lib.num_to_text_converter import NumToTextConverter
 from models_utils import *
 from kladr_models import *
 from sqlalchemy import BigInteger, Column, Date, DateTime, Enum, Float, ForeignKey, Index, Integer, SmallInteger, \
@@ -99,7 +100,7 @@ class CInfoList(Info):
     #     return result
 
 
-class Account(Base):
+class Account(Base, Info):
     __tablename__ = u'Account'
 
     id = Column(Integer, primary_key=True)
@@ -108,9 +109,9 @@ class Account(Base):
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    contract_id = Column(Integer, nullable=False, index=True)
-    orgStructure_id = Column(Integer)
-    payer_id = Column(Integer, nullable=False, index=True)
+    contract_id = Column(Integer, ForeignKey('Contract.id'), nullable=False, index=True)
+    orgStructure_id = Column(Integer, ForeignKey('OrgStructure.id'))
+    payer_id = Column(Integer, ForeignKey('Organisation.id'), nullable=False, index=True)
     settleDate = Column(Date, nullable=False)
     number = Column(String(20), nullable=False)
     date = Column(Date, nullable=False)
@@ -122,32 +123,62 @@ class Account(Base):
     payedSum = Column(Float(asdecimal=True), nullable=False)
     refusedAmount = Column(Float(asdecimal=True), nullable=False)
     refusedSum = Column(Float(asdecimal=True), nullable=False)
-    format_id = Column(Integer, index=True)
+    format_id = Column(Integer, ForeignKey('rbAccountExportFormat.id'), index=True)
+
+    payer = relationship(u'Organisation')
+    orgStructure = relationship(u'Orgstructure')
+    contract = relationship(u'Contract')
+    format = relationship(u'Rbaccountexportformat')
+    items = relationship(u'AccountItem')
+
+    @property
+    def sumInWords(self):
+        sum_conv = NumToTextConverter(self.sum)
+        return sum_conv.convert().getRubText() + sum_conv.convert().getKopText()
+
+    def __unicode__(self):
+        return u'%s от %s' % (self.number, self.date)
 
 
-class AccountItem(Base):
+class AccountItem(Base, Info):
     __tablename__ = u'Account_Item'
 
     id = Column(Integer, primary_key=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    master_id = Column(Integer, nullable=False, index=True)
+    master_id = Column(Integer, ForeignKey('Account.id'), nullable=False, index=True)
     serviceDate = Column(Date, server_default=u"'0000-00-00'")
-    event_id = Column(Integer, index=True)
-    visit_id = Column(Integer, index=True)
-    action_id = Column(Integer, index=True)
+    event_id = Column(Integer, ForeignKey('Event.id'), index=True)
+    visit_id = Column(Integer, ForeignKey('Visit.id'), index=True)
+    action_id = Column(Integer, ForeignKey('Action.id'), index=True)
     price = Column(Float(asdecimal=True), nullable=False)
-    unit_id = Column(Integer, index=True)
+    unit_id = Column(Integer, ForeignKey('rbMedicalAidUnit.id'), index=True)
     amount = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
     uet = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
     sum = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
     date = Column(Date)
     number = Column(String(20), nullable=False)
-    refuseType_id = Column(Integer, index=True)
-    reexposeItem_id = Column(Integer, index=True)
+    refuseType_id = Column(Integer, ForeignKey('RbPayRefuseType.id'), index=True)
+    reexposeItem_id = Column(Integer, ForeignKey('Account_Item.id'), index=True)
     note = Column(String(256), nullable=False)
-    tariff_id = Column(Integer, index=True)
-    service_id = Column(Integer)
+    tariff_id = Column(Integer, ForeignKey('Contract_Tariff.id'), index=True)
+    service_id = Column(Integer, ForeignKey('rbServic.id'))
     paymentConfirmationDate = Column(Date)
+
+    event = relationship(u'Event')
+    visit = relationship(u'Visit')
+    action = relationship(u'Action')
+    refuseType = relationship(u'Rbpayrefusetype')
+    reexposeItem = relationship(u'AccountItem', remote_side=[id])
+    service = relationship(u'rbService')
+    unit = relationship(u'Rbmedicalaidunit')
+
+    @property
+    def sumInWords(self):
+        sum_conv = NumToTextConverter(self.sum)
+        return sum_conv.convert().getRubText() + sum_conv.convert().getKopText()
+
+    def __unicode__(self):
+        return u'%s %s %s' % (self.serviceDate, self.event.client, self.sum)
 
 
 class Action(Base):
@@ -234,8 +265,56 @@ class Action(Base):
                 return property
         property_type = self.actionType.get_property_type_by_name(name)
         if property_type:
-            return property_type.default_value()
+            return property_type
         return None
+
+    def get_property_by_index(self, index):
+        self.properties = sorted(self.properties, key=lambda prop: prop.type.idx)
+        return self.properties[index]
+
+    @property
+    def group(self):
+        return self.actionType.group if self.actionType else None
+
+    @property
+    def class_(self):
+        return self.actionType.class_ if self.actionType else None
+
+    @property
+    def code(self):
+        return self.actionType.code if self.actionType else None
+
+    @property
+    def flatCode(self):
+        return self.actionType.flatCode if self.actionType else None
+
+    @property
+    def name(self):
+        return self.actionType.name if self.actionType else None
+
+    @property
+    def title(self):
+        return self.actionType.title if self.actionType else None
+
+    @property
+    def service(self):
+        return self.actionType.service if self.actionType else None
+
+    @property
+    def showTime(self):
+        return self.actionType.showTime if self.actionType else None
+
+    @property
+    def isMes(self):
+        return self.actionType.isMes if self.actionType else None
+
+    @property
+    def nomenclatureService(self):
+        return self.actionType.nomenclatureService if self.actionType else None
+
+    # @property
+    # def isHtml(self):
+    #     return self.actionType.isHtml if self.actionType else None
 
     def __iter__(self):
         for property in self.properties:
@@ -246,6 +325,8 @@ class Action(Base):
             return self.get_property_by_name(unicode(key))
         elif isinstance(key, tuple):
             return self.get_property_by_code(unicode(key[0]))
+        elif isinstance(key, (int, long)):
+            return self.get_property_by_index(key)
 
 
 class Bbtresponse(Action):
@@ -304,11 +385,14 @@ class Actionproperty(Base, Info):
             class_name = u'ActionpropertyText'
         elif self.type.typeName == "AnalysisStatus":
             class_name = u'ActionpropertyInteger'
+        elif self.type.typeName == u"Запись в др. ЛПУ":
+            class_name = u'ActionpropertyOtherlpurecord'
         else:
             class_name = u'Actionproperty{}'.format(self.type.typeName.capitalize())
 
         cl = globals()[class_name]
         values = db_session.query(cl).filter(cl.id == self.id).all()
+        db_session.close()
         if self.type.typeName == "Table":
             return values[0].get_value(self.type.valueDomain) if values else ""
         else:
@@ -386,7 +470,8 @@ class Actionpropertytype(Base, Info):
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer)
 
-    def default_value(self):
+    @property
+    def value(self):
         if self.typeName == "Constructor":
             class_name = u'ActionpropertyText'
         elif self.typeName == "AnalysisStatus":
@@ -467,6 +552,7 @@ class ActionpropertyHospitalbed(Base):
         from blueprints.print_subsystem.utils import get_lpu_session
         db_session = get_lpu_session()
         value = db_session.query(OrgstructureHospitalbed).filter(OrgstructureHospitalbed.id == self.value).first()
+        db_session.close()
         return value
 
 
@@ -524,6 +610,7 @@ class ActionpropertyRLS(ActionpropertyInteger):
         from blueprints.print_subsystem.utils import get_lpu_session
         db_session = get_lpu_session()
         value = db_session.query(v_Nomen).filter(v_Nomen.code == self.value).first()
+        db_session.close()
         return value
 
 
@@ -533,6 +620,7 @@ class ActionpropertyOperationType(ActionpropertyInteger):
         from blueprints.print_subsystem.utils import get_lpu_session
         db_session = get_lpu_session()
         value = db_session.query(Rboperationtype).filter(Rboperationtype.code == self.value).first()
+        db_session.close()
         if self.value and value.name:
             text = '(%s) %s' % (value.code, value.name)
         elif self.value:
@@ -561,7 +649,11 @@ class ActionpropertyMkb(Base):
     value = Column(Integer, index=True)
 
     def get_value(self):
-        return self.value if self.value else ''
+        from blueprints.print_subsystem.utils import get_lpu_session
+        db_session = get_lpu_session()
+        value = db_session.query(Mkb).get(self.value)
+        db_session.close()
+        return value if value else ''
 
 
 class ActionpropertyOrgstructure(Base):
@@ -575,6 +667,7 @@ class ActionpropertyOrgstructure(Base):
         from blueprints.print_subsystem.utils import get_lpu_session
         db_session = get_lpu_session()
         value = db_session.query(Orgstructure).filter(Orgstructure.id == self.value).first()
+        db_session.close()
         return value
 
     def __unicode__(self):
@@ -592,6 +685,7 @@ class ActionpropertyOrganisation(Base):
         from blueprints.print_subsystem.utils import get_lpu_session
         db_session = get_lpu_session()
         value = db_session.query(Organisation).filter(Organisation.id == self.value).first()
+        db_session.close()
         return value
 
     def __unicode__(self):
@@ -623,6 +717,7 @@ class ActionpropertyPerson(Base):
         from blueprints.print_subsystem.utils import get_lpu_session
         db_session = get_lpu_session()
         value = db_session.query(Person).filter(Person.id == self.value).first()
+        db_session.close()
         return value
 
     def __unicode__(self):
@@ -637,7 +732,7 @@ class ActionpropertyString(Base):
     value = Column(Text, nullable=False)
 
     def get_value(self):
-        return escape(self.value)
+        return escape(self.value) if self.value else ''
 
     def __unicode__(self):
         return self.value
@@ -671,6 +766,7 @@ class ActionpropertyTable(ActionpropertyInteger):
         master_field = table.masterField
         values = db_session.query(trfu_tables[value_table_name]).filter("{0}.{1} = {2}".format(value_table_name,
                                                                                                master_field, self.value)).all()
+        db_session.close()
         template = u'''
                     <table width="100%" border="1" align="center" style="border-style:solid;" cellspacing="0">
                         <thead><tr>{% for col in field_names %}<th>{{ col }}</th>{% endfor %}</tr></thead>
@@ -695,7 +791,21 @@ class ActionpropertyTime(Base):
         return self.value if self.value else ''
 
     def __unicode__(self):
-        return self.value
+        return self.get_value()
+
+
+class ActionpropertyReferenceRb(ActionpropertyInteger):
+
+    def get_value(self, domain):
+        from blueprints.print_subsystem.utils import get_lpu_session
+        db_session = get_lpu_session()
+        table_name = domain.split(';')[0]
+        value = db_session.query(table_name).get(self.value)
+        db_session.close()
+        return value if value else ''
+
+    def __unicode__(self):
+        return self.get_value()
 
 
 class ActionpropertyRbbloodcomponenttype(Base):
@@ -1449,31 +1559,31 @@ class Clientaddress(Base, Info):
 
     @property
     def KLADRCode(self):
-        return self.address.house.KLADRCode
+        return self.address.house.KLADRCode if self.address else ''
 
     @property
     def KLADRStreetCode(self):
-        return self.address.house.KLADRStreetCode
+        return self.address.house.KLADRStreetCode if self.address else ''
 
     @property
     def city(self):
-        return self.address.city
+        return self.address.city if self.address else ''
 
     @property
     def town(self):
-        return self.address.town
+        return self.address.town if self.address else ''
 
     @property
     def text(self):
-        return self.address.text
+        return self.address.text if self.address else ''
 
     @property
     def number(self):
-        return self.address.number
+        return self.address.number if self.address else ''
 
     @property
     def corpus(self):
-        return self.address.corpus
+        return self.address.corpus if self.address else ''
 
     def __unicode__(self):
         if self.text:
@@ -1690,7 +1800,7 @@ class Clientintolerancemedicament(Base, Info):
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     client_id = Column(ForeignKey('Client.id'), nullable=False, index=True)
-    name = Column(String(128), nullable=False)
+    name = Column("nameMedicament", String(128), nullable=False)
     power = Column(Integer, nullable=False)
     createDate = Column(Date)
     notes = Column(String, nullable=False)
@@ -2376,7 +2486,6 @@ class Event(Base, Info):
     execPerson = relationship(u'Person', foreign_keys='Event.execPerson_id')
     curator = relationship(u'Person', foreign_keys='Event.curator_id')
     assistant = relationship(u'Person', foreign_keys='Event.assistant_id')
-    persons = relationship(u'Person', foreign_keys='Event.orgStructure_id')
     contract = relationship(u'Contract')
     organisation = relationship(u'Organisation')
     mesSpecification = relationship(u'Rbmesspecification')
@@ -2396,9 +2505,14 @@ class Event(Base, Info):
 
     @property
     def departmentManager(self):
-        for person in self.persons:
-            if person.post.flatCode == u'departmentManager':
-                return person
+        from blueprints.print_subsystem.utils import get_lpu_session
+        db_session = get_lpu_session()
+        persons = db_session.query(Person).filter(Person.orgStructure_id == self.orgStructure_id).all() if self.orgStructure_id else []
+        db_session.close()
+        if persons:
+            for person in persons:
+                if person.post.flatCode == u'departmentManager':
+                    return person
         return None
 
     @property
@@ -2823,7 +2937,7 @@ class LicenceService(Base):
     service_id = Column(Integer, nullable=False, index=True)
 
 
-class Mkb(Base):
+class Mkb(Base, Info):
     __tablename__ = u'MKB'
     __table_args__ = (
         Index(u'BlockID', u'BlockID', u'DiagID'),
@@ -2849,6 +2963,9 @@ class Mkb(Base):
     duration = Column(Integer, nullable=False)
     service_id = Column(Integer, index=True)
     MKBSubclass_id = Column(Integer)
+
+    def __unicode__(self):
+        return self.DiagID
 
 
 class MkbQuotatypePacientmodel(Base):
@@ -3847,7 +3964,7 @@ class Version(Base):
     version = Column(Integer, nullable=False, server_default=u"'0'")
 
 
-class Visit(Base):
+class Visit(Base, Info):
     __tablename__ = u'Visit'
 
     id = Column(Integer, primary_key=True)
@@ -3856,15 +3973,21 @@ class Visit(Base):
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    event_id = Column(Integer, nullable=False, index=True)
-    scene_id = Column(Integer, nullable=False, index=True)
+    event_id = Column(Integer, ForeignKey('Event.id'), nullable=False, index=True)
+    scene_id = Column(Integer, ForeignKey('rbScene.id'), nullable=False, index=True)
     date = Column(DateTime, nullable=False)
-    visitType_id = Column(Integer, nullable=False, index=True)
-    person_id = Column(Integer, nullable=False, index=True)
+    visitType_id = Column(Integer, ForeignKey('rbVisitType.id'), nullable=False, index=True)
+    person_id = Column(Integer, ForeignKey('Person.id'), nullable=False, index=True)
     isPrimary = Column(Integer, nullable=False)
-    finance_id = Column(Integer, nullable=False, index=True)
-    service_id = Column(Integer, index=True)
+    finance_id = Column(Integer, ForeignKey('rbFinance.id'), nullable=False, index=True)
+    service_id = Column(Integer, ForeignKey('rbService.id'), index=True)
     payStatus = Column(Integer, nullable=False)
+
+    service = relationship(u'Rbservice')
+    person = relationship(u'Person')
+    finance = relationship(u'Rbfinance')
+    scene = relationship(u'Rbscene')
+    visitType = relationship(u'Rbvisittype')
 
 
 class ActionDocument(Base):
@@ -4115,17 +4238,17 @@ class Rbacademictitle(Base, RBInfo):
     name = Column(Unicode(64), nullable=False, index=True)
 
 
-class Rbaccountexportformat(Base):
+class Rbaccountexportformat(Base, RBInfo):
     __tablename__ = u'rbAccountExportFormat'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
+    name = Column(Unicode(64), nullable=False, index=True)
     prog = Column(String(128), nullable=False)
     preferentArchiver = Column(String(128), nullable=False)
     emailRequired = Column(Integer, nullable=False)
     emailTo = Column(String(64), nullable=False)
-    subject = Column(String(128), nullable=False)
+    subject = Column(Unicode(128), nullable=False)
     message = Column(Text, nullable=False)
 
 
@@ -4736,13 +4859,13 @@ class RbmenuContent(Base):
     diet_id = Column(Integer, nullable=False, index=True)
 
 
-class Rbmesspecification(Base):
+class Rbmesspecification(Base, RBInfo):
     __tablename__ = u'rbMesSpecification'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(16), nullable=False, index=True)
     regionalCode = Column(String(16), nullable=False)
-    name = Column(String(64), nullable=False)
+    name = Column(Unicode(64), nullable=False)
     done = Column(Integer, nullable=False)
 
 
@@ -4840,12 +4963,12 @@ class Rbpacientmodel(Base, RBInfo):
     quotaType = relationship(u'Quotatype')
 
 
-class Rbpayrefusetype(Base):
+class Rbpayrefusetype(Base, RBInfo):
     __tablename__ = u'rbPayRefuseType'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(128), nullable=False, index=True)
+    name = Column(Unicode(128), nullable=False, index=True)
     finance_id = Column(Integer, nullable=False, index=True)
     rerun = Column(Integer, nullable=False)
 
@@ -4949,13 +5072,13 @@ class Rbresult(Base, RBInfo):
     regionalCode = Column(String(8), nullable=False)
 
 
-class Rbscene(Base):
+class Rbscene(Base, RBInfo):
     __tablename__ = u'rbScene'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
-    serviceModifier = Column(String(128), nullable=False)
+    name = Column(Unicode(64), nullable=False, index=True)
+    serviceModifier = Column(Unicode(128), nullable=False)
 
 
 class Rbservice(Base, RBInfo):
@@ -5395,13 +5518,13 @@ class Rbuserright(Base):
     name = Column(String(128), nullable=False, index=True)
 
 
-class Rbvisittype(Base):
+class Rbvisittype(Base, RBInfo):
     __tablename__ = u'rbVisitType'
 
     id = Column(Integer, primary_key=True)
-    code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
-    serviceModifier = Column(String(128), nullable=False)
+    code = Column(Unicode(8), nullable=False, index=True)
+    name = Column(Unicode(64), nullable=False, index=True)
+    serviceModifier = Column(Unicode(128), nullable=False)
 
 
 class RbF001Tfom(Base):
