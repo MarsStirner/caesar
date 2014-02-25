@@ -2,6 +2,7 @@
 import struct
 import datetime
 
+
 def trim(s):
     return u' '.join(unicode(s).split())
 
@@ -127,3 +128,19 @@ def agreeNumberAndWord(num, words):
         elif 1 < num % 10 < 5:
             return words[1]
     return words[-1]
+
+
+def formatSex(sex, full=False):
+    """
+    Делаем из пола строку
+
+    sex - код пола (1 мужской, 2 женский)
+    full - формат (True полный, False однобуквенный)
+    """
+
+    if sex == 1:
+        return u'Мужской' if full else u'М'
+    elif sex == 2:
+        return u'Женский' if full else u'Ж'
+    else:
+        return u'Не указан' if full else u''

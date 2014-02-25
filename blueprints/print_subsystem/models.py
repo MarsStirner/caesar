@@ -57,49 +57,6 @@ class RBInfo(Info):
         return self.name
 
 
-class CInfoList(Info):
-    u"""Базовый класс для представления списков (массивов) объектов при передаче в шаблоны печати"""
-
-    def __len__(self):
-        return len(self._items)
-
-    def __getitem__(self, key):
-        return self._items[key]
-
-    def __iter__(self):
-        return iter(self._items)
-
-    def __str__(self):
-        return u', '.join([unicode(x) for x in self._items])
-
-    def __nonzero__(self):
-        return bool(self._items)
-
-    # def filter(self, **kw):
-    #     result = CInfoList(self.context)
-    #     result._loaded = True
-    #     result._ok = True
-    #
-    #     for item in self._items:
-    #         if all([item.__getattribute__(key) == value for key, value in kw.iteritems()]):
-    #             result._items.append(item)
-    #     return result
-    #
-    # def __add__(self, right):
-    #     if isinstance(right, CInfoList):
-    #         right.load()
-    #         rightItems = right._items
-    #     elif isinstance(right, list):
-    #         rightItems = right
-    #     else:
-    #         raise TypeError(u'can only concatenate CInfoList or list (not "%s") to CInfoList' % type(right).__name__)
-    #     result = CInfoList(self.context)
-    #     result._loaded = True
-    #     result._ok = True
-    #     result._items = self._items + rightItems
-    #     return result
-
-
 class Account(Base, Info):
     __tablename__ = u'Account'
 
@@ -157,11 +114,11 @@ class AccountItem(Base, Info):
     sum = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
     date = Column(Date)
     number = Column(String(20), nullable=False)
-    refuseType_id = Column(Integer, ForeignKey('RbPayRefuseType.id'), index=True)
+    refuseType_id = Column(Integer, ForeignKey('rbPayRefuseType.id'), index=True)
     reexposeItem_id = Column(Integer, ForeignKey('Account_Item.id'), index=True)
     note = Column(String(256), nullable=False)
     tariff_id = Column(Integer, ForeignKey('Contract_Tariff.id'), index=True)
-    service_id = Column(Integer, ForeignKey('rbServic.id'))
+    service_id = Column(Integer, ForeignKey('rbService.id'))
     paymentConfirmationDate = Column(Date)
 
     event = relationship(u'Event')
@@ -169,7 +126,7 @@ class AccountItem(Base, Info):
     action = relationship(u'Action')
     refuseType = relationship(u'Rbpayrefusetype')
     reexposeItem = relationship(u'AccountItem', remote_side=[id])
-    service = relationship(u'rbService')
+    service = relationship(u'Rbservice')
     unit = relationship(u'Rbmedicalaidunit')
 
     @property
@@ -232,6 +189,7 @@ class Action(Base):
     takenTissueJournal = relationship(u'Takentissuejournal')
     tissues = relationship(u'Tissue', secondary=u'ActionTissue')
     properties = relationship(u'Actionproperty')
+    self_finance = relationship(u'Rbfinance')
 
     # def getPrice(self, tariffCategoryId=None):
     #     if self.price is None:
@@ -246,7 +204,7 @@ class Action(Base):
     @property
     def finance(self):
         if self.finance_id:
-            return relationship(u'Rbfinance')
+            return self.self_finance
         else:
             return self.event.eventType.finance
 
@@ -882,7 +840,7 @@ class Actiontype(Base, Info):
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     hidden = Column(Integer, nullable=False, server_default=u"'0'")
     class_ = Column(u'class', Integer, nullable=False, index=True)
-    group_id = Column(Integer, index=True)
+    group_id = Column(Integer, ForeignKey('ActionType.id'), index=True)
     code = Column(String(25), nullable=False)
     name = Column(Unicode(255), nullable=False)
     title = Column(Unicode(255), nullable=False)
@@ -924,6 +882,7 @@ class Actiontype(Base, Info):
     service = relationship(u'Rbservice', foreign_keys='Actiontype.service_id')
     nomenclatureService = relationship(u'Rbservice', foreign_keys='Actiontype.nomenclativeService_id')
     property_types = relationship(u'Actionpropertytype')
+    group = relationship(u'Actiontype', remote_side=[id])
 
     def get_property_type_by_name(self, name):
         for property_type in self.property_types:
@@ -1161,7 +1120,7 @@ class Bank(Base, Info):
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    BIK = Column(String(10), nullable=False, index=True)
+    bik = Column("BIK", String(10), nullable=False, index=True)
     name = Column(Unicode(100), nullable=False, index=True)
     branchName = Column(Unicode(100), nullable=False)
     corrAccount = Column(String(20), nullable=False)
@@ -1358,29 +1317,38 @@ class Client(Base, Info):
     weight = Column(String(16), nullable=False)
     notes = Column(String, nullable=False)
     version = Column(Integer, nullable=False)
-    birthPlace = Column(String(128), nullable=False, server_default=u"''")
+    birthPlace = Column(Unicode(128), nullable=False, server_default=u"''")
     embryonalPeriodWeek = Column(String(16), nullable=False, server_default=u"''")
     uuid_id = Column(Integer, nullable=False, index=True, server_default=u"'0'")
 
     bloodType = relationship(u'Rbbloodtype')
-    client_attachments = relationship(u'Clientattach')
-    socStatusesAll = relationship(u'Clientsocstatus')
-    documentsAll = relationship(u'Clientdocument')
-    intolerancesAll = relationship(u'Clientintolerancemedicament')
-    allergiesAll = relationship(u'Clientallergy')
-    contacts = relationship(u'Clientcontact')
+    client_attachments = relationship(u'Clientattach', primaryjoin='and_(Clientattach.client_id==Client.id, Clientattach.deleted==0)',
+                                      order_by="desc(Clientattach.id)")
+    socStatuses = relationship(u'Clientsocstatus',
+                               primaryjoin='and_(Clientsocstatus.deleted == 0,Clientsocstatus.client_id==Client.id,'
+                               'or_(Clientsocstatus.endDate == None, Clientsocstatus.endDate>={0}))'.format(datetime.date.today()))
+    documentsAll = relationship(u'Clientdocument', primaryjoin='and_(Clientdocument.clientId==Client.id,'
+                                                               'Clientdocument.deleted == 0)',
+                                order_by="desc(Clientdocument.documentId)")
+    intolerances = relationship(u'Clientintolerancemedicament',
+                                primaryjoin='and_(Clientintolerancemedicament.client_id==Client.id,'
+                                            'Clientintolerancemedicament.deleted == 0)')
+    allergies = relationship(u'Clientallergy', primaryjoin='and_(Clientallergy.client_id==Client.id,'
+                                                           'Clientallergy.deleted == 0)')
+    contacts = relationship(u'Clientcontact', primaryjoin='and_(Clientcontact.client_id==Client.id,'
+                                                          'Clientcontact.deleted == 0)')
     direct_relations = relationship(u'DirectClientRelation', foreign_keys='Clientrelation.client_id')
     reversed_relations = relationship(u'ReversedClientRelation', foreign_keys='Clientrelation.relative_id')
-    policies = relationship(u'Clientpolicy')
-    works = relationship(u'Clientwork')
+    policies = relationship(u'Clientpolicy', primaryjoin='and_(Clientpolicy.clientId==Client.id,'
+                                                         'Clientpolicy.deleted == 0)', order_by="desc(Clientpolicy.id)")
+    works = relationship(u'Clientwork', primaryjoin='and_(Clientwork.client_id==Client.id, Clientwork.deleted == 0)',
+                         order_by="desc(Clientwork.id)")
     reg_addresses = relationship(u'Clientaddress',
                                  primaryjoin="and_(Client.id==Clientaddress.client_id, Clientaddress.type==0)",
-                                 order_by="desc(Clientaddress.createDatetime)")
+                                 order_by="desc(Clientaddress.id)")
     loc_addresses = relationship(u'Clientaddress',
                                  primaryjoin="and_(Client.id==Clientaddress.client_id, Clientaddress.type==1)",
                                  order_by="desc(Clientaddress.id)")
-
-    # TODO: date
 
     @property
     def nameText(self):
@@ -1410,34 +1378,20 @@ class Client(Base, Info):
     @property
     def permanentAttach(self):
         for attach in self.client_attachments:
-            if attach.deleted == 0 and attach.attachType.temporary == 0:
+            if attach.attachType.temporary == 0:
                 return attach
 
     @property
     def temporaryAttach(self):
         for attach in self.client_attachments:
-            if attach.deleted == 0 and attach.attachType.temporary != 0:
+            if attach.attachType.temporary != 0:
                 return attach
 
     @property
-    def socStatuses(self):
-        # TODO: db.joinOr([table['endDate'].isNull(), table['endDate'].ge(QDate.currentDate())])
-        return [socStatus for socStatus in self.socStatusesAll if socStatus.deleted == 0]
-
-    @property
     def document(self):
-        # TODO: отстортировать по дате
         for document in self.documentsAll:
-            if document.deleted == 0 and document.documentType.group.code == '1':
+            if document.documentType and document.documentType.group.code == '1':
                 return document
-
-    @property
-    def intolerances(self):
-        return [intolerance for intolerance in self.intolerancesAll if intolerance.deleted == 0]
-
-    @property
-    def allergies(self):
-        return [allergie for allergie in self.allergiesAll if allergie.deleted == 0]
 
     @property
     def relations(self):
@@ -1445,23 +1399,22 @@ class Client(Base, Info):
 
     @property
     def phones(self):
-        contacts = [(contact.name, contact.contact, contact.notes) for contact in self.contacts if contact.deleted == 0]
+        contacts = [(contact.name, contact.contact, contact.notes) for contact in self.contacts]
         return ', '.join([(phone[0]+': '+phone[1]+' ('+phone[2]+')') if phone[2] else (phone[0]+': '+phone[1])
                           for phone in contacts])
 
     @property
     def compulsoryPolicy(self):
-        # TODO: order by date code?
         for policy in self.policies:
             if not policy.policyType or u"ОМС" in policy.policyType.name:
                 return policy
 
     @property
     def voluntaryPolicy(self):
-        # TODO: order by date code?
         for policy in self.policies:
             if policy.policyType and policy.policyType.name.startswith(u"ДМС"):
                 return policy
+
     @property
     def policy(self):
         return self.compulsoryPolicy
@@ -1480,10 +1433,7 @@ class Client(Base, Info):
 
     @property
     def work(self):
-        # TODO: order by date
-        for work in self.works:
-            if work.deleted == 0:
-                return work
+        return self.works[0]
 
     @property
     def ageTuple(self):
@@ -1602,7 +1552,7 @@ class Clientallergy(Base, Info):
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     client_id = Column(ForeignKey('Client.id'), nullable=False, index=True)
-    name = Column(String(128), nullable=False)
+    name = Column("nameSubstance", Unicode(128), nullable=False)
     power = Column(Integer, nullable=False)
     createDate = Column(Date)
     notes = Column(String, nullable=False)
@@ -1632,17 +1582,42 @@ class Clientattach(Base, Info):
     document_id = Column(ForeignKey('ClientDocument.id'), index=True)
 
     client = relationship(u'Client')
-    document = relationship(u'Clientdocument')
+    self_document = relationship(u'Clientdocument')
     org = relationship(u'Organisation')
     orgStructure = relationship(u'Orgstructure')
     attachType = relationship(u'Rbattachtype')
+
+    @property
+    def code(self):
+        return self.attachType.code
+    @property
+    def name(self):
+        return self.attachType.name
+    @property
+    def outcome(self):
+        return self.attachType.outcome
+
+    @property
+    def document(self):
+        if self.document_id:
+            return self.self_document
+        else:
+            return self.getClientDocument()
+
+    def getClientDocument(self):
+        from blueprints.print_subsystem.utils import get_lpu_session
+        db_session = get_lpu_session()
+        documents = db_session.query(Clientdocument).filter(Clientdocument.clientId == self.client_id).\
+            filter(Clientdocument.deleted == 0).all()
+        documents = [document for document in documents if document.documentType and document.documentType.group.code == "1"]
+        return documents[-1]
 
     def __unicode__(self):
         if self._ok:
             result = self.name
             if self._outcome:
                 result += ' ' + unicode(self.endDate)
-            elif self.temporary:  # ??
+            elif self.attachType.temporary:
                 result += ' ' + self.org.shortName
                 if self.begDate:
                     result += u' c ' + unicode(self.begDate)
@@ -1653,19 +1628,6 @@ class Clientattach(Base, Info):
         else:
             result = ''
         return result
-
-    def getCode(self):
-        return self.attachType.code
-
-    def getName(self):
-        return self.attachType.name
-
-    def getOutcome(self):
-        return self.attachType.outcome
-
-    code = property(getCode)
-    name = property(getName)
-    outcome = property(getOutcome)
 
 
 class Clientcontact(Base, Info):
@@ -1691,7 +1653,7 @@ class Clientcontact(Base, Info):
         return self.contactType.names
 
 
-class Clientdocument(Base):
+class Clientdocument(Base, Info):
     __tablename__ = u'ClientDocument'
     __table_args__ = (
         Index(u'Ser_Numb', u'serial', u'number'),
@@ -1720,7 +1682,7 @@ class Clientdocument(Base):
         return self.documentType.regionalCode
 
     def __unicode__(self):
-        return (' '.join([self.documentType, self.serial, self.number])).strip()
+        return (' '.join([self.documentType.name, self.serial, self.number])).strip()
 
 
 class Clientfdproperty(Base):
@@ -1776,16 +1738,16 @@ class Clientidentification(Base, Info):
     version = Column(Integer, nullable=False)
 
     client = relationship(u'Client')
-    accountingSystem = relationship(u'Rbaccountingsystem')
+    accountingSystems = relationship(u'Rbaccountingsystem')
 
-    def getAccountingSystemCode(self):
+    @property
+    def code(self):
         return self.attachType.code
 
-    def getAccountingSystemName(self):
+    @property
+    def name(self):
         return self.attachType.name
 
-    code = property(getAccountingSystemCode)
-    name = property(getAccountingSystemName)
     # byCode = {code: identifier}
     # nameDict = {code: name}
 
@@ -1841,7 +1803,7 @@ class Clientpolicy(Base, Info):
     policyType = relationship(u'Rbpolicytype')
 
     def __unicode__(self):
-        return (' '.join([self.policyType, unicode(self.insurer), self.serial, self.number])).strip()
+        return (' '.join([self.policyType.name, unicode(self.insurer), self.serial, self.number])).strip()
 
 
 class Clientrelation(Base, Info):
@@ -2009,20 +1971,35 @@ class Clientsocstatus(Base, Info):
 
     client = relationship(u'Client')
     socStatusType = relationship(u'Rbsocstatustype')
-    document = relationship(u'Clientdocument')
+    self_document = relationship(u'Clientdocument')
 
-    def socStatusClasses(self):
+    @property
+    def classes(self):
         return self.socStatusType.classes
 
-    def getSocStatusTypeCode(self):
+    @property
+    def code(self):
         return self.socStatusType.code
 
-    def getSocStatusTypeName(self):
+    @property
+    def name(self):
         return self.socStatusType.name
 
-    code = property(getSocStatusTypeCode)
-    name = property(getSocStatusTypeName)
-    classes = property(socStatusClasses)
+    @property
+    def document(self):
+        if self.document_id:
+            return self.self_document
+        else:
+            return self.getClientDocument()
+
+    def getClientDocument(self):
+        from blueprints.print_subsystem.utils import get_lpu_session
+        db_session = get_lpu_session()
+        documents = db_session.query(Clientdocument).filter(Clientdocument.clientId == self.client_id).\
+            filter(Clientdocument.deleted == 0).all()
+        documents = [document for document in documents if document.documentType and
+                     document.documentType.group.code == "1"]
+        return documents[-1]
 
     def __unicode__(self):
         return self.name
@@ -2096,14 +2073,13 @@ class ClientworkHurtFactor(Base, Info):
     master = relationship(u'ClientworkHurt')
     factorType = relationship(u'Rbhurtfactortype')
 
-    def factorTypeCode(self):
+    @property
+    def code(self):
         return self.factorType.code
 
-    def factorTypeName(self):
+    @property
+    def name(self):
         return self.factorType.name
-
-    code = property(factorTypeCode)
-    name = property(factorTypeName)
 
 
 class ClientQuoting(Base):
@@ -2856,19 +2832,22 @@ class Job(Base):
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    jobType_id = Column(Integer, nullable=False, index=True)
-    orgStructure_id = Column(Integer, nullable=False, index=True)
+    jobType_id = Column(Integer, ForeignKey('rbJobType.id'), nullable=False, index=True)
+    orgStructure_id = Column(Integer, ForeignKey('OrgStructure.id'), nullable=False, index=True)
     date = Column(Date, nullable=False)
     begTime = Column(Time, nullable=False)
     endTime = Column(Time, nullable=False)
     quantity = Column(Integer, nullable=False)
 
+    job_type = relationship(u'Rbjobtype')
+    org_structure = relationship(u'Orgstructure')
 
-class JobTicket(Base):
+
+class JobTicket(Base, Info):
     __tablename__ = u'Job_Ticket'
 
     id = Column(Integer, primary_key=True)
-    master_id = Column(Integer, nullable=False, index=True)
+    master_id = Column(Integer, ForeignKey('Job.id'), nullable=False, index=True)
     idx = Column(Integer, nullable=False, server_default=u"'0'")
     datetime = Column(DateTime, nullable=False)
     resTimestamp = Column(DateTime)
@@ -2878,6 +2857,21 @@ class JobTicket(Base):
     endDateTime = Column(DateTime)
     label = Column(String(64), nullable=False, server_default=u"''")
     note = Column(String(128), nullable=False, server_default=u"''")
+
+    job = relationship(u'Job')
+
+    @property
+    def jobType(self):
+        self.job.job_type
+
+    @property
+    def orgStructure(self):
+        self.job.org_structure
+
+    def __unicode__(self):
+        return u'%s, %s, %s' % (unicode(self.jobType),
+                                unicode(self.datetime),
+                                unicode(self.orgStructure))
 
 
 class Lastchange(Base):
@@ -3237,9 +3231,9 @@ class Organisation(Base, Info):
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    fullName = Column(String(255), nullable=False)
-    shortName = Column(String(255), nullable=False)
-    title = Column(String(255), nullable=False, index=True)
+    fullName = Column(Unicode(255), nullable=False)
+    shortName = Column(Unicode(255), nullable=False)
+    title = Column(Unicode(255), nullable=False, index=True)
     net_id = Column(Integer, ForeignKey('rbNet.id'), index=True)
     infisCode = Column(String(12), nullable=False, index=True)
     obsoleteInfisCode = Column(String(60), nullable=False)
@@ -3254,8 +3248,8 @@ class Organisation(Base, Info):
     OKFS_id = Column(Integer, ForeignKey('rbOKFS.id'), index=True)
     OKPO = Column(String(15), nullable=False)
     FSS = Column(String(10), nullable=False)
-    region = Column(String(40), nullable=False)
-    Address = Column(String(255), nullable=False)
+    region = Column(Unicode(40), nullable=False)
+    Address = Column(Unicode(255), nullable=False)
     chief = Column(String(64), nullable=False)
     phone = Column(String(255), nullable=False)
     accountant = Column(String(64), nullable=False)
@@ -3274,6 +3268,14 @@ class Organisation(Base, Info):
     net = relationship(u'Rbnet')
     OKPF = relationship(u'Rbokpf')
     OKFS = relationship(u'Rbokfs')
+    org_accounts = relationship(u'OrganisationAccount')
+
+    @property
+    def bank(self):
+        return [account.bank for account in self.org_accounts]
+
+    def __unicode__(self):
+        return self.shortName
 
 
 class OrganisationAccount(Base, Info):
@@ -4388,12 +4390,12 @@ class Rbbloodtype(Base, RBInfo):
     name = Column(String(64), nullable=False)
 
 
-class Rbcashoperation(Base):
+class Rbcashoperation(Base, RBInfo):
     __tablename__ = u'rbCashOperation'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(16), nullable=False, index=True)
-    name = Column(String(64), nullable=False)
+    name = Column(Unicode(64), nullable=False)
 
 
 class Rbcomplain(Base):
@@ -4497,7 +4499,7 @@ class Rbdocumenttype(Base, RBInfo):
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
     regionalCode = Column(String(16), nullable=False)
-    name = Column(String(64), nullable=False, index=True)
+    name = Column(Unicode(64), nullable=False, index=True)
     group_id = Column(Integer, ForeignKey('rbDocumentTypeGroup.id'), nullable=False, index=True)
     serial_format = Column(Integer, nullable=False)
     number_format = Column(Integer, nullable=False)
@@ -4513,7 +4515,7 @@ class Rbdocumenttypegroup(Base, RBInfo):
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
+    name = Column(Unicode(64), nullable=False, index=True)
 
 
 class Rbemergencyaccident(Base):
@@ -4727,7 +4729,7 @@ class Rbhurttype(Base, RBInfo):
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(256), nullable=False, index=True)
+    name = Column(Unicode(256), nullable=False, index=True)
 
 
 class Rbimagemap(Base):
@@ -4740,14 +4742,14 @@ class Rbimagemap(Base):
     markSize = Column(Integer)
 
 
-class Rbjobtype(Base):
+class Rbjobtype(Base, RBInfo):
     __tablename__ = u'rbJobType'
 
     id = Column(Integer, primary_key=True)
     group_id = Column(Integer, index=True)
     code = Column(String(64), nullable=False)
     regionalCode = Column(String(64), nullable=False)
-    name = Column(String(128), nullable=False)
+    name = Column(Unicode(128), nullable=False)
     laboratory_id = Column(Integer, index=True)
     isInstant = Column(Integer, nullable=False, server_default=u"'0'")
 
@@ -4890,13 +4892,17 @@ class Rbnet(Base, RBInfo):
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
-    sex = Column(Integer, nullable=False, server_default=u"'0'")
-    age = Column(String(9), nullable=False)
+    name = Column(Unicode(64), nullable=False, index=True)
+    sexCode = Column("sex", Integer, nullable=False, server_default=u"'0'")
+    age = Column(Unicode(9), nullable=False)
     age_bu = Column(Integer)
     age_bc = Column(SmallInteger)
     age_eu = Column(Integer)
     age_ec = Column(SmallInteger)
+
+    @property
+    def sex(self):
+        return formatSex(self.sexCode)
 
 
 class Rbnomenclature(Base):
@@ -4916,7 +4922,7 @@ class Rbokfs(Base, RBInfo):
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
+    name = Column(Unicode(64), nullable=False, index=True)
     ownership = Column(Integer, nullable=False, server_default=u"'0'")
 
 
@@ -4925,7 +4931,7 @@ class Rbokpf(Base, RBInfo):
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    name = Column(String(64), nullable=False, index=True)
+    name = Column(Unicode(64), nullable=False, index=True)
 
 
 class Rbokved(Base):
