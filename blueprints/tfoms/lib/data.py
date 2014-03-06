@@ -96,6 +96,7 @@ class XML_Registry(object):
                                             smo_number=_config('smo_number'),
                                             primary=self.primary,
                                             departments=self.departments,
+                                            mo_level=_config('mo_level'),
                                             patient_optional=self.__patient_optional_tags(),
                                             event_optional=self.__event_optional_tags())
         return data

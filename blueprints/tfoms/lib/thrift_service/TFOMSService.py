@@ -57,7 +57,7 @@ class Iface(object):
     """
     pass
 
-  def getXMLRegisters(self, contractId, beginDate, endDate, infisCode, smoNumber, orgStructureIdList, patientOptionalFields, sluchOptionalFields, primaryAccount):
+  def getXMLRegisters(self, contractId, beginDate, endDate, infisCode, smoNumber, orgStructureIdList, patientOptionalFields, sluchOptionalFields, primaryAccount, levelMO):
     """
     Parameters:
      - contractId
@@ -69,6 +69,7 @@ class Iface(object):
      - patientOptionalFields
      - sluchOptionalFields
      - primaryAccount
+     - levelMO
     """
     pass
 
@@ -272,7 +273,7 @@ class Client(Iface):
       return result.success
     raise TApplicationException(TApplicationException.MISSING_RESULT, "deleteAccount failed: unknown result");
 
-  def getXMLRegisters(self, contractId, beginDate, endDate, infisCode, smoNumber, orgStructureIdList, patientOptionalFields, sluchOptionalFields, primaryAccount):
+  def getXMLRegisters(self, contractId, beginDate, endDate, infisCode, smoNumber, orgStructureIdList, patientOptionalFields, sluchOptionalFields, primaryAccount, levelMO):
     """
     Parameters:
      - contractId
@@ -284,11 +285,12 @@ class Client(Iface):
      - patientOptionalFields
      - sluchOptionalFields
      - primaryAccount
+     - levelMO
     """
-    self.send_getXMLRegisters(contractId, beginDate, endDate, infisCode, smoNumber, orgStructureIdList, patientOptionalFields, sluchOptionalFields, primaryAccount)
+    self.send_getXMLRegisters(contractId, beginDate, endDate, infisCode, smoNumber, orgStructureIdList, patientOptionalFields, sluchOptionalFields, primaryAccount, levelMO)
     return self.recv_getXMLRegisters()
 
-  def send_getXMLRegisters(self, contractId, beginDate, endDate, infisCode, smoNumber, orgStructureIdList, patientOptionalFields, sluchOptionalFields, primaryAccount):
+  def send_getXMLRegisters(self, contractId, beginDate, endDate, infisCode, smoNumber, orgStructureIdList, patientOptionalFields, sluchOptionalFields, primaryAccount, levelMO):
     self._oprot.writeMessageBegin('getXMLRegisters', TMessageType.CALL, self._seqid)
     args = getXMLRegisters_args()
     args.contractId = contractId
@@ -300,6 +302,7 @@ class Client(Iface):
     args.patientOptionalFields = patientOptionalFields
     args.sluchOptionalFields = sluchOptionalFields
     args.primaryAccount = primaryAccount
+    args.levelMO = levelMO
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -585,7 +588,7 @@ class Processor(Iface, TProcessor):
     iprot.readMessageEnd()
     result = getXMLRegisters_result()
     try:
-      result.success = self._handler.getXMLRegisters(args.contractId, args.beginDate, args.endDate, args.infisCode, args.smoNumber, args.orgStructureIdList, args.patientOptionalFields, args.sluchOptionalFields, args.primaryAccount)
+      result.success = self._handler.getXMLRegisters(args.contractId, args.beginDate, args.endDate, args.infisCode, args.smoNumber, args.orgStructureIdList, args.patientOptionalFields, args.sluchOptionalFields, args.primaryAccount, args.levelMO)
     except InvalidOrganizationInfisException as infisExc:
       result.infisExc = infisExc
     except InvalidContractException as contractExc:
@@ -1171,6 +1174,7 @@ class getXMLRegisters_args(object):
    - patientOptionalFields
    - sluchOptionalFields
    - primaryAccount
+   - levelMO
   """
 
   thrift_spec = (
@@ -1184,9 +1188,10 @@ class getXMLRegisters_args(object):
     (7, TType.SET, 'patientOptionalFields', (TType.I32,None), None, ), # 7
     (8, TType.SET, 'sluchOptionalFields', (TType.I32,None), None, ), # 8
     (9, TType.BOOL, 'primaryAccount', None, None, ), # 9
+    (10, TType.STRING, 'levelMO', None, None, ), # 10
   )
 
-  def __init__(self, contractId=None, beginDate=None, endDate=None, infisCode=None, smoNumber=None, orgStructureIdList=None, patientOptionalFields=None, sluchOptionalFields=None, primaryAccount=None,):
+  def __init__(self, contractId=None, beginDate=None, endDate=None, infisCode=None, smoNumber=None, orgStructureIdList=None, patientOptionalFields=None, sluchOptionalFields=None, primaryAccount=None, levelMO=None,):
     self.contractId = contractId
     self.beginDate = beginDate
     self.endDate = endDate
@@ -1196,6 +1201,7 @@ class getXMLRegisters_args(object):
     self.patientOptionalFields = patientOptionalFields
     self.sluchOptionalFields = sluchOptionalFields
     self.primaryAccount = primaryAccount
+    self.levelMO = levelMO
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1266,6 +1272,11 @@ class getXMLRegisters_args(object):
           self.primaryAccount = iprot.readBool();
         else:
           iprot.skip(ftype)
+      elif fid == 10:
+        if ftype == TType.STRING:
+          self.levelMO = iprot.readString().decode('utf-8')
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -1320,6 +1331,10 @@ class getXMLRegisters_args(object):
     if self.primaryAccount is not None:
       oprot.writeFieldBegin('primaryAccount', TType.BOOL, 9)
       oprot.writeBool(self.primaryAccount)
+      oprot.writeFieldEnd()
+    if self.levelMO is not None:
+      oprot.writeFieldBegin('levelMO', TType.STRING, 10)
+      oprot.writeString(self.levelMO.encode('utf-8'))
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

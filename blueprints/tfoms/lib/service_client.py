@@ -101,6 +101,7 @@ class TFOMSClient(object):
                          smo_number,
                          primary=True,
                          departments=None,
+                         mo_level=None,
                          patient_optional=list(),
                          event_optional=list()):
         """Получает список пациентов и услуг для XML-выгрузки данном ЛПУ в указанный промежуток времени"""
@@ -114,7 +115,8 @@ class TFOMSClient(object):
                                                  patientOptionalFields=patient_optional,
                                                  sluchOptionalFields=event_optional,
                                                  primaryAccount=primary,
-                                                 smoNumber=smo_number)
+                                                 smoNumber=smo_number,
+                                                 levelMO=mo_level)
         except InvalidArgumentException, e:
             print e
             raise e

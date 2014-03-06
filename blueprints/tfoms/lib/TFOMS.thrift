@@ -617,6 +617,7 @@ service TFOMSService{
 	    7 -  set<PatientOptionalFields> patientOptionalFields : перечень требуемых опциональных полей реестра пациентов
 	    8 -  set<SluchOptionalFields> sluchOptionalFields : перечень требуемых опциональных полей реестра услуг
 	    9 -  bool primaryAccount : признак первичного \ повторного счета
+	    10 - string levelMO : Строка с уровнем МО (WMIS-66)
 	    Exceptions:
 	    1 - InvalidOrganizationInfisException : нету организации с таким инфис-кодом
 	    2 - InvalidContractException : нету контракта с таким идентификатором
@@ -636,7 +637,8 @@ service TFOMSService{
             6:list<int> orgStructureIdList,
             7:set<PatientOptionalFields> patientOptionalFields,
             8:set<SluchOptionalFields> sluchOptionalFields,
-            9:bool primaryAccount
+            9:bool primaryAccount,
+            10:string levelMO
             )
         throws (
             1:InvalidOrganizationInfisException infisExc,

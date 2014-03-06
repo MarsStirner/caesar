@@ -28,6 +28,10 @@ from application.utils import admin_permission
 
 PER_PAGE = 20
 xml_encodings = ['windows-1251', 'utf-8']
+mo_levels = ['- выберите уровень -',
+             ('01', '01-Первый уровень'),
+             ('02', '02-Второй уровень'),
+             ('03', '02-Третий уровень')]
 
 
 @module.route('/')
@@ -128,10 +132,14 @@ def download(template_type='xml'):
                          contract_id=session.pop('contract_id', None),
                          primary=session.pop('primary', None))
 
+        if not _config('mo_level'):
+            flash(u'В настройках не задан уровень МО')
+
         return render_template('{0}/download/index.html'.format(module.name),
                                templates=templates,
                                contracts=contracts,
                                departments=departments,
+                               mo_level=_config('mo_level'),
                                form_data=form_data)
     except TemplateNotFound:
         abort(404)
@@ -260,6 +268,14 @@ def settings():
                                     description=variable.name,
                                     choices=[(choice, choice) for choice in xml_encodings],
                                     default=variable.value))
+            elif variable.value_type == "enum" and variable.code == 'mo_level':
+                setattr(ConfigVariablesForm,
+                        variable.code,
+                        SelectField(variable.code,
+                                    description=variable.name,
+                                    choices=mo_levels,
+                                    default=variable.value,
+                                    validators=[Required]))
 
         form = ConfigVariablesForm()
         for variable in variables:

@@ -94,7 +94,7 @@
             </div>
         <hr>
             <div>
-                <button type="submit" class="btn btn-primary btn-large">Сформировать выгрузку</button>
+                <button type="submit" class="btn btn-primary btn-large"{% if not mo_level %} disabled{% endif %}>Сформировать выгрузку</button>
             </div>
         </form>
 <div id="download_result" class="hide">
