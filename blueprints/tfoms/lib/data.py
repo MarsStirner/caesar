@@ -91,6 +91,7 @@ class XML_Registry(object):
     def get_data(self):
         data = self.client.get_xml_registry(contract_id=self.contract_id,
                                             infis_code=self.infis_code,
+                                            old_infis_code=_config('old_lpu_infis_code'),
                                             start=self.start,
                                             end=self.end,
                                             smo_number=_config('smo_number'),

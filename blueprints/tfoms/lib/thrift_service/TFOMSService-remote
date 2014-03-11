@@ -27,7 +27,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  Account getAccount(int accountId)'
   print '  AccountInfo getAccountItems(int accountId)'
   print '  bool deleteAccount(int accountId)'
-  print '  XMLRegisters getXMLRegisters(int contractId, timestamp beginDate, timestamp endDate, string infisCode, string smoNumber,  orgStructureIdList,  patientOptionalFields,  sluchOptionalFields, bool primaryAccount, string levelMO)'
+  print '  XMLRegisters getXMLRegisters(int contractId, timestamp beginDate, timestamp endDate, string infisCode, string obsoleteInfisCode, string smoNumber,  orgStructureIdList,  patientOptionalFields,  sluchOptionalFields, bool primaryAccount, string levelMO)'
   print '   getOrgStructures(string organisationInfis)'
   print '   getAvailableContracts(string organisationInfis)'
   print '  int changeClientPolicy(int patientId, TClientPolicy newPolicy)'
@@ -108,10 +108,10 @@ elif cmd == 'deleteAccount':
   pp.pprint(client.deleteAccount(eval(args[0]),))
 
 elif cmd == 'getXMLRegisters':
-  if len(args) != 10:
-    print 'getXMLRegisters requires 10 args'
+  if len(args) != 11:
+    print 'getXMLRegisters requires 11 args'
     sys.exit(1)
-  pp.pprint(client.getXMLRegisters(eval(args[0]),eval(args[1]),eval(args[2]),args[3],args[4],eval(args[5]),eval(args[6]),eval(args[7]),eval(args[8]),args[9],))
+  pp.pprint(client.getXMLRegisters(eval(args[0]),eval(args[1]),eval(args[2]),args[3],args[4],args[5],eval(args[6]),eval(args[7]),eval(args[8]),eval(args[9]),args[10],))
 
 elif cmd == 'getOrgStructures':
   if len(args) != 1:

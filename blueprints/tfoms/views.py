@@ -28,10 +28,10 @@ from application.utils import admin_permission
 
 PER_PAGE = 20
 xml_encodings = ['windows-1251', 'utf-8']
-mo_levels = ['- выберите уровень -',
-             ('01', '01-Первый уровень'),
-             ('02', '02-Второй уровень'),
-             ('03', '02-Третий уровень')]
+mo_levels = [('', u'- выберите уровень -'),
+             ('01', u'01-Первый уровень'),
+             ('02', u'02-Второй уровень'),
+             ('03', u'03-Третий уровень')]
 
 
 @module.route('/')
@@ -133,7 +133,7 @@ def download(template_type='xml'):
                          primary=session.pop('primary', None))
 
         if not _config('mo_level'):
-            flash(u'В настройках не задан уровень МО')
+            flash(u'В <a href="{0}" class="text-error"><u>настройках</u></a> не задан уровень МО'.format(url_for('.settings')))
 
         return render_template('{0}/download/index.html'.format(module.name),
                                templates=templates,
@@ -275,7 +275,7 @@ def settings():
                                     description=variable.name,
                                     choices=mo_levels,
                                     default=variable.value,
-                                    validators=[Required]))
+                                    validators=[Required()]))
 
         form = ConfigVariablesForm()
         for variable in variables:

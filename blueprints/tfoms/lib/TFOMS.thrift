@@ -612,12 +612,13 @@ service TFOMSService{
 	    2 -  timestamp beginDate : начало интервала за который формируется реестр
 	    3 -  timestamp endDate : конец интервала за который формируется реестр
 	    4 -  string infisCode : Инфис код ЛПУ
-	    5 -  string smoNumber : Номер области СМО
-	    6 -  list<int> orgStructureIdList : Список подразделений
-	    7 -  set<PatientOptionalFields> patientOptionalFields : перечень требуемых опциональных полей реестра пациентов
-	    8 -  set<SluchOptionalFields> sluchOptionalFields : перечень требуемых опциональных полей реестра услуг
-	    9 -  bool primaryAccount : признак первичного \ повторного счета
-	    10 - string levelMO : Строка с уровнем МО (WMIS-66)
+	    5 -  string obsoleteInfisCode : Старый инфис-код
+	    6 -  string smoNumber : Номер области СМО
+	    7 -  list<int> orgStructureIdList : Список подразделений
+	    8 -  set<PatientOptionalFields> patientOptionalFields : перечень требуемых опциональных полей реестра пациентов
+	    9 -  set<SluchOptionalFields> sluchOptionalFields : перечень требуемых опциональных полей реестра услуг
+	    10 -  bool primaryAccount : признак первичного \ повторного счета
+	    11 - string levelMO : Строка с уровнем МО (WMIS-66)
 	    Exceptions:
 	    1 - InvalidOrganizationInfisException : нету организации с таким инфис-кодом
 	    2 - InvalidContractException : нету контракта с таким идентификатором
@@ -633,12 +634,13 @@ service TFOMSService{
             2:timestamp beginDate,
             3:timestamp endDate,
             4:string infisCode,
-            5:string smoNumber,
-            6:list<int> orgStructureIdList,
-            7:set<PatientOptionalFields> patientOptionalFields,
-            8:set<SluchOptionalFields> sluchOptionalFields,
-            9:bool primaryAccount,
-            10:string levelMO
+            5:string obsoleteInfisCode,
+            6:string smoNumber,
+            7:list<int> orgStructureIdList,
+            8:set<PatientOptionalFields> patientOptionalFields,
+            9:set<SluchOptionalFields> sluchOptionalFields,
+            10:bool primaryAccount,
+            11:string levelMO
             )
         throws (
             1:InvalidOrganizationInfisException infisExc,

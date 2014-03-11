@@ -96,6 +96,7 @@ class TFOMSClient(object):
     def get_xml_registry(self,
                          contract_id,
                          infis_code,
+                         old_infis_code,
                          start,
                          end,
                          smo_number,
@@ -109,6 +110,7 @@ class TFOMSClient(object):
         try:
             result = self.client.getXMLRegisters(contractId=contract_id,
                                                  infisCode=infis_code,
+                                                 obsoleteInfisCode=old_infis_code,
                                                  beginDate=calendar.timegm(start.timetuple()) * 1000,
                                                  endDate=calendar.timegm(end.timetuple()) * 1000,
                                                  orgStructureIdList=departments,
