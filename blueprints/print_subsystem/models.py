@@ -5483,7 +5483,7 @@ class Rbtrfuproceduretype(Base):
     unused = Column(Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbufm(Base):
+class Rbufms(Base):
     __tablename__ = u'rbUFMS'
 
     id = Column(Integer, primary_key=True)

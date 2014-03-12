@@ -41,11 +41,9 @@ def template_meta():
 def print_template():
     try:
         data = json.loads(request.data)
+        context_type = data['context_type']
         template_id = data['id']
-        action_id = data['action_id']
-        event_id = data['event_id']
-        additional_context = data['additional_context']
         print_obj = Print_Template()
-        return print_obj.print_template(template_id, event_id, action_id, additional_context)
+        return print_obj.print_template(context_type, template_id, data), 200, [('Access-Control-Allow-Origin', '*')]
     except TemplateNotFound:
         abort(404)
