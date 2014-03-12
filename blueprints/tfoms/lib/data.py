@@ -349,7 +349,10 @@ class UploadWorker(object):
         data = dict(payments=list(), refusedAmount=0, payedAmount=0, payedSum=0.0, refusedSum=0.0, comment='')
 
         if os.path.isfile(file_path):
-            tree = etree.parse(file_path)
+            try:
+                tree = etree.parse(file_path)
+            except etree.XMLSyntaxError, e:
+                raise AttributeError(u'Некорректная структура XML: {0}'.format(e))
             root = tree.getroot()
             filename = self.__get_filename(root)
             if filename:
