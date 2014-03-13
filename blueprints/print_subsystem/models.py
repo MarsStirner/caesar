@@ -3054,7 +3054,7 @@ class Orgstructure(Base, Info):
     uuid_id = Column(Integer, nullable=False, index=True, server_default=u"'0'")
     show = Column(Integer, nullable=False, server_default=u"'1'")
 
-    parent = relationship(u'Orgstructure', remote_side=[id])
+    parent = relationship(u'Orgstructure', lazy="immediate", remote_side=[id])
     organisation = relationship(u'Organisation')
     Net = relationship(u'Rbnet')
 
