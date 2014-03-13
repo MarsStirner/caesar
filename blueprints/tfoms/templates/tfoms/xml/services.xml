@@ -84,7 +84,7 @@
                 {%- endfor -%}
             </{{ item.tag.code }}>
         {%- endfor -%}
-    {%- elif item.tag.code == 'ZGL' -%}
+    {%- elif item.tag.code == 'ZGLV' -%}
         <{{ item.tag.code }}>
         {%- if item.children -%}
             {%- for child in item.children -%}
