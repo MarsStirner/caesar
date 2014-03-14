@@ -15,7 +15,7 @@ ROWS_PER_PAGE = 20
 
 
 @module.route('/', methods=['GET', 'POST'])
-@module.route('/<int:page>/', methods=['GET'])
+@module.route('/<int:page>/', methods=['GET', 'POST'])
 def index(page=None):
     current_app.jinja_env.filters['datetimeformat'] = datetimeformat_filter
     current_app.jinja_env.filters['strptime'] = strpdatetime_filter
@@ -26,7 +26,7 @@ def index(page=None):
     find = dict()
     if request.form:
         if MODULE_NAME in session:
-            session[MODULE_NAME].clear()
+            session[MODULE_NAME] = dict()
         session[MODULE_NAME] = request.form
 
     if MODULE_NAME in session and session[MODULE_NAME]:
