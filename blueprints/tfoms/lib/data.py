@@ -312,7 +312,7 @@ class UploadWorker(object):
                 pass
 
     def __get_filename(self, root):
-        for element in root.iter('ZGL'):
+        for element in root.iter('ZGLV'):
             for child in element:
                 if child.tag.lower() == 'filename':
                     filename = child.text
