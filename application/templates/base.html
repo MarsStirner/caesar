@@ -7,11 +7,12 @@
   <body>
   <div id="wrap">
 
-  {% include '_top.html' %}
+  {%- include '_top.html' -%}
 
   <div id="container" class="container">
+    {%- import '_macros.html' as macros -%}
 
-    {% block content %}
+    {%- block content %}
 
       <!-- Jumbotron -->
       <div class="jumbotron">
@@ -19,7 +20,7 @@
         <p class="lead">Добро пожаловать в систему администрирования ЛПУ. Модули, доступные для работы представлены в главном меню.</p>
       </div>
 
-    {% endblock %}
+    {% endblock -%}
 
    </div> <!-- /container -->
    <div id="push"></div>

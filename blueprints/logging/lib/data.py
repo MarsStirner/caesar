@@ -20,4 +20,4 @@ class Log_Data(object):
 
     def get_count(self, **kwargs):
         params = kwargs
-        return self.simplelogs.get_list(**params)
+        return self.simplelogs.count(**params)

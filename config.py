@@ -23,6 +23,10 @@ SECRET_KEY = ''
 
 BLUEPRINTS_DIR = 'blueprints'
 
+BEAKER_SESSION = {'session.type': 'file',
+                  'session.data_dir': '/tmp/session/data',
+                  'session.lock_dir': '/tmp/session/lock'}
+
 try:
     from config_local import *
 except ImportError:

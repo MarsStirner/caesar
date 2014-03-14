@@ -2,6 +2,7 @@
 import os
 from flask import Flask
 from flask.ext.principal import Principal
+from flask_beaker import BeakerSession
 from database import db
 from autoload import load_blueprints
 import config
@@ -16,6 +17,8 @@ from models import *
 from utils import login_manager
 Principal(app)
 login_manager.init_app(app)
+
+BeakerSession(app)
 
 #Register blueprints
 blueprints_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', app.config['BLUEPRINTS_DIR']))

@@ -9,13 +9,13 @@
 
 {% block content %}
     {% include 'logging/_nav_menu.html' %}
-    {% set msg = '(последние 100 записей)' %}
-    {% if request.method == 'POST' %}
+    {% set msg = '' %}
+    {% if form_data %}
         {% set msg = '(отфильтрован по параметрам)' %}
     {% endif %}
     <legend>Просмотр журнала <small>{{ msg }}</small></legend>
 
-    <form class="form-inline" id="filter" method="POST" action="">
+    <form class="form-inline" id="filter" method="POST" action="{{ url_for('.index') }}">
         {% with messages = get_flashed_messages() %}
           {% if messages %}
             <div class="alert alert-error">
@@ -30,7 +30,7 @@
         <option value="">- все подсистемы -</option>
         {% if owners %}
         {% for owner in owners %}
-            <option value="{{ owner|safe }}"{% if request.form.get('owner') == owner|string %} selected="selected"{% endif %}>
+            <option value="{{ owner|safe }}"{% if form_data.get('owner') == owner|string %} selected="selected"{% endif %}>
             {%- if owner is mapping -%}
                 {% for k, v in owner.iteritems() %}
                 {{ k }}: {{ v }}{%- if not loop.last -%} | {%- endif -%}
@@ -46,14 +46,14 @@
         <option value="">- все типы -</option>
         {% if levels %}
         {% for level in levels %}
-            <option value="{{ level }}"{% if request.form.get('level') == level %} selected="selected"{% endif %}>{{ level }}</option>
+            <option value="{{ level }}"{% if form_data.get('level') == level %} selected="selected"{% endif %}>{{ level }}</option>
         {% endfor %}
         {% endif %}
         </select>
         <label for="from">Даты с:</label>
-        <input type="text" id="from" name="start" class="span2" value="{{ request.form|attr('start') }}" />
+        <input type="text" id="from" name="start" class="span2" value="{{ form_data|attr('start') }}" />
         <label for="to">по</label>
-        <input type="text" id="to" name="end" class="span2" value="{{ request.form|attr('end') }}" />
+        <input type="text" id="to" name="end" class="span2" value="{{ form_data|attr('end') }}" />
       <button type="submit" class="btn btn-primary">Выбрать</button>
     </form>
     {% if data %}
@@ -69,6 +69,15 @@
                 <tr>
                     <th colspan="5">{% include 'logging/_filter_results_form.html' %}</th>
                 </tr>
+                {% if num_pages %}
+                <tr>
+                    <td colspan="5">
+                        <div class="pagination pagination-centered nomargin">
+                          {{ macros.pagination('.index', page=page, num_pages=num_pages) }}
+                        </div>
+                    </td>
+                </tr>
+                {% endif %}
             </thead>
             <tbody>
             {% for item in data %}
@@ -101,6 +110,11 @@
             {% endfor %}
             </tbody>
         </table>
+        {% if num_pages %}
+            <div class="pagination pagination-centered">
+              {{ macros.pagination('.index', page=page, num_pages=num_pages) }}
+            </div>
+        {% endif %}
     {% else %}
         <div class="alert">
           <button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -122,8 +136,8 @@
             $( "#to" ).datepicker( "option", "minDate", selectedDate );
           }
         });
-        {% if request.form.get('start') %}
-            $('#from').datepicker("setDate", '{{ request.form.get('start') }}');
+        {% if form_data.get('start') %}
+            $('#from').datepicker("setDate", '{{ form_data.get('start') }}');
         {% endif %}
         $( "#to" ).datepicker({
           defaultDate: "+1w",
@@ -132,8 +146,8 @@
             $( "#from" ).datepicker( "option", "maxDate", selectedDate );
           }
         });
-        {% if request.form.get('end') %}
-            $('#to').datepicker("setDate", '{{ request.form.get('end') }}');
+        {% if form_data.get('end') %}
+            $('#to').datepicker("setDate", '{{ form_data.get('end') }}');
         {% endif %}
     });
     </script>
