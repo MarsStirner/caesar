@@ -18,42 +18,58 @@ except:
 
 
 class PatientOptionalFields(object):
+  DOCTYPE = 0
+  DOCSER = 1
+  DOCNUM = 2
+  SPOLIS = 3
+  SMO_OGRN = 4
+  SMO_NAM = 5
+  SMO_OK = 6
+  VNOV_D = 7
+
+  _VALUES_TO_NAMES = {
+    0: "DOCTYPE",
+    1: "DOCSER",
+    2: "DOCNUM",
+    3: "SPOLIS",
+    4: "SMO_OGRN",
+    5: "SMO_NAM",
+    6: "SMO_OK",
+    7: "VNOV_D",
+  }
+
+  _NAMES_TO_VALUES = {
+    "DOCTYPE": 0,
+    "DOCSER": 1,
+    "DOCNUM": 2,
+    "SPOLIS": 3,
+    "SMO_OGRN": 4,
+    "SMO_NAM": 5,
+    "SMO_OK": 6,
+    "VNOV_D": 7,
+  }
+
+class PersonOptionalFields(object):
   SNILS = 0
   MR = 1
   OKATOG = 2
   OKATOP = 3
-  DOCTYPE = 4
-  DOCSER = 5
-  DOCNUM = 6
-  SPOLIS = 7
-  SMO_OGRN = 8
-  SMO_NAM = 9
-  SMO_OK = 10
-  FAM_P = 11
-  IM_P = 12
-  OT_P = 13
-  DR_P = 14
-  W_P = 15
-  VNOV_D = 16
+  FAM_P = 4
+  IM_P = 5
+  OT_P = 6
+  DR_P = 7
+  W_P = 8
 
   _VALUES_TO_NAMES = {
     0: "SNILS",
     1: "MR",
     2: "OKATOG",
     3: "OKATOP",
-    4: "DOCTYPE",
-    5: "DOCSER",
-    6: "DOCNUM",
-    7: "SPOLIS",
-    8: "SMO_OGRN",
-    9: "SMO_NAM",
-    10: "SMO_OK",
-    11: "FAM_P",
-    12: "IM_P",
-    13: "OT_P",
-    14: "DR_P",
-    15: "W_P",
-    16: "VNOV_D",
+    4: "FAM_P",
+    5: "IM_P",
+    6: "OT_P",
+    7: "DR_P",
+    8: "W_P",
   }
 
   _NAMES_TO_VALUES = {
@@ -61,19 +77,11 @@ class PatientOptionalFields(object):
     "MR": 1,
     "OKATOG": 2,
     "OKATOP": 3,
-    "DOCTYPE": 4,
-    "DOCSER": 5,
-    "DOCNUM": 6,
-    "SPOLIS": 7,
-    "SMO_OGRN": 8,
-    "SMO_NAM": 9,
-    "SMO_OK": 10,
-    "FAM_P": 11,
-    "IM_P": 12,
-    "OT_P": 13,
-    "DR_P": 14,
-    "W_P": 15,
-    "VNOV_D": 16,
+    "FAM_P": 4,
+    "IM_P": 5,
+    "OT_P": 6,
+    "DR_P": 7,
+    "W_P": 8,
   }
 
 class SluchOptionalFields(object):
@@ -263,7 +271,6 @@ class Person(object):
   @param MR        Место рождения
   @param OKATOP    адрес проживания
   @param OKATOG    адрес регистрации
-  @param VNOV_D    данные о весе ребенка при рождении (в случае оказания помощи маловесным и недоношенным детям)  Client.weight
   @param spokesman         Представитель пациента
 
   Attributes:
@@ -277,7 +284,6 @@ class Person(object):
    - MR
    - OKATOG
    - OKATOP
-   - VNOV_D
    - spokesman
   """
 
@@ -293,11 +299,10 @@ class Person(object):
     (8, TType.STRING, 'MR', None, None, ), # 8
     (9, TType.STRING, 'OKATOG', None, None, ), # 9
     (10, TType.STRING, 'OKATOP', None, None, ), # 10
-    (11, TType.I32, 'VNOV_D', None, None, ), # 11
-    (12, TType.STRUCT, 'spokesman', (Spokesman, Spokesman.thrift_spec), None, ), # 12
+    (11, TType.STRUCT, 'spokesman', (Spokesman, Spokesman.thrift_spec), None, ), # 11
   )
 
-  def __init__(self, patientId=thrift_spec[1][4], FAM=None, IM=None, OT=None, DR=None, W=None, SNILS=None, MR=None, OKATOG=None, OKATOP=None, VNOV_D=None, spokesman=None,):
+  def __init__(self, patientId=thrift_spec[1][4], FAM=None, IM=None, OT=None, DR=None, W=None, SNILS=None, MR=None, OKATOG=None, OKATOP=None, spokesman=None,):
     if patientId is self.thrift_spec[1][4]:
       patientId = -1
     self.patientId = patientId
@@ -310,7 +315,6 @@ class Person(object):
     self.MR = MR
     self.OKATOG = OKATOG
     self.OKATOP = OKATOP
-    self.VNOV_D = VNOV_D
     self.spokesman = spokesman
 
   def read(self, iprot):
@@ -373,11 +377,6 @@ class Person(object):
         else:
           iprot.skip(ftype)
       elif fid == 11:
-        if ftype == TType.I32:
-          self.VNOV_D = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 12:
         if ftype == TType.STRUCT:
           self.spokesman = Spokesman()
           self.spokesman.read(iprot)
@@ -433,12 +432,8 @@ class Person(object):
       oprot.writeFieldBegin('OKATOP', TType.STRING, 10)
       oprot.writeString(self.OKATOP.encode('utf-8'))
       oprot.writeFieldEnd()
-    if self.VNOV_D is not None:
-      oprot.writeFieldBegin('VNOV_D', TType.I32, 11)
-      oprot.writeI32(self.VNOV_D)
-      oprot.writeFieldEnd()
     if self.spokesman is not None:
-      oprot.writeFieldBegin('spokesman', TType.STRUCT, 12)
+      oprot.writeFieldBegin('spokesman', TType.STRUCT, 11)
       self.spokesman.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -490,6 +485,7 @@ class Patient(object):
   @param SMO_OGRN      ОГРН страховщика
   @param SMO_OK        Код окато страховщика
   @param SMO_NAM       Полное наименование страховщика
+  @param VNOV_D    данные о весе ребенка при рождении (в случае оказания помощи маловесным и недоношенным детям)  Client.weight
 
   Attributes:
    - NOVOR
@@ -503,12 +499,13 @@ class Patient(object):
    - SMO_OGRN
    - SMO_OK
    - SMO_NAM
+   - VNOV_D
    - patientId
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'NOVOR', None, "0", ), # 1
+    (1, TType.STRING, 'NOVOR', None, None, ), # 1
     (2, TType.STRING, 'DOCTYPE', None, None, ), # 2
     (3, TType.STRING, 'DOCSER', None, None, ), # 3
     (4, TType.STRING, 'DOCNUM', None, None, ), # 4
@@ -519,10 +516,11 @@ class Patient(object):
     (9, TType.STRING, 'SMO_OGRN', None, None, ), # 9
     (10, TType.STRING, 'SMO_OK', None, None, ), # 10
     (11, TType.STRING, 'SMO_NAM', None, None, ), # 11
-    (12, TType.I32, 'patientId', None, None, ), # 12
+    (12, TType.I32, 'VNOV_D', None, None, ), # 12
+    (13, TType.I32, 'patientId', None, None, ), # 13
   )
 
-  def __init__(self, NOVOR=thrift_spec[1][4], DOCTYPE=None, DOCSER=None, DOCNUM=None, VPOLIS=None, SPOLIS=None, NPOLIS=None, SMO=None, SMO_OGRN=None, SMO_OK=None, SMO_NAM=None, patientId=None,):
+  def __init__(self, NOVOR=None, DOCTYPE=None, DOCSER=None, DOCNUM=None, VPOLIS=None, SPOLIS=None, NPOLIS=None, SMO=None, SMO_OGRN=None, SMO_OK=None, SMO_NAM=None, VNOV_D=None, patientId=None,):
     self.NOVOR = NOVOR
     self.DOCTYPE = DOCTYPE
     self.DOCSER = DOCSER
@@ -534,6 +532,7 @@ class Patient(object):
     self.SMO_OGRN = SMO_OGRN
     self.SMO_OK = SMO_OK
     self.SMO_NAM = SMO_NAM
+    self.VNOV_D = VNOV_D
     self.patientId = patientId
 
   def read(self, iprot):
@@ -602,6 +601,11 @@ class Patient(object):
           iprot.skip(ftype)
       elif fid == 12:
         if ftype == TType.I32:
+          self.VNOV_D = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 13:
+        if ftype == TType.I32:
           self.patientId = iprot.readI32();
         else:
           iprot.skip(ftype)
@@ -659,8 +663,12 @@ class Patient(object):
       oprot.writeFieldBegin('SMO_NAM', TType.STRING, 11)
       oprot.writeString(self.SMO_NAM.encode('utf-8'))
       oprot.writeFieldEnd()
+    if self.VNOV_D is not None:
+      oprot.writeFieldBegin('VNOV_D', TType.I32, 12)
+      oprot.writeI32(self.VNOV_D)
+      oprot.writeFieldEnd()
     if self.patientId is not None:
-      oprot.writeFieldBegin('patientId', TType.I32, 12)
+      oprot.writeFieldBegin('patientId', TType.I32, 13)
       oprot.writeI32(self.patientId)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -703,12 +711,12 @@ class Usl(object):
     None, # 0
     (1, TType.I32, 'IDSERV', None, -1, ), # 1
     (2, TType.STRING, 'CODE_USL', None, None, ), # 2
-    (3, TType.DOUBLE, 'KOL_USL', None, -1, ), # 3
-    (4, TType.DOUBLE, 'TARIF', None, -1, ), # 4
+    (3, TType.DOUBLE, 'KOL_USL', None, None, ), # 3
+    (4, TType.DOUBLE, 'TARIF', None, None, ), # 4
     (5, TType.I32, 'contract_TariffId', None, None, ), # 5
   )
 
-  def __init__(self, IDSERV=thrift_spec[1][4], CODE_USL=None, KOL_USL=thrift_spec[3][4], TARIF=thrift_spec[4][4], contract_TariffId=None,):
+  def __init__(self, IDSERV=thrift_spec[1][4], CODE_USL=None, KOL_USL=None, TARIF=None, contract_TariffId=None,):
     if IDSERV is self.thrift_spec[1][4]:
       IDSERV = -1
     self.IDSERV = IDSERV
@@ -910,12 +918,12 @@ class Sluch(object):
     None, # 27
     None, # 28
     None, # 29
-    (30, TType.DOUBLE, 'ED_COL', None, -1, ), # 30
-    (31, TType.DOUBLE, 'SUMV', None, -1, ), # 31
+    (30, TType.DOUBLE, 'ED_COL', None, None, ), # 30
+    (31, TType.DOUBLE, 'SUMV', None, None, ), # 31
     (32, TType.LIST, 'USL', (TType.STRUCT,(Usl, Usl.thrift_spec)), None, ), # 32
   )
 
-  def __init__(self, IDCASE=None, USL_OK=None, VIDPOM=None, NPR_MO=None, EXTR=None, FOR_POM=None, LPU=None, LPU_1=None, PODR=None, PROFIL=None, DET=None, NHISTORY=None, DATE_1=None, DATE_2=None, DS0=None, DS1=None, DS2=None, CODE_MES1=None, CODE_MES2=None, RSLT=None, ISHOD=None, PRVS=thrift_spec[22][4], IDDOKT=thrift_spec[23][4], OS_SLUCH=None, IDSP=None, patient=None, ED_COL=thrift_spec[30][4], SUMV=thrift_spec[31][4], USL=None,):
+  def __init__(self, IDCASE=None, USL_OK=None, VIDPOM=None, NPR_MO=None, EXTR=None, FOR_POM=None, LPU=None, LPU_1=None, PODR=None, PROFIL=None, DET=None, NHISTORY=None, DATE_1=None, DATE_2=None, DS0=None, DS1=None, DS2=None, CODE_MES1=None, CODE_MES2=None, RSLT=None, ISHOD=None, PRVS=thrift_spec[22][4], IDDOKT=thrift_spec[23][4], OS_SLUCH=None, IDSP=None, patient=None, ED_COL=None, SUMV=None, USL=None,):
     self.IDCASE = IDCASE
     self.USL_OK = USL_OK
     self.VIDPOM = VIDPOM
@@ -3334,6 +3342,7 @@ class AccountItem(object):
    - refuseTypeName
    - refuseTypeCode
    - note
+   - doNotUploadAnymore
   """
 
   thrift_spec = (
@@ -3353,9 +3362,10 @@ class AccountItem(object):
     (13, TType.STRING, 'refuseTypeName', None, None, ), # 13
     (14, TType.I16, 'refuseTypeCode', None, None, ), # 14
     (15, TType.STRING, 'note', None, None, ), # 15
+    (16, TType.BOOL, 'doNotUploadAnymore', None, None, ), # 16
   )
 
-  def __init__(self, id=None, serviceDate=None, lastName=None, firstName=None, patrName=None, sex=None, birthDate=None, price=None, amount=None, unitName=None, date=None, fileName=None, refuseTypeName=None, refuseTypeCode=None, note=None,):
+  def __init__(self, id=None, serviceDate=None, lastName=None, firstName=None, patrName=None, sex=None, birthDate=None, price=None, amount=None, unitName=None, date=None, fileName=None, refuseTypeName=None, refuseTypeCode=None, note=None, doNotUploadAnymore=None,):
     self.id = id
     self.serviceDate = serviceDate
     self.lastName = lastName
@@ -3371,6 +3381,7 @@ class AccountItem(object):
     self.refuseTypeName = refuseTypeName
     self.refuseTypeCode = refuseTypeCode
     self.note = note
+    self.doNotUploadAnymore = doNotUploadAnymore
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3456,6 +3467,11 @@ class AccountItem(object):
           self.note = iprot.readString().decode('utf-8')
         else:
           iprot.skip(ftype)
+      elif fid == 16:
+        if ftype == TType.BOOL:
+          self.doNotUploadAnymore = iprot.readBool();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3525,6 +3541,10 @@ class AccountItem(object):
     if self.note is not None:
       oprot.writeFieldBegin('note', TType.STRING, 15)
       oprot.writeString(self.note.encode('utf-8'))
+      oprot.writeFieldEnd()
+    if self.doNotUploadAnymore is not None:
+      oprot.writeFieldBegin('doNotUploadAnymore', TType.BOOL, 16)
+      oprot.writeBool(self.doNotUploadAnymore)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -3643,6 +3663,100 @@ class AccountInfo(object):
       raise TProtocol.TProtocolException(message='Required field account is unset!')
     if self.items is None:
       raise TProtocol.TProtocolException(message='Required field items is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class AccountItemWithMark(object):
+  """
+  AccountItemWithMark
+  Структура с данными о позиции счета которой нужно поменять флаг "не выгружать более"
+  @param id                            1) Уникальный идетификатор позиции счета (AccountItem.id)
+  @param status                        2) true - Выставить отметку "Не выгружать более" \ false - снять отметку "не выгружать более"
+  @param note                          3) примичание к изменению отметки
+
+  Attributes:
+   - id
+   - status
+   - note
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'id', None, None, ), # 1
+    (2, TType.BOOL, 'status', None, None, ), # 2
+    (3, TType.STRING, 'note', None, None, ), # 3
+  )
+
+  def __init__(self, id=None, status=None, note=None,):
+    self.id = id
+    self.status = status
+    self.note = note
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.id = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.BOOL:
+          self.status = iprot.readBool();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.note = iprot.readString().decode('utf-8')
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('AccountItemWithMark')
+    if self.id is not None:
+      oprot.writeFieldBegin('id', TType.I32, 1)
+      oprot.writeI32(self.id)
+      oprot.writeFieldEnd()
+    if self.status is not None:
+      oprot.writeFieldBegin('status', TType.BOOL, 2)
+      oprot.writeBool(self.status)
+      oprot.writeFieldEnd()
+    if self.note is not None:
+      oprot.writeFieldBegin('note', TType.STRING, 3)
+      oprot.writeString(self.note.encode('utf-8'))
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.id is None:
+      raise TProtocol.TProtocolException(message='Required field id is unset!')
+    if self.status is None:
+      raise TProtocol.TProtocolException(message='Required field status is unset!')
     return
 
 

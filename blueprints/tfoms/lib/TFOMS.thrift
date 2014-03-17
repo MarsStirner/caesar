@@ -49,7 +49,6 @@ struct Spokesman{
  * @param MR        Место рождения
  * @param OKATOP    адрес проживания
  * @param OKATOG    адрес регистрации
- * @param VNOV_D    данные о весе ребенка при рождении (в случае оказания помощи маловесным и недоношенным детям)  Client.weight
  * @param spokesman         Представитель пациента
  */
 struct Person{
@@ -63,8 +62,7 @@ struct Person{
 	8:optional string MR;
 	9:optional string OKATOG;
 	10:optional string OKATOP;
-	11:optional int VNOV_D;
-	12:optional Spokesman spokesman;
+	11:optional Spokesman spokesman;
 }
 
 /**
@@ -85,9 +83,10 @@ struct Person{
  * @param SMO_OGRN      ОГРН страховщика
  * @param SMO_OK        Код окато страховщика
  * @param SMO_NAM       Полное наименование страховщика
+ * @param VNOV_D    данные о весе ребенка при рождении (в случае оказания помощи маловесным и недоношенным детям)  Client.weight
  */
  struct Patient{
-     1:required string NOVOR = "0";
+     1:required string NOVOR;
      2:optional string DOCTYPE;
      3:optional string DOCSER;
      4:optional string DOCNUM;
@@ -98,16 +97,17 @@ struct Person{
      9:optional string SMO_OGRN;
      10:optional string SMO_OK;
      11:optional string SMO_NAM;
+     12:optional int VNOV_D;
      //внутренний идентификатор пациентав БД ЛПУ
-     12:optional int patientId;
+     13:optional int patientId;
  }
 
 //Данные о услуге
 struct Usl{
 	1:required int IDSERV = -1;
 	2:required string CODE_USL;
-	3:required double KOL_USL = -1.0;
-	4:required double TARIF = -1.0;
+	3:required double KOL_USL;
+	4:required double TARIF;
 	//Внутренние идентификаторы
 	5:required int contract_TariffId;
 }
@@ -177,22 +177,14 @@ struct Sluch{
 	// параметры относящиеся больше к пациенту,
 	26:required Patient patient;
 
-	30:required double ED_COL = -1.0;
-	31:required double SUMV = -1.0;
+	30:required double ED_COL;
+	31:required double SUMV;
 
 	32:required list<Usl> USL;
 }
 
 //Перечисление с названиями требуемых опциональных полей
 enum PatientOptionalFields{
-    // Снилс пациента
-	SNILS,
-	// Место рождения пациента
-	MR,
-	// Код ОКАТО адреса регистрации пациента
-	OKATOG,
-	// Код ОКАТО адреса  проживания пациента
-	OKATOP,
 	// Тип документа пациента
 	DOCTYPE,
 	// Серия документа пациента
@@ -207,18 +199,29 @@ enum PatientOptionalFields{
 	SMO_NAM,
 	// Код ОКАТО территории страхования
 	SMO_OK,
-	// Фамилия предствателя пациента
-	FAM_P,
-	// Имя представителя пациента
-	IM_P,
-	// Отчество представителя пациента
-	OT_P,
-	// Дата рождения представителя пациента
-	DR_P,
-	// Пол представителя пациента
-	W_P,
 	// данные о весе ребенка при рождении (в случае оказания помощи маловесным и недоношенным детям)
 	VNOV_D
+}
+
+enum PersonOptionalFields{
+    // Снилс пациента
+	SNILS,
+	// Место рождения пациента
+	MR,
+	// Код ОКАТО адреса регистрации пациента
+	OKATOG,
+	// Код ОКАТО адреса  проживания пациента
+	OKATOP,
+	// Фамилия предствателя пациента
+    FAM_P,
+    // Имя представителя пациента
+    IM_P,
+    // Отчество представителя пациента
+    OT_P,
+    // Дата рождения представителя пациента
+    DR_P,
+    // Пол представителя пациента
+    W_P
 }
 
 enum SluchOptionalFields{
@@ -428,6 +431,7 @@ struct AccountItem{
     13:optional string refuseTypeName;
     14:optional tinyint refuseTypeCode;
     15:optional string note;
+    16:optional bool doNotUploadAnymore;
 }
 
 /**
@@ -442,13 +446,26 @@ struct AccountInfo {
 }
 
 /**
+ * AccountItemWithMark
+ * Структура с данными о позиции счета которой нужно поменять флаг "не выгружать более"
+ * @param id                            1) Уникальный идетификатор позиции счета (AccountItem.id)
+ * @param status                        2) true - Выставить отметку "Не выгружать более" \ false - снять отметку "не выгружать более"
+ * @param note                          3) примичание к изменению отметки
+ */
+ struct AccountItemWithMark{
+    1:required int id;
+    2:required bool status;
+    3:optional string note;
+ }
+
+/**
  * Структура с данными об оплате выгруженного случая
  * @param accountItemId                1)Уникальный идентификатор позиции счета (SLUCH:IDCASE)
  * @param refuseTypeCode               2)Код причины отказа в оплате            (SLUCH:REFREASON)
  * @param comment                      3)Комментарий к оплате случая            (SLUCH:COMENTSL)
  */
 struct Payment{
-    1:required i32 accountItemId;
+    1:required int accountItemId;
     2:optional string refuseTypeCode;
     3:optional string comment;
 }
@@ -595,6 +612,12 @@ service TFOMSService{
      */
     AccountInfo getAccountItems(1:int accountId) throws (1:NotFoundException nfExc);
 
+    /**
+    * Проставление отметки "не выгружать более" для заданных позиций счета
+    * @param items Список структур позиций счета, которых более не требуется выгружать ни в одном счете
+    */
+    oneway void setDoNotUploadAnymoreMarks(1:list<AccountItemWithMark> items);
+
     /*
         Удаление счета
         Arguments:
@@ -615,10 +638,11 @@ service TFOMSService{
 	    5 -  string obsoleteInfisCode : Старый инфис-код
 	    6 -  string smoNumber : Номер области СМО
 	    7 -  list<int> orgStructureIdList : Список подразделений
-	    8 -  set<PatientOptionalFields> patientOptionalFields : перечень требуемых опциональных полей реестра пациентов
-	    9 -  set<SluchOptionalFields> sluchOptionalFields : перечень требуемых опциональных полей реестра услуг
-	    10 -  bool primaryAccount : признак первичного \ повторного счета
-	    11 - string levelMO : Строка с уровнем МО (WMIS-66)
+	    8 -  set<PatientOptionalFields> patientOptionalFields : перечень требуемых опциональных полей структуры PACIENT
+	    9 -  set<PersonOptionalFields> personOptionalFields : перечень опциональных полей структуры PERS
+	    10 -  set<SluchOptionalFields> sluchOptionalFields : перечень требуемых опциональных полей реестра услуг
+	    11 -  bool primaryAccount : признак первичного \ повторного счета
+	    12 - string levelMO : Строка с уровнем МО (WMIS-66)
 	    Exceptions:
 	    1 - InvalidOrganizationInfisException : нету организации с таким инфис-кодом
 	    2 - InvalidContractException : нету контракта с таким идентификатором
@@ -638,9 +662,10 @@ service TFOMSService{
             6:string smoNumber,
             7:list<int> orgStructureIdList,
             8:set<PatientOptionalFields> patientOptionalFields,
-            9:set<SluchOptionalFields> sluchOptionalFields,
-            10:bool primaryAccount,
-            11:string levelMO
+            9:set<PersonOptionalFields> personOptionalFields,
+            10:set<SluchOptionalFields> sluchOptionalFields,
+            11:bool primaryAccount,
+            12:string levelMO
             )
         throws (
             1:InvalidOrganizationInfisException infisExc,
@@ -690,10 +715,10 @@ service TFOMSService{
 	 * или пустой список если все ок
 	 * @throw  NotFoundException когда в БД ЛПУ нету счета с таким номером
 	 */
-	map<i32, string> loadTfomsPayments( 1:string fileName,
+	map<int, string> loadTfomsPayments( 1:string fileName,
                                         2:list<Payment> payments,
-                                        3:i32 refusedAmount,
-                                        4:i32 payedAmount,
+                                        3:int refusedAmount,
+                                        4:int payedAmount,
                                         5:double payedSum,
                                         6:double refusedSum,
                                         7:string accountNumber,
