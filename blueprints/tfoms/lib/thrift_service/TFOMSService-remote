@@ -26,12 +26,13 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '   getAvailableAccounts()'
   print '  Account getAccount(int accountId)'
   print '  AccountInfo getAccountItems(int accountId)'
+  print '  void setDoNotUploadAnymoreMarks( items)'
   print '  bool deleteAccount(int accountId)'
-  print '  XMLRegisters getXMLRegisters(int contractId, timestamp beginDate, timestamp endDate, string infisCode, string obsoleteInfisCode, string smoNumber,  orgStructureIdList,  patientOptionalFields,  sluchOptionalFields, bool primaryAccount, string levelMO)'
+  print '  XMLRegisters getXMLRegisters(int contractId, timestamp beginDate, timestamp endDate, string infisCode, string obsoleteInfisCode, string smoNumber,  orgStructureIdList,  patientOptionalFields,  personOptionalFields,  sluchOptionalFields, bool primaryAccount, string levelMO)'
   print '   getOrgStructures(string organisationInfis)'
   print '   getAvailableContracts(string organisationInfis)'
   print '  int changeClientPolicy(int patientId, TClientPolicy newPolicy)'
-  print '   loadTfomsPayments(string fileName,  payments, i32 refusedAmount, i32 payedAmount, double payedSum, double refusedSum, string accountNumber, string comment)'
+  print '   loadTfomsPayments(string fileName,  payments, int refusedAmount, int payedAmount, double payedSum, double refusedSum, string accountNumber, string comment)'
   print ''
   sys.exit(0)
 
@@ -101,6 +102,12 @@ elif cmd == 'getAccountItems':
     sys.exit(1)
   pp.pprint(client.getAccountItems(eval(args[0]),))
 
+elif cmd == 'setDoNotUploadAnymoreMarks':
+  if len(args) != 1:
+    print 'setDoNotUploadAnymoreMarks requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.setDoNotUploadAnymoreMarks(eval(args[0]),))
+
 elif cmd == 'deleteAccount':
   if len(args) != 1:
     print 'deleteAccount requires 1 args'
@@ -108,10 +115,10 @@ elif cmd == 'deleteAccount':
   pp.pprint(client.deleteAccount(eval(args[0]),))
 
 elif cmd == 'getXMLRegisters':
-  if len(args) != 11:
-    print 'getXMLRegisters requires 11 args'
+  if len(args) != 12:
+    print 'getXMLRegisters requires 12 args'
     sys.exit(1)
-  pp.pprint(client.getXMLRegisters(eval(args[0]),eval(args[1]),eval(args[2]),args[3],args[4],args[5],eval(args[6]),eval(args[7]),eval(args[8]),eval(args[9]),args[10],))
+  pp.pprint(client.getXMLRegisters(eval(args[0]),eval(args[1]),eval(args[2]),args[3],args[4],args[5],eval(args[6]),eval(args[7]),eval(args[8]),eval(args[9]),eval(args[10]),args[11],))
 
 elif cmd == 'getOrgStructures':
   if len(args) != 1:

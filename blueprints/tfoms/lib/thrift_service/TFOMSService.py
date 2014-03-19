@@ -50,6 +50,16 @@ class Iface(object):
     """
     pass
 
+  def setDoNotUploadAnymoreMarks(self, items):
+    """
+    Проставление отметки "не выгружать более" для заданных позиций счета
+    @param items Список структур позиций счета, которых более не требуется выгружать ни в одном счете
+
+    Parameters:
+     - items
+    """
+    pass
+
   def deleteAccount(self, accountId):
     """
     Parameters:
@@ -57,7 +67,7 @@ class Iface(object):
     """
     pass
 
-  def getXMLRegisters(self, contractId, beginDate, endDate, infisCode, obsoleteInfisCode, smoNumber, orgStructureIdList, patientOptionalFields, sluchOptionalFields, primaryAccount, levelMO):
+  def getXMLRegisters(self, contractId, beginDate, endDate, infisCode, obsoleteInfisCode, smoNumber, orgStructureIdList, patientOptionalFields, personOptionalFields, sluchOptionalFields, primaryAccount, levelMO):
     """
     Parameters:
      - contractId
@@ -68,6 +78,7 @@ class Iface(object):
      - smoNumber
      - orgStructureIdList
      - patientOptionalFields
+     - personOptionalFields
      - sluchOptionalFields
      - primaryAccount
      - levelMO
@@ -244,6 +255,23 @@ class Client(Iface):
       raise result.nfExc
     raise TApplicationException(TApplicationException.MISSING_RESULT, "getAccountItems failed: unknown result");
 
+  def setDoNotUploadAnymoreMarks(self, items):
+    """
+    Проставление отметки "не выгружать более" для заданных позиций счета
+    @param items Список структур позиций счета, которых более не требуется выгружать ни в одном счете
+
+    Parameters:
+     - items
+    """
+    self.send_setDoNotUploadAnymoreMarks(items)
+
+  def send_setDoNotUploadAnymoreMarks(self, items):
+    self._oprot.writeMessageBegin('setDoNotUploadAnymoreMarks', TMessageType.CALL, self._seqid)
+    args = setDoNotUploadAnymoreMarks_args()
+    args.items = items
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
   def deleteAccount(self, accountId):
     """
     Parameters:
@@ -274,7 +302,7 @@ class Client(Iface):
       return result.success
     raise TApplicationException(TApplicationException.MISSING_RESULT, "deleteAccount failed: unknown result");
 
-  def getXMLRegisters(self, contractId, beginDate, endDate, infisCode, obsoleteInfisCode, smoNumber, orgStructureIdList, patientOptionalFields, sluchOptionalFields, primaryAccount, levelMO):
+  def getXMLRegisters(self, contractId, beginDate, endDate, infisCode, obsoleteInfisCode, smoNumber, orgStructureIdList, patientOptionalFields, personOptionalFields, sluchOptionalFields, primaryAccount, levelMO):
     """
     Parameters:
      - contractId
@@ -285,14 +313,15 @@ class Client(Iface):
      - smoNumber
      - orgStructureIdList
      - patientOptionalFields
+     - personOptionalFields
      - sluchOptionalFields
      - primaryAccount
      - levelMO
     """
-    self.send_getXMLRegisters(contractId, beginDate, endDate, infisCode, obsoleteInfisCode, smoNumber, orgStructureIdList, patientOptionalFields, sluchOptionalFields, primaryAccount, levelMO)
+    self.send_getXMLRegisters(contractId, beginDate, endDate, infisCode, obsoleteInfisCode, smoNumber, orgStructureIdList, patientOptionalFields, personOptionalFields, sluchOptionalFields, primaryAccount, levelMO)
     return self.recv_getXMLRegisters()
 
-  def send_getXMLRegisters(self, contractId, beginDate, endDate, infisCode, obsoleteInfisCode, smoNumber, orgStructureIdList, patientOptionalFields, sluchOptionalFields, primaryAccount, levelMO):
+  def send_getXMLRegisters(self, contractId, beginDate, endDate, infisCode, obsoleteInfisCode, smoNumber, orgStructureIdList, patientOptionalFields, personOptionalFields, sluchOptionalFields, primaryAccount, levelMO):
     self._oprot.writeMessageBegin('getXMLRegisters', TMessageType.CALL, self._seqid)
     args = getXMLRegisters_args()
     args.contractId = contractId
@@ -303,6 +332,7 @@ class Client(Iface):
     args.smoNumber = smoNumber
     args.orgStructureIdList = orgStructureIdList
     args.patientOptionalFields = patientOptionalFields
+    args.personOptionalFields = personOptionalFields
     args.sluchOptionalFields = sluchOptionalFields
     args.primaryAccount = primaryAccount
     args.levelMO = levelMO
@@ -513,6 +543,7 @@ class Processor(Iface, TProcessor):
     self._processMap["getAvailableAccounts"] = Processor.process_getAvailableAccounts
     self._processMap["getAccount"] = Processor.process_getAccount
     self._processMap["getAccountItems"] = Processor.process_getAccountItems
+    self._processMap["setDoNotUploadAnymoreMarks"] = Processor.process_setDoNotUploadAnymoreMarks
     self._processMap["deleteAccount"] = Processor.process_deleteAccount
     self._processMap["getXMLRegisters"] = Processor.process_getXMLRegisters
     self._processMap["getOrgStructures"] = Processor.process_getOrgStructures
@@ -574,6 +605,13 @@ class Processor(Iface, TProcessor):
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
+  def process_setDoNotUploadAnymoreMarks(self, seqid, iprot, oprot):
+    args = setDoNotUploadAnymoreMarks_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    self._handler.setDoNotUploadAnymoreMarks(args.items)
+    return
+
   def process_deleteAccount(self, seqid, iprot, oprot):
     args = deleteAccount_args()
     args.read(iprot)
@@ -591,7 +629,7 @@ class Processor(Iface, TProcessor):
     iprot.readMessageEnd()
     result = getXMLRegisters_result()
     try:
-      result.success = self._handler.getXMLRegisters(args.contractId, args.beginDate, args.endDate, args.infisCode, args.obsoleteInfisCode, args.smoNumber, args.orgStructureIdList, args.patientOptionalFields, args.sluchOptionalFields, args.primaryAccount, args.levelMO)
+      result.success = self._handler.getXMLRegisters(args.contractId, args.beginDate, args.endDate, args.infisCode, args.obsoleteInfisCode, args.smoNumber, args.orgStructureIdList, args.patientOptionalFields, args.personOptionalFields, args.sluchOptionalFields, args.primaryAccount, args.levelMO)
     except InvalidOrganizationInfisException as infisExc:
       result.infisExc = infisExc
     except InvalidContractException as contractExc:
@@ -1046,6 +1084,75 @@ class getAccountItems_result(object):
   def __ne__(self, other):
     return not (self == other)
 
+class setDoNotUploadAnymoreMarks_args(object):
+  """
+  Attributes:
+   - items
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.LIST, 'items', (TType.STRUCT,(AccountItemWithMark, AccountItemWithMark.thrift_spec)), None, ), # 1
+  )
+
+  def __init__(self, items=None,):
+    self.items = items
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.LIST:
+          self.items = []
+          (_etype47, _size44) = iprot.readListBegin()
+          for _i48 in xrange(_size44):
+            _elem49 = AccountItemWithMark()
+            _elem49.read(iprot)
+            self.items.append(_elem49)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('setDoNotUploadAnymoreMarks_args')
+    if self.items is not None:
+      oprot.writeFieldBegin('items', TType.LIST, 1)
+      oprot.writeListBegin(TType.STRUCT, len(self.items))
+      for iter50 in self.items:
+        iter50.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class deleteAccount_args(object):
   """
   Attributes:
@@ -1176,6 +1283,7 @@ class getXMLRegisters_args(object):
    - smoNumber
    - orgStructureIdList
    - patientOptionalFields
+   - personOptionalFields
    - sluchOptionalFields
    - primaryAccount
    - levelMO
@@ -1191,12 +1299,13 @@ class getXMLRegisters_args(object):
     (6, TType.STRING, 'smoNumber', None, None, ), # 6
     (7, TType.LIST, 'orgStructureIdList', (TType.I32,None), None, ), # 7
     (8, TType.SET, 'patientOptionalFields', (TType.I32,None), None, ), # 8
-    (9, TType.SET, 'sluchOptionalFields', (TType.I32,None), None, ), # 9
-    (10, TType.BOOL, 'primaryAccount', None, None, ), # 10
-    (11, TType.STRING, 'levelMO', None, None, ), # 11
+    (9, TType.SET, 'personOptionalFields', (TType.I32,None), None, ), # 9
+    (10, TType.SET, 'sluchOptionalFields', (TType.I32,None), None, ), # 10
+    (11, TType.BOOL, 'primaryAccount', None, None, ), # 11
+    (12, TType.STRING, 'levelMO', None, None, ), # 12
   )
 
-  def __init__(self, contractId=None, beginDate=None, endDate=None, infisCode=None, obsoleteInfisCode=None, smoNumber=None, orgStructureIdList=None, patientOptionalFields=None, sluchOptionalFields=None, primaryAccount=None, levelMO=None,):
+  def __init__(self, contractId=None, beginDate=None, endDate=None, infisCode=None, obsoleteInfisCode=None, smoNumber=None, orgStructureIdList=None, patientOptionalFields=None, personOptionalFields=None, sluchOptionalFields=None, primaryAccount=None, levelMO=None,):
     self.contractId = contractId
     self.beginDate = beginDate
     self.endDate = endDate
@@ -1205,6 +1314,7 @@ class getXMLRegisters_args(object):
     self.smoNumber = smoNumber
     self.orgStructureIdList = orgStructureIdList
     self.patientOptionalFields = patientOptionalFields
+    self.personOptionalFields = personOptionalFields
     self.sluchOptionalFields = sluchOptionalFields
     self.primaryAccount = primaryAccount
     self.levelMO = levelMO
@@ -1251,39 +1361,49 @@ class getXMLRegisters_args(object):
       elif fid == 7:
         if ftype == TType.LIST:
           self.orgStructureIdList = []
-          (_etype47, _size44) = iprot.readListBegin()
-          for _i48 in xrange(_size44):
-            _elem49 = iprot.readI32();
-            self.orgStructureIdList.append(_elem49)
+          (_etype54, _size51) = iprot.readListBegin()
+          for _i55 in xrange(_size51):
+            _elem56 = iprot.readI32();
+            self.orgStructureIdList.append(_elem56)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 8:
         if ftype == TType.SET:
           self.patientOptionalFields = set()
-          (_etype53, _size50) = iprot.readSetBegin()
-          for _i54 in xrange(_size50):
-            _elem55 = iprot.readI32();
-            self.patientOptionalFields.add(_elem55)
+          (_etype60, _size57) = iprot.readSetBegin()
+          for _i61 in xrange(_size57):
+            _elem62 = iprot.readI32();
+            self.patientOptionalFields.add(_elem62)
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
       elif fid == 9:
         if ftype == TType.SET:
-          self.sluchOptionalFields = set()
-          (_etype59, _size56) = iprot.readSetBegin()
-          for _i60 in xrange(_size56):
-            _elem61 = iprot.readI32();
-            self.sluchOptionalFields.add(_elem61)
+          self.personOptionalFields = set()
+          (_etype66, _size63) = iprot.readSetBegin()
+          for _i67 in xrange(_size63):
+            _elem68 = iprot.readI32();
+            self.personOptionalFields.add(_elem68)
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
       elif fid == 10:
+        if ftype == TType.SET:
+          self.sluchOptionalFields = set()
+          (_etype72, _size69) = iprot.readSetBegin()
+          for _i73 in xrange(_size69):
+            _elem74 = iprot.readI32();
+            self.sluchOptionalFields.add(_elem74)
+          iprot.readSetEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 11:
         if ftype == TType.BOOL:
           self.primaryAccount = iprot.readBool();
         else:
           iprot.skip(ftype)
-      elif fid == 11:
+      elif fid == 12:
         if ftype == TType.STRING:
           self.levelMO = iprot.readString().decode('utf-8')
         else:
@@ -1325,30 +1445,37 @@ class getXMLRegisters_args(object):
     if self.orgStructureIdList is not None:
       oprot.writeFieldBegin('orgStructureIdList', TType.LIST, 7)
       oprot.writeListBegin(TType.I32, len(self.orgStructureIdList))
-      for iter62 in self.orgStructureIdList:
-        oprot.writeI32(iter62)
+      for iter75 in self.orgStructureIdList:
+        oprot.writeI32(iter75)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.patientOptionalFields is not None:
       oprot.writeFieldBegin('patientOptionalFields', TType.SET, 8)
       oprot.writeSetBegin(TType.I32, len(self.patientOptionalFields))
-      for iter63 in self.patientOptionalFields:
-        oprot.writeI32(iter63)
+      for iter76 in self.patientOptionalFields:
+        oprot.writeI32(iter76)
+      oprot.writeSetEnd()
+      oprot.writeFieldEnd()
+    if self.personOptionalFields is not None:
+      oprot.writeFieldBegin('personOptionalFields', TType.SET, 9)
+      oprot.writeSetBegin(TType.I32, len(self.personOptionalFields))
+      for iter77 in self.personOptionalFields:
+        oprot.writeI32(iter77)
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     if self.sluchOptionalFields is not None:
-      oprot.writeFieldBegin('sluchOptionalFields', TType.SET, 9)
+      oprot.writeFieldBegin('sluchOptionalFields', TType.SET, 10)
       oprot.writeSetBegin(TType.I32, len(self.sluchOptionalFields))
-      for iter64 in self.sluchOptionalFields:
-        oprot.writeI32(iter64)
+      for iter78 in self.sluchOptionalFields:
+        oprot.writeI32(iter78)
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     if self.primaryAccount is not None:
-      oprot.writeFieldBegin('primaryAccount', TType.BOOL, 10)
+      oprot.writeFieldBegin('primaryAccount', TType.BOOL, 11)
       oprot.writeBool(self.primaryAccount)
       oprot.writeFieldEnd()
     if self.levelMO is not None:
-      oprot.writeFieldBegin('levelMO', TType.STRING, 11)
+      oprot.writeFieldBegin('levelMO', TType.STRING, 12)
       oprot.writeString(self.levelMO.encode('utf-8'))
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -1595,11 +1722,11 @@ class getOrgStructures_result(object):
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype68, _size65) = iprot.readListBegin()
-          for _i69 in xrange(_size65):
-            _elem70 = OrgStructure()
-            _elem70.read(iprot)
-            self.success.append(_elem70)
+          (_etype82, _size79) = iprot.readListBegin()
+          for _i83 in xrange(_size79):
+            _elem84 = OrgStructure()
+            _elem84.read(iprot)
+            self.success.append(_elem84)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -1622,8 +1749,8 @@ class getOrgStructures_result(object):
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter71 in self.success:
-        iter71.write(oprot)
+      for iter85 in self.success:
+        iter85.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.infisExc is not None:
@@ -1736,11 +1863,11 @@ class getAvailableContracts_result(object):
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype75, _size72) = iprot.readListBegin()
-          for _i76 in xrange(_size72):
-            _elem77 = Contract()
-            _elem77.read(iprot)
-            self.success.append(_elem77)
+          (_etype89, _size86) = iprot.readListBegin()
+          for _i90 in xrange(_size86):
+            _elem91 = Contract()
+            _elem91.read(iprot)
+            self.success.append(_elem91)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -1763,8 +1890,8 @@ class getAvailableContracts_result(object):
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter78 in self.success:
-        iter78.write(oprot)
+      for iter92 in self.success:
+        iter92.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.infisExc is not None:
@@ -1999,11 +2126,11 @@ class loadTfomsPayments_args(object):
       elif fid == 2:
         if ftype == TType.LIST:
           self.payments = []
-          (_etype82, _size79) = iprot.readListBegin()
-          for _i83 in xrange(_size79):
-            _elem84 = Payment()
-            _elem84.read(iprot)
-            self.payments.append(_elem84)
+          (_etype96, _size93) = iprot.readListBegin()
+          for _i97 in xrange(_size93):
+            _elem98 = Payment()
+            _elem98.read(iprot)
+            self.payments.append(_elem98)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -2054,8 +2181,8 @@ class loadTfomsPayments_args(object):
     if self.payments is not None:
       oprot.writeFieldBegin('payments', TType.LIST, 2)
       oprot.writeListBegin(TType.STRUCT, len(self.payments))
-      for iter85 in self.payments:
-        iter85.write(oprot)
+      for iter99 in self.payments:
+        iter99.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.refusedAmount is not None:
@@ -2128,11 +2255,11 @@ class loadTfomsPayments_result(object):
       if fid == 0:
         if ftype == TType.MAP:
           self.success = {}
-          (_ktype87, _vtype88, _size86 ) = iprot.readMapBegin() 
-          for _i90 in xrange(_size86):
-            _key91 = iprot.readI32();
-            _val92 = iprot.readString().decode('utf-8')
-            self.success[_key91] = _val92
+          (_ktype101, _vtype102, _size100 ) = iprot.readMapBegin() 
+          for _i104 in xrange(_size100):
+            _key105 = iprot.readI32();
+            _val106 = iprot.readString().decode('utf-8')
+            self.success[_key105] = _val106
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -2155,9 +2282,9 @@ class loadTfomsPayments_result(object):
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.MAP, 0)
       oprot.writeMapBegin(TType.I32, TType.STRING, len(self.success))
-      for kiter93,viter94 in self.success.items():
-        oprot.writeI32(kiter93)
-        oprot.writeString(viter94.encode('utf-8'))
+      for kiter107,viter108 in self.success.items():
+        oprot.writeI32(kiter107)
+        oprot.writeString(viter108.encode('utf-8'))
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.nfExc is not None:

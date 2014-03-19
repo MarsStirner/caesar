@@ -11,6 +11,7 @@ from application.database import db
 from service_client import TFOMSClient as Client
 from thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException
 from thrift_service.ttypes import PatientOptionalFields, SluchOptionalFields, TClientPolicy, Payment
+from thrift_service.ttypes import PersonOptionalFields
 from ..app import module, _config
 from ..models import Template, TagsTree, Tag
 from ..lib.reports import Reports
@@ -77,6 +78,19 @@ class XML_Registry(object):
                 result.append(attr)
         return result
 
+    def __person_optional_tags(self):
+        result = []
+        patient_events_tags = self.patient_tags
+        patient_events_tags.extend(self.event_tags)
+        for tag in patient_events_tags:
+            try:
+                attr = getattr(PersonOptionalFields, tag)
+            except exceptions.AttributeError:
+                pass
+            else:
+                result.append(attr)
+        return result
+
     def __event_optional_tags(self):
         result = []
         for tag in self.event_tags:
@@ -99,6 +113,7 @@ class XML_Registry(object):
                                             departments=self.departments,
                                             mo_level=_config('mo_level'),
                                             patient_optional=self.__patient_optional_tags(),
+                                            person_optional=self.__person_optional_tags(),
                                             event_optional=self.__event_optional_tags())
         return data
 

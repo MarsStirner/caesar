@@ -104,6 +104,7 @@ class TFOMSClient(object):
                          departments=None,
                          mo_level=None,
                          patient_optional=list(),
+                         person_optional=list(),
                          event_optional=list()):
         """Получает список пациентов и услуг для XML-выгрузки данном ЛПУ в указанный промежуток времени"""
         result = None
@@ -115,6 +116,7 @@ class TFOMSClient(object):
                                                  endDate=calendar.timegm(end.timetuple()) * 1000,
                                                  orgStructureIdList=departments,
                                                  patientOptionalFields=patient_optional,
+                                                 personOptionalFields=person_optional,
                                                  sluchOptionalFields=event_optional,
                                                  primaryAccount=primary,
                                                  smoNumber=smo_number,
