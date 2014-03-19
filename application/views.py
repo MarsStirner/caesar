@@ -67,7 +67,6 @@ def settings():
 @public_endpoint
 def login():
     form = LoginForm()
-    errors = list()
 
     if form.validate_on_submit():
         user = db.session.query(Users).filter(Users.login == form.login.data.strip()).first()
@@ -81,11 +80,13 @@ def login():
                 identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
                 return redirect(request.args.get('next') or url_for('index'))
             else:
-                errors.append(u'Неверная пара логин/пароль')
+                flash(u'Неверная пара логин/пароль', 'error')
+                return redirect(url_for('login'))
         else:
-            errors.append(u'Нет пользователя с логином <b>%s</b>' % form.login.data.strip())
+            flash(u'Нет пользователя с логином <b>%s</b>' % form.login.data.strip(), 'error')
+            return redirect(url_for('login'))
 
-    return render_template('user/login.html', form=form, errors=errors)
+    return render_template('user/login.html', form=form)
 
 
 @app.route('/logout/')
