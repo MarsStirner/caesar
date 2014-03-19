@@ -19,3 +19,6 @@ class Reports(object):
 
     def get_bill(self, bill_id):
         return self.client.get_bill(bill_id)
+
+    def change_case_status(self, case_id, status, note=None):
+        return self.client.change_cases_status(dict(id=case_id, status=status, note=note))

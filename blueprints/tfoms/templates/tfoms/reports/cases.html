@@ -28,6 +28,7 @@
                     <th>Файл, загруженный из ТФОМС</th>
                     <th>Причина отказа</th>
                     <th>Примечание</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -44,7 +45,16 @@
                     <td>{% if case.date %}{{ case.date|datetimeformat('%d/%m/%Y') }}{% endif %}</td>
                     <td>{{ case.fileName }}</td>
                     <td>{% if case.refuseTypeCode %}<strong>{{ case.refuseTypeCode }}</strong> {% endif %}{{ case.refuseTypeName|default("", True) }}</td>
-                    <td>{{ case.note }}</td>
+                    <td id="note_{{ case.id }}">{{ case.note }}</td>
+                    <td>
+                        {%- if case.doNotUploadAnymore -%}
+                            <button onclick="show_confirm({{ case.id }}, false);" id="btn_in_{{ case.id }}" class="btn btn-small" title="Включить в выгрузку"><nobr>Вернуть в выгрузку</nobr></button>
+                            <button onclick="show_confirm({{ case.id }}, true);" id="btn_out_{{ case.id }}" class="btn btn-small btn-danger hide" title="Больше не выгружать"><nobr>Не выгружать</nobr></button>
+                        {%- else -%}
+                            <button onclick="show_confirm({{ case.id }}, false);" id="btn_in_{{ case.id }}" class="btn btn-small hide" title="Включить в выгрузку"><nobr>Вернуть в выгрузку</nobr></button>
+                            <button onclick="show_confirm({{ case.id }}, true);" id="btn_out_{{ case.id }}" class="btn btn-small btn-danger" title="Больше не выгружать"><nobr>Не выгружать</nobr></button>
+                        {%- endif -%}
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>
@@ -57,10 +67,60 @@
             Услуги отсутствуют
         </div>
     {% endif %}
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">Подтвердите и оставьте комментарий</h3>
+    </div>
+    <div class="modal-body">
+        <p>
+            <label>Оставьте комментарий:</label>
+            <textarea rows="5" id="case_note" name="case_note" style="width: 98%"></textarea>
+        </p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Закрыть</button>
+        <button class="btn btn-primary" onclick="change_upload_status();$('#myModal').modal('hide');">Подтвердить</button>
+    </div>
+</div>
 {% endblock %}
 {% block modules_js %}
 {{ super() }}
 <script type="text/javascript">
     paginate_table($('#table_cases'), $('#page_container'));
+    var case_id;
+    var case_status;
+    function show_confirm(id, status){
+        $('#case_note').val('');
+        $('#myModal').modal();
+        case_id = id;
+        case_status = status;
+    }
+    function change_upload_status(){
+        if (case_id){
+            $.ajax({
+                url: "{{ url_for('.change_case_status') }}" + case_id + '/',
+                crossDomain: true,
+                cache: false, // обязательно для IE
+                dataType: 'json',
+                type: 'POST',
+                data: {status: case_status, note: $('#case_note').val()},
+                success: function (data) {
+                    if(data['result']){
+                        if (case_status){
+                            $('#btn_in_'+case_id).removeClass('hide');
+                            $('#btn_out_'+case_id).addClass('hide');
+                        } else {
+                            $('#btn_in_'+case_id).addClass('hide');
+                            $('#btn_out_'+case_id).removeClass('hide');
+                        }
+                        if ($('#case_note').val()){
+                            $('#note_'+case_id).text($('#case_note').val());
+                        }
+                    }
+                }
+            });
+        }
+    }
 </script>
 {% endblock %}
