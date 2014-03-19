@@ -3,69 +3,69 @@
 {% block title %} > Пользователи > {% if user %}Редактирование {{ user.login }}{% else %}Добавление пользователя{% endif %}{% endblock %}
 
 {% block content %}
-<legend>{% if user %}Редактирование &laquo;{{ user.login }}&raquo;{% else %}Добавление пользователя{% endif %}<small class="pull-right"><i class="icon-list"></i> <a href="{{ url_for('users') }}" title="Вернуться к списку пользователей">К списку пользователей</a></small></legend>
-{% if errors %}
-<div class="alert alert-error">
-    {%- for error in errors -%}
-      <div>{{ error|safe }}</div>
-    {%- endfor -%}
-</div>
-{% endif %}
-    <form class="form-horizontal" method="post">
-        {{ form.hidden_tag() }}
+    <div class="container">
+        <legend>
+            {% if user %}Редактирование &laquo;{{ user.login }}&raquo;{% else %}Добавление пользователя{% endif %}
+            <small class="pull-right"><span class="glyphicon glyphicon-list"></span>
+                <a href="{{ url_for('users') }}" title="Вернуться к списку пользователей">К списку пользователей</a>
+            </small>
+        </legend>
 
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <div class="alert alert-success">
-            {% for message in messages %}
-              <div>{{ message }}</div>
-            {% endfor %}
+        {% if errors %}
+            <div class="alert alert-danger">
+                {%- for error in errors -%}
+                    <div>{{ error|safe }}</div>
+                {%- endfor -%}
             </div>
-          {% endif %}
-        {% endwith %}
+        {% endif %}
+        <form class="form-horizontal" method="post" role="form">
+            {{ form.hidden_tag() }}
 
-        {% for field in form %}
-            {% if field.type not in ("CSRFTokenField", "RadioField") %}
-                <div class="control-group">
-                    {{ field.label(class="control-label") }}
-                    <div class="controls">
-                    {% if user and field.type == "PasswordField" %}
-                        {{ field(value=field.data, title="Необходимо заполнить это поле!") }}
-                    {% else %}
-                        {{ field(value=field.data, required="required", title="Необходимо заполнить это поле!") }}
-                    {% endif %}
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert alert-success">
+                        {% for message in messages %}
+                            <div>{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% for field in form %}
+                {% if field.type != "CSRFTokenField" %}
+                    <div class="form-group">
+                        {{ field.label(class="col-md-2 control-label") }}
+                        <div class="col-md-6">
+                            {% if user and field.type == "PasswordField" %}
+                                {{ field(value=field.data, title="Необходимо заполнить это поле!", class="form-control") }}
+                            {% elif field.type == "RadioField" %}
+                                {% for subfield in field %}
+                                    <label class="radio">
+                                    {%- if (user and user.roles[0].id == subfield.data) or (not user and subfield.data == 2) -%}
+                                        {{ subfield(checked=True) }}
+                                    {%- else -%}
+                                        {{ subfield() }}
+                                    {%- endif -%}
+                                        {{ subfield.label }}
+                                    </label>
+                                {% endfor %}
+                            {% else %}
+                                {{ field(value=field.data, required="required", title="Необходимо заполнить это поле!", class="form-control") }}
+                            {% endif %}
+                        </div>
                         {% for error in form.errors[field.name] %}
                             <span style="color: red;">[{{ error }}]</span>
                         {% endfor %}<br>
                     </div>
-                </div>
-            {% elif field.type == "RadioField" %}
-                <div class="control-group">
-                    {{ field.label(class="control-label") }}
-                    <div class="controls">
-                    {% for subfield in field %}
-                        <label class="radio">
-                        {%- if (user and user.roles[0].id == subfield.data) or (not user and subfield.data == 2) -%}
-                            {{ subfield(checked=True) }}
-                        {%- else -%}
-                            {{ subfield() }}
-                        {%- endif -%}
-                            {{ subfield.label }}
-                        </label>
-                    {% endfor %}
-                    {% for error in form.errors[field.name] %}
-                        <span style="color: red;">[{{ error }}]</span>
-                    {% endfor %}<br>
-                    </div>
-                </div>
-            {% endif %}
-        {% endfor %}
+                {% endif %}
+            {% endfor %}
 
-        <div class="control-group">
-            <div class="controls">
-                <button type="submit" class="btn btn-primary">Сохранить</button>
-                <a href="{{ url_for('users') }}" class="btn">Отмена</a>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-6">
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <a href="{{ url_for('users') }}" class="btn btn-default">Отмена</a>
+                </div>
             </div>
-        </div>
-    </form>
+        </form>
+    </div>
 {% endblock %}

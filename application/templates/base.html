@@ -1,34 +1,28 @@
 <!DOCTYPE html>
 <html lang="ru">
-  <head>
+<head>
+    <title>Система администрирования ЛПУ {% block title %}{% endblock %}</title>
     {% include '_header.html' %}
     {% block modules_css %}{% endblock %}
-  </head>
-  <body>
-  <div id="wrap">
+</head>
+<body>
+<div id="wrap">
 
-  {%- include '_top.html' -%}
+    {%- include '_top.html' -%}
 
-  <div id="container" class="container">
-    {%- import '_macros.html' as macros -%}
+    <div id="container" class="container-fluid">
+        {%- import '_macros.html' as macros -%}
 
-    {%- block content %}
+        {%- block content %}
+        {% endblock -%}
 
-      <!-- Jumbotron -->
-      <div class="jumbotron">
-        <h1>Система администрирования ЛПУ</h1>
-        <p class="lead">Добро пожаловать в систему администрирования ЛПУ. Модули, доступные для работы представлены в главном меню.</p>
-      </div>
+    </div><!-- /container -->
+    <div id="push"></div>
+</div>
 
-    {% endblock -%}
+{% include '_bottom.html' %}
+{% include '_footer.html' %}
+{% block modules_js %}{% endblock %}
 
-   </div> <!-- /container -->
-   <div id="push"></div>
-  </div>
-
-  {% include '_bottom.html' %}
-  {% include '_footer.html' %}
-  {% block modules_js %}{% endblock %}
-
-  </body>
+</body>
 </html>

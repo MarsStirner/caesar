@@ -26,3 +26,4 @@ load_blueprints(app, apps_path=blueprints_path)
 
 # Import all views
 from views import *
+from context_processors import *
