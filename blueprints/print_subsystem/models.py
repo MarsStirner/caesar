@@ -1845,11 +1845,11 @@ class DirectClientRelation(Clientrelation):
 
     @property
     def role(self):
-        return self.rightName
+        return self.leftName
 
     @property
     def otherRole(self):
-        return self.leftName
+        return self.rightName
 
     @property
     def regionalCode(self):
@@ -1901,11 +1901,11 @@ class ReversedClientRelation(Clientrelation):
 
     @property
     def role(self):
-        return self.leftName
+        return self.rightName
 
     @property
     def otherRole(self):
-        return self.rightName
+        return self.leftName
 
     @property
     def regionalCode(self):

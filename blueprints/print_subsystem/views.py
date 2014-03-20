@@ -10,7 +10,7 @@ from jinja2 import TemplateNotFound, Environment, PackageLoader
 from app import module
 
 from application.database import db
-from application.utils import public_endpoint
+from application.utils import public_endpoint, crossdomain
 from lib.data import Print_Template
 
 
@@ -36,14 +36,18 @@ def template_meta():
     except TemplateNotFound:
         abort(404)
 
+
 @public_endpoint
-@module.route('/print_template', methods=["POST", "GET"])
+@module.route('/print_template', methods=["POST", "OPTIONS"])
 def print_template():
     try:
-        data = json.loads(request.data)
-        context_type = data['context_type']
-        template_id = data['id']
-        print_obj = Print_Template()
-        return print_obj.print_template(context_type, template_id, data), 200, [('Access-Control-Allow-Origin', '*')]
+        if request.method == 'POST':
+            data = json.loads(request.data)
+            context_type = data['context_type']
+            template_id = data['id']
+            print_obj = Print_Template()
+            return print_obj.print_template(context_type, template_id, data), 200
+        return '', 200, [('Access-Control-Allow-Origin', '*'), ('Access-Control-Allow-Method', 'POST'),
+                         ('Access-Control-Allow-Headers', 'Content-Type')]
     except TemplateNotFound:
         abort(404)
