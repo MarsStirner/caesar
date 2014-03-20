@@ -346,7 +346,7 @@ class Actionproperty(Base, Info):
         elif self.type.typeName == u"Запись в др. ЛПУ":
             class_name = u'ActionpropertyOtherlpurecord'
         else:
-            class_name = u'Actionproperty{}'.format(self.type.typeName.capitalize())
+            class_name = u'Actionproperty{0}'.format(self.type.typeName.capitalize())
 
         cl = globals()[class_name]
         values = db_session.query(cl).filter(cl.id == self.id).all()
@@ -435,7 +435,7 @@ class Actionpropertytype(Base, Info):
         elif self.typeName == "AnalysisStatus":
             class_name = u'ActionpropertyInteger'
         else:
-            class_name = u'Actionproperty{}'.format(self.typeName.capitalize())
+            class_name = u'Actionproperty{0}'.format(self.typeName.capitalize())
 
         cl = globals()[class_name]
         return cl().get_value()
