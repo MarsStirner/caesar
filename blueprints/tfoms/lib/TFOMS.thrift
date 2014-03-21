@@ -164,7 +164,7 @@ struct Sluch{
 	13:required timestamp DATE_1;
 	14:required timestamp DATE_2;
 	15:optional string DS0;
-	16:required string DS1;
+	16:optional string DS1;
 	17:optional string DS2;
 	18:optional string CODE_MES1;
 	19:optional string CODE_MES2;

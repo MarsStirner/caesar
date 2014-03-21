@@ -453,3 +453,16 @@ def show_page(page):
         return render_template('{0}/{1}.html'.format(module.name, page))
     except TemplateNotFound:
         abort(404)
+
+
+@module.route('/reports/change_status/', methods=['POST'])
+@module.route('/reports/change_status/<int:case_id>/', methods=['POST'])
+def change_case_status(case_id=None):
+    if case_id:
+        report = Reports()
+        status = True if request.values.get('status') == 'true' else False
+        report.change_case_status(case_id, status, request.values.get('note'))
+        result = True
+    else:
+        result = False
+    return jsonify(result=result)

@@ -11,7 +11,7 @@ from thrift.protocol import TBinaryProtocol
 from thrift_service.TFOMSService import Client
 from thrift_service.ttypes import InvalidOrganizationInfisException
 from thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException, TClientPolicy
-from thrift_service.ttypes import Payment
+from thrift_service.ttypes import Payment, AccountItemWithMark
 
 
 class TFOMSClient(object):
@@ -199,6 +199,32 @@ class TFOMSClient(object):
             print e
         except SQLException, e:
             print e
+        except NotFoundException, e:
+            raise e
+        except TException, e:
+            raise e
+        return result
+
+    def change_cases_status(self, data):
+        """Смена статусов для позиций счета"""
+        result = False
+        request = list()
+        if isinstance(data, list):
+            for case in data:
+                account_item = AccountItemWithMark(case['id'], case['status'])
+                if 'note' in case and case['note']:
+                    account_item.note = case['note']
+                request.append(account_item)
+        else:
+            account_item = AccountItemWithMark(data['id'], data['status'])
+            if 'note' in data and data['note']:
+                account_item.note = data['note']
+            request.append(account_item)
+        try:
+            self.client.setDoNotUploadAnymoreMarks(request)
+        except SQLException, e:
+            print e
+            return result
         except NotFoundException, e:
             raise e
         except TException, e:
