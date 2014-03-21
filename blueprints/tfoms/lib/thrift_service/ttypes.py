@@ -1276,8 +1276,6 @@ class Sluch(object):
       raise TProtocol.TProtocolException(message='Required field DATE_1 is unset!')
     if self.DATE_2 is None:
       raise TProtocol.TProtocolException(message='Required field DATE_2 is unset!')
-    if self.DS1 is None:
-      raise TProtocol.TProtocolException(message='Required field DS1 is unset!')
     if self.RSLT is None:
       raise TProtocol.TProtocolException(message='Required field RSLT is unset!')
     if self.ISHOD is None:
