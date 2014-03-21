@@ -8,7 +8,7 @@
 
 {% block content %}
     <div class="container">
-        {% include 'dict/_nav_menu.html' %}
+        {{ macro_module_menu.make_module_menu(menu_struct) }}
 
         <form class="form-horizontal" method="post">
             {{ form.hidden_tag() }}

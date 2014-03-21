@@ -11,7 +11,7 @@
 {% block content %}
 
     <div class="container">
-        {% include 'dict/_nav_menu.html' %}
+        {{ macro_module_menu.make_module_menu(menu_struct) }}
 
         <form class="form-horizontal" id="upload_form" enctype="multipart/form-data">
             <legend>Загрузка тарифов, полученных из ТФОМС</legend>

@@ -11,5 +11,18 @@ def module_name():
     return dict(module_name=RUS_NAME)
 
 
+@module.context_processor
+def menu_struct():
+    m = [{'name': u'Главная',
+          'url': '.index',
+          },
+         {'name': u'Настройки',
+          'url': '.settings',
+          'restrict_access': True,
+          }
+         ]
+    return dict(menu_struct=m)
+
+
 from .views import *
 from .views.logging import *

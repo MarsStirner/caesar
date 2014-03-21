@@ -10,7 +10,7 @@
 
 {% block content %}
     <div class="container">
-        {% include 'logging/_nav_menu.html' %}
+        {{ macro_module_menu.make_module_menu(menu_struct) }}
 
         {% set msg = '' %}
         {% if form_data %}
