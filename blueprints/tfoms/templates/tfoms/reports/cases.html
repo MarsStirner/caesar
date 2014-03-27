@@ -91,7 +91,7 @@
     var case_id;
     var case_status;
     function show_confirm(id, status){
-        $('#case_note').val('');
+        $('#case_note').val($('#note_'+id).text());
         $('#myModal').modal();
         case_id = id;
         case_status = status;
