@@ -15,7 +15,7 @@
                         {%- for patient_field in node.children -%}
                             {%- if patient_field.tag.code == 'ID_PAC' -%}
                                 <{{ patient_field.tag.code }}>{{ patient.patientId }}</{{ patient_field.tag.code }}>
-                            {%- elif patient|attr(patient_field.tag.code) -%}
+                            {%- elif patient|attr(patient_field.tag.code) is defined -%}
                                 <{{ patient_field.tag.code }}>{{ patient|attr(patient_field.tag.code) }}</{{ patient_field.tag.code }}>
                             {%- endif -%}
                         {%- endfor -%}
