@@ -3,7 +3,8 @@ import re
 import os
 from datetime import datetime
 
-from flask import render_template, abort, request, redirect, jsonify, send_from_directory, url_for, json, current_app
+from flask import render_template, abort, request, redirect, jsonify, send_from_directory, url_for, json, current_app, \
+    make_response
 from flask.ext.sqlalchemy import Pagination
 
 from jinja2 import TemplateNotFound, Environment, PackageLoader
@@ -46,7 +47,13 @@ def print_template():
             context_type = data['context_type']
             template_id = data['id']
             print_obj = Print_Template()
-            return print_obj.print_template(context_type, template_id, data), 200
+
+            html = print_obj.print_template(context_type, template_id, data)
+            response = make_response(html, 200)
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            response.headers['Access-Control-Allow-Method'] = 'POST'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+            return response
         return '', 200, [('Access-Control-Allow-Origin', '*'), ('Access-Control-Allow-Method', 'POST'),
                          ('Access-Control-Allow-Headers', 'Content-Type')]
     except TemplateNotFound:
