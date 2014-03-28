@@ -108,6 +108,9 @@ http://stackoverflow.com/questions/2019827/error-when-install-python-mysql-modul
 
 **Скачать Visual Studio 2008 можно по ссылке: http://download.microsoft.com/download/A/5/4/A54BADB6-9C3F-478D-8657-93B3FC9FE62D/vcsetup.exe**
 
+**Полезная информация для установки MySQLdb под WIN**
+http://rooijan.za.net/archives/installing-mysql-python-on-a-windows-virtualenv
+
 ------------------
 
 ### Установка пакетов вручную
