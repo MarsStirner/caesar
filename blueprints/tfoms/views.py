@@ -23,7 +23,7 @@ from .lib.departments import Departments
 from .models import Template, TagsTree, StandartTree, TemplateType, DownloadType, ConfigVariables
 from .utils import save_template_tag_tree, save_new_template_tree
 from application.database import db
-from application.utils import admin_permission, user_permission
+from application.utils import admin_permission
 
 
 PER_PAGE = 20
@@ -153,7 +153,6 @@ def download_file(dir, filename):
 
 
 @module.route('/upload/')
-@user_permission.require()
 def upload():
     try:
         return render_template('{0}/upload/index.html'.format(module.name))
