@@ -19,7 +19,7 @@ virtualenv_bin_path = os.path.join(project_dir_path, virtualenv, 'bin')
 
 def prepare_virtual_env():
     #Установка виртуального окружения и инструмента работы с пакетами Python
-    local('easy_install virtualenv')
+    #local('easy_install virtualenv')
     #Создаём и активируем виртульное окружение для проекта
     with lcd(project_dir_path):
         with settings(warn_only=True):
@@ -171,9 +171,9 @@ def install_requirements():
         local('apt-get install python-module-MySQLdb')
     with lcd(code_dir_path):
         if DB_DRIVER == 'mysql':
-            local('%s install -r requirements\mysql.txt' % os.path.join(virtualenv_bin_path, 'pip'))
+            local('%s install -r %s' % (os.path.join(virtualenv_bin_path, 'pip'), os.path.join('requirements', 'mysql.txt')))
         elif DB_DRIVER == 'postgresql+psycopg2':
-            local('%s install -r requirements\pgsql.txt' % os.path.join(virtualenv_bin_path, 'pip'))
+            local('%s install -r %s' % (os.path.join(virtualenv_bin_path, 'pip'), os.path.join('requirements', 'pgsql.txt')))
 
 
 def restore_database():

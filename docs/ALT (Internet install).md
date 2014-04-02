@@ -39,6 +39,7 @@ apt-get upgrade
 
 * git ```apt-get install git```
 * python-module-setuptools ```apt-get install python-module-setuptools```
+* python-module-virtualenv ```apt-get install python-module-virtualenv```
 
 
 Установка
@@ -58,6 +59,7 @@ apt-get upgrade
 ```
 cd /srv/my_project
 git clone https://github.com/KorusConsulting/Caesar.git code
+git pull && git submodule init && git submodule update && git submodule status
 ```
 при этом необходимо наличие github аккаунта с правами доступа в корпоративный репозиторий
 
