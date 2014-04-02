@@ -80,13 +80,34 @@
                             <input type="checkbox" id="all_departments" name="departments[]" value="0" {% if not form_data.get('departments') or 0 in form_data.get('departments') %}checked="checked"{% endif %}> <strong>Включить в выгрузку все подразделения</strong>
                         </label>
                     </div>
-                    <hr>
-                    {% for department in departments %}
-                    <div class="span3">
-                      <label class="checkbox">
-                        <input type="checkbox" class="departments" name="departments[]" value="{{ department.id }}" {% if form_data.get('departments') and department.id in form_data.get('departments') %}checked="checked"{% endif %}> {{ department.name }}
-                      </label>
-                    </div>
+                    {% set dep_type=0 %}
+                    {% set step=0 %}
+                    {% set dep_types = ['амбулатория', 'дневной стационар', 'скорая', 'мобильная станция', 'приемное отделение стационара', 'круглосуточный стационар'] %}
+                    {% for department in departments|sort(attribute='type') %}
+                        {%- if loop.first -%}
+                        <div class="span3">
+                            <ul class="unstyled">
+                                <li class="nav-header">{{ dep_types[department.type] }}</li>
+                        {%- elif dep_type != department.type -%}
+                            </ul>
+                        {% if step%2 %}
+                        </div>
+                        <div class="span3">
+                        {% endif %}
+                            <ul class="unstyled">
+                                <li class="nav-header">{{ dep_types[department.type] }}</li>
+                        {% set step = step + 1 %}
+                        {%- endif -%}
+                            <li>
+                              <label class="checkbox">
+                                <input type="checkbox" class="departments" name="departments[]" value="{{ department.id }}" {% if form_data.get('departments') and department.id in form_data.get('departments') %}checked="checked"{% endif %}> {{ department.name }}
+                              </label>
+                            </li>
+                        {%- if loop.last -%}
+                            </ul>
+                        </div>
+                        {%- endif -%}
+                        {%- set dep_type=department.type -%}
                     {% endfor %}
                     </div>
                 </div>

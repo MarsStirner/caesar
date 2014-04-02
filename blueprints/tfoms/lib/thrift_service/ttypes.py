@@ -3867,6 +3867,7 @@ class OrgStructure(object):
    - code
    - name
    - parentId
+   - type
   """
 
   thrift_spec = (
@@ -3875,13 +3876,15 @@ class OrgStructure(object):
     (2, TType.STRING, 'code', None, None, ), # 2
     (3, TType.STRING, 'name', None, None, ), # 3
     (4, TType.I32, 'parentId', None, None, ), # 4
+    (5, TType.I32, 'type', None, None, ), # 5
   )
 
-  def __init__(self, id=None, code=None, name=None, parentId=None,):
+  def __init__(self, id=None, code=None, name=None, parentId=None, type=None,):
     self.id = id
     self.code = code
     self.name = name
     self.parentId = parentId
+    self.type = type
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3912,6 +3915,11 @@ class OrgStructure(object):
           self.parentId = iprot.readI32();
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.I32:
+          self.type = iprot.readI32();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3937,6 +3945,10 @@ class OrgStructure(object):
     if self.parentId is not None:
       oprot.writeFieldBegin('parentId', TType.I32, 4)
       oprot.writeI32(self.parentId)
+      oprot.writeFieldEnd()
+    if self.type is not None:
+      oprot.writeFieldBegin('type', TType.I32, 5)
+      oprot.writeI32(self.type)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
