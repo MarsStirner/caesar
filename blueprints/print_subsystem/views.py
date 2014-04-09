@@ -64,9 +64,12 @@ def print_template_post():
 @module.route('/templates/<context>.json')
 @public_endpoint
 def api_templates(context=None):
+    # Не пора бы нам от этой ерунды избавиться?
+    from .utils import get_lpu_session
+    db = get_lpu_session()
     if not context:
         return jsonify(None)
-    templates = Rbprinttemplate.query.filter(Rbprinttemplate.context == context)
+    templates = db.query(Rbprinttemplate).filter(Rbprinttemplate.context == context)
     return jsonify([{
         'id': t.id,
         'code': t.code,
