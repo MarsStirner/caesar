@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import json
+import datetime
 from datetime import timedelta
 
 from flask import g
@@ -104,3 +106,35 @@ def crossdomain(origin=None, methods=None, headers=None,
         f.provide_automatic_options = False
         return update_wrapper(wrapped_function, f)
     return decorator
+
+
+class WebMisJsonEncoder(json.JSONEncoder):
+    def default(self, o):
+        from decimal import Decimal
+        if isinstance(o, (datetime.datetime, datetime.date, datetime.time)):
+            return o.isoformat()
+        elif isinstance(o, Decimal):
+            return float(o)
+        elif hasattr(o, '__json__'):
+            return o.__json__()
+        elif isinstance(o, db.Model) and hasattr(o, '__unicode__'):
+            return unicode(o)
+        return json.JSONEncoder.default(self, o)
+
+
+def jsonify(obj, result_code=200, result_name='OK', extra_headers=None):
+    indent = None
+    headers = [('content-type', 'application/json; charset=utf-8')]
+    if extra_headers:
+        headers.extend(extra_headers)
+    return (
+        json.dumps({
+            'result': obj,
+            'meta': {
+                'code': result_code,
+                'name': result_name,
+            }
+        }, indent=indent, cls=WebMisJsonEncoder, encoding='utf-8', ensure_ascii=False),
+        result_code,
+        headers
+    )
