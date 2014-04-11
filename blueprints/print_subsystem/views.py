@@ -65,6 +65,7 @@ def print_template_post():
 @public_endpoint
 def api_templates(context=None):
     # Не пора бы нам от этой ерунды избавиться?
+    # Неа, нам нужно подключение к разным БД (http://stackoverflow.com/questions/7923966/flask-sqlalchemy-with-dynamic-database-connections)
     from .utils import get_lpu_session
     db = get_lpu_session()
     if not context:
