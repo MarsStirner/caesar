@@ -76,4 +76,8 @@ def api_templates(context=None):
         'code': t.code,
         'name': t.name,
         'meta': {},
-    } for t in templates])
+    } for t in templates], extra_headers=[
+        ('Access-Control-Allow-Origin', '*'),
+        ('Access-Control-Allow-Method', 'GET'),
+        ('Access-Control-Allow-Headers', 'Content-Type')
+    ])
