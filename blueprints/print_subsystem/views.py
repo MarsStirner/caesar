@@ -6,7 +6,7 @@ from jinja2 import TemplateNotFound
 
 from app import module
 from application.utils import public_endpoint, jsonify
-from blueprints.print_subsystem.models import Rbprinttemplate
+from blueprints.print_subsystem.models.models_all import Rbprinttemplate
 from lib.data import Print_Template
 
 

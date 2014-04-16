@@ -2,9 +2,9 @@
 import datetime
 import jinja2
 from application.database import db
-from config import MODULE_NAME
-from lib.html import escape, convenience_HtmlRip, replace_first_paragraph
-from lib.num_to_text_converter import NumToTextConverter
+from ..config import MODULE_NAME
+from ..lib.html import escape, convenience_HtmlRip, replace_first_paragraph
+from ..lib.num_to_text_converter import NumToTextConverter
 from models_utils import *
 from kladr_models import *
 from sqlalchemy.dialects.mysql.base import LONGBLOB, MEDIUMBLOB

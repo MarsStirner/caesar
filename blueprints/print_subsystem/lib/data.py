@@ -2,8 +2,9 @@
 from datetime import date
 from ..app import module, _config
 from ..utils import get_lpu_session
-from ..models import Orgstructure, Person, Organisation, v_Client_Quoting, Event, Action, Account, Rbcashoperation, \
+from ..models.models_all import Orgstructure, Person, Organisation, v_Client_Quoting, Event, Action, Account, Rbcashoperation, \
     Client, Clientattach
+from ..models.schedule import ScheduleClientTicket
 from gui import applyTemplate
 from info.PrintInfo import CInfoContext
 
@@ -108,4 +109,15 @@ class Print_Template(object):
             client = self.db_session.query(Client).get(client_id)
             client.date = self.today
             context.update({'client': client})
+        elif context_type == u'preliminary_records':
+            # BeforeRecord
+            client_id = data['client_id']
+            client_ticket_id = data['ticket_id']
+            client = self.db_session.query(Client).get(client_id)
+            client.date = self.today
+            client_ticket = self.db_session.query(ScheduleClientTicket).get(client_ticket_id)
+            person = client_ticket.ticket.schedule.person
+            context.update({'client': client,
+                            'person': person,
+                            'client_ticket': client_ticket})
         return context

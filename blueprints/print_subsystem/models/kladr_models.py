@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from application.database import db
-from config import MODULE_NAME
+from ..config import MODULE_NAME
 
 
 TABLE_PREFIX = MODULE_NAME
