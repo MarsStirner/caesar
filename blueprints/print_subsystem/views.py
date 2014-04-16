@@ -5,7 +5,7 @@ from flask import render_template, abort, request
 from jinja2 import TemplateNotFound
 
 from app import module
-from application.utils import public_endpoint, jsonify
+from application.utils import public_endpoint, jsonify, crossdomain
 from blueprints.print_subsystem.models import Rbprinttemplate
 from lib.data import Print_Template
 
@@ -35,37 +35,25 @@ def template_meta():
 
 
 @public_endpoint
-@module.route('/print_template', methods=["OPTIONS"])
-def print_template_options():
-    return jsonify(None, extra_headers=[
-        ('Access-Control-Allow-Origin', '*'),
-        ('Access-Control-Allow-Method', 'POST'),
-        ('Access-Control-Allow-Headers', 'Content-Type')
-    ])
-
-
-@public_endpoint
 @module.route('/print_template', methods=["POST"])
+@crossdomain('*', methods=['POST'])
 def print_template_post():
     data = request.get_json()
     context_type = data['context_type']
     template_id = data['id']
     print_obj = Print_Template()
 
-    html = print_obj.print_template(context_type, template_id, data)
-    response = make_response(html, 200)
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Method'] = 'POST'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-    return response
+    return print_obj.print_template(context_type, template_id, data)
 
 
 @module.route('/templates/')
 @module.route('/templates/<context>.json')
 @public_endpoint
+@crossdomain('*', methods=['GET'])
 def api_templates(context=None):
     # Не пора бы нам от этой ерунды избавиться?
     # Неа, нам нужно подключение к разным БД (http://stackoverflow.com/questions/7923966/flask-sqlalchemy-with-dynamic-database-connections)
+    # А в Гиппократе всё работает. Там те же две БД.
     from .utils import get_lpu_session
     db = get_lpu_session()
     if not context:
@@ -76,8 +64,4 @@ def api_templates(context=None):
         'code': t.code,
         'name': t.name,
         'meta': {},
-    } for t in templates], extra_headers=[
-        ('Access-Control-Allow-Origin', '*'),
-        ('Access-Control-Allow-Method', 'GET'),
-        ('Access-Control-Allow-Headers', 'Content-Type')
-    ])
+    } for t in templates])
