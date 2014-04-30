@@ -2172,6 +2172,10 @@ class Contract(db.Model, Info):
     recipientAccount = db.relationship(u'OrganisationAccount', foreign_keys='Contract.recipientAccount_id')
     payerAccount = db.relationship(u'OrganisationAccount', foreign_keys='Contract.payerAccount_id')
 
+    def convertToText(self, num):
+        converter = NumToTextConverter(num)
+        return converter.convert()
+
     def __unicode__(self):
         return self.number + ' ' + self.date
 
