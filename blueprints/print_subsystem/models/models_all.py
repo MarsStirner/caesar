@@ -2472,6 +2472,7 @@ class Event(db.Model, Info):
     typeAsset = db.relationship(u'Rbemergencytypeasset')
     localContract = db.relationship(u'EventLocalcontract')
     client = db.relationship(u'Client')
+    visits = db.relationship(u'Visit')
 
     @property
     def isPrimary(self):
@@ -4000,7 +4001,7 @@ class Visit(db.Model, Info):
     person = db.relationship(u'Person')
     finance = db.relationship(u'Rbfinance')
     scene = db.relationship(u'Rbscene')
-    visitType = db.relationship(u'Rbvisittype')
+    type = db.relationship(u'Rbvisittype')
 
 
 class ActionDocument(db.Model):
