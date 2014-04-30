@@ -339,6 +339,8 @@ class Actionproperty(db.Model, Info):
             class_name = u'ActionpropertyInteger'
         elif self.type.typeName == u"Запись в др. ЛПУ":
             class_name = u'ActionpropertyOtherlpurecord'
+        elif self.type.typeName == u"FlatDirectory":
+            class_name = u'ActionpropertyFdrecord'
         else:
             class_name = u'Actionproperty{0}'.format(self.type.typeName.capitalize())
 
@@ -487,7 +489,9 @@ class ActionpropertyFdrecord(db.Model):
     FDRecord = db.relationship(u'Fdrecord')
 
     def get_value(self):
-        return self.value if self.value else ''
+        from blueprints.print_subsystem.utils import get_lpu_session
+        db_session = get_lpu_session()
+        return db_session.query(Fdrecord).filter(Fdrecord.id == self.value).first().get_value(u'Наименование')
 
 
 class ActionpropertyHospitalbed(db.Model):
@@ -2747,8 +2751,12 @@ class Fdfield(db.Model):
     order = db.Column(db.Integer)
 
     fdFieldType = db.relationship(u'Fdfieldtype')
-    FlatDirectory = db.relationship(u'Flatdirectory', primaryjoin='Fdfield.flatDirectory_code == Flatdirectory.code')
     flatDirectory = db.relationship(u'Flatdirectory', primaryjoin='Fdfield.flatDirectory_id == Flatdirectory.id')
+
+    values = db.relationship(u'Fdfieldvalue', backref=db.backref('fdField'), lazy='dynamic')
+
+    def get_value(self, record_id):
+        return self.values.filter(Fdfieldvalue.fdRecord_id == record_id).first().value
 
 
 class Fdfieldtype(db.Model):
@@ -2767,7 +2775,6 @@ class Fdfieldvalue(db.Model):
     fdField_id = db.Column(db.ForeignKey('FDField.id'), nullable=False, index=True)
     value = db.Column(db.String)
 
-    fdField = db.relationship(u'Fdfield')
     fdRecord = db.relationship(u'Fdrecord')
 
 
@@ -2786,6 +2793,9 @@ class Fdrecord(db.Model):
     FlatDirectory = db.relationship(u'Flatdirectory', primaryjoin='Fdrecord.flatDirectory_code == Flatdirectory.code')
     flatDirectory = db.relationship(u'Flatdirectory', primaryjoin='Fdrecord.flatDirectory_id == Flatdirectory.id')
 
+    def get_value(self, field_name):
+        return self.FlatDirectory.fields.filter(Fdfield.name == field_name).first().get_value(self.id)
+
 
 class Flatdirectory(db.Model):
     __tablename__ = u'FlatDirectory'
@@ -2794,6 +2804,9 @@ class Flatdirectory(db.Model):
     name = db.Column(db.String(4096), nullable=False)
     code = db.Column(db.String(128), index=True)
     description = db.Column(db.String(4096))
+
+    fields = db.relationship(u'Fdfield', foreign_keys='Fdfield.flatDirectory_code', backref=db.backref('FlatDirectory'),
+                             lazy='dynamic')
 
 
 class Informermessage(db.Model):
