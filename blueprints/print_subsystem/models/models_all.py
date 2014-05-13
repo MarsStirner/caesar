@@ -491,7 +491,7 @@ class ActionpropertyFdrecord(db.Model):
     def get_value(self):
         from blueprints.print_subsystem.utils import get_lpu_session
         db_session = get_lpu_session()
-        return db_session.query(Fdrecord).filter(Fdrecord.id == self.value).first().get_value(u'Наименование')
+        return db_session.query(Fdrecord).filter(Fdrecord.id == self.value).first().get_value()
 
 
 class ActionpropertyHospitalbed(db.Model):
@@ -2780,7 +2780,7 @@ class Fdfieldvalue(db.Model):
     fdField_id = db.Column(db.ForeignKey('FDField.id'), nullable=False, index=True)
     value = db.Column(db.String)
 
-    fdRecord = db.relationship(u'Fdrecord')
+    # fdRecord = db.relationship(u'Fdrecord')
 
 
 class Fdrecord(db.Model):
@@ -2797,9 +2797,11 @@ class Fdrecord(db.Model):
 
     FlatDirectory = db.relationship(u'Flatdirectory', primaryjoin='Fdrecord.flatDirectory_code == Flatdirectory.code')
     flatDirectory = db.relationship(u'Flatdirectory', primaryjoin='Fdrecord.flatDirectory_id == Flatdirectory.id')
+    values = db.relationship(u'Fdfieldvalue', backref=db.backref('Fdrecord'), lazy='dynamic')
 
-    def get_value(self, field_name):
-        return self.FlatDirectory.fields.filter(Fdfield.name == field_name).first().get_value(self.id)
+    def get_value(self):
+        return [value.value for value in self.values]
+        #return [field.get_value(self.id) for field in self.FlatDirectory.fields] # в нтк столбцы не упорядочены
 
 
 class Flatdirectory(db.Model):
