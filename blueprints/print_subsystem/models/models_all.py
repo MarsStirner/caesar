@@ -586,7 +586,7 @@ class ActionpropertyOperationType(ActionpropertyInteger):
         return text
 
 
-class ActionpropertyJobTicket(db.Model):
+class ActionpropertyJobticket(db.Model):
     __tablename__ = u'ActionProperty_Job_Ticket'
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
@@ -594,7 +594,11 @@ class ActionpropertyJobTicket(db.Model):
     value = db.Column(db.Integer, index=True)
 
     def get_value(self):
-        return self.value if self.value else ''
+        from blueprints.print_subsystem.utils import get_lpu_session
+        db_session = get_lpu_session()
+        value = db_session.query(JobTicket).get(self.value)
+        db_session.close()
+        return value if value else ''
 
 
 class ActionpropertyMkb(db.Model):
