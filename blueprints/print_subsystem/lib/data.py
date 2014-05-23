@@ -52,7 +52,8 @@ class Print_Template(object):
             client.date = event.execDate.date() if event.execDate else self.today
             quoting = self.db_session.query(v_Client_Quoting).filter_by(event_id=event_id).\
                 filter_by(clientId=event.client.id).first()
-
+            if not quoting:
+                quoting = v_Client_Quoting()
         if context_type == u'event':
             # BaseEventInfoFrame
 
@@ -66,9 +67,11 @@ class Print_Template(object):
             action_id = data[u'action_id']
             action = self.db_session.query(Action).get(action_id)
             event = action.event
-            event.client.date = event.execDate.date() if event.execDate else self.today
+            event.client.date = event.execDate.date if event.execDate.date else self.today
             quoting = self.db_session.query(v_Client_Quoting).filter_by(event_id=event.id).\
                 filter_by(clientId=event.client.id).first()
+            if not quoting:
+                quoting = v_Client_Quoting()
             context.update({'event': event,
                             'action': action,
                             'client': event.client,

@@ -144,13 +144,13 @@ class Action(db.Model):
     actionType_id = db.Column(db.Integer, db.ForeignKey('ActionType.id'), nullable=False, index=True)
     event_id = db.Column(db.Integer, db.ForeignKey('Event.id'), index=True)
     idx = db.Column(db.Integer, nullable=False, server_default=u"'0'")
-    directionDate = db.Column(db.DateTime)
+    directionDate_raw = db.Column("directionDate", db.DateTime)
     status = db.Column(db.Integer, nullable=False)
     setPerson_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
     isUrgent = db.Column(db.Boolean, nullable=False, server_default=u"'0'")
-    begDate = db.Column(db.DateTime)
-    plannedEndDate = db.Column(db.DateTime, nullable=False)
-    endDate = db.Column(db.DateTime)
+    begDate_raw = db.Column("begDate", db.DateTime)
+    plannedEndDate_raw = db.Column("plannedEndDate", db.DateTime, nullable=False)
+    endDate_raw = db.Column("endDate", db.DateTime)
     note = db.Column(db.Text, nullable=False)
     person_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
     office = db.Column(db.String(16), nullable=False)
@@ -163,14 +163,14 @@ class Action(db.Model):
     prescription_id = db.Column(db.Integer, index=True)
     takenTissueJournal_id = db.Column(db.ForeignKey('TakenTissueJournal.id'), index=True)
     contract_id = db.Column(db.Integer, index=True)
-    coordDate = db.Column(db.DateTime)
+    coordDate_raw = db.Column("coordDate", db.DateTime)
     coordAgent = db.Column(db.String(128), nullable=False, server_default=u"''")
     coordInspector = db.Column(db.String(128), nullable=False, server_default=u"''")
     coordText = db.Column(db.String, nullable=False)
     hospitalUidFrom = db.Column(db.String(128), nullable=False, server_default=u"'0'")
     pacientInQueueType = db.Column(db.Integer, server_default=u"'0'")
     AppointmentType = db.Column(db.Enum(u'0', u'amb', u'hospital', u'polyclinic', u'diagnostics', u'portal', u'otherLPU'),
-                             nullable=False)
+                                nullable=False)
     version = db.Column(db.Integer, nullable=False, server_default=u"'0'")
     parentAction_id = db.Column(db.Integer, index=True)
     uuid_id = db.Column(db.Integer, nullable=False, index=True, server_default=u"'0'")
@@ -194,6 +194,26 @@ class Action(db.Model):
     #         tariffCategoryId = self.person.tariffCategory.id
     #         self._price = CContractTariffCache.getPrice(tariffList, serviceId, tariffCategoryId)
     #     return self._price
+
+    @property
+    def begDate(self):
+        return DateTimeInfo(self.begDate_raw)
+
+    @property
+    def endDate(self):
+        return DateTimeInfo(self.endDate_raw)
+
+    @property
+    def directionDate(self):
+        return DateTimeInfo(self.directionDate_raw)
+
+    @property
+    def plannedEndDate(self):
+        return DateTimeInfo(self.plannedEndDate_raw)
+
+    @property
+    def coordDate(self):
+        return DateTimeInfo(self.coordDate_raw)
 
     @property
     def finance(self):
@@ -1309,7 +1329,7 @@ class Client(db.Model, Info):
     lastName = db.Column(db.Unicode(30), nullable=False)
     firstName = db.Column(db.Unicode(30), nullable=False)
     patrName = db.Column(db.Unicode(30), nullable=False)
-    birthDate = db.Column(db.Date, nullable=False, index=True)
+    birthDate_raw = db.Column("birthDate", db.Date, nullable=False, index=True)
     sexCode = db.Column("sex", db.Integer, nullable=False)
     SNILS_short = db.Column("SNILS", db.String(11), nullable=False, index=True)
     bloodType_id = db.Column(db.ForeignKey('rbBloodType.id'), index=True)
@@ -1351,6 +1371,10 @@ class Client(db.Model, Info):
     loc_addresses = db.relationship(u'Clientaddress',
                                  primaryjoin="and_(Client.id==Clientaddress.client_id, Clientaddress.type==1)",
                                  order_by="desc(Clientaddress.id)")
+
+    @property
+    def birthDate(self):
+        return DateInfo(self.birthDate_raw)
 
     @property
     def nameText(self):
@@ -2148,15 +2172,15 @@ class Contract(db.Model, Info):
     modifyPerson_id = db.Column(db.Integer, index=True)
     deleted = db.Column(db.Integer, nullable=False, server_default=u"'0'")
     number = db.Column(db.String(64), nullable=False)
-    date = db.Column(db.Date, nullable=False)
+    date_raw = db.Column("date", db.Date, nullable=False)
     recipient_id = db.Column(db.Integer, db.ForeignKey('Organisation.id'), nullable=False, index=True)
     recipientAccount_id = db.Column(db.Integer, db.ForeignKey('Organisation_Account.id'), index=True)
     recipientKBK = db.Column(db.String(30), nullable=False)
     payer_id = db.Column(db.Integer, db.ForeignKey('Organisation.id'), index=True)
     payerAccount_id = db.Column(db.Integer, db.ForeignKey('Organisation_Account.id'), index=True)
     payerKBK = db.Column(db.String(30), nullable=False)
-    begDate = db.Column(db.Date, nullable=False)
-    endDate = db.Column(db.Date, nullable=False)
+    begDate_raw = db.Column("begDate", db.Date, nullable=False)
+    endDate_raw = db.Column("endDate", db.Date, nullable=False)
     finance_id = db.Column(db.Integer, db.ForeignKey('rbFinance.id'), nullable=False, index=True)
     grouping = db.Column(db.String(64), nullable=False)
     resolution = db.Column(db.String(64), nullable=False)
@@ -2175,6 +2199,18 @@ class Contract(db.Model, Info):
     finance = db.relationship(u'Rbfinance')
     recipientAccount = db.relationship(u'OrganisationAccount', foreign_keys='Contract.recipientAccount_id')
     payerAccount = db.relationship(u'OrganisationAccount', foreign_keys='Contract.payerAccount_id')
+
+    @property
+    def date(self):
+        return DateInfo(self.date_raw)
+
+    @property
+    def begDate(self):
+        return DateInfo(self.begDate_raw)
+
+    @property
+    def endDate(self):
+        return DateInfo(self.endDate_raw)
 
     def convertToText(self, num):
         converter = NumToTextConverter(num)
@@ -2438,15 +2474,15 @@ class Event(db.Model, Info):
     org_id = db.Column(db.Integer, db.ForeignKey('Organisation.id'))
     client_id = db.Column(db.Integer, db.ForeignKey('Client.id'), index=True)
     contract_id = db.Column(db.Integer, db.ForeignKey('Contract.id'), index=True)
-    prevEventDate = db.Column(db.DateTime)
-    setDate = db.Column(db.DateTime, nullable=False, index=True)
+    prevEventDate_row = db.Column("prevEventDate", db.DateTime)
+    setDate_raw = db.Column("setDate", db.DateTime, nullable=False, index=True)
     setPerson_id = db.Column(db.Integer, index=True)
-    execDate = db.Column(db.DateTime, index=True)
+    execDate_raw = db.Column("execDate", db.DateTime, index=True)
     execPerson_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
     isPrimaryCode = db.Column("isPrimary", db.Integer, nullable=False)
     order = db.Column(db.Integer, nullable=False)
     result_id = db.Column(db.Integer, db.ForeignKey('rbResult.id'), index=True)
-    nextEventDate = db.Column(db.DateTime)
+    nextEventDate_row = db.Column("nextEventDate", db.DateTime)
     payStatus = db.Column(db.Integer, nullable=False)
     typeAsset_id = db.Column(db.Integer, db.ForeignKey('rbEmergencyTypeAsset.id'), index=True)
     note = db.Column(db.Text, nullable=False)
@@ -2477,6 +2513,22 @@ class Event(db.Model, Info):
     localContract = db.relationship(u'EventLocalcontract')
     client = db.relationship(u'Client')
     visits = db.relationship(u'Visit')
+
+    @property
+    def setDate(self):
+        return DateTimeInfo(self.setDate_raw)
+
+    @property
+    def execDate(self):
+        return DateTimeInfo(self.execDate_raw)
+
+    @property
+    def prevEventDate(self):
+        return DateInfo(self.prevEventDate_raw)
+
+    @property
+    def nextEventDate(self):
+        return DateInfo(self.nextEventDate_raw)
 
     @property
     def isPrimary(self):

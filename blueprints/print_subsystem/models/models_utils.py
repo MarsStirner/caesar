@@ -144,3 +144,76 @@ def formatSex(sex, full=False):
         return u'Женский' if full else u'Ж'
     else:
         return u'Не указан' if full else u''
+
+
+class DateInfo(object):
+    def __init__(self, date=None):
+        if date is None:
+            self.date = datetime.date.today()
+        else:
+            self.date = date
+
+    def __str__(self):
+        return formatDate(self.date)
+
+    def __nonzero__(self):
+        return bool(self.date.isValid())
+
+    def __add__(self, x):
+        return formatDate(self.date) + str(x)
+
+    def __radd__(self, x):
+        return str(x) + formatDate(self.date)
+
+
+class TimeInfo(object):
+    def __init__(self, time=None):
+        if time is None:
+            self.time = datetime.time()
+        else:
+            self.time = time
+
+    def toString(self):
+        return formatTime(self.time)
+
+    def __str__(self):
+        return self.toString()
+
+    def __add__(self, x):
+        return self.toString() + str(x)
+
+    def __radd__(self, x):
+        return str(x) + self.toString()
+
+
+class DateTimeInfo(object):
+    def __init__(self, date=None):
+        if date is None:
+            self.datetime = datetime.datetime.now()
+        else:
+            self.datetime = date
+
+    def __str__(self):
+        if self.datetime:
+            date = self.datetime.date()
+            time = self.datetime.time()
+            return formatDate(date) + ' ' + formatTime(time)
+        else:
+            return ''
+
+    def __add__(self, x):
+        return formatDate(self.datetime) + str(x)
+
+    def __radd__(self, x):
+        return str(x)+formatDate(self.datetime)
+
+    date = property(lambda self: self.datetime.date())
+    time = property(lambda self: self.datetime.time())
+
+
+def formatDate(time):
+    return unicode(time.strftime('%d.%m.%Y'))
+
+
+def formatTime(time):
+    return unicode(time.strftime('%H:%M'))
