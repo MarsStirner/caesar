@@ -35,8 +35,8 @@ def code128C(barcode):
 
 
 def calcAgeInDays(birthDay, today):
-    assert isinstance(birthDay, datetime.date)
-    assert isinstance(today, datetime.date)
+    if isinstance(birthDay, DateInfo):
+        birthDay = birthDay.date
     return (today-birthDay).days
 
 
@@ -45,8 +45,8 @@ def calcAgeInWeeks(birthDay, today):
 
 
 def calcAgeInMonths(birthDay, today):
-    assert isinstance(birthDay, datetime.date)
-    assert isinstance(today, datetime.date)
+    if isinstance(birthDay, DateInfo):
+        birthDay = birthDay.date
 
     bYear = birthDay.year
     bMonth = birthDay.month
@@ -63,8 +63,8 @@ def calcAgeInMonths(birthDay, today):
 
 
 def calcAgeInYears(birthDay, today):
-    assert isinstance(birthDay, datetime.date)
-    assert isinstance(today, datetime.date)
+    if isinstance(birthDay, DateInfo):
+        birthDay = birthDay.date
 
     bYear = birthDay.year
     bMonth = birthDay.month

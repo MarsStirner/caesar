@@ -49,7 +49,7 @@ class Print_Template(object):
             event = self.db_session.query(Event).get(event_id)
             client = event.client
 
-            client.date = event.execDate.date() if event.execDate else self.today
+            client.date = event.execDate.date if event.execDate else self.today
             quoting = self.db_session.query(v_Client_Quoting).filter_by(event_id=event_id).\
                 filter_by(clientId=event.client.id).first()
             if not quoting:
