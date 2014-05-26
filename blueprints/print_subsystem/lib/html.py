@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import re
 from HTMLParser import HTMLParser
 # from PyQt4.QtCore import QDate, QTime
 
@@ -182,6 +183,7 @@ class HTMLRipper(HTMLParser, object):
         result = "".join(self.__guts) if self.__guts else self.__fed_data
         return result
 
+
 def replace_first_paragraph(string):
     return string.replace('<p style=', '<span style=', 1).replace('</p>', '</span>', 1)
 
@@ -201,12 +203,32 @@ def escapenl(s):
     return escape(s).replace('\n', '<BR/>')
 
 
-def date_toString(object_QDate, format):
-    return object_QDate
+def date_toString(date, format):
+    format = re.sub(r"dddd", r"%A", format)
+    format = re.sub(r"ddd", r"%a", format)
+    format = re.sub(r"dd", r"%d", format)
+    format = re.sub(r"([^%d])d", r"\1%d", format)
+    format = re.sub(r"MMMM", r"%B", format)
+    format = re.sub(r"MMM", r"%b", format)
+    format = re.sub(r"MM", r"%m", format)
+    format = re.sub(r"([^%M])M", r"\1%m", format)
+    format = re.sub(r"yyyy", r"%Y", format)
+    format = re.sub(r"yy", r"%y", format)
+    date = date.strftime(format)
+    return date
 
 
-def time_toString(object_QTime, format):
-    return object_QTime
+def time_toString(time, format):
+    format = re.sub(r"HH", r"%H", format)
+    format = re.sub(r"([^%H])H", r"\1%H", format)
+    format = re.sub(r"hh", r"%H", format)
+    format = re.sub(r"([^%h])h", r"\1%H", format)
+    format = re.sub(r"mm", r"%M", format)
+    format = re.sub(r"([^%m])m", r"\1%M", format)
+    format = re.sub(r"ss", r"%S", format)
+    format = re.sub(r"([^%s])s", r"\1%S", format)
+    time = time.strftime(format)
+    return time
 
 #
 # def date_toString(object_QDate, format):

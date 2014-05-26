@@ -1,12 +1,11 @@
 # -*- encoding: utf-8 -*-
 
-from flask import make_response
 from flask import render_template, abort, request
 from jinja2 import TemplateNotFound
 
 from app import module
 from application.utils import public_endpoint, jsonify, crossdomain
-from blueprints.print_subsystem.models import Rbprinttemplate
+from blueprints.print_subsystem.models.models_all import Rbprinttemplate
 from lib.data import Print_Template
 
 
