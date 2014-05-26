@@ -479,7 +479,7 @@ class ActionpropertyDate(db.Model):
     value = db.Column(db.Date)
 
     def get_value(self):
-        self.value if self.value else ''
+        return DateInfo(self.value) if self.value else ''
 
     def __unicode__(self):
         return self.value
@@ -768,7 +768,7 @@ class ActionpropertyTime(db.Model):
     value = db.Column(db.Time, nullable=False)
 
     def get_value(self):
-        return self.value if self.value else ''
+        return TimeInfo(self.value) if self.value else ''
 
     def __unicode__(self):
         return self.get_value()

@@ -156,9 +156,6 @@ class DateInfo(object):
     def __str__(self):
         return formatDate(self.date)
 
-    def __nonzero__(self):
-        return bool(self.date.isValid())
-
     def __add__(self, x):
         return formatDate(self.date) + str(x)
 
