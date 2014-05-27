@@ -34,8 +34,8 @@ def template_meta():
 
 
 @public_endpoint
-@module.route('/print_template', methods=["POST"])
-@crossdomain('*', methods=['POST'])
+@module.route('/print_template', methods=["POST", "OPTIONS"])
+@crossdomain('*', methods=['POST', 'OPTIONS'], headers='Content-Type')
 def print_template_post():
     data = request.get_json()
     context_type = data['context_type']
