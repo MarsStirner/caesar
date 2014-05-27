@@ -76,7 +76,7 @@ def getTemplate(templateId):
     fileName = record.fileName
     name = record.name
     context = record.context
-    result = record.default
+    result = record.templateText
     # if fileName: из файла
     #     fullPath = os.path.join(QtGui.qApp.getTemplateDir(), fileName)
     #     if os.path.isfile(fullPath):

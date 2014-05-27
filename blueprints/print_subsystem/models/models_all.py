@@ -590,7 +590,7 @@ class ActionpropertyRLS(ActionpropertyInteger):
         return value
 
 
-class ActionpropertyOperationType(ActionpropertyInteger):
+class ActionpropertyOperationtype(ActionpropertyInteger):
 
     def get_value(self):
         from blueprints.print_subsystem.utils import get_lpu_session
@@ -2476,7 +2476,7 @@ class Event(db.Model, Info):
     contract_id = db.Column(db.Integer, db.ForeignKey('Contract.id'), index=True)
     prevEventDate_row = db.Column("prevEventDate", db.DateTime)
     setDate_raw = db.Column("setDate", db.DateTime, nullable=False, index=True)
-    setPerson_id = db.Column(db.Integer, index=True)
+    setPerson_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
     execDate_raw = db.Column("execDate", db.DateTime, index=True)
     execPerson_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
     isPrimaryCode = db.Column("isPrimary", db.Integer, nullable=False)
@@ -2502,6 +2502,7 @@ class Event(db.Model, Info):
     actions = db.relationship(u'Action')
     eventType = db.relationship(u'Eventtype')
     execPerson = db.relationship(u'Person', foreign_keys='Event.execPerson_id')
+    setPerson = db.relationship(u'Person', foreign_keys='Event.setPerson_id')
     curator = db.relationship(u'Person', foreign_keys='Event.curator_id')
     assistant = db.relationship(u'Person', foreign_keys='Event.assistant_id')
     contract = db.relationship(u'Contract')
@@ -5089,6 +5090,7 @@ class Rbprinttemplate(db.Model):
     default = db.Column(db.String, nullable=False)
     dpdAgreement = db.Column(db.Integer, nullable=False, server_default=u"'0'")
     render = db.Column(db.Integer, nullable=False, server_default=u"'0'")
+    templateText = db.Column(db.String, nullable=False)
 
 
 class Rbquotastatu(db.Model):
