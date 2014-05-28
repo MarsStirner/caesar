@@ -214,7 +214,8 @@ def date_toString(date, format):
     format = re.sub(r"([^%M])M", r"\1%m", format)
     format = re.sub(r"yyyy", r"%Y", format)
     format = re.sub(r"yy", r"%y", format)
-    date = date.strftime(format)
+    if date:
+        date = date.strftime(format)
     return date
 
 
@@ -227,7 +228,8 @@ def time_toString(time, format):
     format = re.sub(r"([^%m])m", r"\1%M", format)
     format = re.sub(r"ss", r"%S", format)
     format = re.sub(r"([^%s])s", r"\1%S", format)
-    time = time.strftime(format)
+    if time:
+        time = time.strftime(format)
     return time
 
 #

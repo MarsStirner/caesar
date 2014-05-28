@@ -149,7 +149,7 @@ def formatSex(sex, full=False):
 class DateInfo(object):
     def __init__(self, date=None):
         if date is None:
-            self.date = datetime.date.today()
+            self.date = None
         else:
             self.date = date
 

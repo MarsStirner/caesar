@@ -479,7 +479,7 @@ class ActionpropertyDate(db.Model):
     value = db.Column(db.Date)
 
     def get_value(self):
-        return DateInfo(self.value) if self.value else ''
+        return DateInfo(self.value) if self.value else DateInfo()
 
     def __unicode__(self):
         return self.value
@@ -2910,8 +2910,8 @@ class Job(db.Model):
     endTime = db.Column(db.Time, nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
 
-    job_type = db.relationship(u'Rbjobtype')
-    org_structure = db.relationship(u'Orgstructure')
+    job_type = db.relationship(u'Rbjobtype', lazy='joined')
+    org_structure = db.relationship(u'Orgstructure', lazy='joined')
 
 
 class JobTicket(db.Model, Info):
@@ -2929,7 +2929,7 @@ class JobTicket(db.Model, Info):
     label = db.Column(db.String(64), nullable=False, server_default=u"''")
     note = db.Column(db.String(128), nullable=False, server_default=u"''")
 
-    job = db.relationship(u'Job')
+    job = db.relationship(u'Job', lazy='joined')
 
     @property
     def jobType(self):
