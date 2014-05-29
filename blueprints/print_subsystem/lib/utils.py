@@ -68,10 +68,8 @@ def getPrintTemplatesDict(context):
 
 def getTemplate(templateId):
     u"""Получает код шаблона печати"""
-    db_session = get_lpu_session()
     logging.debug(u'template_id: %s', templateId)
-    record = db_session.query(Rbprinttemplate).get(templateId)
-    db_session.close()
+    record = Rbprinttemplate.query.get(templateId)
     logging.debug(u'record: %s', record)
     fileName = record.fileName
     name = record.name

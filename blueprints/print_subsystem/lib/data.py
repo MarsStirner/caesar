@@ -1,126 +1,174 @@
 # -*- coding: utf-8 -*-
 from datetime import date
-from ..app import module, _config
-from ..utils import get_lpu_session
+
 from ..models.models_all import Orgstructure, Person, Organisation, v_Client_Quoting, Event, Action, Account, Rbcashoperation, \
-    Client, Clientattach
+    Client
 from ..models.schedule import ScheduleClientTicket
 from gui import applyTemplate
-from info.PrintInfo import CInfoContext
+
+
+def current_patient_orgStructure(event_id):
+    from ..models.models_all import Actionproperty, ActionpropertyOrgstructure, Actionpropertytype
+    return Orgstructure.query.\
+        join(ActionpropertyOrgstructure, Orgstructure.id == ActionpropertyOrgstructure.value).\
+        join(Actionproperty, Actionproperty.id == ActionpropertyOrgstructure.id).\
+        join(Action).\
+        join(Actionpropertytype).\
+        filter(Actionpropertytype.code == 'orgStructStay', Action.event_id == event_id).\
+        order_by(Action.begDate_raw.desc()).\
+        first()
 
 
 class Print_Template(object):
 
     def __init__(self):
-        self.db_session = get_lpu_session()
         self.today = date.today()
 
-    def __del__(self):
-        self.db_session.close()
-
     def get_template_meta(self, template_id):
-        query = '''{0}'''.format(template_id)
-
-        return self.db_session.execute(query)
+        return {}
 
     def print_template(self, context_type, template_id, data):
         data = self.get_context(context_type, data)
         return applyTemplate(template_id, data)
 
     def get_context(self, context_type, data):
-        event = None
-        quoting = None
         additional_context = data['additional_context']
 
-        currentOrganisation = self.db_session.query(Organisation).get(additional_context['currentOrganisation']) if \
+        currentOrganisation = Organisation.query.get(additional_context['currentOrganisation']) if \
             additional_context['currentOrganisation'] else ""
-        currentOrgStructure = self.db_session.query(Orgstructure).get(additional_context['currentOrgStructure']) if \
+        currentOrgStructure = Orgstructure.query.get(additional_context['currentOrgStructure']) if \
             additional_context['currentOrgStructure'] else ""
-        currentPerson = self.db_session.query(Person).get(additional_context['currentPerson']) if \
+        currentPerson = Person.query.get(additional_context['currentPerson']) if \
             additional_context['currentPerson'] else ""
 
-        context = {'currentOrganisation': currentOrganisation,
-                   'currentOrgStructure': currentOrgStructure,
-                   'currentPerson': currentPerson
-                   }
+        context = {
+            'currentOrganisation': currentOrganisation,
+            'currentOrgStructure': currentOrgStructure,
+            'currentPerson': currentPerson
+        }
 
         if 'event_id' in data:
             event_id = data['event_id']
-            event = self.db_session.query(Event).get(event_id)
+            event = Event.query.get(event_id)
             client = event.client
 
             client.date = event.execDate.date if event.execDate else self.today
-            quoting = self.db_session.query(v_Client_Quoting).filter_by(event_id=event_id).\
+            quoting = v_Client_Quoting.query.filter_by(event_id=event_id).\
                 filter_by(clientId=event.client.id).first()
             if not quoting:
                 quoting = v_Client_Quoting()
-        if context_type == u'event':
-            # BaseEventInfoFrame
 
-            context.update({'event': event,
-                            'client': client,
-                            'tempInvalid': None,
-                            'quoting': quoting
-                            })
-        elif context_type == u'action':
-            # ActionEditDialod, ActionInfoFrame
-            action_id = data[u'action_id']
-            action = self.db_session.query(Action).get(action_id)
-            event = action.event
-            event.client.date = event.execDate.date if event.execDate.date else self.today
-            quoting = self.db_session.query(v_Client_Quoting).filter_by(event_id=event.id).\
+        context_func = getattr(self, 'context_%s' % context_type, None)
+        if context_func and callable(context_func):
+            context.update(context_func(data))
+        return context
+
+    def context_event(self, data):
+        # BaseEventInfoFrame
+        event = None
+        quoting = None
+        client = None
+        if 'event_id' in data:
+            event_id = data['event_id']
+            event = Event.query.get(event_id)
+            client = event.client
+
+            client.date = event.execDate.date if event.execDate else self.today
+            quoting = v_Client_Quoting.query.filter_by(event_id=event_id).\
                 filter_by(clientId=event.client.id).first()
             if not quoting:
                 quoting = v_Client_Quoting()
-            context.update({'event': event,
-                            'action': action,
-                            'client': event.client,
-                            'currentActionIndex': 0,
-                            'quoting': quoting,
-                            })
-        elif context_type == u'acсount':
-            # расчеты (CAccountingDialog)
-            account_id = data['account_id']
-            account_items_idList = data['account_items_idList']
-            accountInfo = self.db_session.query(Account).get(account_id)
-            accountInfo.selectedItemIdList = account_items_idList
-            # accountInfo.selectedItemIdList = self.modelAccountItems.idList() ???
-            context.update({'account': accountInfo})
-        elif context_type == u'cash_order':
-            # CashBookDialog, CashDialog
-            # date - datetime, Event_payments
-            date = data['date']
-            cash_operation_id = data['cash_operation_id']
-            cashBox = data['cashBox']
-            cash_operation = self.db_session.query(Rbcashoperation).get(cash_operation_id)
-            context.update({'event': event,
-                            'client': client,
-                            'date': date,
-                            'cashOperation': cash_operation,
-                            'sum': sum,
-                            'cashBox': cashBox,
-                            'tempInvalid': None
-                            })
-        elif context_type == u'person':
-            # PersonDialogcf
-            person_id = data['person_id']
-            person = self.db_session.query(Person).get(person_id)
-            context.update({'person': person})
-        elif context_type == u'registry':
-            # RegistryWindow
-            client_id = data['client_id']
-            client = self.db_session.query(Client).get(client_id)
-            client.date = self.today
-            context.update({'client': client})
-        elif context_type == u'preliminary_records':
-            # BeforeRecord
-            client_id = data['client_id']
-            client_ticket_id = data['ticket_id']
-            client = self.db_session.query(Client).get(client_id)
-            client.date = self.today
-            client_ticket = self.db_session.query(ScheduleClientTicket).get(client_ticket_id)
-            person = client_ticket.ticket.schedule.person
-            context.update({'client': client,
-                            'person': person,
-                            'client_ticket': client_ticket})
-        return context
+
+        return {
+            'event': event,
+            'client': client,
+            'tempInvalid': None,
+            'quoting': quoting,
+            'patient_orgStructure': current_patient_orgStructure(event.id),
+        }
+
+    def context_action(self, data):
+        # ActionEditDialod, ActionInfoFrame
+        action_id = data[u'action_id']
+        action = Action.query.get(action_id)
+        event = action.event
+        event.client.date = event.execDate.date if event.execDate.date else self.today
+        quoting = v_Client_Quoting.query.filter_by(event_id=event.id).\
+            filter_by(clientId=event.client.id).first()
+        if not quoting:
+            quoting = v_Client_Quoting()
+        return {
+            'event': event,
+            'action': action,
+            'client': event.client,
+            'currentActionIndex': 0,
+            'quoting': quoting,
+            'patient_orgStructure': current_patient_orgStructure(event.id),
+        }
+
+    def context_account(self, data):
+        # расчеты (CAccountingDialog)
+        account_id = data['account_id']
+        account_items_idList = data['account_items_idList']
+        accountInfo = Account.query.get(account_id)
+        accountInfo.selectedItemIdList = account_items_idList
+        # accountInfo.selectedItemIdList = self.modelAccountItems.idList() ???
+        return {
+            'account': accountInfo
+        }
+
+    def context_cash_order(self, data):
+        # CashBookDialog, CashDialog
+        # date - datetime, Event_payments
+        event = None
+        client = None
+        if 'event_id' in data:
+            event_id = data['event_id']
+            event = Event.query.get(event_id)
+            client = event.client
+
+            client.date = event.execDate.date if event.execDate else self.today
+        date = data['date']
+        cash_operation_id = data['cash_operation_id']
+        cashBox = data['cashBox']
+        cash_operation = Rbcashoperation.query.get(cash_operation_id)
+        return {
+            'event': event,
+            'client': client,
+            'date': date,
+            'cashOperation': cash_operation,
+            'sum': sum,
+            'cashBox': cashBox,
+            'tempInvalid': None
+        }
+
+    def context_person(self, data):
+        # PersonDialogcf
+        person_id = data['person_id']
+        person = Person.query.get(person_id)
+        return {
+            'person': person
+        }
+
+    def context_registry(self, data):
+        # RegistryWindow
+        client_id = data['client_id']
+        client = Client.query.get(client_id)
+        client.date = self.today
+        return {
+            'client': client
+        }
+
+    def context_preliminary_records(self, data):
+        # BeforeRecord
+        client_id = data['client_id']
+        client_ticket_id = data['ticket_id']
+        client = Client.query.get(client_id)
+        client.date = self.today
+        client_ticket = ScheduleClientTicket.query.get(client_ticket_id)
+        person = client_ticket.ticket.schedule.person
+        return {
+            'client': client,
+            'person': person,
+            'client_ticket': client_ticket
+        }

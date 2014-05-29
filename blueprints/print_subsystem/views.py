@@ -53,11 +53,9 @@ def api_templates(context=None):
     # Не пора бы нам от этой ерунды избавиться?
     # Неа, нам нужно подключение к разным БД (http://stackoverflow.com/questions/7923966/flask-sqlalchemy-with-dynamic-database-connections)
     # А в Гиппократе всё работает. Там те же две БД.
-    from .utils import get_lpu_session
-    db = get_lpu_session()
     if not context:
         return jsonify(None)
-    templates = db.query(Rbprinttemplate).filter(Rbprinttemplate.context == context)
+    templates = Rbprinttemplate.query.filter(Rbprinttemplate.context == context)
     return jsonify([{
         'id': t.id,
         'code': t.code,
