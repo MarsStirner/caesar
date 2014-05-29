@@ -7,6 +7,7 @@ TABLE_PREFIX = MODULE_NAME
 
 class DownloadType(db.Model):
     """Тип выгрузки"""
+    __bind_key__ = 'caesar'
     __tablename__ = '%s_download_type' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -22,6 +23,7 @@ class DownloadType(db.Model):
 
 class TemplateType(db.Model):
     """Тип шаблона"""
+    __bind_key__ = 'caesar'
     __tablename__ = '%s_template_type' % TABLE_PREFIX
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -42,6 +44,7 @@ class TemplateType(db.Model):
 
 class Template(db.Model):
     """Шаблоны"""
+    __bind_key__ = 'caesar'
     __tablename__ = '%s_template' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -63,6 +66,7 @@ class Template(db.Model):
 
 
 class TagTemplateType(db.Model):
+    __bind_key__ = 'caesar'
     __tablename__ = '%s_tag_template_type' % TABLE_PREFIX
 
     tag_id = db.Column(db.Integer,
@@ -80,6 +84,7 @@ class TagTemplateType(db.Model):
 
 class Tag(db.Model):
     """Теги"""
+    __bind_key__ = 'caesar'
     __tablename__ = '%s_tag' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -101,6 +106,7 @@ class Tag(db.Model):
 
 class StandartTree(db.Model):
     """Эталонная структура дерева для каждого из типов шаблонов, с использованием всех тегов"""
+    __bind_key__ = 'caesar'
     __tablename__ = '%s_standart_tree' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -124,6 +130,7 @@ class StandartTree(db.Model):
 
 class TagsTree(db.Model):
     """Древовидная структура тегов"""
+    __bind_key__ = 'caesar'
     __tablename__ = '%s_tags_tree' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -148,6 +155,7 @@ class TagsTree(db.Model):
 
 
 class ConfigVariables(db.Model):
+    __bind_key__ = 'caesar'
     __tablename__ = '%s_config' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

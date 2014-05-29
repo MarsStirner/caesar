@@ -6,6 +6,7 @@ TABLE_PREFIX = MODULE_NAME
 
 
 class ConfigVariables(db.Model):
+    __bind_key__ = 'caesar'
     __tablename__ = '%s_config' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

@@ -6,6 +6,7 @@ TABLE_PREFIX = 'app'
 
 
 class Settings(db.Model):
+    __bind_key__ = 'caesar'
     __tablename__ = '%s_settings' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -18,6 +19,7 @@ class Settings(db.Model):
 
 
 class Roles(db.Model):
+    __bind_key__ = 'caesar'
     __tablename__ = '%s_roles' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -27,6 +29,7 @@ class Roles(db.Model):
 
 
 class Users(db.Model, UserMixin):
+    __bind_key__ = 'caesar'
     __tablename__ = '%s_users' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -43,6 +46,7 @@ class Users(db.Model, UserMixin):
 
 
 class UsersRoles(db.Model):
+    __bind_key__ = 'caesar'
     __tablename__ = '%s_users_roles' % TABLE_PREFIX
 
     user_id = db.Column(db.Integer, db.ForeignKey(Users.id), primary_key=True)
