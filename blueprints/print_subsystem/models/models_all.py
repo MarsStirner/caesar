@@ -352,8 +352,6 @@ class Actionproperty(db.Model, Info):
 
     @property
     def value(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
         if self.type.typeName == "Constructor":
             class_name = u'ActionpropertyText'
         elif self.type.typeName == "AnalysisStatus":
@@ -366,8 +364,7 @@ class Actionproperty(db.Model, Info):
             class_name = u'Actionproperty{0}'.format(self.type.typeName.capitalize())
 
         cl = globals()[class_name]
-        values = db_session.query(cl).filter(cl.id == self.id).all()
-        db_session.close()
+        values = cl.query.filter(cl.id == self.id).all()
         if self.type.typeName == "Table":
             return values[0].get_value(self.type.valueDomain) if values else ""
         else:
@@ -510,9 +507,7 @@ class ActionpropertyFdrecord(db.Model):
     FDRecord = db.relationship(u'Fdrecord')
 
     def get_value(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        return db_session.query(Fdrecord).filter(Fdrecord.id == self.value).first().get_value()
+        return Fdrecord.query.filter(Fdrecord.id == self.value).first().get_value()
 
 
 class ActionpropertyHospitalbed(db.Model):
@@ -526,10 +521,7 @@ class ActionpropertyHospitalbed(db.Model):
     OrgStructure_HospitalBed = db.relationship(u'OrgstructureHospitalbed')
 
     def get_value(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        value = db_session.query(OrgstructureHospitalbed).filter(OrgstructureHospitalbed.id == self.value).first()
-        db_session.close()
+        value = OrgstructureHospitalbed.query.filter(OrgstructureHospitalbed.id == self.value).first()
         return value
 
 
@@ -584,20 +576,14 @@ class ActionpropertyInteger(db.Model):
 class ActionpropertyRLS(ActionpropertyInteger):
 
     def get_value(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        value = db_session.query(v_Nomen).filter(v_Nomen.code == self.value).first()
-        db_session.close()
+        value = v_Nomen.query.filter(v_Nomen.code == self.value).first()
         return value
 
 
 class ActionpropertyOperationtype(ActionpropertyInteger):
 
     def get_value(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        value = db_session.query(Rboperationtype).filter(Rboperationtype.code == self.value).first()
-        db_session.close()
+        value = Rboperationtype.query.filter(Rboperationtype.code == self.value).first()
         if self.value and value.name:
             text = '(%s) %s' % (value.code, value.name)
         elif self.value:
@@ -615,10 +601,7 @@ class ActionpropertyJobticket(db.Model):
     value = db.Column(db.Integer, index=True)
 
     def get_value(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        value = db_session.query(JobTicket).get(self.value)
-        db_session.close()
+        value = JobTicket.query.get(self.value)
         return value if value else ''
 
 
@@ -630,10 +613,7 @@ class ActionpropertyMkb(db.Model):
     value = db.Column(db.Integer, index=True)
 
     def get_value(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        value = db_session.query(Mkb).get(self.value)
-        db_session.close()
+        value = Mkb.query.get(self.value)
         return value if value else ''
 
 
@@ -645,10 +625,7 @@ class ActionpropertyOrgstructure(db.Model):
     value = db.Column(db.Integer, index=True)
 
     def get_value(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        value = db_session.query(Orgstructure).filter(Orgstructure.id == self.value).first()
-        db_session.close()
+        value = Orgstructure.query.filter(Orgstructure.id == self.value).first()
         return value
 
     def __unicode__(self):
@@ -663,10 +640,7 @@ class ActionpropertyOrganisation(db.Model):
     value = db.Column(db.Integer, index=True)
 
     def get_value(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        value = db_session.query(Organisation).filter(Organisation.id == self.value).first()
-        db_session.close()
+        value = Organisation.query.filter(Organisation.id == self.value).first()
         return value
 
     def __unicode__(self):
@@ -695,10 +669,7 @@ class ActionpropertyPerson(db.Model):
     Person = db.relationship(u'Person')
 
     def get_value(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        value = db_session.query(Person).filter(Person.id == self.value).first()
-        db_session.close()
+        value = Person.query.filter(Person.id == self.value).first()
         return value
 
     def __unicode__(self):
@@ -734,20 +705,16 @@ class ActionpropertyHtml(ActionpropertyString):
 class ActionpropertyTable(ActionpropertyInteger):
 
     def get_value(self, table_code):
-        from blueprints.print_subsystem.utils import get_lpu_session
 
         trfu_tables = {"trfuOrderIssueResult": Trfuorderissueresult, "trfuLaboratoryMeasure": Trfulaboratorymeasure,
                        "trfuFinalVolume": Trfufinalvolume}
-
-        db_session = get_lpu_session()
-        table = db_session.query(Rbaptable).filter(Rbaptable.code == table_code).first()
+        table = Rbaptable.query.filter(Rbaptable.code == table_code).first()
         field_names = [field.name for field in table.fields]
         table_filed_names = [field.fieldName for field in table.fields]
         value_table_name = table.tableName
         master_field = table.masterField
-        values = db_session.query(trfu_tables[value_table_name]).filter("{0}.{1} = {2}".format(value_table_name,
+        values = trfu_tables[value_table_name].query.filter("{0}.{1} = {2}".format(value_table_name,
                                                                                                master_field, self.value)).all()
-        db_session.close()
         template = u'''
                     <table width="100%" border="1" align="center" style="border-style:solid;" cellspacing="0">
                         <thead><tr>{% for col in field_names %}<th>{{ col }}</th>{% endfor %}</tr></thead>
@@ -778,11 +745,8 @@ class ActionpropertyTime(db.Model):
 class ActionpropertyReferenceRb(ActionpropertyInteger):
 
     def get_value(self, domain):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
         table_name = domain.split(';')[0]
-        value = db_session.query(table_name).get(self.value)
-        db_session.close()
+        value = table_name.query.get(self.value)
         return value if value else ''
 
     def __unicode__(self):
@@ -1013,14 +977,12 @@ class Address(db.Model, Info):
 
     @property
     def city(self):
-        from blueprints.print_subsystem.utils import get_kladr_session
         if self.KLADRCode:
-            kladr_session = get_kladr_session()
-            record = kladr_session.query(Kladr).filter(Kladr.CODE == self.KLADRCode).first()
+            record = Kladr.query.filter(Kladr.CODE == self.KLADRCode).first()
             name = [" ".join([record.NAME, record.SOCR])]
             parent = record.parent
             while parent:
-                record = kladr_session.query(Kladr).filter(Kladr.CODE == parent.ljust(13, "0")).first()
+                record = Kladr.query.filter(Kladr.CODE == parent.ljust(13, "0")).first()
                 name.insert(0, " ".join([record.NAME, record.SOCR]))
                 parent = record.parent
             return ", ".join(name)
@@ -1054,10 +1016,8 @@ class Address(db.Model, Info):
 
     @property
     def street(self):
-        from blueprints.print_subsystem.utils import get_kladr_session
         if self.KLADRStreetCode:
-            kladr_session = get_kladr_session()
-            record = kladr_session.query(Street).filter(Street.CODE == self.KLADRStreetCode).first()
+            record = Street.query.filter(Street.CODE == self.KLADRStreetCode).first()
             return record.NAME + " " + record.SOCR
         else:
             return ''
@@ -1632,9 +1592,7 @@ class Clientattach(db.Model, Info):
             return self.getClientDocument()
 
     def getClientDocument(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        documents = db_session.query(Clientdocument).filter(Clientdocument.clientId == self.client_id).\
+        documents = Clientdocument.query.filter(Clientdocument.clientId == self.client_id).\
             filter(Clientdocument.deleted == 0).all()
         documents = [document for document in documents if document.documentType and document.documentType.group.code == "1"]
         return documents[-1]
@@ -2020,9 +1978,7 @@ class Clientsocstatus(db.Model, Info):
             return self.getClientDocument()
 
     def getClientDocument(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        documents = db_session.query(Clientdocument).filter(Clientdocument.clientId == self.client_id).\
+        documents = Clientdocument.query.filter(Clientdocument.clientId == self.client_id).\
             filter(Clientdocument.deleted == 0).all()
         documents = [document for document in documents if document.documentType and
                      document.documentType.group.code == "1"]
@@ -2542,10 +2498,7 @@ class Event(db.Model, Info):
 
     @property
     def departmentManager(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        persons = db_session.query(Person).filter(Person.orgStructure_id == self.orgStructure_id).all() if self.orgStructure_id else []
-        db_session.close()
+        persons = Person.query.filter(Person.orgStructure_id == self.orgStructure_id).all() if self.orgStructure_id else []
         if persons:
             for person in persons:
                 if person.post.flatCode == u'departmentManager':
