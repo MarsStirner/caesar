@@ -181,7 +181,7 @@ class Action(db.Model):
     event = db.relationship(u'Event')
     person = db.relationship(u'Person', foreign_keys='Action.person_id')
     setPerson = db.relationship(u'Person', foreign_keys='Action.setPerson_id')
-    takenTissueJournal = db.relationship(u'Takentissuejournal')
+    takenTissue = db.relationship(u'Takentissuejournal')
     tissues = db.relationship(u'Tissue', secondary=u'ActionTissue')
     properties = db.relationship(u'Actionproperty')
     self_finance = db.relationship(u'Rbfinance')
