@@ -8,29 +8,3 @@ from blueprints.print_subsystem.models.models_all import ConfigVariables
 from .config import MODULE_NAME, LPU_DB_CONNECT_STRING, KLADR_DB_CONNECT_STRING
 
 _config = create_config_func(MODULE_NAME, ConfigVariables)
-
-
-def get_lpu_session():
-    Session = None
-    try:
-        engine = create_engine(LPU_DB_CONNECT_STRING, convert_unicode=True, pool_recycle=600)
-        Session = scoped_session(sessionmaker(bind=engine))
-    except Exception, e:
-        print e
-
-    if Session is None:
-        raise AttributeError(u'Не настроено подключение к БД ЛПУ')
-    return Session()
-
-
-def get_kladr_session():
-    Session = None
-    try:
-        engine = create_engine(KLADR_DB_CONNECT_STRING, convert_unicode=True, pool_recycle=600)
-        Session = scoped_session(sessionmaker(bind=engine))
-    except Exception, e:
-        print e
-
-    if Session is None:
-        raise AttributeError(u'Не настроено подключение к БД КЛАДР')
-    return Session()

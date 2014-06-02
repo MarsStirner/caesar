@@ -9,7 +9,6 @@ import os
 # from library.Utils import forceString, forceInt, forceRef
 # from internals import renderTemplate, CPageFormat
 #from specialvars import getSpVarsUsedInTempl, getSpecialVariableValue, SpecialVariable
-from ..utils import get_lpu_session
 from ..models.models_all import Rbprinttemplate
 
 __author__ = 'mmalkov'
