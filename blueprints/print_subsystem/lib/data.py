@@ -27,40 +27,31 @@ class Print_Template(object):
     def get_template_meta(self, template_id):
         return {}
 
-    def print_template(self, context_type, template_id, data):
-        data = self.get_context(context_type, data)
+    def print_template(self, doc):
+        context_type = doc['context_type']
+        template_id = doc['id']
+        data = self.get_context(context_type, doc)
         return applyTemplate(template_id, data)
 
     def get_context(self, context_type, data):
-        additional_context = data['additional_context']
+        context = data['context']
 
-        currentOrganisation = Organisation.query.get(additional_context['currentOrganisation']) if \
-            additional_context['currentOrganisation'] else ""
-        currentOrgStructure = Orgstructure.query.get(additional_context['currentOrgStructure']) if \
-            additional_context['currentOrgStructure'] else ""
-        currentPerson = Person.query.get(additional_context['currentPerson']) if \
-            additional_context['currentPerson'] else ""
+        currentOrganisation = Organisation.query.get(context['currentOrganisation']) if \
+            context['currentOrganisation'] else ""
+        currentOrgStructure = Orgstructure.query.get(context['currentOrgStructure']) if \
+            context['currentOrgStructure'] else ""
+        currentPerson = Person.query.get(context['currentPerson']) if \
+            context['currentPerson'] else ""
 
-        context = {
+        context.update({
             'currentOrganisation': currentOrganisation,
             'currentOrgStructure': currentOrgStructure,
             'currentPerson': currentPerson
-        }
-
-        if 'event_id' in data:
-            event_id = data['event_id']
-            event = Event.query.get(event_id)
-            client = event.client
-
-            client.date = event.execDate.date if event.execDate else self.today
-            quoting = v_Client_Quoting.query.filter_by(event_id=event_id).\
-                filter_by(clientId=event.client.id).first()
-            if not quoting:
-                quoting = v_Client_Quoting()
+        })
 
         context_func = getattr(self, 'context_%s' % context_type, None)
         if context_func and callable(context_func):
-            context.update(context_func(data))
+            context.update(context_func(context))
         return context
 
     def context_event(self, data):

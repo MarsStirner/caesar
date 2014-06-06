@@ -36,18 +36,6 @@ def template_meta():
 @public_endpoint
 @module.route('/print_template', methods=["POST", "OPTIONS"])
 @crossdomain('*', methods=['POST', 'OPTIONS'], headers='Content-Type')
-def print_template_post():
-    data = request.get_json()
-    context_type = data['context_type']
-    template_id = data['id']
-    print_obj = Print_Template()
-
-    return print_obj.print_template(context_type, template_id, data)
-
-
-@public_endpoint
-@module.route('/print_templates', methods=["POST", "OPTIONS"])
-@crossdomain('*', methods=['POST', 'OPTIONS'], headers='Content-Type')
 def print_templates_post():
     data = request.get_json()
     if data.get('separate', True):
@@ -55,7 +43,7 @@ def print_templates_post():
     else:
         separator = '\n\n'
     result = [
-        Print_Template().print_template(doc['context_type'], doc['id'], doc)
+        Print_Template().print_template(doc)
         for doc in data.get('documents', [])
     ]
     return separator.join(result)
