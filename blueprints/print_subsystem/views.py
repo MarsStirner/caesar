@@ -45,6 +45,22 @@ def print_template_post():
     return print_obj.print_template(context_type, template_id, data)
 
 
+@public_endpoint
+@module.route('/print_templates', methods=["POST", "OPTIONS"])
+@crossdomain('*', methods=['POST', 'OPTIONS'], headers='Content-Type')
+def print_templates_post():
+    data = request.get_json()
+    if data.get('separate', True):
+        separator = '\n\n<br style="page-break-after: always" />\n\n'
+    else:
+        separator = '\n\n'
+    result = [
+        Print_Template().print_template(doc['context_type'], doc['id'], doc)
+        for doc in data.get('documents', [])
+    ]
+    return separator.join(result)
+
+
 @module.route('/templates/')
 @module.route('/templates/<context>.json')
 @public_endpoint
