@@ -5046,6 +5046,8 @@ class Rbprinttemplate(db.Model):
     render = db.Column(db.Integer, nullable=False, server_default=u"'0'")
     templateText = db.Column(db.String, nullable=False)
 
+    meta_data = db.relationship('Rbprinttemplatemeta')
+
 
 class Rbquotastatu(db.Model):
     __tablename__ = u'rbQuotaStatus'
@@ -6184,4 +6186,48 @@ class v_Nomen(db.Model):
     drugLifetime = db.Column(u'drugLifetime', db.Integer)
 
     def __unicode__(self):
-        return ', '.join([field for field in [self.tradeName, self.form, self.dosageValue, self.filling]])
+        return ', '.join(unicode(field) for field in (self.tradeName, self.form, self.dosageValue, self.filling))
+
+
+class Rbprinttemplatemeta(db.Model):
+    __tablename__ = 'rbPrintTemplateMeta'
+
+    id = db.Column(db.Integer, primary_key=True)
+    template_id = db.Column(db.ForeignKey('rbPrintTemplate.id'), nullable=False, index=True)
+    type = db.Column(db.Enum(
+        u'Integer', u'Float', u'String', u'Boolean', u'Date', u'Time',
+        u'List', u'Multilist',
+        u'RefBook', u'Organisation', u'OrgStructure', u'Person', u'Service', u'SpecialVariable'
+    ), nullable=False)
+    name = db.Column(db.String, nullable=False)
+    title = db.Column(db.String, nullable=False)
+    description = db.Column(db.String, nullable=False)
+    arguments = db.Column(db.String)
+    defaultValue = db.Column(db.Text)
+
+    template = db.relationship(u'Rbprinttemplate')
+
+    def __json__(self):
+        import json
+        if self.arguments:
+            try:
+                args = json.loads(self.arguments)
+            except ValueError:
+                args = []
+        else:
+            args = []
+        if self.defaultValue:
+            try:
+                default = json.loads(self.defaultValue)
+            except ValueError:
+                default = None
+        else:
+            default = None
+        return {
+            'name': self.name,
+            'type': self.type,
+            'title': self.title,
+            'descr': self.description,
+            'arguments': args,
+            'default': default,
+        }

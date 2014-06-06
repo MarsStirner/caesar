@@ -60,5 +60,5 @@ def api_templates(context=None):
         'id': t.id,
         'code': t.code,
         'name': t.name,
-        'meta': {},
+        'meta': t.meta_data,
     } for t in templates])
