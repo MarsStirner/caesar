@@ -37,6 +37,27 @@ class rbAttendanceType(db.Model):
         }
 
 
+class Office(db.Model):
+    __tablename__ = 'Office'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    code = db.Column(db.Unicode(32), nullable=False)
+    name = db.Column(db.Unicode(64), nullable=False)
+    orgStructure_id = db.Column(db.ForeignKey('OrgStructure.id'))
+
+    orgStructure = db.relationship('OrgStructure')
+
+    def __unicode__(self):
+        return self.code
+
+    def __json__(self):
+        return {
+            'code': self.code,
+            'name': self.name,
+            'org_structure': self.orgStructure
+        }
+    
+
 class rbAppointmentType(db.Model):
     __tablename__ = 'rbAppointmentType'
 
