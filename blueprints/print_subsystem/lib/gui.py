@@ -3,6 +3,7 @@
 # from PyQt4.QtCore import pyqtSignal, QVariant, QDate, Qt
 # from Reports.ReportView import CReportViewDialog
 # from library.Utils import forceRef, forceString
+import logging
 from internals import renderTemplate
 #from specialvars import getSpVarsUsedInTempl, getSpecialVariableValue, SpecialVariable
 from utils import getTemplate
@@ -55,7 +56,8 @@ def applyTemplate(templateId, data):
         #         data[i] = getSpecialVariableValue(i, params = None,  parent = widget)
         # data['SpecialVariable'] = SpecialVariable
         return applyTemplateInt(template, data)
-    except Exception as e:
+    except Exception:
+        logging.critical('erroneous template id = %s', templateId)
         raise
 
 

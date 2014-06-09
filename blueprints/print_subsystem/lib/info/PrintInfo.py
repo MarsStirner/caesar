@@ -2,8 +2,6 @@
 
 #from PyQt4 import QtCore, QtGui
 # from library.Utils import *
-from blueprints.print_subsystem.utils import get_lpu_session
-
 
 class CInfoContext(object):
     u"""Отображение (класс объекта, параметры объекта) -> Экземпляр класса"""
@@ -266,7 +264,6 @@ class CRBInfo(CInfo):
         assert self.tableName, 'tableName must be defined in derivative'
 
     def _load(self):
-        db_session = get_lpu_session()
         query = '''SELECT *
                    FROM {0}
                    WHERE id = {1};'''.format(self.tableName, self.id)

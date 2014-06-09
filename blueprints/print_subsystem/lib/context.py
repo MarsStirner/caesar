@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+from ..models.models_utils import DateInfo
 #from base64 import b64encode
 #import re
 #from urllib import urlencode
@@ -40,7 +41,7 @@ class CTemplateContext(object):
         self.data = data
         # self.locals = {}
         self.now = datetime.datetime.now()
-        self.builtin = {'currentDate': self.now.date(),
+        self.builtin = {'currentDate': DateInfo(self.now.date()),
                         'currentTime': self.now.time().strftime("%H:%M:%S"),
                         'helpers': CTemplateHelpers,
                         }

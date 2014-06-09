@@ -10,7 +10,11 @@ DB_HOST = 'localhost'
 DB_PORT = 5432
 DB_USER = 'db_user'
 DB_PASSWORD = 'db_password'
-DB_NAME = 'db_name'
+
+DB_CAESAR_NAME = 'db_name'
+DB_KLADR_NAME = 'kladr'
+DB_LPU_NAME = 'lpu_db_name'
+
 DB_CONNECT_OPTIONS = ''
 
 SERVER_HOST = '127.0.0.1'
@@ -33,10 +37,27 @@ except ImportError:
     # no local config found
     pass
 
-SQLALCHEMY_DATABASE_URI = '{0}://{1}:{2}@{3}:{4}/{5}{6}'.format(DB_DRIVER,
-                                                       DB_USER,
-                                                       DB_PASSWORD,
-                                                       DB_HOST,
-                                                       DB_PORT,
-                                                       DB_NAME,
-                                                       DB_CONNECT_OPTIONS)
+db_uri_format = '{0}://{1}:{2}@{3}:{4}/{5}{6}'
+
+SQLALCHEMY_DATABASE_URI = db_uri_format.format(
+    DB_DRIVER,
+    DB_USER, DB_PASSWORD,
+    DB_HOST, DB_PORT,
+    DB_LPU_NAME, DB_CONNECT_OPTIONS
+)
+
+SQLALCHEMY_BINDS = {
+    'kladr': db_uri_format.format(
+        DB_DRIVER,
+        DB_USER, DB_PASSWORD,
+        DB_HOST, DB_PORT,
+        DB_KLADR_NAME, DB_CONNECT_OPTIONS
+    ),
+    'caesar': db_uri_format.format(
+        DB_DRIVER,
+        DB_USER, DB_PASSWORD,
+        DB_HOST, DB_PORT,
+        DB_CAESAR_NAME, DB_CONNECT_OPTIONS
+    )
+
+}

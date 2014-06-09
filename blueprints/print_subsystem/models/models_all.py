@@ -2,9 +2,9 @@
 import datetime
 import jinja2
 from application.database import db
-from config import MODULE_NAME
-from lib.html import escape, convenience_HtmlRip, replace_first_paragraph
-from lib.num_to_text_converter import NumToTextConverter
+from ..config import MODULE_NAME
+from ..lib.html import escape, convenience_HtmlRip, replace_first_paragraph
+from ..lib.num_to_text_converter import NumToTextConverter
 from models_utils import *
 from kladr_models import *
 from sqlalchemy.dialects.mysql.base import LONGBLOB, MEDIUMBLOB
@@ -14,6 +14,7 @@ TABLE_PREFIX = MODULE_NAME
 
 
 class ConfigVariables(db.Model):
+    __bind_key__ = 'caesar'
     __tablename__ = '%s_config' % TABLE_PREFIX
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -144,13 +145,13 @@ class Action(db.Model):
     actionType_id = db.Column(db.Integer, db.ForeignKey('ActionType.id'), nullable=False, index=True)
     event_id = db.Column(db.Integer, db.ForeignKey('Event.id'), index=True)
     idx = db.Column(db.Integer, nullable=False, server_default=u"'0'")
-    directionDate = db.Column(db.DateTime)
+    directionDate_raw = db.Column("directionDate", db.DateTime)
     status = db.Column(db.Integer, nullable=False)
     setPerson_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
     isUrgent = db.Column(db.Boolean, nullable=False, server_default=u"'0'")
-    begDate = db.Column(db.DateTime)
-    plannedEndDate = db.Column(db.DateTime, nullable=False)
-    endDate = db.Column(db.DateTime)
+    begDate_raw = db.Column("begDate", db.DateTime)
+    plannedEndDate_raw = db.Column("plannedEndDate", db.DateTime, nullable=False)
+    endDate_raw = db.Column("endDate", db.DateTime)
     note = db.Column(db.Text, nullable=False)
     person_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
     office = db.Column(db.String(16), nullable=False)
@@ -163,14 +164,14 @@ class Action(db.Model):
     prescription_id = db.Column(db.Integer, index=True)
     takenTissueJournal_id = db.Column(db.ForeignKey('TakenTissueJournal.id'), index=True)
     contract_id = db.Column(db.Integer, index=True)
-    coordDate = db.Column(db.DateTime)
+    coordDate_raw = db.Column("coordDate", db.DateTime)
     coordAgent = db.Column(db.String(128), nullable=False, server_default=u"''")
     coordInspector = db.Column(db.String(128), nullable=False, server_default=u"''")
     coordText = db.Column(db.String, nullable=False)
     hospitalUidFrom = db.Column(db.String(128), nullable=False, server_default=u"'0'")
     pacientInQueueType = db.Column(db.Integer, server_default=u"'0'")
     AppointmentType = db.Column(db.Enum(u'0', u'amb', u'hospital', u'polyclinic', u'diagnostics', u'portal', u'otherLPU'),
-                             nullable=False)
+                                nullable=False)
     version = db.Column(db.Integer, nullable=False, server_default=u"'0'")
     parentAction_id = db.Column(db.Integer, index=True)
     uuid_id = db.Column(db.Integer, nullable=False, index=True, server_default=u"'0'")
@@ -180,7 +181,7 @@ class Action(db.Model):
     event = db.relationship(u'Event')
     person = db.relationship(u'Person', foreign_keys='Action.person_id')
     setPerson = db.relationship(u'Person', foreign_keys='Action.setPerson_id')
-    takenTissueJournal = db.relationship(u'Takentissuejournal')
+    takenTissue = db.relationship(u'Takentissuejournal')
     tissues = db.relationship(u'Tissue', secondary=u'ActionTissue')
     properties = db.relationship(u'Actionproperty')
     self_finance = db.relationship(u'Rbfinance')
@@ -194,6 +195,26 @@ class Action(db.Model):
     #         tariffCategoryId = self.person.tariffCategory.id
     #         self._price = CContractTariffCache.getPrice(tariffList, serviceId, tariffCategoryId)
     #     return self._price
+
+    @property
+    def begDate(self):
+        return DateTimeInfo(self.begDate_raw)
+
+    @property
+    def endDate(self):
+        return DateTimeInfo(self.endDate_raw)
+
+    @property
+    def directionDate(self):
+        return DateTimeInfo(self.directionDate_raw)
+
+    @property
+    def plannedEndDate(self):
+        return DateTimeInfo(self.plannedEndDate_raw)
+
+    @property
+    def coordDate(self):
+        return DateTimeInfo(self.coordDate_raw)
 
     @property
     def finance(self):
@@ -331,20 +352,19 @@ class Actionproperty(db.Model, Info):
 
     @property
     def value(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
         if self.type.typeName == "Constructor":
             class_name = u'ActionpropertyText'
         elif self.type.typeName == "AnalysisStatus":
             class_name = u'ActionpropertyInteger'
         elif self.type.typeName == u"Запись в др. ЛПУ":
             class_name = u'ActionpropertyOtherlpurecord'
+        elif self.type.typeName == u"FlatDirectory":
+            class_name = u'ActionpropertyFdrecord'
         else:
             class_name = u'Actionproperty{0}'.format(self.type.typeName.capitalize())
 
         cl = globals()[class_name]
-        values = db_session.query(cl).filter(cl.id == self.id).all()
-        db_session.close()
+        values = cl.query.filter(cl.id == self.id).all()
         if self.type.typeName == "Table":
             return values[0].get_value(self.type.valueDomain) if values else ""
         else:
@@ -457,7 +477,7 @@ class ActionpropertyDate(db.Model):
     value = db.Column(db.Date)
 
     def get_value(self):
-        self.value if self.value else ''
+        return DateInfo(self.value) if self.value else DateInfo()
 
     def __unicode__(self):
         return self.value
@@ -487,7 +507,7 @@ class ActionpropertyFdrecord(db.Model):
     FDRecord = db.relationship(u'Fdrecord')
 
     def get_value(self):
-        return self.value if self.value else ''
+        return Fdrecord.query.filter(Fdrecord.id == self.value).first().get_value()
 
 
 class ActionpropertyHospitalbed(db.Model):
@@ -501,10 +521,7 @@ class ActionpropertyHospitalbed(db.Model):
     OrgStructure_HospitalBed = db.relationship(u'OrgstructureHospitalbed')
 
     def get_value(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        value = db_session.query(OrgstructureHospitalbed).filter(OrgstructureHospitalbed.id == self.value).first()
-        db_session.close()
+        value = OrgstructureHospitalbed.query.filter(OrgstructureHospitalbed.id == self.value).first()
         return value
 
 
@@ -559,20 +576,14 @@ class ActionpropertyInteger(db.Model):
 class ActionpropertyRLS(ActionpropertyInteger):
 
     def get_value(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        value = db_session.query(v_Nomen).filter(v_Nomen.code == self.value).first()
-        db_session.close()
+        value = v_Nomen.query.filter(v_Nomen.code == self.value).first()
         return value
 
 
-class ActionpropertyOperationType(ActionpropertyInteger):
+class ActionpropertyOperationtype(ActionpropertyInteger):
 
     def get_value(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        value = db_session.query(Rboperationtype).filter(Rboperationtype.code == self.value).first()
-        db_session.close()
+        value = Rboperationtype.query.filter(Rboperationtype.code == self.value).first()
         if self.value and value.name:
             text = '(%s) %s' % (value.code, value.name)
         elif self.value:
@@ -582,7 +593,7 @@ class ActionpropertyOperationType(ActionpropertyInteger):
         return text
 
 
-class ActionpropertyJobTicket(db.Model):
+class ActionpropertyJobticket(db.Model):
     __tablename__ = u'ActionProperty_Job_Ticket'
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
@@ -590,7 +601,8 @@ class ActionpropertyJobTicket(db.Model):
     value = db.Column(db.Integer, index=True)
 
     def get_value(self):
-        return self.value if self.value else ''
+        value = JobTicket.query.get(self.value)
+        return value if value else ''
 
 
 class ActionpropertyMkb(db.Model):
@@ -601,10 +613,7 @@ class ActionpropertyMkb(db.Model):
     value = db.Column(db.Integer, index=True)
 
     def get_value(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        value = db_session.query(Mkb).get(self.value)
-        db_session.close()
+        value = Mkb.query.get(self.value)
         return value if value else ''
 
 
@@ -616,10 +625,7 @@ class ActionpropertyOrgstructure(db.Model):
     value = db.Column(db.Integer, index=True)
 
     def get_value(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        value = db_session.query(Orgstructure).filter(Orgstructure.id == self.value).first()
-        db_session.close()
+        value = Orgstructure.query.filter(Orgstructure.id == self.value).first()
         return value
 
     def __unicode__(self):
@@ -634,10 +640,7 @@ class ActionpropertyOrganisation(db.Model):
     value = db.Column(db.Integer, index=True)
 
     def get_value(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        value = db_session.query(Organisation).filter(Organisation.id == self.value).first()
-        db_session.close()
+        value = Organisation.query.filter(Organisation.id == self.value).first()
         return value
 
     def __unicode__(self):
@@ -666,10 +669,7 @@ class ActionpropertyPerson(db.Model):
     Person = db.relationship(u'Person')
 
     def get_value(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        value = db_session.query(Person).filter(Person.id == self.value).first()
-        db_session.close()
+        value = Person.query.filter(Person.id == self.value).first()
         return value
 
     def __unicode__(self):
@@ -705,20 +705,16 @@ class ActionpropertyHtml(ActionpropertyString):
 class ActionpropertyTable(ActionpropertyInteger):
 
     def get_value(self, table_code):
-        from blueprints.print_subsystem.utils import get_lpu_session
 
         trfu_tables = {"trfuOrderIssueResult": Trfuorderissueresult, "trfuLaboratoryMeasure": Trfulaboratorymeasure,
                        "trfuFinalVolume": Trfufinalvolume}
-
-        db_session = get_lpu_session()
-        table = db_session.query(Rbaptable).filter(Rbaptable.code == table_code).first()
+        table = Rbaptable.query.filter(Rbaptable.code == table_code).first()
         field_names = [field.name for field in table.fields]
         table_filed_names = [field.fieldName for field in table.fields]
         value_table_name = table.tableName
         master_field = table.masterField
-        values = db_session.query(trfu_tables[value_table_name]).filter("{0}.{1} = {2}".format(value_table_name,
+        values = trfu_tables[value_table_name].query.filter("{0}.{1} = {2}".format(value_table_name,
                                                                                                master_field, self.value)).all()
-        db_session.close()
         template = u'''
                     <table width="100%" border="1" align="center" style="border-style:solid;" cellspacing="0">
                         <thead><tr>{% for col in field_names %}<th>{{ col }}</th>{% endfor %}</tr></thead>
@@ -740,7 +736,7 @@ class ActionpropertyTime(db.Model):
     value = db.Column(db.Time, nullable=False)
 
     def get_value(self):
-        return self.value if self.value else ''
+        return TimeInfo(self.value) if self.value else ''
 
     def __unicode__(self):
         return self.get_value()
@@ -749,11 +745,8 @@ class ActionpropertyTime(db.Model):
 class ActionpropertyReferenceRb(ActionpropertyInteger):
 
     def get_value(self, domain):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
         table_name = domain.split(';')[0]
-        value = db_session.query(table_name).get(self.value)
-        db_session.close()
+        value = table_name.query.get(self.value)
         return value if value else ''
 
     def __unicode__(self):
@@ -984,14 +977,12 @@ class Address(db.Model, Info):
 
     @property
     def city(self):
-        from blueprints.print_subsystem.utils import get_kladr_session
         if self.KLADRCode:
-            kladr_session = get_kladr_session()
-            record = kladr_session.query(Kladr).filter(Kladr.CODE == self.KLADRCode).first()
+            record = Kladr.query.filter(Kladr.CODE == self.KLADRCode).first()
             name = [" ".join([record.NAME, record.SOCR])]
             parent = record.parent
             while parent:
-                record = kladr_session.query(Kladr).filter(Kladr.CODE == parent.ljust(13, "0")).first()
+                record = Kladr.query.filter(Kladr.CODE == parent.ljust(13, "0")).first()
                 name.insert(0, " ".join([record.NAME, record.SOCR]))
                 parent = record.parent
             return ", ".join(name)
@@ -1025,10 +1016,8 @@ class Address(db.Model, Info):
 
     @property
     def street(self):
-        from blueprints.print_subsystem.utils import get_kladr_session
         if self.KLADRStreetCode:
-            kladr_session = get_kladr_session()
-            record = kladr_session.query(Street).filter(Street.CODE == self.KLADRStreetCode).first()
+            record = Street.query.filter(Street.CODE == self.KLADRStreetCode).first()
             return record.NAME + " " + record.SOCR
         else:
             return ''
@@ -1301,7 +1290,7 @@ class Client(db.Model, Info):
     lastName = db.Column(db.Unicode(30), nullable=False)
     firstName = db.Column(db.Unicode(30), nullable=False)
     patrName = db.Column(db.Unicode(30), nullable=False)
-    birthDate = db.Column(db.Date, nullable=False, index=True)
+    birthDate_raw = db.Column("birthDate", db.Date, nullable=False, index=True)
     sexCode = db.Column("sex", db.Integer, nullable=False)
     SNILS_short = db.Column("SNILS", db.String(11), nullable=False, index=True)
     bloodType_id = db.Column(db.ForeignKey('rbBloodType.id'), index=True)
@@ -1343,6 +1332,10 @@ class Client(db.Model, Info):
     loc_addresses = db.relationship(u'Clientaddress',
                                  primaryjoin="and_(Client.id==Clientaddress.client_id, Clientaddress.type==1)",
                                  order_by="desc(Clientaddress.id)")
+
+    @property
+    def birthDate(self):
+        return DateInfo(self.birthDate_raw)
 
     @property
     def nameText(self):
@@ -1599,9 +1592,7 @@ class Clientattach(db.Model, Info):
             return self.getClientDocument()
 
     def getClientDocument(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        documents = db_session.query(Clientdocument).filter(Clientdocument.clientId == self.client_id).\
+        documents = Clientdocument.query.filter(Clientdocument.clientId == self.client_id).\
             filter(Clientdocument.deleted == 0).all()
         documents = [document for document in documents if document.documentType and document.documentType.group.code == "1"]
         return documents[-1]
@@ -1987,9 +1978,7 @@ class Clientsocstatus(db.Model, Info):
             return self.getClientDocument()
 
     def getClientDocument(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        documents = db_session.query(Clientdocument).filter(Clientdocument.clientId == self.client_id).\
+        documents = Clientdocument.query.filter(Clientdocument.clientId == self.client_id).\
             filter(Clientdocument.deleted == 0).all()
         documents = [document for document in documents if document.documentType and
                      document.documentType.group.code == "1"]
@@ -2140,15 +2129,15 @@ class Contract(db.Model, Info):
     modifyPerson_id = db.Column(db.Integer, index=True)
     deleted = db.Column(db.Integer, nullable=False, server_default=u"'0'")
     number = db.Column(db.String(64), nullable=False)
-    date = db.Column(db.Date, nullable=False)
+    date_raw = db.Column("date", db.Date, nullable=False)
     recipient_id = db.Column(db.Integer, db.ForeignKey('Organisation.id'), nullable=False, index=True)
     recipientAccount_id = db.Column(db.Integer, db.ForeignKey('Organisation_Account.id'), index=True)
     recipientKBK = db.Column(db.String(30), nullable=False)
     payer_id = db.Column(db.Integer, db.ForeignKey('Organisation.id'), index=True)
     payerAccount_id = db.Column(db.Integer, db.ForeignKey('Organisation_Account.id'), index=True)
     payerKBK = db.Column(db.String(30), nullable=False)
-    begDate = db.Column(db.Date, nullable=False)
-    endDate = db.Column(db.Date, nullable=False)
+    begDate_raw = db.Column("begDate", db.Date, nullable=False)
+    endDate_raw = db.Column("endDate", db.Date, nullable=False)
     finance_id = db.Column(db.Integer, db.ForeignKey('rbFinance.id'), nullable=False, index=True)
     grouping = db.Column(db.String(64), nullable=False)
     resolution = db.Column(db.String(64), nullable=False)
@@ -2167,6 +2156,22 @@ class Contract(db.Model, Info):
     finance = db.relationship(u'Rbfinance')
     recipientAccount = db.relationship(u'OrganisationAccount', foreign_keys='Contract.recipientAccount_id')
     payerAccount = db.relationship(u'OrganisationAccount', foreign_keys='Contract.payerAccount_id')
+
+    @property
+    def date(self):
+        return DateInfo(self.date_raw)
+
+    @property
+    def begDate(self):
+        return DateInfo(self.begDate_raw)
+
+    @property
+    def endDate(self):
+        return DateInfo(self.endDate_raw)
+
+    def convertToText(self, num):
+        converter = NumToTextConverter(num)
+        return converter.convert()
 
     def __unicode__(self):
         return self.number + ' ' + self.date
@@ -2426,15 +2431,15 @@ class Event(db.Model, Info):
     org_id = db.Column(db.Integer, db.ForeignKey('Organisation.id'))
     client_id = db.Column(db.Integer, db.ForeignKey('Client.id'), index=True)
     contract_id = db.Column(db.Integer, db.ForeignKey('Contract.id'), index=True)
-    prevEventDate = db.Column(db.DateTime)
-    setDate = db.Column(db.DateTime, nullable=False, index=True)
-    setPerson_id = db.Column(db.Integer, index=True)
-    execDate = db.Column(db.DateTime, index=True)
+    prevEventDate_row = db.Column("prevEventDate", db.DateTime)
+    setDate_raw = db.Column("setDate", db.DateTime, nullable=False, index=True)
+    setPerson_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
+    execDate_raw = db.Column("execDate", db.DateTime, index=True)
     execPerson_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
     isPrimaryCode = db.Column("isPrimary", db.Integer, nullable=False)
     order = db.Column(db.Integer, nullable=False)
     result_id = db.Column(db.Integer, db.ForeignKey('rbResult.id'), index=True)
-    nextEventDate = db.Column(db.DateTime)
+    nextEventDate_row = db.Column("nextEventDate", db.DateTime)
     payStatus = db.Column(db.Integer, nullable=False)
     typeAsset_id = db.Column(db.Integer, db.ForeignKey('rbEmergencyTypeAsset.id'), index=True)
     note = db.Column(db.Text, nullable=False)
@@ -2454,6 +2459,7 @@ class Event(db.Model, Info):
     actions = db.relationship(u'Action')
     eventType = db.relationship(u'Eventtype')
     execPerson = db.relationship(u'Person', foreign_keys='Event.execPerson_id')
+    setPerson = db.relationship(u'Person', foreign_keys='Event.setPerson_id')
     curator = db.relationship(u'Person', foreign_keys='Event.curator_id')
     assistant = db.relationship(u'Person', foreign_keys='Event.assistant_id')
     contract = db.relationship(u'Contract')
@@ -2464,6 +2470,23 @@ class Event(db.Model, Info):
     typeAsset = db.relationship(u'Rbemergencytypeasset')
     localContract = db.relationship(u'EventLocalcontract')
     client = db.relationship(u'Client')
+    visits = db.relationship(u'Visit')
+
+    @property
+    def setDate(self):
+        return DateTimeInfo(self.setDate_raw)
+
+    @property
+    def execDate(self):
+        return DateTimeInfo(self.execDate_raw)
+
+    @property
+    def prevEventDate(self):
+        return DateInfo(self.prevEventDate_raw)
+
+    @property
+    def nextEventDate(self):
+        return DateInfo(self.nextEventDate_raw)
 
     @property
     def isPrimary(self):
@@ -2475,10 +2498,7 @@ class Event(db.Model, Info):
 
     @property
     def departmentManager(self):
-        from blueprints.print_subsystem.utils import get_lpu_session
-        db_session = get_lpu_session()
-        persons = db_session.query(Person).filter(Person.orgStructure_id == self.orgStructure_id).all() if self.orgStructure_id else []
-        db_session.close()
+        persons = Person.query.filter(Person.orgStructure_id == self.orgStructure_id).all() if self.orgStructure_id else []
         if persons:
             for person in persons:
                 if person.post.flatCode == u'departmentManager':
@@ -2747,8 +2767,12 @@ class Fdfield(db.Model):
     order = db.Column(db.Integer)
 
     fdFieldType = db.relationship(u'Fdfieldtype')
-    FlatDirectory = db.relationship(u'Flatdirectory', primaryjoin='Fdfield.flatDirectory_code == Flatdirectory.code')
     flatDirectory = db.relationship(u'Flatdirectory', primaryjoin='Fdfield.flatDirectory_id == Flatdirectory.id')
+
+    values = db.relationship(u'Fdfieldvalue', backref=db.backref('fdField'), lazy='dynamic')
+
+    def get_value(self, record_id):
+        return self.values.filter(Fdfieldvalue.fdRecord_id == record_id).first().value
 
 
 class Fdfieldtype(db.Model):
@@ -2767,8 +2791,7 @@ class Fdfieldvalue(db.Model):
     fdField_id = db.Column(db.ForeignKey('FDField.id'), nullable=False, index=True)
     value = db.Column(db.String)
 
-    fdField = db.relationship(u'Fdfield')
-    fdRecord = db.relationship(u'Fdrecord')
+    # fdRecord = db.relationship(u'Fdrecord')
 
 
 class Fdrecord(db.Model):
@@ -2785,6 +2808,11 @@ class Fdrecord(db.Model):
 
     FlatDirectory = db.relationship(u'Flatdirectory', primaryjoin='Fdrecord.flatDirectory_code == Flatdirectory.code')
     flatDirectory = db.relationship(u'Flatdirectory', primaryjoin='Fdrecord.flatDirectory_id == Flatdirectory.id')
+    values = db.relationship(u'Fdfieldvalue', backref=db.backref('Fdrecord'), lazy='dynamic')
+
+    def get_value(self):
+        return [value.value for value in self.values]
+        #return [field.get_value(self.id) for field in self.FlatDirectory.fields] # в нтк столбцы не упорядочены
 
 
 class Flatdirectory(db.Model):
@@ -2794,6 +2822,9 @@ class Flatdirectory(db.Model):
     name = db.Column(db.String(4096), nullable=False)
     code = db.Column(db.String(128), index=True)
     description = db.Column(db.String(4096))
+
+    fields = db.relationship(u'Fdfield', foreign_keys='Fdfield.flatDirectory_code', backref=db.backref('FlatDirectory'),
+                             lazy='dynamic')
 
 
 class Informermessage(db.Model):
@@ -2833,8 +2864,8 @@ class Job(db.Model):
     endTime = db.Column(db.Time, nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
 
-    job_type = db.relationship(u'Rbjobtype')
-    org_structure = db.relationship(u'Orgstructure')
+    job_type = db.relationship(u'Rbjobtype', lazy='joined')
+    org_structure = db.relationship(u'Orgstructure', lazy='joined')
 
 
 class JobTicket(db.Model, Info):
@@ -2852,7 +2883,7 @@ class JobTicket(db.Model, Info):
     label = db.Column(db.String(64), nullable=False, server_default=u"''")
     note = db.Column(db.String(128), nullable=False, server_default=u"''")
 
-    job = db.relationship(u'Job')
+    job = db.relationship(u'Job', lazy='joined')
 
     @property
     def jobType(self):
@@ -3983,7 +4014,7 @@ class Visit(db.Model, Info):
     person = db.relationship(u'Person')
     finance = db.relationship(u'Rbfinance')
     scene = db.relationship(u'Rbscene')
-    visitType = db.relationship(u'Rbvisittype')
+    type = db.relationship(u'Rbvisittype')
 
 
 class ActionDocument(db.Model):
@@ -5013,6 +5044,7 @@ class Rbprinttemplate(db.Model):
     default = db.Column(db.String, nullable=False)
     dpdAgreement = db.Column(db.Integer, nullable=False, server_default=u"'0'")
     render = db.Column(db.Integer, nullable=False, server_default=u"'0'")
+    templateText = db.Column(db.String, nullable=False)
 
 
 class Rbquotastatu(db.Model):

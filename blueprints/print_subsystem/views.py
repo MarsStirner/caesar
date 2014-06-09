@@ -1,12 +1,11 @@
 # -*- encoding: utf-8 -*-
 
-from flask import make_response
 from flask import render_template, abort, request
 from jinja2 import TemplateNotFound
 
 from app import module
-from application.utils import public_endpoint, jsonify
-from blueprints.print_subsystem.models import Rbprinttemplate
+from application.utils import public_endpoint, jsonify, crossdomain
+from blueprints.print_subsystem.models.models_all import Rbprinttemplate
 from lib.data import Print_Template
 
 
@@ -35,42 +34,44 @@ def template_meta():
 
 
 @public_endpoint
-@module.route('/print_template', methods=["OPTIONS"])
-def print_template_options():
-    return jsonify(None, extra_headers=[
-        ('Access-Control-Allow-Origin', '*'),
-        ('Access-Control-Allow-Method', 'POST'),
-        ('Access-Control-Allow-Headers', 'Content-Type')
-    ])
-
-
-@public_endpoint
-@module.route('/print_template', methods=["POST"])
+@module.route('/print_template', methods=["POST", "OPTIONS"])
+@crossdomain('*', methods=['POST', 'OPTIONS'], headers='Content-Type')
 def print_template_post():
     data = request.get_json()
     context_type = data['context_type']
     template_id = data['id']
     print_obj = Print_Template()
 
-    html = print_obj.print_template(context_type, template_id, data)
-    response = make_response(html, 200)
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Method'] = 'POST'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-    return response
+    return print_obj.print_template(context_type, template_id, data)
+
+
+@public_endpoint
+@module.route('/print_templates', methods=["POST", "OPTIONS"])
+@crossdomain('*', methods=['POST', 'OPTIONS'], headers='Content-Type')
+def print_templates_post():
+    data = request.get_json()
+    if data.get('separate', True):
+        separator = '\n\n<br style="page-break-after: always" />\n\n'
+    else:
+        separator = '\n\n'
+    result = [
+        Print_Template().print_template(doc['context_type'], doc['id'], doc)
+        for doc in data.get('documents', [])
+    ]
+    return separator.join(result)
 
 
 @module.route('/templates/')
 @module.route('/templates/<context>.json')
 @public_endpoint
+@crossdomain('*', methods=['GET'])
 def api_templates(context=None):
     # Не пора бы нам от этой ерунды избавиться?
     # Неа, нам нужно подключение к разным БД (http://stackoverflow.com/questions/7923966/flask-sqlalchemy-with-dynamic-database-connections)
-    from .utils import get_lpu_session
-    db = get_lpu_session()
+    # А в Гиппократе всё работает. Там те же две БД.
     if not context:
         return jsonify(None)
-    templates = db.query(Rbprinttemplate).filter(Rbprinttemplate.context == context)
+    templates = Rbprinttemplate.query.filter(Rbprinttemplate.context == context)
     return jsonify([{
         'id': t.id,
         'code': t.code,

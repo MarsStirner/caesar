@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 from application.database import db
-from config import MODULE_NAME
+from ..config import MODULE_NAME
 
 
 TABLE_PREFIX = MODULE_NAME
 
 
 class Kladr(db.Model):
+    __bind_key__ = 'kladr'
     __tablename__ = 'KLADR'
     __table_args__ = (
         db.Index('long_name', 'prefix', 'NAME', 'SOCR', 'STATUS'),
@@ -29,6 +30,7 @@ class Kladr(db.Model):
 
 
 class Street(db.Model):
+    __bind_key__ = 'kladr'
     __tablename__ = 'STREET'
     __table_args__ = (
         db.Index('NAME_SOCR', 'NAME', 'SOCR', 'CODE'),
