@@ -1453,11 +1453,11 @@ class Client(db.Model, Info):
 
     @property
     def regAddress(self):
-        return self.reg_addresses[0]
+        return self.reg_addresses[0] if self.reg_addresses else None
 
     @property
     def locAddress(self):
-        return self.loc_addresses[0]
+        return self.loc_addresses[0] if self.loc_addresses else None
 
     def __unicode__(self):
         return self.formatShortNameInt(self.lastName, self.firstName, self.patrName)
