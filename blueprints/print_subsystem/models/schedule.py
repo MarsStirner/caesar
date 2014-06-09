@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from application.database import db
-from models_all import Person, Client, Rbreasonofabsence, Organisation
+from models_all import Person, Client, Rbreasonofabsence, Organisation, Orgstructure
 
 
 class rbReceptionType(db.Model):
@@ -56,7 +56,7 @@ class Office(db.Model):
             'name': self.name,
             'org_structure': self.orgStructure
         }
-    
+
 
 class rbAppointmentType(db.Model):
     __tablename__ = 'rbAppointmentType'
