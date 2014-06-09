@@ -45,7 +45,7 @@ class Office(db.Model):
     name = db.Column(db.Unicode(64), nullable=False)
     orgStructure_id = db.Column(db.ForeignKey('OrgStructure.id'))
 
-    orgStructure = db.relationship('OrgStructure')
+    orgStructure = db.relationship('Orgstructure')
 
     def __unicode__(self):
         return self.code
