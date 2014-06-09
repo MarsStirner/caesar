@@ -63,7 +63,7 @@ class Schedule(db.Model):
     begTime = db.Column(db.Time, nullable=False)
     endTime = db.Column(db.Time, nullable=False)
     numTickets = db.Column(db.Integer, doc=u'Запланированное количество талонов на данный день')
-    office = db.Column(db.Unicode(64))
+    office_id = db.Column(db.ForeignKey('Office.id'))
     reasonOfAbsence_id = db.Column(db.Integer, db.ForeignKey('rbReasonOfAbsence.id'))
     receptionType_id = db.Column(db.Integer, db.ForeignKey('rbReceptionType.id'))
     createDatetime = db.Column(db.DateTime, nullable=False)
@@ -78,6 +78,7 @@ class Schedule(db.Model):
     tickets = db.relationship(
         'ScheduleTicket', lazy=False, primaryjoin=
         "and_(ScheduleTicket.schedule_id == Schedule.id, ScheduleTicket.deleted == 0)")
+    office = db.relationship('Office', lazy='joined')
     
 
 class ScheduleTicket(db.Model):
