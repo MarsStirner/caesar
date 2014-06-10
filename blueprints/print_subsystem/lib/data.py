@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import datetime
-from application.database import db
 
 from ..models.models_all import Orgstructure, Person, Organisation, v_Client_Quoting, Event, Action, Account, Rbcashoperation, \
     Client
@@ -40,11 +39,9 @@ class Print_Template(object):
             elif typeName == 'Boolean':
                 context[name] = bool(value)
             elif typeName == 'Date':
-                context[name] = datetime.datetime.strptime(value, '%d.%m.%Y').date()
+                context[name] = datetime.datetime.strptime(value, '%d.%m.%Y').date() if value else None
             elif typeName == 'Time':
-                context[name] = datetime.datetime.strptime(value, '%H:%M').time()
-            elif typeName == 'RefBook':
-                context[name] = value
+                context[name] = datetime.datetime.strptime(value, '%H:%M').time() if value else None
             elif typeName == 'Organisation':
                 context[name] = Organisation.query.get(int(value)) if value else None
             elif typeName == 'Person':
