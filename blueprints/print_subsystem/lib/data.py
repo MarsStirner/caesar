@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from datetime import date
+import datetime
+from application.database import db
 
 from ..models.models_all import Orgstructure, Person, Organisation, v_Client_Quoting, Event, Action, Account, Rbcashoperation, \
     Client
@@ -22,10 +23,36 @@ def current_patient_orgStructure(event_id):
 class Print_Template(object):
 
     def __init__(self):
-        self.today = date.today()
+        self.today = datetime.date.today()
 
-    def get_template_meta(self, template_id):
-        return {}
+    def update_context(self, template_id, context):
+        from ..models.models_all import Rbprinttemplatemeta, Organisation, Orgstructure, Rbservice, Person
+        for desc in Rbprinttemplatemeta.query.filter(Rbprinttemplatemeta.template_id == template_id):
+            name = desc.name
+            if not name in context:
+                continue
+            value = context[name]
+            typeName = desc.type
+            if typeName == 'Integer':
+                context[name] = int(value)
+            elif typeName == 'Float':
+                context[name] = float(value)
+            elif typeName == 'Boolean':
+                context[name] = bool(value)
+            elif typeName == 'Date':
+                context[name] = datetime.datetime.strptime(value, '%d.%m.%Y').date()
+            elif typeName == 'Time':
+                context[name] = datetime.datetime.strptime(value, '%H:%M').time()
+            elif typeName == 'RefBook':
+                context[name] = value
+            elif typeName == 'Organisation':
+                context[name] = Organisation.query.get(int(value)) if value else None
+            elif typeName == 'Person':
+                context[name] = Person.query.get(int(value)) if value else None
+            elif typeName == 'OrgStructure':
+                context[name] = Orgstructure.query.get(int(value)) if value else None
+            elif typeName == 'Service':
+                context[name] = Rbservice.query.get(int(value)) if value else None
 
     def print_template(self, doc):
         context_type = doc['context_type']
@@ -35,6 +62,7 @@ class Print_Template(object):
 
     def get_context(self, context_type, data):
         context = data['context']
+        self.update_context(data['id'], context)
 
         currentOrganisation = Organisation.query.get(context['currentOrganisation']) if \
             context['currentOrganisation'] else ""

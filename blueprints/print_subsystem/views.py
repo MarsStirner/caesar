@@ -21,18 +21,6 @@ def index():
         abort(404)
 
 
-@module.route('/template_meta', methods=["POST"])
-def template_meta():
-    try:
-        data = request.get_json()
-        template_id = data['id']
-        print_obj = Print_Template()
-        print_obj.get_template_meta(template_id)
-        return render_template('{0}/index.html'.format(module.name))
-    except TemplateNotFound:
-        abort(404)
-
-
 @public_endpoint
 @module.route('/print_template', methods=["POST", "OPTIONS"])
 @crossdomain('*', methods=['POST', 'OPTIONS'], headers='Content-Type')
