@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import date
+import datetime
 
 from ..models.models_all import Orgstructure, Person, Organisation, v_Client_Quoting, Event, Action, Account, Rbcashoperation, \
     Client
@@ -22,45 +22,61 @@ def current_patient_orgStructure(event_id):
 class Print_Template(object):
 
     def __init__(self):
-        self.today = date.today()
+        self.today = datetime.date.today()
 
-    def get_template_meta(self, template_id):
-        return {}
+    def update_context(self, template_id, context):
+        from ..models.models_all import Rbprinttemplatemeta, Organisation, Orgstructure, Rbservice, Person
+        for desc in Rbprinttemplatemeta.query.filter(Rbprinttemplatemeta.template_id == template_id):
+            name = desc.name
+            if not name in context:
+                continue
+            value = context[name]
+            typeName = desc.type
+            if typeName == 'Integer':
+                context[name] = int(value)
+            elif typeName == 'Float':
+                context[name] = float(value)
+            elif typeName == 'Boolean':
+                context[name] = bool(value)
+            elif typeName == 'Date':
+                context[name] = datetime.datetime.strptime(value, '%d.%m.%Y').date() if value else None
+            elif typeName == 'Time':
+                context[name] = datetime.datetime.strptime(value, '%H:%M').time() if value else None
+            elif typeName == 'Organisation':
+                context[name] = Organisation.query.get(int(value)) if value else None
+            elif typeName == 'Person':
+                context[name] = Person.query.get(int(value)) if value else None
+            elif typeName == 'OrgStructure':
+                context[name] = Orgstructure.query.get(int(value)) if value else None
+            elif typeName == 'Service':
+                context[name] = Rbservice.query.get(int(value)) if value else None
 
-    def print_template(self, context_type, template_id, data):
-        data = self.get_context(context_type, data)
+    def print_template(self, doc):
+        context_type = doc['context_type']
+        template_id = doc['id']
+        data = self.get_context(context_type, doc)
         return applyTemplate(template_id, data)
 
     def get_context(self, context_type, data):
-        additional_context = data['additional_context']
+        context = data['context']
+        self.update_context(data['id'], context)
 
-        currentOrganisation = Organisation.query.get(additional_context['currentOrganisation']) if \
-            additional_context['currentOrganisation'] else ""
-        currentOrgStructure = Orgstructure.query.get(additional_context['currentOrgStructure']) if \
-            additional_context['currentOrgStructure'] else ""
-        currentPerson = Person.query.get(additional_context['currentPerson']) if \
-            additional_context['currentPerson'] else ""
+        currentOrganisation = Organisation.query.get(context['currentOrganisation']) if \
+            context['currentOrganisation'] else ""
+        currentOrgStructure = Orgstructure.query.get(context['currentOrgStructure']) if \
+            context['currentOrgStructure'] else ""
+        currentPerson = Person.query.get(context['currentPerson']) if \
+            context['currentPerson'] else ""
 
-        context = {
+        context.update({
             'currentOrganisation': currentOrganisation,
             'currentOrgStructure': currentOrgStructure,
             'currentPerson': currentPerson
-        }
-
-        if 'event_id' in data:
-            event_id = data['event_id']
-            event = Event.query.get(event_id)
-            client = event.client
-
-            client.date = event.execDate.date if event.execDate else self.today
-            quoting = v_Client_Quoting.query.filter_by(event_id=event_id).\
-                filter_by(clientId=event.client.id).first()
-            if not quoting:
-                quoting = v_Client_Quoting()
+        })
 
         context_func = getattr(self, 'context_%s' % context_type, None)
         if context_func and callable(context_func):
-            context.update(context_func(data))
+            context.update(context_func(context))
         return context
 
     def context_event(self, data):
