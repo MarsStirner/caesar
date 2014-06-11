@@ -2,5 +2,3 @@
 
 psycopg2
 fabric
-
--r ../pysimplelogs/requirements.txt
