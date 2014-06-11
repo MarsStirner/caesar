@@ -2,5 +2,3 @@
 
 mysql-python
 fabric
-
--r ../pysimplelogs/requirements.txt
