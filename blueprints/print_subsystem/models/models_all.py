@@ -6191,6 +6191,9 @@ class v_Nomen(db.Model):
 
 class Rbprinttemplatemeta(db.Model):
     __tablename__ = 'rbPrintTemplateMeta'
+    __table_args__ = (
+        db.Index('template_id_name', 'template_id', 'name'),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     template_id = db.Column(db.ForeignKey('rbPrintTemplate.id'), nullable=False, index=True)
@@ -6199,7 +6202,7 @@ class Rbprinttemplatemeta(db.Model):
         u'List', u'Multilist',
         u'RefBook', u'Organisation', u'OrgStructure', u'Person', u'Service', u'SpecialVariable'
     ), nullable=False)
-    name = db.Column(db.String, nullable=False)
+    name = db.Column(db.String(128), nullable=False)
     title = db.Column(db.String, nullable=False)
     description = db.Column(db.String, nullable=False)
     arguments = db.Column(db.String)
