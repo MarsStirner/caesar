@@ -3,7 +3,7 @@
 #
 # DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
 #
-#  options string: py
+#  options string: py:new_style
 #
 
 from thrift.Thrift import TType, TMessageType, TException, TApplicationException
@@ -17,7 +17,7 @@ except:
   fastbinary = None
 
 
-class Iface:
+class Iface(object):
   def updateTariffs(self, tariffs, contract_id):
     """
     Parameters:
@@ -111,7 +111,7 @@ class Processor(Iface, TProcessor):
 
 # HELPER FUNCTIONS AND STRUCTURES
 
-class updateTariffs_args:
+class updateTariffs_args(object):
   """
   Attributes:
    - tariffs
@@ -192,7 +192,7 @@ class updateTariffs_args:
   def __ne__(self, other):
     return not (self == other)
 
-class updateTariffs_result:
+class updateTariffs_result(object):
   """
   Attributes:
    - success

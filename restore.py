@@ -20,7 +20,10 @@ def restore():
         f = open(file_path, 'rb')
         data = f.read()
         data_list = loads(data)
-        model = db.metadata.tables[bk_file]
+        try:
+            model = db.metadata.tables[bk_file]
+        except KeyError:
+            continue
         try:
             db.session.execute(model.insert().values(data_list))
         except exc.IntegrityError, e:

@@ -1,18 +1,5 @@
-Flask
-SQLAlchemy
-alembic
-Flask-SQLAlchemy
-wtforms
-Flask-WTF==0.8.4
-Flask-Admin
-pytz==2013b
-Flask-BabelEx
-Flask-Login
-Flask-Principal
-thrift
-blinker
-selenium
-#twisted
+-r ../_base.txt
+
 mysql-python
-dbf
-patool
+
+-r ../../pysimplelogs/requirements.txt

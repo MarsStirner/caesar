@@ -3,7 +3,6 @@
       <div class="navbar-inner">
         <div class="container">
           <ul class="nav">
-{#              #TODO: class=active когда будут готовы вьюхи#}
             <li{% if request.path == url_for('.index') %} class="active"{% endif %}><a href="{{ url_for('.index') }}" id="index">Главная</a></li>
             <li{% if request.path == url_for('.download') %} class="active"{% endif %}><a href="{{ url_for('.download') }}" id="download">Выгрузка</a></li>
             <li{% if request.path == url_for('.upload') %} class="active"{% endif %}><a href="{{ url_for('.upload') }}" id="upload">Загрузка</a></li>

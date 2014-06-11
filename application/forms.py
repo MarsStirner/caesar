@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-from flask.ext.wtf import Form, TextField, BooleanField, PasswordField, Required, RadioField
+from wtforms import TextField, BooleanField, PasswordField, RadioField
+from wtforms.validators import Required
+from flask_wtf import Form
 
 
 class EditUserForm(Form):

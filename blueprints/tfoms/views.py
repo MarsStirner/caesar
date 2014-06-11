@@ -4,8 +4,10 @@ import os
 from datetime import datetime
 
 from flask import render_template, abort, request, redirect, jsonify, send_from_directory, url_for, json, current_app
-from flask import flash
-from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required, SelectField
+from flask import flash, session
+from wtforms import TextField, BooleanField, IntegerField, SelectField
+from flask_wtf import Form
+from wtforms.validators import Required
 from flask.ext.sqlalchemy import Pagination
 
 from jinja2 import TemplateNotFound, Environment, PackageLoader
@@ -13,17 +15,23 @@ from app import module, _config
 
 from lib.thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException
 
-from forms import CreateTemplateForm
-from lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
-from lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR, UploadWorker, Reports, datetimeformat, UpdateWorker
-from models import Template, TagsTree, StandartTree, TemplateType, DownloadType, ConfigVariables
-from utils import save_template_tag_tree, save_new_template_tree
+from .forms import CreateTemplateForm
+from .lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
+from .lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR, UploadWorker, Reports, datetimeformat
+from .lib.data import Contracts
+from .lib.departments import Departments
+from .models import Template, TagsTree, StandartTree, TemplateType, DownloadType, ConfigVariables
+from .utils import save_template_tag_tree, save_new_template_tree
 from application.database import db
 from application.utils import admin_permission
 
 
 PER_PAGE = 20
 xml_encodings = ['windows-1251', 'utf-8']
+mo_levels = [('', u'- выберите уровень -'),
+             ('01', u'01-Первый уровень'),
+             ('02', u'02-Второй уровень'),
+             ('03', u'03-Третий уровень')]
 
 
 @module.route('/')
@@ -34,64 +42,114 @@ def index():
         abort(404)
 
 
-@module.route('/ajax_download/', methods=['GET', 'POST'])
-def ajax_download():
+@module.route('/download_result/', methods=['POST'])
+def download_result():
     result = list()
     errors = list()
-    templates = request.form.getlist('templates[]')
-    start = datetime.strptime(request.form['start'], '%d.%m.%Y')
-    end = datetime.strptime(request.form['end'], '%d.%m.%Y')
+    session['templates'] = template_ids = [int(_id) for _id in request.form.getlist('templates[]')]
+    department_ids = [int(_id) for _id in request.form.getlist('departments[]') if int(_id)]
+    session['departments'] = [int(_id) for _id in request.form.getlist('departments[]')]
+    session['start'] = start = datetime.strptime(request.form['start'], '%d.%m.%Y')
+    session['end'] = end = datetime.strptime(request.form['end'], '%d.%m.%Y')
+    session['contract_id'] = contract_id = int(request.form.get('contract_id'))
+    primary = bool(int(request.form.get('primary')))
+    session['primary'] = request.form.get('primary')
     #TODO: как-то покрасивее сделать?
     worker = DownloadWorker()
-    for template_id in templates:
-        try:
-            file_url = worker.do_download(template_id, start, end, _config('lpu_infis_code'))
-        except NotFoundException, e:
-            template = db.session.query(Template).get(template_id)
-            errors.append(u'<b>%s</b>: данных для выгрузки в заданный период не найдено (%s)' %
-                          (template.name, e.message))
-        except TException, e:
-            template = db.session.query(Template).get(template_id)
-            errors.append(u'<b>%s</b>: внутренняя ошибка ядра во время выборки данных (%s)' % (template.name, e))
-        else:
-            result.append(dict(url=file_url))
+    try:
+        result = worker.do_download(template_ids=template_ids,
+                                    infis_code=_config('lpu_infis_code'),
+                                    contract_id=contract_id,
+                                    start=start,
+                                    end=end,
+                                    primary=primary,
+                                    departments=department_ids)
+    except ValueError, e:
+        errors.append(u'Данных для выгрузки в заданный период не найдено (%s)' % e.message)
+    except InvalidArgumentException, e:
+        errors.append(u'Переданы некорректные данные ({0}:{1})'.format(e.code, e.message))
+    except NotFoundException, e:
+        errors.append(u'Данных для выгрузки в заданный период не найдено ({0}:{1})'.format(e.code, e.message))
+    except TException, e:
+        errors.append(u'Во время выборки данных возникла внутренняя ошибка ядра (%s)' % e)
+    if errors:
+        for error in errors:
+            flash(error)
+        return redirect(request.referrer)
+    form_data = dict(templates=session.pop('templates', None),
+                     departments=session.pop('departments', None),
+                     start=session.pop('start', None),
+                     end=session.pop('end', None),
+                     contract_id=session.pop('contract_id', None),
+                     primary=session.pop('primary', None))
     return render_template('{0}/download/result.html'.format(module.name), files=result, errors=errors)
 
 
-@module.route('/ajax_update_tables/', methods=['GET', 'POST'])
-def ajax_update_tables():
-    worker = UpdateWorker()
-    error, message = None, None
-
+@module.route('/secondary/<int:bill_id>/')
+def secondary(bill_id):
+    errors = list()
+    report = Reports()
     try:
-        result = worker.update_tables()
+        bill = report.get_bill(bill_id)
+    except ValueError, e:
+        errors.append(u'Не найден указанный счёт (%s)' % e.message)
     except NotFoundException, e:
-        error = u'Ошибка при обновлении таблиц: %s' % e.message
+        errors.append(u'Не найден указанный счёт (%s)' % e.message)
     except TException, e:
-        error = u'Ошибка при обновлении таблиц: %s' % e.message
+        errors.append(u'Во время выборки данных возникла внутренняя ошибка ядра (%s)' % e)
     else:
-        message = u'Обновление таблицы прошло успешно'
-    return jsonify(message=message, error=error)
+        # TODO: add departments, after adding it's support in Core
+        #session['departments'] = [int(_id) for _id in request.form.getlist('departments[]')]
+        session['start'] = bill.begDate
+        session['end'] = bill.endDate
+        session['contract_id'] = int(getattr(bill, 'contractId', 0))
+        session['primary'] = 0
+
+    if errors:
+        for error in errors:
+            flash(error)
+
+    return redirect(url_for('.download'))
 
 
 @module.route('/download/')
 @module.route('/download/<string:template_type>/')
 def download(template_type='xml'):
+    current_app.jinja_env.filters['datetimeformat'] = datetimeformat
     try:
         templates = (db.session.query(Template)
                      .filter(Template.is_active == True,
                              Template.type.has(TemplateType.download_type.has(DownloadType.code == template_type)))
                      .all())
-        return render_template('{0}/download/index.html'.format(module.name), templates=templates)
+        contracts = Contracts().get_contracts(_config('lpu_infis_code'))
+        obj = Departments(_config('lpu_infis_code'))
+        departments = obj.get_departments()
+
+        form_data = dict(templates=session.pop('templates', None),
+                         departments=session.pop('departments', None),
+                         start=session.pop('start', None),
+                         end=session.pop('end', None),
+                         contract_id=session.pop('contract_id', None),
+                         primary=session.pop('primary', None))
+
+        if not _config('mo_level'):
+            flash(u'В <a href="{0}" class="text-error"><u>настройках</u></a> не задан уровень МО'.format(url_for('.settings')))
+
+        return render_template('{0}/download/index.html'.format(module.name),
+                               templates=templates,
+                               contracts=contracts,
+                               departments=departments,
+                               mo_level=_config('mo_level'),
+                               form_data=form_data)
     except TemplateNotFound:
         abort(404)
 
 
-@module.route('/download_file/<string:filename>')
-def download_file(filename):
+@module.route('/download_file/<string:dir>/<string:filename>')
+def download_file(dir, filename):
     """Выдаёт файлы на скачивание"""
     if filename:
-        return send_from_directory(DOWNLOADS_DIR, filename, as_attachment=True, cache_timeout=0)
+        return send_from_directory(os.path.join(DOWNLOADS_DIR, dir), filename, as_attachment=True, cache_timeout=0)
 
 
 @module.route('/upload/')
@@ -106,6 +164,7 @@ def upload():
 def ajax_upload():
     messages = list()
     errors = list()
+    result = list()
     if request.method == 'POST':
         data_file = request.files.get('upload_file')
         file_path = os.path.join(UPLOADS_DIR, data_file.filename)
@@ -115,50 +174,73 @@ def ajax_upload():
             f.close()
             worker = UploadWorker()
             try:
-                result = worker.parse(file_path)
+                result = worker.do_upload(file_path)
             except TException, e:
-                errors.append(u'<b>%s</b>: внутренняя ошибка ядра во время обновления данных (%s)'
-                              % (data_file.filename, e))
+                errors.append(
+                    u'<b>{0}</b>: внутренняя ошибка ядра во время обновления данных ({1})'
+                    .format(data_file.filename, e))
+            except AttributeError, e:
+                errors.append(u'<b>{0}</b>: некорректный XML-файл ({1})'.format(data_file.filename, e))
             else:
                 #TODO: добавить вывод подробной информации
                 messages.append(u'Загрузка прошла успешно')
         else:
             errors.append(u'<b>%s</b>: не является XML-файлом' % data_file.filename)
-        return render_template('{0}/upload/result.html'.format(module.name), errors=errors, messages=messages)
+        return render_template('{0}/upload/result.html'.format(module.name),
+                               errors=errors,
+                               messages=messages,
+                               result=result)
+
+
+def get_files(root, _dir):
+    path = os.path.join(root, _dir)
+    if os.path.isdir(path):
+        return [(_dir, f) for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+    return None
 
 
 @module.route('/reports/', methods=['GET', 'POST'])
 def reports():
     start = None
     end = None
+    files = dict()
     report = Reports()
-    if request.method == 'POST':
-        start = datetime.strptime(request.form['start'], '%d.%m.%Y')
-        end = datetime.strptime(request.form['end'], '%d.%m.%Y')
+    # if request.method == 'POST':
+    #     start = datetime.strptime(request.form['start'], '%d.%m.%Y')
+    #     end = datetime.strptime(request.form['end'], '%d.%m.%Y')
 
-    data = report.get_bills(start, end)
+    data = report.get_bills(_config('lpu_infis_code'))
+    for bill in data:
+        files[bill.id] = get_files(DOWNLOADS_DIR, str(bill.id))
     try:
         current_app.jinja_env.filters['datetimeformat'] = datetimeformat
-        return render_template('{0}/reports/index.html'.format(module.name), data=data, form=Form())
+        return render_template('{0}/reports/index.html'.format(module.name),
+                               data=data,
+                               files=files,
+                               form=Form())
     except TemplateNotFound:
         abort(404)
+
+
+@module.route('/reports/delete/<int:id>/', methods=['GET', 'POST'])
+def delete_report(id):
+    report = Reports()
+    try:
+        report.delete_bill(id)
+    except TemplateNotFound:
+        flash(u'Произошла ошибка удаления счёта')
+    return redirect(url_for('.reports'))
 
 
 @module.route('/reports/<int:bill_id>/', defaults={'page': 1}, methods=['GET'])
 @module.route('/reports/<int:bill_id>/page/<int:page>/', methods=['GET'])
 def report_cases(bill_id, page):
     report = Reports()
-    bill = report.get_bill(bill_id)
-    if bill:
-        query, data = report.get_cases(bill_id, page, PER_PAGE)
-        pagination = Pagination(query, page, PER_PAGE, query.count(), data)
-        try:
-            current_app.jinja_env.filters['datetimeformat'] = datetimeformat
-            return render_template('{0}/reports/cases.html'.format(module.name),
-                                   cases=data, bill=bill, pagination=pagination)
-        except TemplateNotFound:
-            abort(404)
-    else:
+    data = report.get_bill_cases(bill_id)
+    try:
+        current_app.jinja_env.filters['datetimeformat'] = datetimeformat
+        return render_template('{0}/reports/cases.html'.format(module.name), data=data)
+    except TemplateNotFound:
         abort(404)
 
 
@@ -186,6 +268,14 @@ def settings():
                                     description=variable.name,
                                     choices=[(choice, choice) for choice in xml_encodings],
                                     default=variable.value))
+            elif variable.value_type == "enum" and variable.code == 'mo_level':
+                setattr(ConfigVariablesForm,
+                        variable.code,
+                        SelectField(variable.code,
+                                    description=variable.name,
+                                    choices=mo_levels,
+                                    default=variable.value,
+                                    validators=[Required()]))
 
         form = ConfigVariablesForm()
         for variable in variables:
@@ -363,3 +453,16 @@ def show_page(page):
         return render_template('{0}/{1}.html'.format(module.name, page))
     except TemplateNotFound:
         abort(404)
+
+
+@module.route('/reports/change_status/', methods=['POST'])
+@module.route('/reports/change_status/<int:case_id>/', methods=['POST'])
+def change_case_status(case_id=None):
+    if case_id:
+        report = Reports()
+        status = True if request.values.get('status') == 'true' else False
+        report.change_case_status(case_id, status, request.values.get('note'))
+        result = True
+    else:
+        result = False
+    return jsonify(result=result)

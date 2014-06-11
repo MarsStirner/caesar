@@ -3,7 +3,7 @@
 #
 # DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
 #
-#  options string: py
+#  options string: py:new_style
 #
 
 from thrift.Thrift import TType, TMessageType, TException, TApplicationException
@@ -17,7 +17,7 @@ except:
 
 
 
-class Tariff:
+class Tariff(object):
   """
   Attributes:
    - number
@@ -135,7 +135,7 @@ class Tariff:
   def __ne__(self, other):
     return not (self == other)
 
-class Error:
+class Error(object):
   """
   Attributes:
    - code
@@ -211,7 +211,7 @@ class Error:
   def __ne__(self, other):
     return not (self == other)
 
-class Result:
+class Result(object):
   """
   Attributes:
    - number

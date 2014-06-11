@@ -4,7 +4,6 @@ from flask import render_template, abort, request, redirect, url_for
 from flask.ext.wtf import Form
 
 from jinja2 import TemplateNotFound
-from flask.ext.wtf import Form, TextField, BooleanField, IntegerField, Required
 
 from ..app import module
 from ..lib.data import More_Then_21
