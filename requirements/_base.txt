@@ -18,3 +18,5 @@ lxml
 dateutils
 beaker
 Flask-Beaker
+
+-e git+https://github.com/KorusConsulting/pysimplelogs.git#egg=pysimplelogs
