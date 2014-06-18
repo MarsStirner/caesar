@@ -183,7 +183,9 @@ class Action(db.Model):
     setPerson = db.relationship(u'Person', foreign_keys='Action.setPerson_id')
     takenTissue = db.relationship(u'Takentissuejournal')
     tissues = db.relationship(u'Tissue', secondary=u'ActionTissue')
-    properties = db.relationship(u'Actionproperty')
+    properties = db.relationship(u'Actionproperty',
+                                 primaryjoin="and_(Actionproperty.action_id==Action.id, Actionproperty.type_id==Actionpropertytype.id)",
+                                 order_by="Actionpropertytype.idx")
     self_finance = db.relationship(u'Rbfinance')
 
     # def getPrice(self, tariffCategoryId=None):
