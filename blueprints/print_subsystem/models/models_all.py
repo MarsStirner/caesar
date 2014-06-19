@@ -4258,6 +4258,9 @@ class Rbacademicdegree(db.Model, RBInfo):
     code = db.Column(db.String(8), nullable=False)
     name = db.Column(db.Unicode(64), nullable=False)
 
+    def __unicode__(self):
+        return self.name
+
 
 class Rbacademictitle(db.Model, RBInfo):
     __tablename__ = u'rbAcademicTitle'
@@ -4265,6 +4268,9 @@ class Rbacademictitle(db.Model, RBInfo):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(8), nullable=False, index=True)
     name = db.Column(db.Unicode(64), nullable=False, index=True)
+
+    def __unicode__(self):
+        return self.name
 
 
 class Rbaccountexportformat(db.Model, RBInfo):
