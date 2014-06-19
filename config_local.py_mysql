@@ -6,7 +6,11 @@ DB_HOST = 'localhost'
 DB_PORT = 3306
 DB_USER = 'caesar'
 DB_PASSWORD = 'caesar'
-DB_NAME = 'caesar'
+
+DB_CAESAR_NAME = 'db_name'
+DB_KLADR_NAME = 'kladr'
+DB_LPU_NAME = 'lpu_db_name'
+
 DB_CONNECT_OPTIONS = '?charset=utf8'
 
 SERVER_HOST = '127.0.0.1'
