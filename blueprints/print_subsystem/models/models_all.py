@@ -163,7 +163,7 @@ class Action(db.Model):
     finance_id = db.Column(db.Integer, db.ForeignKey('rbFinance.id'), index=True)
     prescription_id = db.Column(db.Integer, index=True)
     takenTissueJournal_id = db.Column(db.ForeignKey('TakenTissueJournal.id'), index=True)
-    contract_id = db.Column(db.Integer, index=True)
+    contract_id = db.Column(db.ForeignKey('Contract.id'), index=True)
     coordDate_raw = db.Column("coordDate", db.DateTime)
     coordAgent = db.Column(db.String(128), nullable=False, server_default=u"''")
     coordInspector = db.Column(db.String(128), nullable=False, server_default=u"''")
@@ -183,8 +183,10 @@ class Action(db.Model):
     setPerson = db.relationship(u'Person', foreign_keys='Action.setPerson_id')
     takenTissue = db.relationship(u'Takentissuejournal')
     tissues = db.relationship(u'Tissue', secondary=u'ActionTissue')
-    properties = db.relationship(u'Actionproperty')
-    self_finance = db.relationship(u'Rbfinance')
+    properties = db.relationship(u'Actionproperty',
+                                 primaryjoin="and_(Actionproperty.action_id==Action.id, Actionproperty.type_id==Actionpropertytype.id)",
+                                 order_by="Actionpropertytype.idx")
+    self_contract = db.relationship('Contract')
 
     # def getPrice(self, tariffCategoryId=None):
     #     if self.price is None:
@@ -218,10 +220,17 @@ class Action(db.Model):
 
     @property
     def finance(self):
-        if self.finance_id:
-            return self.self_finance
-        else:
-            return self.event.eventType.finance
+        if self.contract_id:
+            return self.contract.finance
+        elif self.event:
+            return self.event.contract.finance
+
+    @property
+    def contract(self):
+        if self.contract_id:
+            return self.self_contract
+        elif self.event:
+            return self.event.contract
 
     def get_property_by_code(self, code):
         for property in self.properties:
@@ -271,6 +280,16 @@ class Action(db.Model):
 
     @property
     def service(self):
+        finance = self.finance
+        if finance:
+            if not hasattr(self, '_finance_service'):
+                _finance_service = ActiontypeService.query.filter(
+                    ActiontypeService.master_id == self.actionType_id,
+                    ActiontypeService.finance_id == finance.id,
+                ).first()
+                self._finance_service = _finance_service
+            if self._finance_service:
+                return self._finance_service
         return self.actionType.service if self.actionType else None
 
     @property
@@ -284,6 +303,63 @@ class Action(db.Model):
     @property
     def nomenclatureService(self):
         return self.actionType.nomenclatureService if self.actionType else None
+
+    @property
+    def tariff(self):
+        service = self.service
+        if not service:
+            return
+        if not hasattr(self, '_tariff'):
+            contract = self.contract
+            tariff = None
+            _tc_id = self.person.tariffCategory_id if self.person else None
+            query_1 = ContractTariff.query.filter(
+                ContractTariff.deleted == 0,
+                ContractTariff.master_id == contract.id,
+                db.or_(
+                    ContractTariff.eventType_id == self.event.eventType_id,
+                    ContractTariff.eventType_id.is_(None)
+                ),
+                ContractTariff.tariffType == 2,
+                ContractTariff.service_id == service.id
+            )
+            query_2 = query_1.filter(
+                db.or_(
+                    ContractTariff.tariffCategory_id == _tc_id,
+                    ContractTariff.tariffCategory_id.is_(None)
+                )
+            ) if _tc_id else None
+            query_3 = query_1.filter(
+                ContractTariff.begDate >= self.begDate_raw,
+                ContractTariff.endDate < self.begDate_raw
+            ) if self.begDate_raw else None
+            query_4 = query_1.filter(
+                db.or_(
+                    ContractTariff.tariffCategory_id == _tc_id,
+                    ContractTariff.tariffCategory_id.is_(None)
+                ),
+                ContractTariff.begDate >= self.begDate_raw,
+                ContractTariff.endDate < self.begDate_raw
+            ) if _tc_id and self.begDate_raw else None
+            for query in (query_4, query_3, query_2, query_1):
+                if query is None:
+                    continue
+                tariff = query.first()
+                if tariff:
+                    break
+            self._tariff = tariff
+        return self._tariff
+
+    @property
+    def price(self):
+        tariff = self.tariff
+        if tariff:
+            return tariff.price
+        return 0.0
+
+    @property
+    def sum_total(self):
+        return self.price * self.amount
 
     # @property
     # def isHtml(self):
@@ -913,11 +989,14 @@ class ActiontypeService(db.Model):
     __tablename__ = u'ActionType_Service'
 
     id = db.Column(db.Integer, primary_key=True)
-    master_id = db.Column(db.Integer, nullable=False, index=True)
+    master_id = db.Column(db.ForeignKey('ActionType.id'), nullable=False, index=True)
     idx = db.Column(db.Integer, nullable=False, server_default=u"'0'")
-    finance_id = db.Column(db.Integer, index=True)
-    service_id = db.Column(db.Integer, index=True)
+    finance_id = db.Column(db.ForeignKey('rbFinance.id'), index=True)
+    service_id = db.Column(db.ForeignKey('rbService.id'), index=True)
 
+    action_type = db.relationship('Actiontype')
+    finance = db.relationship('Rbfinance')
+    service = db.relationship('Rbservice')
 
 class ActiontypeTissuetype(db.Model):
     __tablename__ = u'ActionType_TissueType'
@@ -2229,6 +2308,8 @@ class ContractTariff(db.Model):
     eventType_id = db.Column(db.Integer, index=True)
     tariffType = db.Column(db.Integer, nullable=False)
     service_id = db.Column(db.Integer, index=True)
+    code = db.Column(db.String(64))
+    name = db.Column(db.String(256))
     tariffCategory_id = db.Column(db.Integer, index=True)
     begDate = db.Column(db.Date, nullable=False)
     endDate = db.Column(db.Date, nullable=False)
@@ -5119,7 +5200,6 @@ class Rbservice(db.Model, RBInfo):
     __tablename__ = u'rbService'
     __table_args__ = (
         db.Index(u'infis', u'infis', u'eisLegacy'),
-        db.Index(u'group_id_idx', u'group_id', u'idx')
     )
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5139,10 +5219,7 @@ class Rbservice(db.Model, RBInfo):
     rbMedicalKind_id = db.Column(db.ForeignKey('rbMedicalKind.id'), index=True)
     UET = db.Column(db.Float(asdecimal=True), nullable=False, server_default=u"'0'")
     departCode = db.Column(db.String(3))
-    group_id = db.Column(db.ForeignKey('rbService.id'))
-    idx = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
-    group = db.relationship(u'Rbservice', remote_side=[id])
     medicalAidProfile = db.relationship(u'Rbmedicalaidprofile')
     rbMedicalKind = db.relationship(u'Rbmedicalkind')
 

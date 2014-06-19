@@ -3,6 +3,7 @@ from jinja2 import Template
 
 from context import CTemplateContext
 from html import escape, escapenl, HTMLRipper, date_toString, time_toString
+from flask import url_for
 
 __author__ = 'mmalkov'
 
@@ -48,6 +49,7 @@ def renderTemplate(template, data, render=1):
             context.update({"now": execContext.now,
                             "date_toString": date_toString,
                             "time_toString": time_toString,
+                            "images": url_for(".static", filename="i/", _external=True)
                             })
             result = Template(template).render(context)
         except Exception:
