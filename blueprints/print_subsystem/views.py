@@ -41,8 +41,14 @@ def print_template_post():
     context_type = data['context_type']
     template_id = data['id']
     print_obj = Print_Template()
-
-    return print_obj.print_template(context_type, template_id, data)
+    result = ['''<style>
+    p {
+      margin: 0px;
+      -webkit-margin-after: 0px;
+      -webkit-margin-before: 0px;
+    }
+</style>\n''', print_obj.print_template(context_type, template_id, data)]
+    return ''.join(result)
 
 
 @public_endpoint
@@ -58,6 +64,11 @@ def print_templates_post():
         Print_Template().print_template(doc['context_type'], doc['id'], doc)
         for doc in data.get('documents', [])
     ]
+    result.insert(0, '''<style> p {
+                            margin: 0px;
+                            -webkit-margin-after: 0px;
+                            -webkit-margin-before: 0px;
+                        }</style>''')
     return separator.join(result)
 
 
