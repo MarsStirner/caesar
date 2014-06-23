@@ -34,6 +34,11 @@ def print_templates_post():
         Print_Template().print_template(doc)
         for doc in data.get('documents', [])
     ]
+    result.insert(0, '''<style> p {
+                            margin: 0px;
+                            -webkit-margin-after: 0px;
+                            -webkit-margin-before: 0px;
+                        }</style>''')
     return separator.join(result)
 
 
