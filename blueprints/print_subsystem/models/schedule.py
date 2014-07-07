@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import datetime
+
 from application.database import db
 from models_all import Person, Client, Rbreasonofabsence, Organisation, Orgstructure
 
@@ -107,8 +109,8 @@ class ScheduleTicket(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     schedule_id = db.Column(db.Integer, db.ForeignKey('Schedule.id'), nullable=False)
-    begDateTime = db.Column(db.DateTime)
-    endDateTime = db.Column(db.DateTime)
+    begTime = db.Column(db.Time)
+    endTime = db.Column(db.Time)
     attendanceType_id = db.Column(db.Integer, db.ForeignKey('rbAttendanceType.id'), nullable=False)
     createDatetime = db.Column(db.DateTime, nullable=False)
     createPerson_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
@@ -133,6 +135,14 @@ class ScheduleTicket(db.Model):
         ct = self.client_ticket
         return ct.client if ct else None
 
+    @property
+    def begDateTime(self):
+        return datetime.datetime.combine(self.schedule.date, self.begTime) if self.begTime is not None else None
+
+    @property
+    def endDateTime(self):
+        return datetime.datetime.combine(self.schedule.date, self.endTime) if self.endTime is not None else None
+
 
 class ScheduleClientTicket(db.Model):
     __tablename__ = 'ScheduleClientTicket'
@@ -143,17 +153,17 @@ class ScheduleClientTicket(db.Model):
     isUrgent = db.Column(db.Boolean)
     note = db.Column(db.Unicode(256))
     appointmentType_id = db.Column(db.Integer, db.ForeignKey('rbAppointmentType.id'))
-    orgFrom_id = db.Column(db.Integer, db.ForeignKey('Organisation.id'))
     createDatetime = db.Column(db.DateTime, nullable=False)
     createPerson_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
     modifyDatetime = db.Column(db.DateTime, nullable=False)
     modifyPerson_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
     deleted = db.Column(db.SmallInteger, nullable=False, server_default='0')
+    event_id = db.Column(db.ForeignKey('Event.id'))
     
     client = db.relationship('Client', lazy='joined', uselist=False)
     appointmentType = db.relationship('rbAppointmentType', lazy=False, innerjoin=True)
-    orgFrom = db.relationship('Organisation')
     createPerson = db.relationship('Person', foreign_keys=[createPerson_id])
+    event = db.relationship('Event')
 
     ticket = db.relationship(
         'ScheduleTicket', lazy=True, innerjoin=True, uselist=False,
@@ -162,3 +172,14 @@ class ScheduleClientTicket(db.Model):
                     'ScheduleTicket.deleted == 0, '
                     'ScheduleClientTicket.ticket_id == ScheduleTicket.id)'
     )
+
+
+    @property
+    def org_from(self):
+        if not self.infisFrom:
+            return
+        from models_all import Organisation
+        org = Organisation.query.filter(Organisation.infisCode == self.infisFrom).first()
+        if not org:
+            return self.infisFrom
+        return org.title

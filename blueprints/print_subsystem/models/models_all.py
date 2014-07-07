@@ -4114,6 +4114,7 @@ class Visit(db.Model, Info):
     finance = db.relationship(u'Rbfinance')
     scene = db.relationship(u'Rbscene')
     type = db.relationship(u'Rbvisittype')
+    event = db.relationship(u'Event')
 
 
 class ActionDocument(db.Model):
