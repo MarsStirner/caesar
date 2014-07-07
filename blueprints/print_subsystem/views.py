@@ -27,7 +27,7 @@ def index():
 def print_templates_post():
     data = request.get_json()
     if data.get('separate', True):
-        separator = '\n\n<br style="page-break-after: always" />\n\n'
+        separator = '\n\n<div style="page-break-after: always" ></div>\n\n'
     else:
         separator = '\n\n'
     result = [
