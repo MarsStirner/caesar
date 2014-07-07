@@ -1056,6 +1056,15 @@ class Address(db.Model, Info):
 
     @property
     def city(self):
+        from models_utils import get_kladr_city  # TODO: fix?
+        text = ''
+        if self.KLADRCode:
+            city_info = get_kladr_city(self.KLADRCode)
+            text = city_info.get('fullname', u'-код региона не найден в кладр-')
+        return text
+
+    @property
+    def city_old(self):
         if self.KLADRCode:
             record = Kladr.query.filter(Kladr.CODE == self.KLADRCode).first()
             name = [" ".join([record.NAME, record.SOCR])]
@@ -1095,6 +1104,15 @@ class Address(db.Model, Info):
 
     @property
     def street(self):
+        from models_utils import get_kladr_street  # TODO: fix?
+        text = ''
+        if self.KLADRStreetCode:
+            street_info = get_kladr_street(self.KLADRStreetCode)
+            text = street_info.get('name', u'-код улицы не найден в кладр-')
+        return text
+
+    @property
+    def street_old(self):
         if self.KLADRStreetCode:
             record = Street.query.filter(Street.CODE == self.KLADRStreetCode).first()
             return record.NAME + " " + record.SOCR

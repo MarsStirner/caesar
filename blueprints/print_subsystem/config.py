@@ -24,3 +24,5 @@ LPU_DB_CONNECT_STRING = 'mysql://{}:{}@{}/{}?charset=utf8'.format(
 
 KLADR_DB_CONNECT_STRING = 'mysql://{}:{}@{}/{}?charset=utf8'.format(
     LPU_DB_USER, LPU_DB_PASSWORD, LPU_DB_HOST, 'kladr')
+
+VESTA_URL = ''
