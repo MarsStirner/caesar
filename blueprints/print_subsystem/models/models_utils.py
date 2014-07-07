@@ -3,7 +3,7 @@ import struct
 import datetime
 import requests
 
-from ..config import VESTA_URL
+from config import VESTA_URL
 
 
 def trim(s):
