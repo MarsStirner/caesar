@@ -190,7 +190,7 @@ class Print_Template(object):
             typeText = u'Направление на приём к врачу'
         attendance_type_code = client_ticket.ticket.attendanceType.code
         if attendance_type_code == 'planned':
-            time = formatTime(client_ticket.ticket.endDateTime.time())
+            time = formatTime(client_ticket.ticket.begDateTime.time())
         elif attendance_type_code == 'CITO':
             time = "CITO"
         elif attendance_type_code == 'extra':
