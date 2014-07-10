@@ -1518,6 +1518,10 @@ class Client(db.Model, Info):
 
     @property
     def age(self):
+        date = self.date
+        bd = self.birthDate_raw
+        if not date:
+            date = datetime.date.today()
         if not self.ageTuple:
             return u'ещё не родился'
         (days, weeks, months, years) = self.ageTuple
@@ -1526,7 +1530,9 @@ class Client(db.Model, Info):
         elif years > 1:
             return formatYearsMonths(years, months-12*years)
         elif months > 1:
-            return formatMonthsWeeks(months, weeks)
+            add_year, new_month = divmod(bd.month + months, 12)
+            fmonth_date = bd.replace(month=new_month, year=bd.year+add_year)
+            return formatMonthsWeeks(months, (date-fmonth_date).days/7)
         else:
             return formatDays(days)
 
