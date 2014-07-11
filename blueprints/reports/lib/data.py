@@ -221,33 +221,36 @@ class Patients_Process(object):
         return self.db_session.execute(query)
 
     def get_priemn_perevod(self, start, end):
-        query = '''SELECT
-                    `Action`.`begDate` AS `Datapost`,
-                    Client.lastName,
-                    Client.firstName,
-                    Client.patrName,
-                    Event.externalId,
-                    OrgStructure.Address,
-                    OS.Address AS prb
-                    FROM `Action`
-                    INNER JOIN `ActionProperty`
-                    ON `Action`.`id` = `ActionProperty`.`action_id` AND `ActionProperty`.`type_id` = 14370
-                    INNER  JOIN `ActionProperty_OrgStructure`
-                    ON ActionProperty.id = `ActionProperty_OrgStructure`.`id`
-                    INNER JOIN OrgStructure
-                    ON ActionProperty_OrgStructure.value = OrgStructure.id
-                    INNER JOIN `ActionProperty` AS AP
-                    ON `Action`.`id` = AP.`action_id` AND AP.`type_id` = 7021
-                    INNER  JOIN `ActionProperty_OrgStructure` AS AP_OS
-                    ON AP.id = AP_OS.`id`
-                    INNER JOIN OrgStructure AS OS
-                    ON AP_OS.value = OS.id
-                    INNER JOIN Event
-                    ON Event.id = Action.event_id
-                    INNER JOIN Client
-                    ON Client.id = Event.client_id
-                    WHERE `Action`.`deleted` = 0 AND Event.deleted = 0 AND`Action`.`actionType_id` = 113
-                    AND (Action.begDate BETWEEN '{0} 08:00:00' AND '{1} 07:59:59')
+        query = '''
+                    SELECT
+                        `Action`.`begDate` AS `Datapost`,
+                        Client.lastName,
+                        Client.firstName,
+                        Client.patrName,
+                        Event.externalId,
+                        OrgStructure.Address,
+                        Pac_prb.prb AS prb
+                    FROM
+                        `Action`
+                            INNER JOIN
+                        `ActionProperty` ON `Action`.`id` = `ActionProperty`.`action_id`
+                            AND `Action`.`actionType_id` = 113
+                            INNER JOIN
+                        `ActionProperty_OrgStructure` ON ActionProperty.id = `ActionProperty_OrgStructure`.`id`
+                            AND `ActionProperty`.`type_id` = 14370
+                            INNER JOIN
+                        OrgStructure ON ActionProperty_OrgStructure.value = OrgStructure.id
+                            AND OrgStructure.id <> 28
+                            INNER JOIN
+                        Pac_prb ON Pac_prb.id = Action.id
+                            INNER JOIN
+                        Event ON Event.id = Action.event_id
+                            INNER JOIN
+                        Client ON Client.id = Event.client_id
+                    WHERE
+                        `Action`.`deleted` = 0
+                            AND ((Action.begDate >= CONCAT('{0}', ' 08:00:00')
+                            AND Action.begDate <= CONCAT('{1}', ' 07:59:59')))
                     '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
 
         return self.db_session.execute(query)
