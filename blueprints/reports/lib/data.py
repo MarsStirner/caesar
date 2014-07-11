@@ -49,22 +49,112 @@ class Statistics(object):
         return self.db_session.execute(query)
 
     def get_postup(self):
-        query = '''SELECT count(`Action`.`id`) as number
-                    FROM `Action`
-                    WHERE `Action`.`deleted` = 0 AND `Action`.`actionType_id` = 112
-                    AND (Action.endDate BETWEEN '{0} 08:00:00' AND '{1} 07:59:59')
+        query = u'''
+                    SELECT
+                        count(Action.id) as number
+                    FROM
+                        Action
+                            INNER JOIN
+                        ActionType ON Action.`actionType_id` = ActionType.`id`
+                            INNER JOIN
+                        ActionProperty ON Action.`id` = ActionProperty.`action_id`
+                            INNER JOIN
+                        ActionProperty_HospitalBed ON ActionProperty.`id` = ActionProperty_HospitalBed.`id`
+                            INNER JOIN
+                        Event ON Action.`event_id` = Event.`id`
+                            INNER JOIN
+                        (SELECT
+                            Action.id, ActionProperty_HospitalBedProfile.value
+                        FROM
+                            Action
+                        INNER JOIN ActionType ON Action.`actionType_id` = ActionType.`id`
+                        INNER JOIN ActionProperty ON Action.`id` = ActionProperty.`action_id`
+                        INNER JOIN ActionPropertyType ON ActionPropertyType.`id` = ActionProperty.`type_id`
+                        INNER JOIN ActionProperty_HospitalBedProfile ON ActionProperty.`id` = ActionProperty_HospitalBedProfile.`id`
+                        INNER JOIN rbHospitalBedProfile ON ActionProperty_HospitalBedProfile.`value` = rbHospitalBedProfile.`id`
+                        WHERE
+                            (ActionType.`flatCode` = 'moving')
+                                AND (ActionPropertyType.`code` = 'hospitalBedProfile')
+                                AND ((Action.`begDate` >= '{1}' - INTERVAL 1 DAY)
+                                AND (Action.`begDate` <= '{1}'))) sz ON Action.id = sz.id
+                    WHERE
+                        ((Action.`begDate` >= '{1}' - INTERVAL 1 DAY)
+                            AND (Action.`begDate` <= '{1}'))
+                            AND (ActionType.`flatCode` = 'moving')
+                            AND (Action.`deleted` = 0)
+                            AND (Event.`deleted` = 0)
+                            AND (ActionProperty.`deleted` = 0)
+                            AND (Action.id IN (SELECT
+                                id
+                            FROM
+                                (SELECT
+                                    Action.id, min(Action.id)
+                                FROM
+                                    Action
+                                JOIN ActionType ON Action.actionType_id = ActionType.id
+                                WHERE
+                                    ActionType.flatCode = 'moving'
+                                        AND Action.begDate IS NOT NULL
+                                        AND Action.deleted = 0
+                                GROUP BY event_id) A))
                     '''.format(self.yesterday.strftime('%Y-%m-%d'), self.today.strftime('%Y-%m-%d'))
         return self.db_session.execute(query).first()
 
     def get_vypis(self):
-        query = '''SELECT count(`Action`.`id`) as number
-                    FROM `Action`
-                    INNER JOIN VYPISKI
-                    ON VYPISKI.Event_id = `Action`.event_id
-                    INNER JOIN Event
-                    ON Event.id = Action.event_id
-                    WHERE `Action`.`actionType_id` = 113 AND `Action`.`deleted` = 0 AND Event.deleted=0 AND date(`Action`.endDate)=DATE(VYPISKI.`Data vypiski`)
-                    AND (VYPISKI.`Data vypiski` BETWEEN '{0} 08:00:00' AND '{1} 07:59:59')
+        query = u'''
+                    SELECT
+                        count(Action.id) as number
+                    FROM
+                        Action
+                            INNER JOIN
+                        ActionType ON Action.`actionType_id` = ActionType.`id`
+                            INNER JOIN
+                        ActionProperty ON Action.`id` = ActionProperty.`action_id`
+                            INNER JOIN
+                        ActionProperty_HospitalBed ON ActionProperty.`id` = ActionProperty_HospitalBed.`id`
+                            INNER JOIN
+                        Event ON Action.`event_id` = Event.`id`
+                    WHERE
+                        ((Action.`endDate` >= '{1}' - INTERVAL 1 DAY)
+                            AND (Action.`endDate` <= '{1}'))
+                            AND (ActionType.`flatCode` = 'moving')
+                            AND (Action.`deleted` = 0)
+                            AND (Event.`deleted` = 0)
+                            AND (ActionProperty.`deleted` = 0)
+                            AND (Action.id IN (SELECT
+                                id
+                            FROM
+                                (SELECT
+                                    max(Action.id) id
+                                FROM
+                                    Action
+                                JOIN ActionType ON Action.actionType_id = ActionType.id
+                                WHERE
+                                    ActionType.flatCode = 'moving'
+                                        AND Action.begDate IS NOT NULL
+                                        AND Action.deleted = 0
+                                GROUP BY event_id) A))
+                            AND (Action.event_id in (select distinct
+                                Event.id
+                            from
+                                Action
+                                    INNER JOIN
+                                ActionType ON Action.actionType_id = ActionType.id
+                                    INNER JOIN
+                                ActionProperty ON ActionProperty.action_id = Action.id
+                                    INNER JOIN
+                                Event ON Event.id = Action.event_id
+                                    inner join
+                                ActionProperty_String aps ON ActionProperty.id = aps.id
+                            where
+                                ActionType.flatCode = 'leaved'))
+                            AND Action.event_id NOT IN (SELECT
+                                e.id
+                            FROM
+                                Event e
+                                    INNER JOIN
+                                rbResult ON rbResult.id = e.result_id
+                                    AND rbResult.name = 'умер')
                     '''.format(self.yesterday.strftime('%Y-%m-%d'), self.today.strftime('%Y-%m-%d'))
 
         return self.db_session.execute(query).first()
