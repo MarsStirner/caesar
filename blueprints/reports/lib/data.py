@@ -349,28 +349,29 @@ class AnaesthesiaAmount(object):
     def get_anaesthesia_amount(self, start, end):
         query = '''
                     SELECT
-                       Anesteziolog_zakl.value AS "zakl",
-                       Anesteziolog_oper.value AS "oper",
-                       Anesteziolog_status.value AS "status",
-                       count(Action.id) AS "amount"
-                    FROM `Action`
-                    INNER JOIN Event
-                    ON Event.id = `Action`.event_id AND `Action`.deleted = 0 AND Action.actionType_id = 1480
-                    AND (`Action`.endDate BETWEEN '{0} 00:00:00' AND '{1} 23:59:59')
-
-                    LEFT JOIN Anesteziolog_zakl
-                    ON Anesteziolog_zakl.id = Action.id
-
-                    LEFT JOIN Anesteziolog_oper
-                    ON Anesteziolog_oper.id = Action.id
-
-                    LEFT JOIN Anesteziolog_status
-                    ON Anesteziolog_status.id = Action.id
-
-                    GROUP BY
-
-                      Anesteziolog_zakl.value
-                    , Anesteziolog_oper.value
+                        vid_Anest1.value AS type,
+                        time(time(VK_anest1.value) - time(VN_anest1.value)) AS duration,
+                        Ekstr_anest.Ekstrennost AS ekstr,
+                        count(Action.id) as amount
+                    FROM
+                        Event
+                            INNER JOIN
+                        Action ON Action.event_id = Event.id
+                            AND Action.deleted = 0
+                            AND (Action.endDate >= CONCAT('{0}', ' 00:00:00')
+                            AND Action.begDate < CONCAT('{1}', ' 23:59:59'))
+                            LEFT JOIN
+                        vid_Anest1 ON vid_Anest1.`Action.id` = Action.id
+                            LEFT JOIN
+                        VN_anest1 ON VN_anest1.`Action.id` = Action.id
+                            LEFT JOIN
+                        VK_anest1 ON VK_anest1.`Action.id` = Action.id
+                            LEFT JOIN
+                        Ekstr_anest ON Ekstr_anest.ID = Action.id
+                    WHERE
+                        Event.deleted = 0
+                            AND Action.actionType_id = 1451
+                    GROUP BY vid_Anest1.value , time(time(VK_anest1.value) - time(VN_anest1.value)) , Ekstr_anest.Ekstrennost;
                 '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
         return self.db_session.execute(query)
 
