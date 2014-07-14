@@ -47,6 +47,8 @@ def index():
 @module.route('/ajax_pat_otd/', methods=['GET', 'POST'])
 def ajax_statistic():
     pat_org = None
+    hospitalizations_by_fs = None
+    hosp_figures = None
     errors = list()
     try:
         data_obj = Statistics()
@@ -56,8 +58,12 @@ def ajax_statistic():
             u'Заполните <a href="{}">настройки</a> подключения.'.format(url_for('.settings')))
     else:
         pat_org = data_obj.get_patients_orgStruct()
-    return render_template('reports/patient_otdelenie.html',
+        hospitalizations_by_fs = data_obj.get_hospitalizations_by_fs()
+        hosp_figures = data_obj.get_hospitalization_figures()
+    return render_template('reports/statistic.html',
                            pat_org=pat_org,
+                           hosp_by_fs=hospitalizations_by_fs,
+                           hosp_figures=hosp_figures,
                            errors=errors)
 
 
