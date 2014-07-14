@@ -808,78 +808,113 @@ class Discharged_Patients(object):
         self.db_session.close()
 
     def get_vypis(self, start, end):
-        query = '''SELECT Action.begDate
-                     , ActionType.name AS document
-                     , Event.externalId
-                     , Event.setDate
-                     , Client.lastName
-                     , Client.firstName
-                     , Client.patrName
-                     , Client.birthDate
-                     , otd_postup_from_dvizh.otd as otd
-                     , DS_osnk_zak_epic.value AS primary_kd
-                     , DS_zak_epic.DiagID
-                     , DS_zak_epic.DiagName
-                     , kladr_obl.NAME AS obl
-                     , kladr_rai.NAME AS rai
-                     , kladr.KLADR.SOCR
-                     , kladr.infisREGION.NAME AS infisREGION
-                     , kladr.KLADR.NAME AS city
-                     , kladr.STREET.NAME AS street
-                     , AddressHouse.number AS house
-                     , Address.flat
-                     , Adr.freeInput
-
-                FROM
-                  Action
-
-                INNER JOIN ActionType
-                ON ActionType.id = Action.actionType_id AND Action.actionType_id = 118 AND `Action`.deleted = 0
-                AND Action.endDate BETWEEN '{0}' AND '{1}'
-
-                INNER JOIN Event
-                ON Event.id = Action.event_id
-
-                INNER JOIN Client
-                ON Client.id = Event.client_id
-
-                LEFT JOIN otd_postup_from_dvizh
-                  ON otd_postup_from_dvizh.EventID = Event.id AND date(otd_postup_from_dvizh.begDate) = date(Event.setDate)
-
-                LEFT JOIN DS_osnk_zak_epic
-                ON Event.id = DS_osnk_zak_epic.event_id
-
-                LEFT JOIN DS_zak_epic
-                ON Event.id = DS_zak_epic.event_id
-
-                INNER JOIN ClientAddress AS Adr
-                ON (Adr.client_id = Client.id AND Adr.id IN (SELECT max(Tmp.id)
-                                                                      FROM
-                                                                        ClientAddress AS Tmp
-                                                                      WHERE
-                                                                        Tmp.deleted = 0
-                                                                        AND type = '0'
-                                                                      GROUP BY
-                                                                        client_id))
-                LEFT JOIN Address
-                ON Address.id = Adr.address_id
-                LEFT JOIN AddressHouse
-                ON AddressHouse.id = Address.house_id
-                LEFT JOIN kladr.KLADR
-                ON kladr.KLADR.Code = AddressHouse.KLADRCode
-                LEFT JOIN kladr.infisREGION
-                ON kladr.infisREGION.KLADR = kladr.KLADR.CODE
-
-                LEFT JOIN kladr_obl
-                ON kladr_obl.id = AddressHouse.id
-
-                LEFT JOIN kladr_rai
-                ON kladr_rai.id = AddressHouse.id
-
-                LEFT JOIN kladr.infisAREA
-                ON kladr.infisAREA.CODE = kladr.infisREGION.AREA
-                LEFT JOIN kladr.STREET
-                ON AddressHouse.KLADRStreetCode = kladr.STREET.code
+        query = u'''SELECT
+                        c.lastName,
+                        c.firstName,
+                        c.patrName,
+                        if(c.sex = 1, 'М', 'Ж') AS 'Pol',
+                        c.birthDate,
+                        (year(Event.setDate) - year(c.birthDate)) - (DATE_FORMAT(Event.setDate, '%m%d') < DATE_FORMAT(c.birthDate, '%m%d')) AS age,
+                        post.postdate,
+                        date(p.begd) as begd,
+                        date(Action.endDate) as vypis_date,
+                        date(vypiska.begDate) as vypiska,
+                        Event.externalId,
+                        DS_osnk_zak_epic.value AS 'OsnovnoyKD',
+                        DS_zak_epic.DiagID AS 'MKB',
+                        DS_zak_epic.DiagName AS 'Diagnos'
+                    FROM
+                        Action
+                            INNER JOIN
+                        ActionType ON Action.`actionType_id` = ActionType.`id`
+                            INNER JOIN
+                        ActionProperty ON Action.`id` = ActionProperty.`action_id`
+                            INNER JOIN
+                        ActionProperty_HospitalBed ON ActionProperty.`id` = ActionProperty_HospitalBed.`id`
+                            INNER JOIN
+                        OrgStructure_HospitalBed ON ActionProperty_HospitalBed.`value` = OrgStructure_HospitalBed.`id`
+                            INNER JOIN
+                        Event ON Action.`event_id` = Event.`id`
+                            INNER JOIN
+                        EventType ON EventType.id = Event.eventType_id
+                            INNER JOIN
+                        (SELECT
+                            Action.event_id AS evid, date(Action.endDate) AS postdate
+                        FROM
+                            Action
+                        WHERE
+                            Action.actionType_id = 112
+                                AND Action.deleted = 0) AS post ON post.evid = Action.event_id
+                            INNER JOIN
+                        (SELECT
+                            A.event_id AS evd, A.begDate AS begd
+                        FROM
+                            (SELECT
+                            min(Action.id) id, event_id, begdate
+                        FROM
+                            Action
+                        JOIN ActionType ON Action.actionType_id = ActionType.id
+                        WHERE
+                            ActionType.flatCode = 'moving'
+                                AND Action.deleted = 0
+                        GROUP BY event_id) A) AS p ON p.evd = Action.event_id
+                            LEFT JOIN
+                        (SELECT
+                            Action.event_id AS evd, Action.begDate
+                        FROM
+                            Action
+                        WHERE
+                            Action.deleted = 0
+                                AND Action.actionType_id = 118) AS vypiska ON vypiska.evd = Action.event_id
+                            LEFT JOIN
+                        DS_osnk_zak_epic ON Action.event_id = DS_osnk_zak_epic.event_id
+                            LEFT JOIN
+                        DS_zak_epic ON Action.event_id = DS_zak_epic.event_id
+                            INNER JOIN
+                        (SELECT
+                            Action.id, ActionProperty_HospitalBedProfile.value
+                        FROM
+                            Action
+                        INNER JOIN ActionType ON Action.`actionType_id` = ActionType.`id`
+                        INNER JOIN ActionProperty ON Action.`id` = ActionProperty.`action_id`
+                        INNER JOIN ActionPropertyType ON ActionPropertyType.`id` = ActionProperty.`type_id`
+                        INNER JOIN ActionProperty_HospitalBedProfile ON ActionProperty.`id` = ActionProperty_HospitalBedProfile.`id`
+                        INNER JOIN rbHospitalBedProfile ON ActionProperty_HospitalBedProfile.`value` = rbHospitalBedProfile.`id`
+                        WHERE
+                            (ActionType.`flatCode` = 'moving')
+                                AND (ActionPropertyType.`code` = 'hospitalBedProfile')
+                                AND (date(Action.endDate) >= date('{0}')
+                                AND date(Action.endDate) <= date('{1}'))) sz ON Action.id = sz.id
+                            INNER JOIN
+                        Client c ON c.id = Event.client_id
+                    WHERE
+                        (date(Action.endDate) >= date('{0}')
+                            AND date(Action.endDate) <= date('{1}'))
+                            AND (ActionType.`flatCode` = 'moving')
+                            AND (Action.`deleted` = 0)
+                            AND (Event.`deleted` = 0)
+                            AND (ActionProperty.`deleted` = 0)
+                            AND (Action.id IN (SELECT
+                                id
+                            FROM
+                                (SELECT
+                                    max(Action.id) id
+                                FROM
+                                    Action
+                                JOIN ActionType ON Action.actionType_id = ActionType.id
+                                WHERE
+                                    ActionType.flatCode = 'moving'
+                                        AND Action.begDate IS NOT NULL
+                                        AND Action.deleted = 0
+                                GROUP BY event_id) A))
+                            AND Action.event_id NOT IN (SELECT
+                                e.id
+                            FROM
+                                Event e
+                                    INNER JOIN
+                                rbResult ON rbResult.id = e.result_id
+                                    AND rbResult.name = 'умер')
+                    ORDER BY Event.externalId
                     '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
         return self.db_session.execute(query)
 
