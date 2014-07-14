@@ -159,6 +159,303 @@ class Statistics(object):
 
         return self.db_session.execute(query).first()
 
+    def get_hospitalization_figures(self):
+        query = u'''
+                    SELECT
+                        count(Event.id) AS total,
+                        f.totalondate,
+                        postupondatebefore1.postupondatebefore1,
+                        postupbefore1.postupbefore1,
+                        postupondateafter15.postupondateafter15,
+                        postupafter15.postupafter15,
+                        postupondateafter18.postupondateafter18,
+                        postupafter18.postupafter18,
+                        orit.orit AS orittotal,
+                        oritondate.oritondate,
+                        pervtotalondate.pervtotalondate,
+                        pervtotal.pervtotal,
+                        povttotalondate.povttotalondate,
+                        povttotal.povttotal,
+                        reopenondate.reopenondate,
+                        reopentotal.reopentotal,
+                        gospondate.gospondate,
+                        gosptotal.gosptotal
+                    FROM
+                        Event
+                            INNER JOIN
+                        EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            AND Event.client_id NOT IN (18)
+                            LEFT JOIN
+                        (SELECT
+                            count(Event.id) AS totalondate, EventType.purpose_id AS p
+                        FROM
+                            Event
+                        INNER JOIN EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            AND Event.client_id NOT IN (18)
+                        WHERE
+                            Event.setDate >= CONCAT('{0}', ' 00:00:00')
+                                AND Event.setDate <= CONCAT('{0}', ' 23:59:59')) AS f ON EventType.purpose_id = f.p
+                            LEFT JOIN
+                        (SELECT
+                            count(Event.id) AS postupondatebefore1,
+                                EventType.purpose_id AS p
+                        FROM
+                            Event
+                        INNER JOIN EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            AND Event.client_id NOT IN (18)
+                        INNER JOIN Client ON Event.client_id = Client.id
+                        WHERE
+                            Event.setDate >= CONCAT('{0}', ' 00:00:00')
+                                AND Event.setDate <= CONCAT('{0}', ' 23:59:59')
+                                AND ((year(Event.setDate) - year(Client.birthDate)) - (DATE_FORMAT(Event.setDate, '%m%d') < DATE_FORMAT(Client.birthDate, '%m%d'))) < '1') AS postupondatebefore1 ON EventType.purpose_id = postupondatebefore1.p
+                            LEFT JOIN
+                        (SELECT
+                            count(Event.id) AS postupbefore1, EventType.purpose_id AS p
+                        FROM
+                            Event
+                        INNER JOIN EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            AND Event.client_id NOT IN (18)
+                        INNER JOIN Client ON Event.client_id = Client.id
+                        WHERE
+                            ((year(Event.setDate) - year(Client.birthDate)) - (DATE_FORMAT(Event.setDate, '%m%d') < DATE_FORMAT(Client.birthDate, '%m%d'))) < '1') AS postupbefore1 ON EventType.purpose_id = postupbefore1.p
+                            LEFT JOIN
+                        (SELECT
+                            count(Event.id) AS postupondateafter15,
+                                EventType.purpose_id AS p
+                        FROM
+                            Event
+                        INNER JOIN EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            AND Event.client_id NOT IN (18)
+                        INNER JOIN Client ON Event.client_id = Client.id
+                        WHERE
+                            Event.setDate >= CONCAT('{0}', ' 00:00:00')
+                                AND Event.setDate <= CONCAT('{0}', ' 23:59:59')
+                                AND ((year(Event.setDate) - year(Client.birthDate)) - (DATE_FORMAT(Event.setDate, '%m%d') < DATE_FORMAT(Client.birthDate, '%m%d'))) >= '15') AS postupondateafter15 ON EventType.purpose_id = postupondateafter15.p
+                            LEFT JOIN
+                        (SELECT
+                            count(Event.id) AS postupafter15, EventType.purpose_id AS p
+                        FROM
+                            Event
+                        INNER JOIN EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            AND Event.client_id NOT IN (18)
+                        INNER JOIN Client ON Event.client_id = Client.id
+                        WHERE
+                            ((year(Event.setDate) - year(Client.birthDate)) - (DATE_FORMAT(Event.setDate, '%m%d') < DATE_FORMAT(Client.birthDate, '%m%d'))) >= '15') AS postupafter15 ON EventType.purpose_id = postupafter15.p
+                            LEFT JOIN
+                        (SELECT
+                            count(Event.id) AS postupondateafter18,
+                                EventType.purpose_id AS p
+                        FROM
+                            Event
+                        INNER JOIN EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            AND Event.client_id NOT IN (18)
+                        INNER JOIN Client ON Event.client_id = Client.id
+                        WHERE
+                            Event.setDate >= CONCAT('{0}', ' 00:00:00')
+                                AND Event.setDate <= CONCAT('{0}', ' 23:59:59')
+                                AND ((year(Event.setDate) - year(Client.birthDate)) - (DATE_FORMAT(Event.setDate, '%m%d') < DATE_FORMAT(Client.birthDate, '%m%d'))) >= '18') AS postupondateafter18 ON EventType.purpose_id = postupondateafter18.p
+                            LEFT JOIN
+                        (SELECT
+                            count(Event.id) AS postupafter18, EventType.purpose_id AS p
+                        FROM
+                            Event
+                        INNER JOIN EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            AND Event.client_id NOT IN (18)
+                        INNER JOIN Client ON Event.client_id = Client.id
+                        WHERE
+                            ((year(Event.setDate) - year(Client.birthDate)) - (DATE_FORMAT(Event.setDate, '%m%d') < DATE_FORMAT(Client.birthDate, '%m%d'))) >= '18') AS postupafter18 ON EventType.purpose_id = postupafter18.p
+                            LEFT JOIN
+                        (SELECT
+                            count(*) AS 'orit', EventType.purpose_id AS 'p'
+                        FROM
+                            Event
+                        INNER JOIN EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            AND Event.client_id NOT IN (18)
+                        INNER JOIN Action ON Event.id = Action.event_id
+                        JOIN ActionType ON ActionType.id = Action.actionType_id
+                            AND Action.actionType_id = 112
+                        INNER JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                        INNER JOIN ActionProperty_OrgStructure ON ActionProperty.id = ActionProperty_OrgStructure.id
+                            AND ActionProperty.type_id = 1608
+                            AND ActionProperty_OrgStructure.value = 27) AS orit ON EventType.purpose_id = orit.p
+                            LEFT JOIN
+                        (SELECT
+                            count(*) AS 'oritondate', EventType.purpose_id AS 'p'
+                        FROM
+                            Event
+                        INNER JOIN EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            AND Event.client_id NOT IN (18)
+                        INNER JOIN Action ON Event.id = Action.event_id
+                        JOIN ActionType ON ActionType.id = Action.actionType_id
+                            AND Action.actionType_id = 112
+                        INNER JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                        INNER JOIN ActionProperty_OrgStructure ON ActionProperty.id = ActionProperty_OrgStructure.id
+                            AND ActionProperty.type_id = 1608
+                            AND ActionProperty_OrgStructure.value = 27
+                        WHERE
+                            Event.setDate >= CONCAT('{0}', ' 00:00:00')
+                                AND Event.setDate <= CONCAT('{0}', ' 23:59:59')) AS oritondate ON EventType.purpose_id = oritondate.p
+                            LEFT JOIN
+                        (SELECT
+                            count(Event.id) AS pervtotalondate,
+                                EventType.purpose_id AS p
+                        FROM
+                            Event
+                        INNER JOIN EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            AND Event.client_id NOT IN (18)
+                            AND Event.isPrimary = 1
+                        WHERE
+                            Event.setDate >= CONCAT('{0}', ' 00:00:00')
+                                AND Event.setDate <= CONCAT('{0}', ' 23:59:59')) AS pervtotalondate ON EventType.purpose_id = pervtotalondate.p
+                            LEFT JOIN
+                        (SELECT
+                            count(Event.id) AS pervtotal, EventType.purpose_id AS p
+                        FROM
+                            Event
+                        INNER JOIN EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            AND Event.client_id NOT IN (18)
+                            AND Event.isPrimary = 1) AS pervtotal ON EventType.purpose_id = pervtotal.p
+                            LEFT JOIN
+                        (SELECT
+                            count(Event.id) AS povttotalondate,
+                                EventType.purpose_id AS p
+                        FROM
+                            Event
+                        INNER JOIN EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            AND Event.client_id NOT IN (18)
+                            AND Event.isPrimary = 2
+                        WHERE
+                            Event.setDate >= CONCAT('{0}', ' 00:00:00')
+                                AND Event.setDate <= CONCAT('{0}', ' 23:59:59')) AS povttotalondate ON EventType.purpose_id = povttotalondate.p
+                            LEFT JOIN
+                        (SELECT
+                            count(Event.id) AS povttotal, EventType.purpose_id AS p
+                        FROM
+                            Event
+                        INNER JOIN EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            AND Event.client_id NOT IN (18)
+                            AND Event.isPrimary = 2) AS povttotal ON EventType.purpose_id = povttotal.p
+                            LEFT JOIN
+                        (SELECT
+                            count(*) AS 'reopenondate', EventType.purpose_id AS 'p'
+                        FROM
+                            Event
+                        INNER JOIN EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            AND Event.client_id NOT IN (18)
+                        INNER JOIN Action ON Event.id = Action.event_id
+                        JOIN ActionType ON ActionType.id = Action.actionType_id
+                            AND Action.actionType_id = 112
+                        INNER JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                        INNER JOIN ActionProperty_String ON ActionProperty.id = ActionProperty_String.id
+                            AND ActionProperty.type_id = 3910954
+                            AND ActionProperty_String.value = 'Да'
+                        WHERE
+                            Event.setDate >= CONCAT('{0}', ' 00:00:00')
+                                AND Event.setDate <= CONCAT('{0}', ' 23:59:59')) AS reopenondate ON EventType.purpose_id = reopenondate.p
+                            LEFT JOIN
+                        (SELECT
+                            count(*) AS 'reopentotal', EventType.purpose_id AS 'p'
+                        FROM
+                            Event
+                        INNER JOIN EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            AND Event.client_id NOT IN (18)
+                        INNER JOIN Action ON Event.id = Action.event_id
+                        JOIN ActionType ON ActionType.id = Action.actionType_id
+                            AND Action.actionType_id = 112
+                        INNER JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                        INNER JOIN ActionProperty_String ON ActionProperty.id = ActionProperty_String.id
+                            AND ActionProperty.type_id = 3910954
+                            AND ActionProperty_String.value = 'Да') AS reopentotal ON EventType.purpose_id = reopentotal.p
+                            LEFT JOIN
+                        (SELECT
+                            count(*) AS 'gospondate', EventType.purpose_id AS 'p'
+                        FROM
+                            Event
+                        INNER JOIN EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            AND Event.client_id NOT IN (18)
+                        INNER JOIN Action ON Event.id = Action.event_id
+                        JOIN ActionType ON ActionType.id = Action.actionType_id
+                            AND Action.actionType_id = 112
+                        INNER JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                        INNER JOIN ActionProperty_String ON ActionProperty.id = ActionProperty_String.id
+                            AND ActionProperty.type_id = 1611
+                            AND ActionProperty_String.value <> ''
+                        WHERE
+                            Event.setDate >= CONCAT('{0}', ' 00:00:00')
+                                AND Event.setDate <= CONCAT('{0}', ' 23:59:59')) AS gospondate ON EventType.purpose_id = gospondate.p
+                            LEFT JOIN
+                        (SELECT
+                            count(*) AS 'gosptotal', EventType.purpose_id AS 'p'
+                        FROM
+                            Event
+                        INNER JOIN EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            AND Event.client_id NOT IN (18)
+                        INNER JOIN Action ON Event.id = Action.event_id
+                        JOIN ActionType ON ActionType.id = Action.actionType_id
+                            AND Action.actionType_id = 112
+                        INNER JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                        INNER JOIN ActionProperty_String ON ActionProperty.id = ActionProperty_String.id
+                            AND ActionProperty.type_id = 1611
+                            AND ActionProperty_String.value <> '') AS gosptotal ON EventType.purpose_id = gosptotal.p;
+                    '''.format(self.yesterday.strftime('%Y-%m-%d'), self.today.strftime('%Y-%m-%d'))
+        return self.db_session.execute(query).first()
+
+    def get_hospitalizations_by_fs(self):
+        query = u'''
+                    SELECT
+                        rbFinance.name, COUNT(rbFinance.name) as number
+                    FROM
+                        Event
+                            INNER JOIN
+                        EventType ON Event.EventType_id = EventType.id
+                            AND EventType.purpose_id = 8
+                            AND Event.deleted = 0
+                            INNER JOIN
+                        rbFinance ON EventType.finance_id = rbFinance.id
+                    WHERE
+                        Event.setDate >= CONCAT('{1}', ' 00:00:00')
+                            AND Event.setDate <= CONCAT('{1}', ' 23:59:59')
+                    GROUP BY rbFinance.name;
+                    '''.format(self.yesterday.strftime('%Y-%m-%d'), self.today.strftime('%Y-%m-%d'))
+
+        return self.db_session.execute(query)
+
 
 class Patients_Process(object):
 
