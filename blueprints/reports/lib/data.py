@@ -384,48 +384,211 @@ class List_Of_Operations(object):
         self.db_session.close()
 
     def get_list_of_operations(self, start, end):
-        query = '''
+        query = u'''
                     SELECT
-                          Client.lastName,
-                          Client.firstName,
-                          Client.patrName,
-                          Event.externalId,
-                          Event.setDate,
-                          VYPISKI.`Data vypiski` AS "DataVypiski",
-                          name_oper.name AS "operName",
-                          Cel_oper.Cel AS "Cel",
-                          Obl_oper.Oblast AS "Oblast",
-                          Type_oper.Type AS "operType",
-                          ds_before_oper.dsbo AS "dsbo",
-                          Action.begDate AS "begDate"
-
-                    FROM Action
-
-                    INNER JOIN Event
-                    ON Action.event_id = Event.id AND Action.deleted=0
-
-                    INNER JOIN Client
-                    ON Client.id= Event.client_id
-
-                    INNER JOIN name_oper
-                    ON Action.id = name_oper.ID AND Action.deleted=0 AND (Action.begDate BETWEEN '{0} 00:00:00'
-                    AND '{1} 23:59:59')
-
-                    LEFT JOIN Cel_oper
-                    ON Action.id = Cel_oper.ID
-
-                    LEFT JOIN Obl_oper
-                    ON Action.id = Obl_oper.ID
-
-                    LEFT JOIN Type_oper
-                    ON Action.id = Type_oper.ID
-
-                    LEFT JOIN ds_before_oper
-                    ON Action.id = ds_before_oper.ID
-
-                    LEFT JOIN VYPISKI
-                    ON Action.event_id = VYPISKI.Event_id
-
+                        Client.lastName,
+                        Client.firstName,
+                        Client.patrName,
+                        Client.birthDate,
+                        if(Client.sex = 1, 'М', 'Ж') AS Pol,
+                        Event.setDate AS Data_otkrytiya,
+                        Event.externalId,
+                        Action.begDate AS Data_vremya_protokola,
+                        poN.n AS Nomer_operacii,
+                        poname.name AS Naimenovanie_operacii,
+                        mkbd.mkb AS mkb,
+                        ekstr.ekstr,
+                        cel.cel AS Cel_operacii,
+                        type.type AS Tip_operacii,
+                        profile.profile AS Profil_operacii,
+                        pobl.obl AS Oblast_operacii,
+                        poblgo.poblgo AS Oblast_oper_god_ot4et,
+                        zno.zno AS po_povodu_zno,
+                        dsdo.ds AS ds_do_operacii,
+                        mo.mo AS mo,
+                        ina.ina,
+                        dsafter.ds AS ds_posle_operacii,
+                        morf.morf,
+                        osl.osl,
+                        rbFinance.name AS Isto4nik_finans
+                    FROM
+                        `Action`
+                            INNER JOIN
+                        Event ON Event.id = `Action`.event_id
+                            AND `Action`.actionType_id = 127
+                            AND (Action.begDate BETWEEN CONCAT('{0}', ' 08:00:00') AND CONCAT('{1}', ' 07:59:59'))
+                            INNER JOIN
+                        EventType ON EventType.id = Event.eventType_id
+                            INNER JOIN
+                        rbFinance ON rbFinance.id = EventType.finance_id
+                            INNER JOIN
+                        Client ON Client.id = Event.client_id
+                            AND client_id <> 18
+                            LEFT JOIN
+                        (SELECT
+                            Action.id, ActionProperty_Integer.value AS N
+                        FROM
+                            Action
+                        JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                            AND Action.deleted = 0
+                        JOIN ActionPropertyType ON ActionProperty.type_id = ActionPropertyType.id
+                            AND ActionPropertyType.id = 4666
+                        JOIN ActionProperty_Integer ON ActionProperty.id = ActionProperty_Integer.id) AS poN ON poN.id = `Action`.id
+                            LEFT JOIN
+                        (SELECT
+                            Action.id, ActionProperty_String.value AS cel
+                        FROM
+                            Action
+                        JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                            AND Action.deleted = 0
+                        JOIN ActionPropertyType ON ActionProperty.type_id = ActionPropertyType.id
+                            AND ActionPropertyType.id = 1600443
+                        JOIN ActionProperty_String ON ActionProperty.id = ActionProperty_String.id) AS cel ON cel.id = `Action`.id
+                            LEFT JOIN
+                        (SELECT
+                            Action.id, ActionProperty_String.value AS type
+                        FROM
+                            Action
+                        JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                            AND Action.deleted = 0
+                        JOIN ActionPropertyType ON ActionProperty.type_id = ActionPropertyType.id
+                            AND ActionPropertyType.id = 1600444
+                        JOIN ActionProperty_String ON ActionProperty.id = ActionProperty_String.id) AS type ON type.id = `Action`.id
+                            LEFT JOIN
+                        (SELECT
+                            Action.id, ActionProperty_String.value AS name
+                        FROM
+                            Action
+                        JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                            AND Action.deleted = 0
+                        JOIN ActionPropertyType ON ActionProperty.type_id = ActionPropertyType.id
+                            AND ActionPropertyType.id = 20692
+                        JOIN ActionProperty_String ON ActionProperty.id = ActionProperty_String.id) AS poname ON poname.id = `Action`.id
+                            LEFT JOIN
+                        (SELECT
+                            Action.id, ActionProperty_String.value AS profile
+                        FROM
+                            Action
+                        JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                            AND Action.deleted = 0
+                        JOIN ActionPropertyType ON ActionProperty.type_id = ActionPropertyType.id
+                            AND ActionPropertyType.id = 3912090
+                        JOIN ActionProperty_String ON ActionProperty.id = ActionProperty_String.id) AS profile ON profile.id = `Action`.id
+                            LEFT JOIN
+                        (SELECT
+                            Action.id, ActionProperty_String.value AS obl
+                        FROM
+                            Action
+                        JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                            AND Action.deleted = 0
+                        JOIN ActionPropertyType ON ActionProperty.type_id = ActionPropertyType.id
+                            AND ActionPropertyType.id = 10489
+                        JOIN ActionProperty_String ON ActionProperty.id = ActionProperty_String.id) AS pobl ON pobl.id = `Action`.id
+                            LEFT JOIN
+                        (SELECT
+                            Action.id, ActionProperty_String.value AS poblgo
+                        FROM
+                            Action
+                        JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                            AND Action.deleted = 0
+                        JOIN ActionPropertyType ON ActionProperty.type_id = ActionPropertyType.id
+                            AND ActionPropertyType.id = 3912091
+                        JOIN ActionProperty_String ON ActionProperty.id = ActionProperty_String.id) AS poblgo ON poblgo.id = `Action`.id
+                            LEFT JOIN
+                        (SELECT
+                            Action.id, ActionProperty_String.value AS zno
+                        FROM
+                            Action
+                        JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                            AND Action.deleted = 0
+                        JOIN ActionPropertyType ON ActionProperty.type_id = ActionPropertyType.id
+                            AND ActionPropertyType.id = 3912093
+                        JOIN ActionProperty_String ON ActionProperty.id = ActionProperty_String.id) AS zno ON zno.id = `Action`.id
+                            LEFT JOIN
+                        (SELECT
+                            Action.id, ActionProperty_String.value AS ds
+                        FROM
+                            Action
+                        JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                            AND Action.deleted = 0
+                        JOIN ActionPropertyType ON ActionProperty.type_id = ActionPropertyType.id
+                            AND ActionPropertyType.id = 1600445
+                        JOIN ActionProperty_String ON ActionProperty.id = ActionProperty_String.id) AS dsdo ON dsdo.id = `Action`.id
+                            LEFT JOIN
+                        (SELECT
+                            Action.id, ActionProperty_String.value AS ds
+                        FROM
+                            Action
+                        JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                            AND Action.deleted = 0
+                        JOIN ActionPropertyType ON ActionProperty.type_id = ActionPropertyType.id
+                            AND ActionPropertyType.id = 1748
+                        JOIN ActionProperty_String ON ActionProperty.id = ActionProperty_String.id) AS dsafter ON dsafter.id = `Action`.id
+                            LEFT JOIN
+                        (SELECT
+                            Action.id, MKB.DiagID AS mkb
+                        FROM
+                            Action
+                        JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                            AND Action.deleted = 0
+                        JOIN ActionPropertyType ON ActionProperty.type_id = ActionPropertyType.id
+                            AND ActionPropertyType.id = 3912089
+                        JOIN ActionProperty_MKB ON ActionProperty.id = ActionProperty_MKB.id
+                        INNER JOIN MKB ON MKB.id = ActionProperty_MKB.value) AS mkbd ON mkbd.id = `Action`.id
+                            LEFT JOIN
+                        (SELECT
+                            Action.id, ActionProperty_String.value AS ekstr
+                        FROM
+                            Action
+                        JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                            AND Action.deleted = 0
+                        JOIN ActionPropertyType ON ActionProperty.type_id = ActionPropertyType.id
+                            AND ActionPropertyType.id = 1600761
+                        JOIN ActionProperty_String ON ActionProperty.id = ActionProperty_String.id) AS ekstr ON ekstr.id = `Action`.id
+                            LEFT JOIN
+                        (SELECT
+                            Action.id, ActionProperty_String.value AS mo
+                        FROM
+                            Action
+                        JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                            AND Action.deleted = 0
+                        JOIN ActionPropertyType ON ActionProperty.type_id = ActionPropertyType.id
+                            AND ActionPropertyType.id = 6527
+                        JOIN ActionProperty_String ON ActionProperty.id = ActionProperty_String.id) AS mo ON mo.id = `Action`.id
+                            LEFT JOIN
+                        (SELECT
+                            Action.id, ActionProperty_String.value AS morf
+                        FROM
+                            Action
+                        JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                            AND Action.deleted = 0
+                        JOIN ActionPropertyType ON ActionProperty.type_id = ActionPropertyType.id
+                            AND ActionPropertyType.id = 3913452
+                        JOIN ActionProperty_String ON ActionProperty.id = ActionProperty_String.id) AS morf ON morf.id = `Action`.id
+                            LEFT JOIN
+                        (SELECT
+                            Action.id, ActionProperty_String.value AS ina
+                        FROM
+                            Action
+                        JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                            AND Action.deleted = 0
+                        JOIN ActionPropertyType ON ActionProperty.type_id = ActionPropertyType.id
+                            AND ActionPropertyType.id = 1600446
+                        JOIN ActionProperty_String ON ActionProperty.id = ActionProperty_String.id) AS ina ON ina.id = `Action`.id
+                            LEFT JOIN
+                        (SELECT
+                            Action.id, ActionProperty_String.value AS osl
+                        FROM
+                            Action
+                        JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                            AND Action.deleted = 0
+                        JOIN ActionPropertyType ON ActionProperty.type_id = ActionPropertyType.id
+                            AND ActionPropertyType.id = 1800
+                        JOIN ActionProperty_String ON ActionProperty.id = ActionProperty_String.id) AS osl ON osl.id = `Action`.id
+                    WHERE
+                        `Action`.deleted = 0
+                            AND Event.deleted = 0
+                    ORDER BY setDate;
                 '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
         return self.db_session.execute(query)
 
