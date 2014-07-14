@@ -930,46 +930,30 @@ class Sickness_Rate_Blocks(object):
     def get_sickness_rate_blocks(self, start, end):
         query = '''
                     SELECT
-                          MKB.BlockName,
-                          MKB.BlockID,
-                          count(MKB) AS amount
+                        MKB.BlockName, MKB.BlockID, count(MKB.BlockID) AS amount
                     FROM
-                      Event
-
-                    INNER JOIN Client
-                    ON Client.id = Event.client_id
-
-                    INNER JOIN EventType
-                    ON EventType.id = Event.eventType_id AND EventType.purpose_id = 8
-
-                    INNER JOIN Person
-                    ON Person.id = Event.execPerson_id
-
-                    INNER JOIN rbSpeciality
-                    ON rbSpeciality.id = Person.speciality_id
-
-                    INNER JOIN Diagnostic
-                    ON Diagnostic.event_id = Event.id
-
-                    INNER JOIN Diagnosis
-                    ON Diagnostic.diagnosis_id = Diagnosis.id
-
-                    INNER JOIN MKB
-                    ON MKB.DiagID = Diagnosis.MKB
-
+                        Event
+                            INNER JOIN
+                        Client ON Client.id = Event.client_id
+                            INNER JOIN
+                        EventType ON EventType.id = Event.eventType_id
+                            INNER JOIN
+                        rbEventTypePurpose ON rbEventTypePurpose.id = EventType.purpose_id
+                            AND rbEventTypePurpose.id = 8
+                            INNER JOIN
+                        Diagnostic ON Diagnostic.event_id = Event.id
+                            INNER JOIN
+                        Diagnosis ON Diagnostic.diagnosis_id = Diagnosis.id
+                            AND Diagnosis.diagnosisType_id IN (1 , 2, 3, 5, 12, 13)
+                            INNER JOIN
+                        MKB ON MKB.DiagID = Diagnosis.MKB
                     WHERE
-                      Event.deleted = 0
-                      AND Event.execDate BETWEEN ('{0} 00:00:00' AND '{1} 23:59:59')
-                      AND Diagnosis.deleted = 0
-                      AND Diagnostic.deleted = 0
-                      AND Person.deleted = 0
-
-                    GROUP BY
-
-                      MKB.BlockName
-
-                    ORDER BY
-                      MKB.BlockName
+                        Event.deleted = 0
+                            AND Event.execDate BETWEEN ('{0} 00:00:00' AND '{1} 23:59:59')
+                            AND Diagnosis.deleted = 0
+                            AND Diagnostic.deleted = 0
+                    GROUP BY MKB.BlockName , MKB.BlockID
+                    ORDER BY MKB.BlockID
                 '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
         return self.db_session.execute(query)
 
