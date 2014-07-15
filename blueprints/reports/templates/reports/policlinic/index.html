@@ -42,21 +42,50 @@
             </tr>
         </thead>
         <tbody>
+            {% set oms_all = [] %}
+            {% set polip = [] %}
+            {% set polib = [] %}
+            {% set poliz = [] %}
+            {% set zaochb = [] %}
+            {% set kskons = [] %}
             {% for item in data %}
-            <tr>
-                <td>{{ loop.index }}</td>
-                <td>(id: <b>{{ item.person.id }}</b>) {{ item.person.lastName }} {{ item.person.firstName }}</td>
-                <td>{{ item.person.speciality }}</td>
-                <td><div class="text-right">{{ item.oms.number|default(0) }}</div></td>
-                <td><div class="text-right">{{ item.polip.number|default(0) }}</div></td>
-                <td><div class="text-right">{{ item.polib.number|default(0) }}</div></td>
-                <td><div class="text-right">{{ item.poliz.number|default(0) }}</div></td>
-                <td><div class="text-right">{{ item.zaochb.number|default(0) }}</div></td>
-                <td><div class="text-right">{{ item.kskons.number|default(0) }}</div></td>
-            </tr>
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>(id: <b>{{ item.person.id }}</b>) {{ item.person.lastName }} {{ item.person.firstName }}</td>
+                    <td>{{ item.person.speciality }}</td>
+                    <td><div class="text-right">{{ item.oms.number|default(0) }}</div></td>
+                    <td><div class="text-right">{{ item.polip.number|default(0) }}</div></td>
+                    <td><div class="text-right">{{ item.polib.number|default(0) }}</div></td>
+                    <td><div class="text-right">{{ item.poliz.number|default(0) }}</div></td>
+                    <td><div class="text-right">{{ item.zaochb.number|default(0) }}</div></td>
+                    <td><div class="text-right">{{ item.kskons.number|default(0) }}</div></td>
+                </tr>
+                {% if oms_all.append(item.oms.number|default(0)) %}{% endif %}
+                {% if polip.append(item.polip.number|default(0)) %}{% endif %}
+                {% if polib.append(item.polib.number|default(0)) %}{% endif %}
+                {% if poliz.append(item.poliz.number|default(0)) %}{% endif %}
+                {% if zaochb.append(item.zaochb.number|default(0)) %}{% endif %}
+                {% if kskons.append(item.kskons.number|default(0)) %}{% endif %}
             {% endfor %}
+            <tr>
+                <td colspan = "3">ИТОГО:</td>
+                <td><div class="text-right">{{oms_all|sum}}</div></td>
+                <td><div class="text-right">{{polip|sum}}</div></td>
+                <td><div class="text-right">{{polib|sum}}</div></td>
+                <td><div class="text-right">{{poliz|sum}}</div></td>
+                <td><div class="text-right">{{zaochb|sum}}</div></td>
+                <td><div class="text-right">{{kskons|sum}}</div></td>
+            </tr>
         </tbody>
     </table>
+
+    <table>
+        <tr>
+            <td>Всего обращений и консультаций:</td>
+            <td>{{(oms_all+ polip + polib + poliz + zaochb+ kskons)|sum }}</td>
+        </tr>
+    </table>
+        
     <button type="button" class="btn btn-primary" id="print" onclick="window.print();"><i class="icon-print icon-white"></i> Распечатать</button>
     {% endif %}
 
