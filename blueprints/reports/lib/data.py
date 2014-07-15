@@ -1328,3 +1328,122 @@ class Sickness_Rate_Diagnosis(object):
                     ON Client.id = Event.client_id
                 '''.format(diagnosis, start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
         return self.db_session.execute(query)
+
+
+class Diag_Divergence(object):
+
+    def __init__(self):
+        self.db_session = get_lpu_session()
+
+    def __del__(self):
+        self.db_session.close()
+
+    def get_divergence(self, start, end):
+        query = u'''
+                    SELECT
+                        Event.externalId,
+                        Client.lastName,
+                        Client.firstName,
+                        Client.patrName,
+                        Client.birthDate,
+                        Diagnosis.MKB,
+                        DS.DiagID
+                    FROM
+                        Event
+                            INNER JOIN
+                        Client ON Client.id = Event.client_id
+                            INNER JOIN
+                        Diagnostic ON Diagnostic.event_id = Event.id
+                            INNER JOIN
+                        Diagnosis ON Diagnostic.diagnosis_id = Diagnosis.id
+                            AND Diagnosis.diagnosisType_id IN (1 , 2)
+                            INNER JOIN
+                        EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            LEFT JOIN
+                        (SELECT
+                            Action.event_id AS 'ID',
+                                ActionProperty_MKB.value AS 'ds',
+                                MKB.DiagID
+                        FROM
+                            Action
+                        JOIN ActionType ON ActionType.id = Action.actionType_id
+                            AND Action.deleted = 0
+                            AND Action.actionType_id IN (139 , 2456)
+                        INNER JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                        INNER JOIN ActionProperty_MKB ON ActionProperty.id = ActionProperty_MKB.id
+                            AND ActionProperty.type_id IN (1600022 , 245603)
+                        INNER JOIN MKB ON ActionProperty_MKB.value = MKB.id) AS DS ON DS.ID = Event.id
+                    WHERE
+                        Event.setDate >= CONCAT('{0}', ' 00:00:00')
+                            AND Event.setDate <= CONCAT('{1}', ' 23:59:59')
+                            and Diagnosis.deleted = 0
+                            and Diagnostic.deleted = 0
+                            AND Event.deleted = 0
+                            AND Diagnosis.MKB <> ''
+                            AND DS.DiagID <> ''
+                            AND (Diagnosis.MKB <> DS.DiagID)
+                    GROUP BY Event.id
+                    ORDER BY Client.lastName , Event.setDate;
+                '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
+        return self.db_session.execute(query)
+
+    def get_divergence1(self, start, end):
+        query = u'''
+                    SELECT
+                        Event.externalId,
+                        Client.lastName,
+                        Client.firstName,
+                        Client.patrName,
+                        Client.birthDate,
+                        MKB.DiagID AS 'MKB1',
+                        DS.DiagID AS 'MKB2'
+                    FROM
+                        Event
+                            INNER JOIN
+                        Client ON Client.id = Event.client_id
+                            INNER JOIN
+                        Diagnostic ON Diagnostic.event_id = Event.id
+                            INNER JOIN
+                        Action ON Action.event_id = Event.id
+                            INNER JOIN
+                        ActionType ON ActionType.id = Action.actionType_id
+                            AND Action.deleted = 0
+                            AND Action.actionType_id = 112
+                            INNER JOIN
+                        ActionProperty ON Action.id = ActionProperty.action_id
+                            INNER JOIN
+                        ActionProperty_MKB ON ActionProperty.id = ActionProperty_MKB.id
+                            AND ActionProperty.type_id = 1604
+                            INNER JOIN
+                        MKB ON ActionProperty_MKB.value = MKB.id
+                            INNER JOIN
+                        EventType ON EventType.id = Event.eventType_id
+                            AND EventType.purpose_id = 8
+                            LEFT JOIN
+                        (SELECT
+                            Action.event_id AS 'ID',
+                                ActionProperty_MKB.value AS 'ds',
+                                MKB.DiagID
+                        FROM
+                            Action
+                        JOIN ActionType ON ActionType.id = Action.actionType_id
+                            AND Action.deleted = 0
+                            AND Action.actionType_id IN (139 , 2456)
+                        INNER JOIN ActionProperty ON Action.id = ActionProperty.action_id
+                        INNER JOIN ActionProperty_MKB ON ActionProperty.id = ActionProperty_MKB.id
+                            AND ActionProperty.type_id IN (1600022 , 245603)
+                        INNER JOIN MKB ON ActionProperty_MKB.value = MKB.id) AS DS ON DS.ID = Event.id
+                    WHERE
+                        Event.setDate >= CONCAT('{0}', ' 00:00:00')
+                            AND Event.setDate <= CONCAT('{1}', ' 23:59:59')
+                            and Diagnostic.deleted = 0
+                            AND Event.deleted = 0
+                            AND ActionProperty_MKB.value <> ''
+                            AND DS.DiagID <> ''
+                            AND MKB.DiagID <> ''
+                            AND (MKB.DiagID <> DS.DiagID)
+                    GROUP BY Event.id
+                    ORDER BY Client.lastName , Event.setDate;
+                '''.format(start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d'))
+        return self.db_session.execute(query)

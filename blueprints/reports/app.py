@@ -21,3 +21,4 @@ from .views.sickness_rate_diagnosis import *
 from .views.policlinic import *
 from .views.discharged import *
 from .views.paid import *
+from .views.diag_divergence import *
