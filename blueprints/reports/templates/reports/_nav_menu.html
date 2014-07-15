@@ -17,6 +17,7 @@
                     <li{% if request.path == url_for('.sickness_rate_blocks') %} class="active"{% endif %}><a href="{{ url_for('.sickness_rate_blocks') }}">Заболеваемость за период по блокам (стационар)</a></li>
                     <li{% if request.path == url_for('.sickness_rate_diagnosis') %} class="active"{% endif %}><a href="{{ url_for('.sickness_rate_diagnosis') }}">Заболеваемость за период по диагнозам (стационар)</a></li>
                     <li{% if request.path == url_for('.paid') %} class="active"{% endif %}><a href="{{ url_for('.paid') }}">Платные пациенты</a></li>
+                    <li{% if request.path == url_for('.diag_divergence') %} class="active"{% endif %}><a href="{{ url_for('.diag_divergence') }}">Расхождение диагнозов</a></li>
                 </ul>
                 </div>
             </li>
