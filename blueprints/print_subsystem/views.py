@@ -4,7 +4,7 @@ from flask import render_template, abort, request
 from jinja2 import TemplateNotFound
 
 from app import module
-from application.utils import public_endpoint, jsonify, crossdomain
+from application.utils import public_endpoint, jsonify, crossdomain, string_to_datetime
 from blueprints.print_subsystem.models.models_all import Rbprinttemplate
 from lib.data import Print_Template
 
@@ -34,12 +34,12 @@ def print_templates_post():
         Print_Template().print_template(doc)
         for doc in data.get('documents', [])
     ]
-    result.insert(0, '''<style> p {
+    style = '''<style> p {
                             margin: 0px;
                             -webkit-margin-after: 0px;
                             -webkit-margin-before: 0px;
-                        }</style>''')
-    return separator.join(result)
+                        }</style>'''
+    return style + separator.join(result)
 
 
 @module.route('/templates/')
