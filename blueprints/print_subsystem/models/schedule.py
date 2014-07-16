@@ -183,3 +183,30 @@ class ScheduleClientTicket(db.Model):
         if not org:
             return self.infisFrom
         return org.title
+
+    @property
+    def date(self):
+        return self.ticket.schedule.date
+
+    @property
+    def time(self):
+        attendance_type_code = self.ticket.attendanceType.code
+        if attendance_type_code == 'planned':
+            time = self.ticket.begDateTime.time()
+        elif attendance_type_code == 'CITO':
+            time = "CITO"
+        elif attendance_type_code == 'extra':
+            time = u"сверх очереди"
+        else:
+            time = '--:--'
+
+        return time
+
+    @property
+    def typeText(self):
+        toHome = self.ticket.schedule.receptionType.code == 'home'
+        if toHome:
+            typeText = u'Вызов на дом'
+        else:
+            typeText = u'Направление на приём к врачу'
+        return typeText

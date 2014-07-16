@@ -183,35 +183,9 @@ class Print_Template(object):
         client = Client.query.get(client_id)
         client.date = self.today
         client_ticket = ScheduleClientTicket.query.get(client_ticket_id)
-        toHome = client_ticket.ticket.schedule.receptionType.code == 'home'
-        if toHome:
-            typeText = u'Вызов на дом'
-        else:
-            typeText = u'Направление на приём к врачу'
-        attendance_type_code = client_ticket.ticket.attendanceType.code
-        if attendance_type_code == 'planned':
-            time = formatTime(client_ticket.ticket.begDateTime.time())
-        elif attendance_type_code == 'CITO':
-            time = "CITO"
-        elif attendance_type_code == 'extra':
-            time = u"сверх очереди"
-        else:
-            time = '--:--'
-        person = client_ticket.ticket.schedule.person
         timeRange = '--:-- - --:--'
         num = 0
         return {
             'client': client,
-            'person': person,
-            'client_ticket': client_ticket,
-            'visit': {
-                'clientId': client_id,
-                'type': typeText,
-                'date': client_ticket.ticket.schedule.date,
-                'office': client_ticket.ticket.schedule.office,
-                'personId': person.id,
-                'num': num,
-                'time': time,
-                'timeRange': timeRange,
-            }
+            'client_ticket': client_ticket
         }

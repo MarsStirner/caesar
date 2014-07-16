@@ -1429,6 +1429,14 @@ class Client(db.Model, Info):
     loc_addresses = db.relationship(u'Clientaddress',
                                  primaryjoin="and_(Client.id==Clientaddress.client_id, Clientaddress.type==1)",
                                  order_by="desc(Clientaddress.id)")
+    appointments = db.relationship(
+        u'ScheduleClientTicket',
+        lazy='dynamic',  #order_by='desc(ScheduleTicket.begDateTime)',
+        primaryjoin='and_('
+                    'ScheduleClientTicket.deleted == 0, '
+                    'ScheduleClientTicket.client_id == Client.id)',
+        innerjoin=True
+    )
 
     @property
     def birthDate(self):
