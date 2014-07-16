@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 
+from application.utils import string_to_datetime
 from ..models.models_all import Orgstructure, Person, Organisation, v_Client_Quoting, Event, Action, Account, Rbcashoperation, \
     Client
 from ..models.models_utils import formatTime
@@ -40,7 +41,7 @@ class Print_Template(object):
             elif typeName == 'Boolean':
                 context[name] = bool(value)
             elif typeName == 'Date':
-                context[name] = datetime.datetime.strptime(value, '%d.%m.%Y').date() if value else None
+                context[name] = string_to_datetime(value).date() if value else None
             elif typeName == 'Time':
                 context[name] = datetime.datetime.strptime(value, '%H:%M').time() if value else None
             elif typeName == 'Organisation':

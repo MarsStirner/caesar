@@ -2,6 +2,7 @@
 import json
 import datetime
 from datetime import timedelta
+from pytz import timezone
 
 from flask import g
 from flask.ext.principal import identity_loaded, Principal, Permission, RoleNeed, UserNeed
@@ -11,6 +12,7 @@ from database import db
 from models import Settings, Users, Roles
 from app import app
 from functools import update_wrapper
+from config import TIME_ZONE
 
 
 def public_endpoint(function):
@@ -138,3 +140,14 @@ def jsonify(obj, result_code=200, result_name='OK', extra_headers=None):
         result_code,
         headers
     )
+
+
+def string_to_datetime(date_string, fmt='%Y-%m-%dT%H:%M:%S.%fZ'):
+    if date_string:
+        try:
+            date = datetime.datetime.strptime(date_string, fmt)
+        except ValueError:
+            date = datetime.datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%S+00:00')  # ffs
+        return timezone('UTC').localize(date).astimezone(tz=timezone(TIME_ZONE)).replace(tzinfo=None)
+    else:
+        return date_string
