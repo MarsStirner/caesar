@@ -13,6 +13,7 @@ SERVER_HOST = '127.0.0.1'
 SERVER_PORT = 5000
 
 SYSTEM_USER = 'caesar'
+TIME_ZONE = 'Europe/Moscow'
 VESTA_URL = 'http://10.1.2.11:5005/api/'
 
 SECRET_KEY = '\x8c\xfc\xb3K\xf4\x96\xf3F\xf3\xdbN\x07\xb9\xbe\x88X\xa9\xea\xec\x91!0,\x8c'
