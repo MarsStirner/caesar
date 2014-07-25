@@ -2563,7 +2563,8 @@ class Event(db.Model, Info):
     uuid_id = db.Column(db.Integer, nullable=False, index=True, server_default=u"'0'")
     lpu_transfer = db.Column(db.String(100))
 
-    actions = db.relationship(u'Action')
+    actions = db.relationship(u'Action', primaryjoin='and_(Action.event_id==Event.id,'
+                                                     'Action.deleted == 0)')
     eventType = db.relationship(u'Eventtype')
     execPerson = db.relationship(u'Person', foreign_keys='Event.execPerson_id')
     setPerson = db.relationship(u'Person', foreign_keys='Event.setPerson_id')
