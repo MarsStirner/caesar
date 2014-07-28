@@ -125,7 +125,7 @@ class ScheduleTicket(db.Model):
         uselist=False)
 
     schedule = db.relationship(
-        'Schedule', lazy=True, innerjoin=True, uselist=False,
+        'Schedule', lazy="joined", innerjoin=True, uselist=False,
         primaryjoin='and_('
                     'Schedule.deleted == 0, ScheduleTicket.deleted == 0, ScheduleTicket.schedule_id == Schedule.id)'
     )
@@ -166,7 +166,7 @@ class ScheduleClientTicket(db.Model):
     event = db.relationship('Event')
 
     ticket = db.relationship(
-        'ScheduleTicket', lazy=True, innerjoin=True, uselist=False,
+        'ScheduleTicket', lazy="joined", innerjoin=True, uselist=False,
         primaryjoin='and_('
                     'ScheduleClientTicket.deleted == 0, '
                     'ScheduleTicket.deleted == 0, '
