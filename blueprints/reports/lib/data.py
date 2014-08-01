@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import exceptions
-from datetime import date
+from datetime import date, timedelta
 
 from ..app import module, _config
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -13,7 +13,7 @@ class Statistics(object):
     def __init__(self):
         self.db_session = get_lpu_session()
         self.today = date.today()
-        self.yesterday = self.today.replace(day=self.today.day-1)
+        self.yesterday = self.today - timedelta(days=1)
 
     def __del__(self):
         self.db_session.close()
