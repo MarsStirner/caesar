@@ -1275,7 +1275,7 @@ class Paid_Patients(object):
                       WHERE Event.execDate IS NULL
 
                       ORDER
-                       BY Pac_prb.Prb,Client.lastName,rbFinance.name'''
+                       BY Client.lastName, Pac_prb.Prb,rbFinance.name'''
         return self.db_session.execute(query)
 
 
