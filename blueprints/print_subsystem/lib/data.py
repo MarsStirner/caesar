@@ -124,6 +124,28 @@ class Print_Template(object):
             'patient_orgStructure': current_patient_orgStructure(event.id),
         }
 
+    def context_services(self, data):
+        event = None
+        client = None
+        chosen_actions = []
+        if 'event_id' in data:
+            event_id = data['event_id']
+            event = Event.query.get(event_id)
+            client = event.client
+            client.date = event.execDate.date if event.execDate else self.today
+
+        if 'actions_ids' in data:
+            actions_ids = data['actions_ids']
+            for action_id in actions_ids:
+                action = Action.query.get(action_id)
+                chosen_actions.append(action)
+        return {
+            'event': event,
+            'chosen_actions': chosen_actions,
+            'client': client,
+            'patient_orgStructure': current_patient_orgStructure(event.id),
+        }
+
     def context_account(self, data):
         # расчеты (CAccountingDialog)
         account_id = data['account_id']
