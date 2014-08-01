@@ -1229,7 +1229,7 @@ class Sickness_Rate_Blocks(object):
                         MKB ON MKB.DiagID = Diagnosis.MKB
                     WHERE
                         Event.deleted = 0
-                            AND Event.execDate BETWEEN ('{0} 00:00:00' AND '{1} 23:59:59')
+                            AND Event.execDate BETWEEN '{0} 00:00:00' AND '{1} 23:59:59'
                             AND Diagnosis.deleted = 0
                             AND Diagnostic.deleted = 0
                     GROUP BY MKB.BlockName , MKB.BlockID
