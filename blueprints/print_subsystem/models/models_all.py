@@ -2562,6 +2562,7 @@ class Event(db.Model, Info):
     orgStructure_id = db.Column(db.Integer, db.ForeignKey('Person.orgStructure_id'))
     uuid_id = db.Column(db.Integer, nullable=False, index=True, server_default=u"'0'")
     lpu_transfer = db.Column(db.String(100))
+    localContract_id = db.Column(db.Integer, db.ForeignKey('Event_LocalContract.id'))
 
     actions = db.relationship(u'Action', primaryjoin='and_(Action.event_id==Event.id,'
                                                      'Action.deleted == 0)')
@@ -2576,7 +2577,8 @@ class Event(db.Model, Info):
     rbAcheResult = db.relationship(u'Rbacheresult')
     result = db.relationship(u'Rbresult')
     typeAsset = db.relationship(u'Rbemergencytypeasset')
-    localContract = db.relationship(u'EventLocalcontract')
+    localContract = db.relationship(u'EventLocalcontract',
+                                    backref=db.backref('event'))
     client = db.relationship(u'Client')
     visits = db.relationship(u'Visit')
 
@@ -2780,7 +2782,7 @@ class EventLocalcontract(db.Model, Info):
     modifyDatetime = db.Column(db.DateTime, nullable=False)
     modifyPerson_id = db.Column(db.Integer, index=True)
     deleted = db.Column(db.Integer, nullable=False)
-    master_id = db.Column(db.Integer, db.ForeignKey('Event.id'), nullable=False, index=True)
+    master_id = db.Column(db.Integer, nullable=False, index=True)
     coordDate = db.Column(db.DateTime)
     coordAgent = db.Column(db.String(128), nullable=False, server_default=u"''")
     coordInspector = db.Column(db.String(128), nullable=False, server_default=u"''")
@@ -2824,9 +2826,16 @@ class EventLocalcontract(db.Model, Info):
     def document(self):
         document = Clientdocument()
         document.documentType = self.documentType
-        document.serial = self.serialLeft + u' ' + self.serialRight
+        if self.serialLeft and self.serialRight:
+            document.serial = self.serialLeft + u' ' + self.serialRight
+        else:
+            document.serial = self.serialLeft or self.serialRight
         document.number = self.number
         return document
+
+    @property
+    def address(self):
+        return self.regAddress
 
 
 class EventPayment(db.Model):
