@@ -103,7 +103,7 @@ class Statistics(object):
     def get_vypis(self):
         query = u'''
                     SELECT
-                        count(Action.id)
+                        count(Action.id) as number
                     FROM
                         Action
                             INNER JOIN
@@ -452,8 +452,8 @@ class Statistics(object):
                             INNER JOIN
                         rbFinance ON EventType.finance_id = rbFinance.id
                     WHERE
-                        Event.setDate >= CONCAT('{1}', ' 00:00:00')
-                            AND Event.setDate <= CONCAT('{1}', ' 23:59:59')
+                        Event.setDate >= '{1} 08:00:00' - INTERVAL 1 DAY
+                            AND Event.setDate <= '{1} 08:00:00'
                     GROUP BY rbFinance.name;
                     '''.format(self.yesterday.strftime('%Y-%m-%d'), self.today.strftime('%Y-%m-%d'))
 
