@@ -51,7 +51,7 @@
             {% for item in data %}
                 <tr>
                     <td>{{ loop.index }}</td>
-                    <td>(id: <b>{{ item.person.id }}</b>) {{ item.person.lastName }} {{ item.person.firstName }}</td>
+                    <td>{{ item.person.lastName }} {{ item.person.firstName }}</td>
                     <td>{{ item.person.speciality }}</td>
                     <td><div class="text-right">{{ item.oms.number|default(0) }}</div></td>
                     <td><div class="text-right">{{ item.polip.number|default(0) }}</div></td>
