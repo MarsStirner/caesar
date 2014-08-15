@@ -689,7 +689,7 @@ class List_Of_Operations(object):
                         Client.patrName,
                         Client.birthDate,
                         if(Client.sex = 1, 'М', 'Ж') AS Pol,
-                        Event.setDate AS Data_otkrytiya,
+                        date(Event.setDate) AS Data_otkrytiya,
                         Event.externalId,
                         Action.begDate AS Data_vremya_protokola,
                         poN.n AS Nomer_operacii,
