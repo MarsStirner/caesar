@@ -28,7 +28,7 @@
     {% if diag_divergence and diag_divergence is iterable %}
         {% include 'reports/_filter_results_form.html' %}
 
-        <label><h5>Количество пациентов с расхождением диагноза приемного отделения и клинического диагноза.</h5></label>
+        <label><h4>Количество пациентов с расхождением диагноза приемного отделения и клинического диагноза.</h4></label>
         <table class="table table-striped table-bordered table-condensed" style="width:50%;">
             <thead>
                 <tr>
@@ -42,7 +42,7 @@
             </tbody>
         </table>
 
-        <label for="result_table"><h5>Расхождение диагноза, установленного в приемном отделении с клиническим окончательным.</h5></label>
+        <label for="result_table"><h4>Расхождение диагноза, установленного в приемном отделении с клиническим окончательным.</h4></label>
         <table class="table table-striped table-bordered table-condensed result_table" style="width:70%;">
             <thead>
                 <tr>
@@ -70,7 +70,7 @@
     {% endif %}
 
     {% if diag_divergence1 and diag_divergence1 is iterable %}
-        <label><h5>Количество пациентов с расхождением диагноза при поступлении и диагноза врача приемного отделения.</h5></label>
+        <label><h4>Количество пациентов с расхождением диагноза при поступлении и диагноза врача приемного отделения.</h4></label>
         <table class="table table-striped table-bordered table-condensed" style="width:50%;">
             <thead>
                 <tr>
@@ -84,7 +84,7 @@
             </tbody>
         </table>
 
-        <label for="result_table1"><h5>Расхождение диагнозов при поступлении в Центр.</h5></label>
+        <label for="result_table1"><h4>Расхождение диагнозов при поступлении в Центр.</h4></label>
         <table class="table table-striped table-bordered table-condensed result_table" style="width:70%;">
             <thead>
                 <tr>
