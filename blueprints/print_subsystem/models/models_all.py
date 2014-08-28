@@ -221,7 +221,7 @@ class Action(db.Model):
     @property
     def finance(self):
         if self.contract_id:
-            return self.contract.finance
+            return self.self_contract.finance
         elif self.event:
             return self.event.contract.finance
 
