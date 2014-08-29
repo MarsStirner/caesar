@@ -60,7 +60,7 @@ def renderTemplate(template, data, render=1):
                             "time_toString": time_toString,
                             "images": url_for(".static", filename="i/", _external=True)
                             })
-            result = Template(template).render(context)
+            result = Template(template, finalize=suppress_nones).render(context)
         except Exception:
             print "ERROR: template.render(data)"
             # QtGui.qApp.log('Template code failed', str(context))
@@ -72,6 +72,10 @@ def renderTemplate(template, data, render=1):
     # for k in canvases:
     #     print k, canvases[k]
     return result
+
+
+def suppress_nones(obj):
+    return obj if obj is not None else ''
 
 
 def setPageSize(page_size):
