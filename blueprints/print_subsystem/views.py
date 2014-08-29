@@ -4,13 +4,35 @@ from flask import render_template, abort, request, url_for, send_file
 from jinja2 import TemplateNotFound
 
 from app import module
-from application.utils import public_endpoint, jsonify, crossdomain, string_to_datetime
+from application.utils import public_endpoint, jsonify, crossdomain
+from blueprints.print_subsystem.lib.internals import RenderTemplateException
 from blueprints.print_subsystem.models.models_all import Rbprinttemplate
 from lib.data import Print_Template
 
 
 PER_PAGE = 20
 xml_encodings = ['windows-1251', 'utf-8']
+
+
+@module.errorhandler(RenderTemplateException)
+@crossdomain('*', methods=['POST', 'OPTIONS'], headers='Content-Type')
+def handle_render_template_error(err):
+    name = u'Ошибка формирования шаблона печати для документа "%s". Свяжитесь с администратором.' % err.data['template_name']
+    err_msg = err.message
+    detailed_msg = u'\n'.join([
+        u'%s' % {
+            RenderTemplateException.Type.syntax: u'Ошибка в синтаксисе шаблона, строка %s' % err.data.get('lineno'),
+            RenderTemplateException.Type.other: u'Ошибка на сервере печати'
+        }[err.data['type']]
+    ])
+    return jsonify({
+        'name': name,
+        'data': {
+            'err_msg': err_msg,
+            'detailed_msg': detailed_msg,
+            'trace': err.data.get('trace')
+        }
+    }, 500, 'error')
 
 
 @module.route('/')
@@ -30,26 +52,31 @@ def print_templates_post():
         separator = '\n\n<div style="page-break-after: always" ></div>\n\n'
     else:
         separator = '\n\n'
-    result = [
-        Print_Template().print_template(doc)
-        for doc in data.get('documents', [])
-    ]
+
+    try:
+        result = [
+            Print_Template().print_template(doc)
+            for doc in data.get('documents', [])
+        ]
+    except RenderTemplateException, e:
+        raise e
+
     font_url_ttf = url_for(".fonts", filename="Code39Azalea.ttf", _external=True)
     font_url_eot = url_for(".fonts", filename="Code39Azalea.eot", _external=True)
     font_url_woff = url_for(".fonts", filename="Code39Azalea.woff", _external=True)
     font_url_svg = url_for(".fonts", filename="Code39Azalea.svg", _external=True)
     template_style = url_for(".static", filename="css/template_style.css", _external=True)
     style = u'''
-                <style>
-                        @font-face{font-family:Code39AzaleaFont;
-                                    src:url('%s') format('embedded-opentype'),
-                                    url('%s') format('woff'),
-                                    url('%s') format('truetype'),
-                                    url('%s') format('svg');
-                                    font-weight:normal;font-style:normal}
-                </style>
-                <link rel="stylesheet" href="%s"/>
-                        ''' % (font_url_eot, font_url_woff, font_url_ttf, font_url_svg, template_style)
+<style>
+    @font-face{font-family:Code39AzaleaFont;
+    src:url('%s') format('embedded-opentype'),
+    url('%s') format('woff'),
+    url('%s') format('truetype'),
+    url('%s') format('svg');
+    font-weight:normal;font-style:normal}
+</style>
+<link rel="stylesheet" href="%s"/>
+''' % (font_url_eot, font_url_woff, font_url_ttf, font_url_svg, template_style)
     return style + separator.join(result)
 
 @public_endpoint

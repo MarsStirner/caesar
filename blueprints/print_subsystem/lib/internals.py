@@ -13,6 +13,15 @@ class Render:
     jinja2   = 1
 
 
+class RenderTemplateException(Exception):
+    class Type:
+        syntax = 0
+        other = 1
+    def __init__(self, message, data=None):
+        super(RenderTemplateException, self).__init__(message)
+        self.data = data
+
+
 def renderTemplate(template, data, render=1):
     # Формируем execContext
     global_vars = {

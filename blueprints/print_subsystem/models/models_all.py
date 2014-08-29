@@ -2829,7 +2829,7 @@ class EventLocalcontract(db.Model, Info):
         if self.serialLeft and self.serialRight:
             document.serial = self.serialLeft + u' ' + self.serialRight
         else:
-            document.serial = self.serialLeft or self.serialRight
+            document.serial = self.serialLeft or self.serialRight or ''
         document.number = self.number
         return document
 

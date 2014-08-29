@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-# from PyQt4 import QtGui, QtCore
-# from PyQt4.QtCore import pyqtSignal, QVariant, QDate, Qt
-# from Reports.ReportView import CReportViewDialog
-# from library.Utils import forceRef, forceString
+
 import logging
+import traceback
+from jinja2 import TemplateSyntaxError
+from blueprints.print_subsystem.lib.internals import RenderTemplateException
+from blueprints.print_subsystem.lib.utils import getTemplateName
 from internals import renderTemplate
-#from specialvars import getSpVarsUsedInTempl, getSpecialVariableValue, SpecialVariable
 from utils import getTemplate
+#from specialvars import getSpVarsUsedInTempl, getSpecialVariableValue, SpecialVariable
 
 __author__ = 'mmalkov'
 
@@ -56,9 +57,19 @@ def applyTemplate(templateId, data):
         #         data[i] = getSpecialVariableValue(i, params = None,  parent = widget)
         # data['SpecialVariable'] = SpecialVariable
         return applyTemplateInt(template, data)
-    except Exception:
+    except TemplateSyntaxError, e:
+        raise RenderTemplateException(e.message, {
+            'type': RenderTemplateException.Type.syntax,
+            'template_name': getTemplateName(templateId),
+            'lineno': e.lineno
+        })
+    except Exception, e:
         logging.critical('erroneous template id = %s', templateId)
-        raise
+        raise RenderTemplateException(e.message, {
+            'type': RenderTemplateException.Type.other,
+            'template_name': getTemplateName(templateId),
+            'trace': unicode(traceback.format_exc(), 'utf-8')
+        })
 
 
 def applyTemplateInt(template, data, render=1):
