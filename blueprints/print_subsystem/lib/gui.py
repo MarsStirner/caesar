@@ -58,12 +58,14 @@ def applyTemplate(templateId, data):
         # data['SpecialVariable'] = SpecialVariable
         return applyTemplateInt(template, data)
     except TemplateSyntaxError, e:
+        print e
         raise RenderTemplateException(e.message, {
             'type': RenderTemplateException.Type.syntax,
             'template_name': getTemplateName(templateId),
             'lineno': e.lineno
         })
     except Exception, e:
+        print unicode(traceback.format_exc(), 'utf-8')
         logging.critical('erroneous template id = %s', templateId)
         raise RenderTemplateException(e.message, {
             'type': RenderTemplateException.Type.other,
