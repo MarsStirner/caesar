@@ -65,6 +65,7 @@ def print_templates_post():
     font_url_woff = url_for(".fonts", filename="free3of9.woff", _external=True)
     font_url_ttf = url_for(".fonts", filename="free3of9.ttf", _external=True)
     font_url_svg = url_for(".fonts", filename="free3of9.svg", _external=True)
+    font_url_ttf128 = url_for(".fonts", filename="code128.ttf", _external=True)
     template_style = url_for(".static", filename="css/template_style.css", _external=True)
     # converted original free3of9.ttf font with http://www.fontsquirrel.com/tools/webfont-generator
     style = u'''
@@ -79,9 +80,15 @@ def print_templates_post():
         font-weight:normal;
         font-style:normal
     }
+    @font-face {
+        font-family: 'code128';
+        src: url('%s') format('truetype');
+        font-weight:normal;
+        font-style:normal
+    }
 </style>
 <link rel="stylesheet" href="%s"/>
-''' % (font_url_eot, font_url_eot, font_url_woff, font_url_ttf, font_url_svg, template_style)
+''' % (font_url_eot, font_url_eot, font_url_woff, font_url_ttf, font_url_svg, font_url_ttf128, template_style)
     return style + separator.join(result)
 
 @public_endpoint
