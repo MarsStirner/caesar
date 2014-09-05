@@ -59,6 +59,7 @@ def applyTemplate(templateId, data):
         return applyTemplateInt(template, data)
     except TemplateSyntaxError, e:
         print e
+        logging.error('syntax error in template id = %s', templateId, exc_info=True)
         raise RenderTemplateException(e.message, {
             'type': RenderTemplateException.Type.syntax,
             'template_name': getTemplateName(templateId),
@@ -66,7 +67,7 @@ def applyTemplate(templateId, data):
         })
     except Exception, e:
         print unicode(traceback.format_exc(), 'utf-8')
-        logging.critical('erroneous template id = %s', templateId)
+        logging.critical('erroneous template id = %s', templateId, exc_info=True)
         raise RenderTemplateException(e.message, {
             'type': RenderTemplateException.Type.other,
             'template_name': getTemplateName(templateId),

@@ -1,5 +1,8 @@
 # -*- encoding: utf-8 -*-
 
+import traceback
+import logging
+
 from flask import render_template, abort, request, url_for, send_file
 from jinja2 import TemplateNotFound
 
@@ -60,6 +63,13 @@ def print_templates_post():
         ]
     except RenderTemplateException, e:
         raise e
+    except Exception, e:
+        logging.critical('error in rendering', exc_info=True)
+        raise RenderTemplateException(e.message, {
+            'type': RenderTemplateException.Type.other,
+            'template_name': '',
+            'trace': unicode(traceback.format_exc(), 'utf-8')
+        })
 
     font_url_eot = url_for(".fonts", filename="free3of9.eot", _external=True)
     font_url_woff = url_for(".fonts", filename="free3of9.woff", _external=True)
