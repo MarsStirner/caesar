@@ -1,5 +1,8 @@
 # -*- encoding: utf-8 -*-
 
+import traceback
+import logging
+
 from flask import render_template, abort, request, url_for, send_file
 from jinja2 import TemplateNotFound
 
@@ -60,23 +63,42 @@ def print_templates_post():
         ]
     except RenderTemplateException, e:
         raise e
+    except Exception, e:
+        logging.critical('error in rendering', exc_info=True)
+        raise RenderTemplateException(e.message, {
+            'type': RenderTemplateException.Type.other,
+            'template_name': '',
+            'trace': unicode(traceback.format_exc(), 'utf-8')
+        })
 
-    font_url_ttf = url_for(".fonts", filename="Code39Azalea.ttf", _external=True)
-    font_url_eot = url_for(".fonts", filename="Code39Azalea.eot", _external=True)
-    font_url_woff = url_for(".fonts", filename="Code39Azalea.woff", _external=True)
-    font_url_svg = url_for(".fonts", filename="Code39Azalea.svg", _external=True)
+    font_url_eot = url_for(".fonts", filename="free3of9.eot", _external=True)
+    font_url_woff = url_for(".fonts", filename="free3of9.woff", _external=True)
+    font_url_ttf = url_for(".fonts", filename="free3of9.ttf", _external=True)
+    font_url_svg = url_for(".fonts", filename="free3of9.svg", _external=True)
+    font_url_ttf128 = url_for(".fonts", filename="code128.ttf", _external=True)
     template_style = url_for(".static", filename="css/template_style.css", _external=True)
+    # converted original free3of9.ttf font with http://www.fontsquirrel.com/tools/webfont-generator
     style = u'''
 <style>
-    @font-face{font-family:Code39AzaleaFont;
-    src:url('%s') format('embedded-opentype'),
-    url('%s') format('woff'),
-    url('%s') format('truetype'),
-    url('%s') format('svg');
-    font-weight:normal;font-style:normal}
+    @font-face {
+        font-family: 'free3of9';
+        src: url('%s');
+        src: url('%s?#iefix') format('embedded-opentype'),
+             url('%s') format('woff'),
+             url('%s') format('truetype'),
+             url('%s#free3of9') format('svg');
+        font-weight:normal;
+        font-style:normal
+    }
+    @font-face {
+        font-family: 'code128';
+        src: url('%s') format('truetype');
+        font-weight:normal;
+        font-style:normal
+    }
 </style>
 <link rel="stylesheet" href="%s"/>
-''' % (font_url_eot, font_url_woff, font_url_ttf, font_url_svg, template_style)
+''' % (font_url_eot, font_url_eot, font_url_woff, font_url_ttf, font_url_svg, font_url_ttf128, template_style)
     return style + separator.join(result)
 
 @public_endpoint
