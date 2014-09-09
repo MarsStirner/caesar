@@ -10,10 +10,10 @@ from gui import applyTemplate
 
 
 def current_patient_orgStructure(event_id):
-    from ..models.models_all import Actionproperty, ActionpropertyOrgstructure, Actionpropertytype
+    from ..models.models_all import ActionProperty, ActionProperty_OrgStructure, Actionpropertytype
     return Orgstructure.query.\
-        join(ActionpropertyOrgstructure, Orgstructure.id == ActionpropertyOrgstructure.value).\
-        join(Actionproperty, Actionproperty.id == ActionpropertyOrgstructure.id).\
+        join(ActionProperty_OrgStructure, Orgstructure.id == ActionProperty_OrgStructure.value).\
+        join(ActionProperty, ActionProperty.id == ActionProperty_OrgStructure.id).\
         join(Action).\
         join(Actionpropertytype).\
         filter(Actionpropertytype.code == 'orgStructStay', Action.event_id == event_id).\
