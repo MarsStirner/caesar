@@ -34,10 +34,11 @@ def index(page=None):
         if owner:
             try:
                 owner = literal_eval(owner)
-            except Exception, e:
+            except ValueError as, e:
                 print e
-            else:
-                find['owner'] = owner
+            except Exception as e:
+                print e
+            find['owner'] = owner
         level = session[MODULE_NAME].get('level')
         if level:
             find['level'] = level
