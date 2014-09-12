@@ -34,7 +34,7 @@ def index(page=None):
         if owner:
             try:
                 owner = literal_eval(owner)
-            except ValueError as, e:
+            except ValueError as e:
                 print e
             except Exception as e:
                 print e
