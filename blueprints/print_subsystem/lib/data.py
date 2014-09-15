@@ -7,6 +7,7 @@ from ..models.models_all import Orgstructure, Person, Organisation, v_Client_Quo
 from ..models.models_utils import formatTime
 from ..models.schedule import ScheduleClientTicket
 from gui import applyTemplate
+from specialvars import get_special_variable_value
 
 
 def current_patient_orgStructure(event_id):
@@ -60,8 +61,15 @@ class Print_Template(object):
         return applyTemplate(template_id, data)
 
     def get_context(self, context_type, data):
-        context = data['context']
+        context = dict(data['context'])
         self.update_context(data['id'], context)
+        special_variables = context['special_variables']
+        del context['special_variables']
+        if special_variables:
+            for variable_name in special_variables:
+                variavles_for_query = {name: context[name] for name in special_variables[variable_name]}
+                sp_variable = get_special_variable_value(variable_name, variavles_for_query)
+                context[variable_name] = sp_variable
 
         currentOrganisation = Organisation.query.get(context['currentOrganisation']) if \
             context['currentOrganisation'] else ""

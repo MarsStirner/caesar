@@ -582,7 +582,7 @@ class ActionProperty_Double(ActionProperty__ValueType):
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(db.Float(asdecimal=True, decimal_return_scale=2), nullable=False)
+    value = db.Column(db.Float, nullable=False)
     property_object = db.relationship('ActionProperty', backref='_value_Double')
 
 
@@ -5463,7 +5463,7 @@ class Rbspecialvariablespreference(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), nullable=False, unique=True)
-    query = db.Column(db.Text, nullable=False)
+    query_text = db.Column('query', db.Text, nullable=False)
 
 
 class Rbspeciality(db.Model, RBInfo):

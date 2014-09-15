@@ -7,7 +7,6 @@ from blueprints.print_subsystem.lib.internals import RenderTemplateException
 from blueprints.print_subsystem.lib.utils import getTemplateName
 from internals import renderTemplate
 from utils import getTemplate
-#from specialvars import getSpVarsUsedInTempl, getSpecialVariableValue, SpecialVariable
 
 __author__ = 'mmalkov'
 
@@ -51,11 +50,6 @@ def applyTemplate(templateId, data):
     u"""Выводит на печать шаблон печати номер templateId с данными data"""
     try:
         template = getTemplate(templateId)
-        #spvars = getSpVarsUsedInTempl(templateId)#находим, используемые в шаблоне спец. переменные
-        # if spvars:
-        #     for i in spvars:
-        #         data[i] = getSpecialVariableValue(i, params = None,  parent = widget)
-        # data['SpecialVariable'] = SpecialVariable
         return applyTemplateInt(template, data)
     except TemplateSyntaxError, e:
         print e
