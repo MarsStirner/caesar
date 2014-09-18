@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 import datetime
+import re
 
 from application.utils import string_to_datetime
 from ..models.models_all import Orgstructure, Person, Organisation, v_Client_Quoting, Event, Action, Account, Rbcashoperation, \
-    Client
+    Client, Rbprinttemplate
 from ..models.models_utils import formatTime
 from ..models.schedule import ScheduleClientTicket
 from gui import applyTemplate
-from specialvars import get_special_variable_value
+from specialvars import get_special_variable_value, SpecialVariable
 
 
 def current_patient_orgStructure(event_id):
@@ -63,13 +64,19 @@ class Print_Template(object):
     def get_context(self, context_type, data):
         context = dict(data['context'])
         self.update_context(data['id'], context)
-        special_variables = context['special_variables']
-        del context['special_variables']
-        if special_variables:
-            for variable_name in special_variables:
-                variavles_for_query = {name: context[name] for name in special_variables[variable_name]}
-                sp_variable = get_special_variable_value(variable_name, variavles_for_query)
-                context[variable_name] = sp_variable
+        if 'special_variables' in context:
+            template = Rbprinttemplate.query.get(data['id'])
+            spvars_in_template = re.findall(r"(SpecialVar_\w+)[^$\(,'\"\w]", template.templateText)  # то,что в фнкции не найдет
+            spvars_in_template = list(set(spvars_in_template))
+
+            special_variables = context['special_variables']
+            del context['special_variables']
+            if special_variables:
+                for variable_name in special_variables:
+                    if variable_name in spvars_in_template:
+                        variavles_for_query = {name: context[name] for name in special_variables[variable_name]}
+                        sp_variable = get_special_variable_value(variable_name, variavles_for_query)
+                        context[variable_name] = sp_variable
 
         currentOrganisation = Organisation.query.get(context['currentOrganisation']) if \
             context['currentOrganisation'] else ""
@@ -82,6 +89,10 @@ class Print_Template(object):
             'currentOrganisation': currentOrganisation,
             'currentOrgStructure': currentOrgStructure,
             'currentPerson': currentPerson
+        })
+
+        context.update({
+            'SpecialVariable': SpecialVariable
         })
 
         context_func = getattr(self, 'context_%s' % context_type, None)

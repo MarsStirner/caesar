@@ -2,7 +2,7 @@
 import re
 import datetime
 
-from ..models.models_all import Rbspecialvariablespreference
+from ..models.models_all import Rbspecialvariablespreference, Rbprinttemplatemeta
 from application.database import db
 
 __author__ = 'mmalkov'
@@ -10,7 +10,14 @@ __author__ = 'mmalkov'
 
 def SpecialVariable(spvar, *args):
     spvar_name = spvar
-    return getSpecialVariableValue(spvar_name, args)
+    sp_variable_meta = Rbprinttemplatemeta.query.filter(Rbprinttemplatemeta.name == spvar_name).first()
+    argument_names = re.findall(r"\"(\w+)\"", sp_variable_meta.arguments)
+    variables_for_queue = {}
+    for i in range(len(argument_names)):
+        variables_for_queue.update({
+            argument_names[i]: args[i]
+        })
+    return get_special_variable_value(spvar_name, variables_for_queue)
 
 
 def get_special_variable_value(sp_variable_name, variables_for_queue):
