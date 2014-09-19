@@ -1791,7 +1791,7 @@ class Clientdocument(db.Model, Info):
         return self.documentType.regionalCode
 
     def __unicode__(self):
-        return (' '.join([self.documentType.name, self.serial, self.number])).strip()
+        return (' '.join([self.documentType.name if self.documentType else '', self.serial, self.number])).strip()
 
 
 class Clientfdproperty(db.Model):
