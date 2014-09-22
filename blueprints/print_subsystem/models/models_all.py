@@ -1528,11 +1528,13 @@ class Client(db.Model, Info):
 
     @property
     def policy(self):
-        return self.compulsoryPolicy
+        return self.compulsoryPolicy if self.compulsoryPolicy else {'insurer': {},
+                                                                    'policyType': {}}
 
     @property
     def policyDMS(self):
-        return self.voluntaryPolicy
+        return self.voluntaryPolicy if self.voluntaryPolicy else {'insurer': {},
+                                                                  'policyType': {}}
 
     @property
     def fullName(self):
