@@ -1510,7 +1510,8 @@ class Client(db.Model, Info):
 
     @property
     def phones(self):
-        contacts = [(contact.name, contact.contact, contact.notes) for contact in self.contacts]
+        contacts = [(contact.name, contact.contact, contact.notes) for contact in self.contacts
+                    if contact.contactType.code not in ('04', '05')]
         return ', '.join([(phone[0]+': '+phone[1]+' ('+phone[2]+')') if phone[2] else (phone[0]+': '+phone[1])
                           for phone in contacts])
 
@@ -1761,7 +1762,10 @@ class Clientcontact(db.Model, Info):
 
     @property
     def name(self):
-        return self.contactType.names
+        return self.contactType.name
+
+    def __unicode__(self):
+        return (self.name+': '+self.contact+' ('+self.notes+')') if self.notes else (self.name+': '+self.contact)
 
 
 class Clientdocument(db.Model, Info):
