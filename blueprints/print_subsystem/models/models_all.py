@@ -48,6 +48,10 @@ class Info(object):
 
 
 class RBInfo(Info):
+    def __init__(self):
+        self.code = ""
+        self.name = ""
+
     def __unicode__(self):
         return self.name
 
@@ -1529,13 +1533,11 @@ class Client(db.Model, Info):
 
     @property
     def policy(self):
-        return self.compulsoryPolicy if self.compulsoryPolicy else {'insurer': {},
-                                                                    'policyType': {}}
+        return self.compulsoryPolicy if self.compulsoryPolicy else Clientpolicy()
 
     @property
     def policyDMS(self):
-        return self.voluntaryPolicy if self.voluntaryPolicy else {'insurer': {},
-                                                                  'policyType': {}}
+        return self.voluntaryPolicy if self.voluntaryPolicy else Clientpolicy()
 
     @property
     def fullName(self):
@@ -1917,6 +1919,14 @@ class Clientpolicy(db.Model, Info):
     client = db.relationship(u'Client')
     insurer = db.relationship(u'Organisation')
     policyType = db.relationship(u'Rbpolicytype')
+
+    def __init__(self):
+        self.serial = ""
+        self.number = ""
+        self.name = ""
+        self.note = ""
+        self.insurer = Organisation()
+        self.policyType = Rbpolicytype()
 
     def __unicode__(self):
         return (' '.join([self.policyType.name, unicode(self.insurer), self.serial, self.number])).strip()
@@ -3480,6 +3490,11 @@ class Organisation(db.Model, Info):
     OKPF = db.relationship(u'Rbokpf')
     OKFS = db.relationship(u'Rbokfs')
     org_accounts = db.relationship(u'OrganisationAccount')
+
+    def __init__(self):
+        self.title = ""
+        self.fullName = ""
+        self.shortName = ""
 
     @property
     def bank(self):
