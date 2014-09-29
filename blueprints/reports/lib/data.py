@@ -444,16 +444,54 @@ class Statistics(object):
                     SELECT
                         rbFinance.name, COUNT(rbFinance.name) as number
                     FROM
-                        Event
+                        Action
+                            INNER JOIN
+                        ActionType ON Action.`actionType_id` = ActionType.`id`
+                            INNER JOIN
+                        ActionProperty ON Action.`id` = ActionProperty.`action_id`
+                            INNER JOIN
+                        ActionProperty_HospitalBed ON ActionProperty.`id` = ActionProperty_HospitalBed.`id`
+                            INNER JOIN
+                        Event ON Action.`event_id` = Event.`id`
                             INNER JOIN
                         EventType ON Event.EventType_id = EventType.id
-                            AND EventType.purpose_id = 8
-                            AND Event.deleted = 0
                             INNER JOIN
                         rbFinance ON EventType.finance_id = rbFinance.id
+                            INNER JOIN
+                        (SELECT
+                            Action.id, ActionProperty_HospitalBedProfile.value
+                        FROM
+                            Action
+                        INNER JOIN ActionType ON Action.`actionType_id` = ActionType.`id`
+                        INNER JOIN ActionProperty ON Action.`id` = ActionProperty.`action_id`
+                        INNER JOIN ActionPropertyType ON ActionPropertyType.`id` = ActionProperty.`type_id`
+                        INNER JOIN ActionProperty_HospitalBedProfile ON ActionProperty.`id` = ActionProperty_HospitalBedProfile.`id`
+                        INNER JOIN rbHospitalBedProfile ON ActionProperty_HospitalBedProfile.`value` = rbHospitalBedProfile.`id`
+                        WHERE
+                            (ActionType.`flatCode` = 'moving')
+                                AND (ActionPropertyType.`code` = 'hospitalBedProfile')
+                                AND ((Action.`begDate` >= '{1} 08:00:00' - INTERVAL 1 DAY)
+                                AND (Action.`begDate` <= '{1} 08:00:00'))) sz ON Action.id = sz.id
                     WHERE
-                        Event.setDate >= '{1} 08:00:00' - INTERVAL 1 DAY
-                            AND Event.setDate <= '{1} 08:00:00'
+                        ((Action.`begDate` >= '{1} 08:00:00' - INTERVAL 1 DAY)
+                            AND (Action.`begDate` <= '{1} 08:00:00'))
+                            AND (ActionType.`flatCode` = 'moving')
+                            AND (Action.`deleted` = 0)
+                            AND (Event.`deleted` = 0)
+                            AND (ActionProperty.`deleted` = 0)
+                            AND (Action.id IN (SELECT
+                                id
+                            FROM
+                                (SELECT
+                                    Action.id, min(Action.id)
+                                FROM
+                                    Action
+                                JOIN ActionType ON Action.actionType_id = ActionType.id
+                                WHERE
+                                    ActionType.flatCode = 'moving'
+                                        AND Action.begDate IS NOT NULL
+                                        AND Action.deleted = 0
+                                GROUP BY event_id) A))
                     GROUP BY rbFinance.name;
                     '''.format(self.yesterday.strftime('%Y-%m-%d'), self.today.strftime('%Y-%m-%d'))
 
