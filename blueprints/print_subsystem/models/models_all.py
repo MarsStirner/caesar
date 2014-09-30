@@ -191,6 +191,7 @@ class Action(db.Model):
                                  primaryjoin="and_(ActionProperty.action_id==Action.id, ActionProperty.type_id==Actionpropertytype.id)",
                                  order_by="Actionpropertytype.idx")
     self_contract = db.relationship('Contract')
+    bbt_response = db.relationship(u'BbtResponse', uselist=False)
 
     # def getPrice(self, tariffCategoryId=None):
     #     if self.price is None:
@@ -380,18 +381,6 @@ class Action(db.Model):
             return self.get_property_by_code(unicode(key[0]))
         elif isinstance(key, (int, long)):
             return self.get_property_by_index(key)
-
-
-class Bbtresponse(Action):
-    __tablename__ = u'bbtResponse'
-
-    id = db.Column(db.ForeignKey('Action.id'), primary_key=True)
-    final = db.Column(db.Integer, nullable=False, server_default=u"'0'")
-    defects = db.Column(db.Text)
-    doctor_id = db.Column(db.ForeignKey('Person.id'), nullable=False, index=True)
-    codeLIS = db.Column(db.String(20), nullable=False)
-
-    doctor = db.relationship(u'Person')
 
 
 class ActionProperty(db.Model):
@@ -4232,39 +4221,33 @@ class ActionDocument(db.Model):
     template = db.relationship(u'Rbprinttemplate')
 
 
-class BbtorganismSensvalue(db.Model):
-    __tablename__ = u'bbtOrganism_SensValues'
-    __table_args__ = (
-        db.Index(u'bbtResult_Organism_id_index', u'bbtResult_Organism_id', u'idx'),
+class BbtResponse(db.Model):
+    __tablename__ = u'bbtResponse'
+
+    id = db.Column(db.ForeignKey('Action.id'), primary_key=True)
+    final = db.Column(db.Integer, nullable=False, server_default=u"'0'")
+    defects = db.Column(db.Text)
+    doctor_id = db.Column(db.ForeignKey('Person.id'), nullable=False, index=True)
+    codeLIS = db.Column(db.String(20), nullable=False)
+
+    doctor = db.relationship(u'Person')
+    values_organism = db.relationship(
+        u'BbtResultOrganism',
+        primaryjoin='BbtResponse.id == BbtResultOrganism.action_id',
+        foreign_keys=[id],
+        uselist=True
     )
-
-    id = db.Column(db.Integer, primary_key=True)
-    bbtResult_Organism_id = db.Column(db.ForeignKey('bbtResult_Organism.id'), nullable=False)
-    idx = db.Column(db.Integer)
-    antibiotic_id = db.Column(db.ForeignKey('rbAntibiotic.id'), index=True)
-    MIC = db.Column(db.String(20), nullable=False)
-    activity = db.Column(db.String(5), nullable=False)
-
-    antibiotic = db.relationship(u'Rbantibiotic')
-    bbtResult_Organism = db.relationship(u'BbtresultOrganism')
-
-
-class BbtresultImage(db.Model):
-    __tablename__ = u'bbtResult_Image'
-    __table_args__ = (
-        db.Index(u'action_id_index', u'action_id', u'idx'),
+    values_text = db.relationship(
+        u'BbtResultText',
+        primaryjoin='BbtResponse.id == BbtResultText.action_id',
+        foreign_keys=[id],
+        uselist=True
     )
-
-    id = db.Column(db.Integer, primary_key=True)
-    action_id = db.Column(db.ForeignKey('Action.id'), nullable=False)
-    idx = db.Column(db.Integer, nullable=False)
-    description = db.Column(db.String(256))
-    image = db.Column(LONGBLOB, nullable=False)
-
-    action = db.relationship(u'Action')
+    # values_table = db.relationship(u'BbtResultTable')
+    # values_image = db.relationship(u'BbtResultImage')
 
 
-class BbtresultOrganism(db.Model):
+class BbtResultOrganism(db.Model):
     __tablename__ = u'bbtResult_Organism'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4272,11 +4255,34 @@ class BbtresultOrganism(db.Model):
     organism_id = db.Column(db.ForeignKey('rbMicroorganism.id'), nullable=False, index=True)
     concentration = db.Column(db.String(256), nullable=False)
 
-    action = db.relationship(u'Action')
-    organism = db.relationship(u'Rbmicroorganism')
+    microorganism = db.relationship(u'rbMicroorganism', lazy='joined')
+    sens_values = db.relationship(u'BbtOrganism_SensValues', lazy='joined')
 
 
-class BbtresultTable(db.Model):
+class BbtOrganism_SensValues(db.Model):
+    __tablename__ = u'bbtOrganism_SensValues'
+    __table_args__ = (
+        db.Index(u'bbtResult_Organism_id_index', u'bbtResult_Organism_id'),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    bbtResult_Organism_id = db.Column(db.ForeignKey('bbtResult_Organism.id'), nullable=False)
+    antibiotic_id = db.Column(db.ForeignKey('rbAntibiotic.id'), index=True)
+    MIC = db.Column(db.String(20), nullable=False)
+    activity = db.Column(db.String(5), nullable=False)
+
+    antibiotic = db.relationship(u'rbAntibiotic', lazy='joined')
+
+
+class BbtResultText(db.Model):
+    __tablename__ = u'bbtResult_Text'
+
+    id = db.Column(db.Integer, primary_key=True)
+    action_id = db.Column(db.ForeignKey('Action.id'), nullable=False, index=True)
+    valueText = db.Column(db.Text)
+
+
+class BbtResultTable(db.Model):
     __tablename__ = u'bbtResult_Table'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4289,18 +4295,20 @@ class BbtresultTable(db.Model):
     status = db.Column(db.Text)
     comment = db.Column(db.Text)
 
-    action = db.relationship(u'Action')
-    indicator = db.relationship(u'Rbbacindicator')
+    indicator = db.relationship(u'rbBacIndicator')
 
 
-class BbtresultText(db.Model):
-    __tablename__ = u'bbtResult_Text'
+class BbtResultImage(db.Model):
+    __tablename__ = u'bbtResult_Image'
+    __table_args__ = (
+        db.Index(u'action_id_index', u'action_id', u'idx'),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
-    action_id = db.Column(db.ForeignKey('Action.id'), nullable=False, index=True)
-    valueText = db.Column(db.Text)
-
-    action = db.relationship(u'Action')
+    action_id = db.Column(db.ForeignKey('Action.id'), nullable=False)
+    idx = db.Column(db.Integer, nullable=False)
+    description = db.Column(db.String(256))
+    image = db.Column(db.BLOB, nullable=False)
 
 
 class Mrbmodelagegroup(db.Model):
@@ -4560,7 +4568,7 @@ class Rbanalyticalreport(db.Model):
     PrintTemplate_id = db.Column(db.Integer)
 
 
-class Rbantibiotic(db.Model):
+class rbAntibiotic(db.Model, RBInfo):
     __tablename__ = u'rbAntibiotic'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4579,7 +4587,7 @@ class Rbattachtype(db.Model):
     finance_id = db.Column(db.Integer, nullable=False, index=True)
 
 
-class Rbbacindicator(db.Model):
+class rbBacIndicator(db.Model, RBInfo):
     __tablename__ = u'rbBacIndicator'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5112,7 +5120,7 @@ class Rbmethodofadministration(db.Model):
     name = db.Column(db.String(64), nullable=False, index=True)
 
 
-class Rbmicroorganism(db.Model):
+class rbMicroorganism(db.Model, RBInfo):
     __tablename__ = u'rbMicroorganism'
 
     id = db.Column(db.Integer, primary_key=True)
