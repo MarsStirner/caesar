@@ -74,7 +74,9 @@ class Print_Template(object):
             if special_variables:
                 for variable_name in special_variables:
                     if variable_name in spvars_in_template:
-                        variavles_for_query = {name: context[name] for name in special_variables[variable_name]}
+                        variavles_for_query = {}
+                        for name in special_variables[variable_name]:
+                            variavles_for_query[name] = context[name]
                         sp_variable = get_special_variable_value(variable_name, variavles_for_query)
                         context[variable_name] = sp_variable
 
