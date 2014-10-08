@@ -586,11 +586,11 @@ class ActionProperty_FDRecord(ActionProperty__ValueType):
     index = db.Column(db.Integer, nullable=False, server_default=u"'0'")
     value_ = db.Column('value', db.ForeignKey('FDRecord.id'), nullable=False, index=True)
 
-    value = db.relationship(u'Fdrecord')
     property_object = db.relationship('ActionProperty', backref='_value_FDRecord')
 
-    def get_value(self):
-        return Fdrecord.query.filter(Fdrecord.id == self.value).first().get_value(u'Наименование')
+    @property
+    def value(self):
+        return Fdrecord.query.filter(Fdrecord.id == self.value_).first().get_value()
 
 
 class ActionProperty_HospitalBed(ActionProperty__ValueType):
