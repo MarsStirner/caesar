@@ -4750,6 +4750,9 @@ class Rbdocumenttype(db.Model, RBInfo):
 
     group = db.relationship(u'Rbdocumenttypegroup')
 
+    def __init__(self):
+        RBInfo.__init__(self)
+
 
 class Rbdocumenttypegroup(db.Model, RBInfo):
     __tablename__ = u'rbDocumentTypeGroup'
@@ -4757,6 +4760,9 @@ class Rbdocumenttypegroup(db.Model, RBInfo):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(8), nullable=False, index=True)
     name = db.Column(db.Unicode(64), nullable=False, index=True)
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbemergencyaccident(db.Model):
@@ -4894,6 +4900,9 @@ class Rbeventtypepurpose(db.Model, RBInfo):
     name = db.Column(db.Unicode(64), nullable=False, index=True)
     codePlace = db.Column(db.String(2))
 
+    def __init__(self):
+        RBInfo.__init__(self)
+
 
 class Rbfinance(db.Model, RBInfo):
     __tablename__ = u'rbFinance'
@@ -4901,6 +4910,9 @@ class Rbfinance(db.Model, RBInfo):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(8), nullable=False, index=True)
     name = db.Column(db.Unicode(64), nullable=False, index=True)
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbfinance1c(db.Model):
@@ -4928,6 +4940,9 @@ class Rbhospitalbedprofile(db.Model, RBInfo):
     code = db.Column(db.String(8), nullable=False, index=True)
     name = db.Column(db.Unicode(64), nullable=False, index=True)
     service_id = db.Column(db.Integer, index=True)
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class RbhospitalbedprofileService(db.Model):
@@ -4993,6 +5008,9 @@ class Rbjobtype(db.Model, RBInfo):
     name = db.Column(db.Unicode(128), nullable=False)
     laboratory_id = db.Column(db.Integer, index=True)
     isInstant = db.Column(db.Integer, nullable=False, server_default=u"'0'")
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rblaboratory(db.Model):
@@ -5209,6 +5227,9 @@ class Rbpacientmodel(db.Model, RBInfo):
 
     quotaType = db.relationship(u'Quotatype')
 
+    def __init__(self):
+        RBInfo.__init__(self)
+
 
 class Rbpayrefusetype(db.Model, RBInfo):
     __tablename__ = u'rbPayRefuseType'
@@ -5218,6 +5239,9 @@ class Rbpayrefusetype(db.Model, RBInfo):
     name = db.Column(db.Unicode(128), nullable=False, index=True)
     finance_id = db.Column(db.Integer, nullable=False, index=True)
     rerun = db.Column(db.Integer, nullable=False)
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbpaytype(db.Model):
@@ -5236,6 +5260,9 @@ class Rbpolicytype(db.Model, RBInfo):
     name = db.Column(db.Unicode(256), nullable=False, index=True)
     TFOMSCode = db.Column(db.String(8))
 
+    def __init__(self):
+        RBInfo.__init__(self)
+
 
 class Rbpost(db.Model, RBInfo):
     __tablename__ = u'rbPost'
@@ -5247,6 +5274,9 @@ class Rbpost(db.Model, RBInfo):
     key = db.Column(db.String(6), nullable=False, index=True)
     high = db.Column(db.String(6), nullable=False)
     flatCode = db.Column(db.String(65), nullable=False)
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbprinttemplate(db.Model):
@@ -5280,6 +5310,9 @@ class Rbreasonofabsence(db.Model, RBInfo):
     code = db.Column(db.Unicode(8), nullable=False, index=True)
     name = db.Column(db.Unicode(64), nullable=False, index=True)
 
+    def __init__(self):
+        RBInfo.__init__(self)
+
 
 class Rbrelationtype(db.Model, RBInfo):
     __tablename__ = u'rbRelationType'
@@ -5301,6 +5334,9 @@ class Rbrelationtype(db.Model, RBInfo):
     regionalCode = db.Column(db.String(64), nullable=False)
     regionalReverseCode = db.Column(db.String(64), nullable=False)
 
+    def __init__(self):
+        RBInfo.__init__(self)
+
 
 class Rbrequesttype(db.Model, RBInfo):
     __tablename__ = u'rbRequestType'
@@ -5309,6 +5345,9 @@ class Rbrequesttype(db.Model, RBInfo):
     code = db.Column(db.String(16), nullable=False, index=True)
     name = db.Column(db.Unicode(64), nullable=False, index=True)
     relevant = db.Column(db.Integer, nullable=False, server_default=u"'1'")
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbresult(db.Model, RBInfo):
@@ -5321,6 +5360,9 @@ class Rbresult(db.Model, RBInfo):
     continued = db.Column(db.Integer, nullable=False)
     regionalCode = db.Column(db.String(8), nullable=False)
 
+    def __init__(self):
+        RBInfo.__init__(self)
+
 
 class Rbscene(db.Model, RBInfo):
     __tablename__ = u'rbScene'
@@ -5329,6 +5371,9 @@ class Rbscene(db.Model, RBInfo):
     code = db.Column(db.String(8), nullable=False, index=True)
     name = db.Column(db.Unicode(64), nullable=False, index=True)
     serviceModifier = db.Column(db.Unicode(128), nullable=False)
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbservice(db.Model, RBInfo):
@@ -5357,6 +5402,9 @@ class Rbservice(db.Model, RBInfo):
 
     medicalAidProfile = db.relationship(u'Rbmedicalaidprofile')
     rbMedicalKind = db.relationship(u'Rbmedicalkind')
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbserviceclas(db.Model):
@@ -5514,6 +5562,9 @@ class Rbspeciality(db.Model, RBInfo):
     mkbFilter = db.Column(db.String(32), nullable=False)
     regionalCode = db.Column(db.String(16), nullable=False)
     quotingEnabled = db.Column(db.Integer, server_default=u"'0'")
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbstorage(db.Model):
