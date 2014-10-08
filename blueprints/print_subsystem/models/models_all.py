@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import calendar
 import jinja2
 from application.database import db
 from ..config import MODULE_NAME
@@ -1520,7 +1521,8 @@ class Client(db.Model, Info):
             return formatYearsMonths(years, months-12*years)
         elif months > 1:
             add_year, new_month = divmod(bd.month + months, 12)
-            fmonth_date = bd.replace(month=new_month, year=bd.year+add_year)
+            new_day = min(bd.day, calendar.monthrange(bd.year+add_year, new_month)[1])
+            fmonth_date = datetime.date(bd.year+add_year, new_month, new_day)
             return formatMonthsWeeks(months, (date-fmonth_date).days/7)
         else:
             return formatDays(days)
