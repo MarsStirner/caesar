@@ -184,8 +184,8 @@ class Action(db.Model):
     setPerson = db.relationship(u'Person', foreign_keys='Action.setPerson_id')
     takenTissue = db.relationship(u'Takentissuejournal')
     tissues = db.relationship(u'Tissue', secondary=u'ActionTissue')
-    properties = db.relationship(u'Actionproperty',
-                                 primaryjoin="and_(Actionproperty.action_id==Action.id, Actionproperty.type_id==Actionpropertytype.id)",
+    properties = db.relationship(u'ActionProperty',
+                                 primaryjoin="and_(ActionProperty.action_id==Action.id, ActionProperty.type_id==Actionpropertytype.id)",
                                  order_by="Actionpropertytype.idx")
     self_contract = db.relationship('Contract')
     bbt_response = db.relationship(u'BbtResponse', uselist=False)
@@ -583,7 +583,7 @@ class ActionpropertyHospitalbed(db.Model):
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = db.Column(db.ForeignKey('OrgStructure_HospitalBed.id'), index=True)
 
-    ActionProperty = db.relationship(u'Actionproperty')
+    ActionProperty = db.relationship(u'ActionProperty')
     OrgStructure_HospitalBed = db.relationship(u'OrgstructureHospitalbed')
 
     def get_value(self):
@@ -731,7 +731,7 @@ class ActionpropertyPerson(db.Model):
     index = db.Column(db.Integer, nullable=False, server_default=u"'0'")
     value = db.Column(db.ForeignKey('Person.id'), index=True)
 
-    ActionProperty = db.relationship(u'Actionproperty')
+    ActionProperty = db.relationship(u'ActionProperty')
     Person = db.relationship(u'Person')
 
     def get_value(self):
