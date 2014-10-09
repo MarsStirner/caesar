@@ -2675,8 +2675,18 @@ class Event(db.Model, Info):
         return self.eventType.finance
 
     @property
+    def orgStructure(self):
+        if self.eventType.requestType.code == 'policlinic' and self.orgStructure_id:
+            return Orgstructure.query.get(self.orgStructure_id)
+        elif self.eventType.requestType.code in ('hospital', 'clinic', 'stationary'):
+            movings = [action for action in self.actions if (action.endDate.datetime is None and
+                                                             action.actionType.flatCode == 'moving')]
+            return movings[-1][('orgStructStay',)].value if movings else None
+        return None
+
+    @property
     def departmentManager(self):
-        persons = Person.query.filter(Person.orgStructure_id == self.orgStructure_id).all() if self.orgStructure_id else []
+        persons = Person.query.filter(Person.orgStructure_id == self.orgStructure.id).all() if self.orgStructure else []
         if persons:
             for person in persons:
                 if person.post.flatCode == u'departmentManager':
