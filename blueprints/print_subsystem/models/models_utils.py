@@ -186,14 +186,14 @@ class TimeInfo(object):
 class DateTimeInfo(object):
     def __init__(self, date=None):
         if date is None:
-            self.datetime = datetime.datetime.now()
+            self.datetime = None
         else:
             self.datetime = date
 
     def __str__(self):
         if self.datetime:
-            date = self.datetime.date()
-            time = self.datetime.time()
+            date = self.datetime.date() if self.datetime else None
+            time = self.datetime.time() if self.datetime else None
             return formatDate(date) + ' ' + formatTime(time)
         else:
             return ''
@@ -204,13 +204,13 @@ class DateTimeInfo(object):
     def __radd__(self, x):
         return str(x)+formatDate(self.datetime)
 
-    date = property(lambda self: self.datetime.date())
-    time = property(lambda self: self.datetime.time())
+    date = property(lambda self: self.datetime.date() if self.datetime else None)
+    time = property(lambda self: self.datetime.time() if self.datetime else None)
 
 
 def formatDate(time):
-    return unicode(time.strftime('%d.%m.%Y'))
+    return unicode(time.strftime('%d.%m.%Y')) if time else ''
 
 
 def formatTime(time):
-    return unicode(time.strftime('%H:%M'))
+    return unicode(time.strftime('%H:%M')) if time else ''
