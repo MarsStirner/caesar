@@ -2590,7 +2590,7 @@ class Event(db.Model, Info):
         persons = Person.query.filter(Person.orgStructure_id == self.orgStructure.id).all() if self.orgStructure else []
         if persons:
             for person in persons:
-                if person.post.flatCode == u'departmentManager':
+                if person.post and person.post.flatCode == u'departmentManager':
                     return person
         return None
 
