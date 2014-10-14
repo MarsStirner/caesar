@@ -565,8 +565,11 @@ class ActionProperty_Date(ActionProperty__ValueType):
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(db.Date)
+    value_ = db.Column('value', db.Date)
 
+    @property
+    def value(self):
+        return DateInfo(self.value_)
     property_object = db.relationship('ActionProperty', backref='_value_Date')
 
 
