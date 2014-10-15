@@ -433,7 +433,7 @@ class ActionProperty(db.Model):
     def value(self):
         value_object = self.value_object
         if not value_object:
-            return None
+            return self.get_value_class()().value
         if self.type.isVector:
             return [item.value for item in value_object]
         else:
@@ -769,8 +769,12 @@ class ActionProperty_String(ActionProperty__ValueType):
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(db.Text, nullable=False)
+    value_ = db.Column('value', db.Text, nullable=False)
     property_object = db.relationship('ActionProperty', backref='_value_String')
+
+    @property
+    def value(self):
+        return self.value_ if self.value_ else ''
 
 
 class ActionProperty_Text(ActionProperty_String):
