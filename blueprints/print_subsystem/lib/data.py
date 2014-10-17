@@ -14,7 +14,7 @@ from specialvars import get_special_variable_value, SpecialVariable
 def current_patient_orgStructure(event_id):
     from ..models.models_all import ActionProperty, ActionProperty_OrgStructure, Actionpropertytype
     return Orgstructure.query.\
-        join(ActionProperty_OrgStructure, Orgstructure.id == ActionProperty_OrgStructure.value).\
+        join(ActionProperty_OrgStructure, Orgstructure.id == ActionProperty_OrgStructure.value_).\
         join(ActionProperty, ActionProperty.id == ActionProperty_OrgStructure.id).\
         join(Action).\
         join(Actionpropertytype).\
