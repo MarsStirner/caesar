@@ -569,7 +569,7 @@ class ActionProperty_Date(ActionProperty__ValueType):
 
     @property
     def value(self):
-        return DateInfo(self.value_)
+        return DateInfo(self.value_) if self.value_ else ''
     property_object = db.relationship('ActionProperty', backref='_value_Date')
 
 
