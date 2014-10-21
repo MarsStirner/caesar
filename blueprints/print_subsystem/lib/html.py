@@ -184,8 +184,18 @@ class HTMLRipper(HTMLParser, object):
         return result
 
 
+first_paragraph_re = re.compile('<p([\s>])', re.I)
+first_paragraph_re2 = re.compile('</p>', re.I)
+
+
 def replace_first_paragraph(string):
-    return string.replace('<p style=', '<span style=', 1).replace('</p>', '</span>', 1)
+    return first_paragraph_re2.sub(
+        '</span>',
+        first_paragraph_re.sub(
+            '<span\1',
+            string,
+            1),
+        1)
 
 
 def convenience_HtmlRip(value):
