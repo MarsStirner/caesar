@@ -411,8 +411,8 @@ class ActionProperty(db.Model):
 
     def __get_property_name(self):
         type_name = self.type.typeName
-        if type_name in ["Constructor", u"Жалобы", 'Text', 'Html']:
-            class_name = 'String'
+        if type_name in ["Constructor", u"Жалобы"]:
+            class_name = 'Text'
         elif type_name == u"Запись в др. ЛПУ":
             class_name = 'OtherLPURecord'
         elif type_name == "FlatDirectory":
@@ -752,6 +752,8 @@ class ActionProperty_OtherLPURecord(ActionProperty__ValueType):
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = db.Column(db.Text(collation=u'utf8_unicode_ci'), nullable=False)
 
+    property_object = db.relationship('ActionProperty', backref='_value_OtherLPURecord')
+
 
 class ActionProperty_Person(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_Person'
@@ -764,12 +766,15 @@ class ActionProperty_Person(ActionProperty__ValueType):
     property_object = db.relationship('ActionProperty', backref='_value_Person')
 
 
-class ActionProperty_String(ActionProperty__ValueType):
+class ActionProperty_String_Base(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_String'
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value_ = db.Column('value', db.Text, nullable=False)
+
+
+class ActionProperty_String(ActionProperty_String_Base):
     property_object = db.relationship('ActionProperty', backref='_value_String')
 
     @property
@@ -777,22 +782,28 @@ class ActionProperty_String(ActionProperty__ValueType):
         return self.value_ if self.value_ else ''
 
 
-class ActionProperty_Text(ActionProperty_String):
+class ActionProperty_Text(ActionProperty_String_Base):
+    property_object = db.relationship('ActionProperty', backref='_value_Text')
 
-    def get_value(self):
+    @property
+    def value(self):
         return replace_first_paragraph(convenience_HtmlRip(self.value)) if self.value else ''
 
 
-class ActionProperty_Html(ActionProperty_String):
+class ActionProperty_Html(ActionProperty_String_Base):
+    property_object = db.relationship('ActionProperty', backref='_value_Html')
 
-    def get_value(self):
+    @property
+    def value(self):
         return convenience_HtmlRip(self.value) if self.value else ''
 
 
 class ActionProperty_Table(ActionProperty_Integer_Base):
+    property_object = db.relationship('ActionProperty', backref='_value_Table')
 
-    def get_value(self, table_code):
-
+    @property
+    def value(self):
+        table_code = self.property_object.type.valueDomain
         trfu_tables = {"trfuOrderIssueResult": Trfuorderissueresult, "trfuLaboratoryMeasure": Trfulaboratorymeasure,
                        "trfuFinalVolume": Trfufinalvolume}
         table = Rbaptable.query.filter(Rbaptable.code == table_code).first()
@@ -800,8 +811,11 @@ class ActionProperty_Table(ActionProperty_Integer_Base):
         table_filed_names = [field.fieldName for field in table.fields]
         value_table_name = table.tableName
         master_field = table.masterField
-        values = trfu_tables[value_table_name].query.filter("{0}.{1} = {2}".format(value_table_name,
-                                                                                               master_field, self.value)).all()
+        values = trfu_tables[value_table_name].query.filter("{0}.{1} = {2}".format(
+            value_table_name,
+            master_field,
+            self.value)
+        ).all()
         template = u'''
                     <table width="100%" border="1" align="center" style="border-style:solid;" cellspacing="0">
                         <thead><tr>{% for col in field_names %}<th>{{ col }}</th>{% endfor %}</tr></thead>
@@ -826,7 +840,8 @@ class ActionProperty_Time(ActionProperty__ValueType):
 
 class ActionProperty_RLS(ActionProperty_Integer_Base):
 
-    def get_value(self):
+    @property
+    def value(self):
         return v_Nomen.query.get(self.value).first() if self.value else None
     property_object = db.relationship('ActionProperty', backref='_value_RLS')
 
