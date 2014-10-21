@@ -70,7 +70,7 @@ class Print_Template(object):
         if 'special_variables' in context:
             template = Rbprinttemplate.query.get(data['id'])
             spvars_in_template = re.findall(r"(SpecialVar_\w+)[^$\(,'\"\w]", template.templateText)  # то,что в фнкции не найдет
-            spvars_in_template = list(set(spvars_in_template))
+            spvars_in_template = set(spvars_in_template)
 
             special_variables = context['special_variables']
             del context['special_variables']
