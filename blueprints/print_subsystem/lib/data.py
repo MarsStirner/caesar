@@ -18,7 +18,10 @@ def current_patient_orgStructure(event_id):
         join(ActionProperty, ActionProperty.id == ActionProperty_OrgStructure.id).\
         join(Action).\
         join(Actionpropertytype).\
-        filter(Actionpropertytype.code == 'orgStructStay', Action.event_id == event_id).\
+        filter(
+            Actionpropertytype.code == 'orgStructStay',
+            Action.event_id == event_id,
+            Action.deleted == 0).\
         order_by(Action.begDate_raw.desc()).\
         first()
 
@@ -67,7 +70,7 @@ class Print_Template(object):
         if 'special_variables' in context:
             template = Rbprinttemplate.query.get(data['id'])
             spvars_in_template = re.findall(r"(SpecialVar_\w+)[^$\(,'\"\w]", template.templateText)  # то,что в фнкции не найдет
-            spvars_in_template = list(set(spvars_in_template))
+            spvars_in_template = set(spvars_in_template)
 
             special_variables = context['special_variables']
             del context['special_variables']
