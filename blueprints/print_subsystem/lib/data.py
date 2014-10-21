@@ -18,7 +18,10 @@ def current_patient_orgStructure(event_id):
         join(ActionProperty, ActionProperty.id == ActionProperty_OrgStructure.id).\
         join(Action).\
         join(Actionpropertytype).\
-        filter(Actionpropertytype.code == 'orgStructStay', Action.event_id == event_id).\
+        filter(
+            Actionpropertytype.code == 'orgStructStay',
+            Action.event_id == event_id,
+            Action.deleted == 0).\
         order_by(Action.begDate_raw.desc()).\
         first()
 
