@@ -834,8 +834,15 @@ class ActionProperty_Time(ActionProperty__ValueType):
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(db.Time, nullable=False)
+    value_ = db.Column('value', db.Time, nullable=False)
     property_object = db.relationship('ActionProperty', backref='_value_Time')
+
+    @property
+    def value(self):
+        return TimeInfo(self.value) if self.value else ''
+
+    def __str__(self):
+        return self.value
 
 
 class ActionProperty_RLS(ActionProperty_Integer_Base):
