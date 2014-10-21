@@ -3315,7 +3315,7 @@ class Orgstructure(db.Model, Info):
                 self.Net = self.organisation.net
         return self.Net
 
-    def get_org_structure_full_name(self, org_structure_id):
+    def get_org_structure_full_name(self):
         names = [self.code]
         ids = {self.id}
         parent_id = self.parent_id
@@ -3332,7 +3332,7 @@ class Orgstructure(db.Model, Info):
         return '/'.join(reversed(names))
 
     def getFullName(self):
-        return self.get_org_structure_full_name(self.id)
+        return self.get_org_structure_full_name()
 
     def getAddress(self):
         if not self.Address:
