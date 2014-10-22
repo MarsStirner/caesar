@@ -811,7 +811,7 @@ class ActionProperty_Table(ActionProperty_Integer_Base):
         values = trfu_tables[value_table_name].query.filter("{0}.{1} = {2}".format(
             value_table_name,
             master_field,
-            self.value)
+            self.value_)
         ).all()
         template = u'''
                     <table width="100%" border="1" align="center" style="border-style:solid;" cellspacing="0">
@@ -836,7 +836,7 @@ class ActionProperty_Time(ActionProperty__ValueType):
 
     @property
     def value(self):
-        return TimeInfo(self.value) if self.value else ''
+        return TimeInfo(self.value_) if self.value_ else ''
 
     def __str__(self):
         return self.value
