@@ -410,16 +410,13 @@ class ActionProperty(db.Model):
         return getattr(self.__class__, self.__get_property_name()).property.mapper.class_
 
     def __get_property_name(self):
-        type_name = self.type.typeName
-        if type_name in ["Constructor", u"Жалобы"]:
-            class_name = 'Text'
-        elif type_name == u"Запись в др. ЛПУ":
-            class_name = 'OtherLPURecord'
-        elif type_name == "FlatDirectory":
-            class_name = 'FDRecord'
-        else:
-            class_name = type_name
-        return '_value_{0}'.format(class_name)
+        return '_value_%s' % self.type.get_appendix()
+
+    def get_value_instance(self):
+        class_name = 'ActionProperty_%s' % self.type.get_appendix()
+        cls = globals().get(class_name)
+        if cls is not None:
+            return cls()
 
     @property
     def value_object(self):
@@ -432,8 +429,10 @@ class ActionProperty(db.Model):
     @property
     def value(self):
         value_object = self.value_object
+
         if not value_object:
-            return self.get_value_class()().value
+            value_object = [self.get_value_instance()]
+
         if self.type.isVector:
             return [item.value for item in value_object]
         else:
@@ -528,17 +527,15 @@ class Actionpropertytype(db.Model, Info):
     modifyDatetime = db.Column(db.DateTime, nullable=False)
     modifyPerson_id = db.Column(db.Integer)
 
-    @property
-    def value(self):
-        if self.typeName == "Constructor":
-            class_name = u'ActionProperty_Text'
-        elif self.typeName == "AnalysisStatus":
-            class_name = u'ActionProperty_Integer'
-        else:
-            class_name = u'ActionProperty_{0}'.format(self.typeName.capitalize())
-
-        cl = globals()[class_name]
-        return cl().get_value()
+    def get_appendix(self):
+        type_name = self.typeName
+        if type_name in ["Constructor", u"Жалобы"]:
+            return 'Text'
+        elif type_name == u"Запись в др. ЛПУ":
+            return 'OtherLPURecord'
+        elif type_name == "FlatDirectory":
+            return 'FDRecord'
+        return type_name
 
 
 class ActionProperty__ValueType(db.Model):
@@ -682,7 +679,7 @@ class ActionProperty_AnalysisStatus(ActionProperty_Integer_Base):
 
     @property
     def value(self):
-        return Rbanalysisstatus.query.get(self.value_)
+        return Rbanalysisstatus.query.get(self.value_) if self.value_ else None
 
     @value.setter
     def value(self, val):
@@ -694,7 +691,7 @@ class ActionProperty_OperationType(ActionProperty_Integer_Base):
 
     @property
     def value(self):
-        return Rboperationtype.query.get(self.value_)
+        return Rboperationtype.query.get(self.value_) if self.value_ else None
 
     @value.setter
     def value(self, val):
@@ -857,8 +854,10 @@ class ActionProperty_ReferenceRb(ActionProperty_Integer_Base):
 
     @property
     def value(self):
+        if not self.value_:
+            return None
         if not hasattr(self, 'table_name'):
-            domain = ActionProperty.query.get(self.id).type.valueDomain
+            domain = self.property_object.type.valueDomain
             self.table_name = domain.split(';')[0]
         model = get_model_by_name(self.table_name)
         return model.query.get(self.value_)
