@@ -784,7 +784,7 @@ class ActionProperty_Text(ActionProperty_String_Base):
 
     @property
     def value(self):
-        return replace_first_paragraph(convenience_HtmlRip(self.value)) if self.value else ''
+        return replace_first_paragraph(convenience_HtmlRip(self.value_)) if self.value_ else ''
 
 
 class ActionProperty_Html(ActionProperty_String_Base):
@@ -792,7 +792,7 @@ class ActionProperty_Html(ActionProperty_String_Base):
 
     @property
     def value(self):
-        return convenience_HtmlRip(self.value) if self.value else ''
+        return convenience_HtmlRip(self.value_) if self.value_ else ''
 
 
 class ActionProperty_Table(ActionProperty_Integer_Base):
@@ -846,7 +846,7 @@ class ActionProperty_RLS(ActionProperty_Integer_Base):
 
     @property
     def value(self):
-        return v_Nomen.query.get(self.value).first() if self.value else None
+        return v_Nomen.query.get(self.value_).first() if self.value_ else None
     property_object = db.relationship('ActionProperty', backref='_value_RLS')
 
 
