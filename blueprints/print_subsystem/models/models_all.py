@@ -3322,7 +3322,7 @@ class Orgstructure(db.Model, Info):
 
     def get_org_structure_full_name(self):
         names = [self.code]
-        ids = {self.id}
+        ids = set([self.id])
         parent_id = self.parent_id
         parent = self.parent
 
