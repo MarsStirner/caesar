@@ -1099,10 +1099,7 @@ class Address(db.Model, Info):
         from models_utils import get_kladr_city  # TODO: fix?
         text = ''
         if self.KLADRCode:
-            KLADRCode = self.KLADRCode
-            if len(KLADRCode) == 13:
-                KLADRCode = KLADRCode[:-2]
-            city_info = get_kladr_city(KLADRCode)
+            city_info = get_kladr_city(self.KLADRCode)
             text = city_info.get('fullname', u'-код региона не найден в кладр-')
         return text
 
@@ -1150,10 +1147,7 @@ class Address(db.Model, Info):
         from models_utils import get_kladr_street  # TODO: fix?
         text = ''
         if self.KLADRStreetCode:
-            KLADRStreetCode = self.KLADRStreetCode
-            if len(KLADRStreetCode) == 17:
-                KLADRStreetCode = KLADRStreetCode[:-2]
-            street_info = get_kladr_street(KLADRStreetCode)
+            street_info = get_kladr_street(self.KLADRStreetCode)
             text = street_info.get('name', u'-код улицы не найден в кладр-')
         return text
 
