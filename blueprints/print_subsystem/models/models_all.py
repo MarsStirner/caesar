@@ -416,7 +416,10 @@ class ActionProperty(db.Model):
         class_name = 'ActionProperty_%s' % self.type.get_appendix()
         cls = globals().get(class_name)
         if cls is not None:
-            return cls()
+            instance = cls()
+            instance.property_object = self
+            instance.idx = 0
+            return instance
 
     @property
     def value_object(self):
@@ -456,6 +459,9 @@ class ActionProperty(db.Model):
 
     #     if self.type.typeName == "Table":
     #         return values[0].get_value(self.type.valueDomain) if values else ""
+
+    def __nonzero__(self):
+        return bool(self.value_object is not None and (self.value or self.value == 0))
 
     def __unicode__(self):
         if self.type.isVector:
