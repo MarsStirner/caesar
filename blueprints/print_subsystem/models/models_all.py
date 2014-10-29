@@ -285,16 +285,18 @@ class Action(db.Model):
 
     @property
     def service(self):
-        finance = self.finance
-        if finance:
-            if not hasattr(self, '_finance_service'):
-                _finance_service = ActiontypeService.query.filter(
-                    ActiontypeService.master_id == self.actionType_id,
-                    ActiontypeService.finance_id == finance.id,
-                ).first()
-                self._finance_service = _finance_service
-            if self._finance_service:
-                return self._finance_service
+        # пока отключено, т.к. по процессу не используется в амбулатории
+
+        # finance = self.finance
+        # if finance:
+        #     if not hasattr(self, '_finance_service'):
+        #         _finance_service = ActiontypeService.query.filter(
+        #             ActiontypeService.master_id == self.actionType_id,
+        #             ActiontypeService.finance_id == finance.id,
+        #         ).first()
+        #         self._finance_service = _finance_service
+        #     if self._finance_service:
+        #         return self._finance_service.service
         return self.actionType.service if self.actionType else None
 
     @property
