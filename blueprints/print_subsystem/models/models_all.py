@@ -2515,7 +2515,7 @@ class Diagnostic(db.Model):
     rbAcheResult = db.relationship(u'Rbacheresult', innerjoin=True)
     result = db.relationship(u'Rbresult', innerjoin=True)
     person = db.relationship('Person', foreign_keys=[person_id])
-    event = db.relationship('Event', innerjoin=True)
+    event = db.relationship('Event', foreign_keys='Diagnostic.event_id', innerjoin=True)
     diagnoses = db.relationship(
         'Diagnosis', innerjoin=True, lazy=False, uselist=True,
         primaryjoin='and_(Diagnostic.diagnosis_id == Diagnosis.id, Diagnosis.deleted == 0)'
@@ -2685,6 +2685,14 @@ class Event(db.Model, Info):
                                     backref=db.backref('event'))
     client = db.relationship(u'Client')
     visits = db.relationship(u'Visit')
+
+    diagnosises = db.relationship(
+        u'Diagnosis',
+        secondary=Diagnostic.__table__,
+        primaryjoin='and_(Diagnostic.event_id == Event.id, Diagnostic.deleted == 0)',
+        secondaryjoin='and_(Diagnostic.diagnosis_id == Diagnosis.id, Diagnosis.deleted == 0)',
+        lazy=False, uselist=True
+    )
 
     @property
     def setDate(self):
