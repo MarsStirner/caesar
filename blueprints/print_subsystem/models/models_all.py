@@ -2692,7 +2692,7 @@ class Event(db.Model, Info):
         secondary=Diagnostic.__table__,
         primaryjoin='and_(Diagnostic.event_id == Event.id, Diagnostic.deleted == 0)',
         secondaryjoin='and_(Diagnostic.diagnosis_id == Diagnosis.id, Diagnosis.deleted == 0)',
-        lazy=False, uselist=True
+        uselist=True
     )
 
     @property
