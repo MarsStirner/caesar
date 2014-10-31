@@ -2450,7 +2450,7 @@ class Diagnosis(db.Model):
     client_id = db.Column(db.ForeignKey('Client.id'), index=True, nullable=False)
     diagnosisType_id = db.Column(db.ForeignKey('rbDiagnosisType.id'), index=True, nullable=False)
     character_id = db.Column(db.ForeignKey('rbDiseaseCharacter.id'), index=True)
-    MKB = db.Column(db.String(8), db.ForeignKey('MKB.DiagID'), index=True)
+    MKB_ = db.Column('MKB', db.String(8), db.ForeignKey('MKB.DiagID'), index=True)
     MKBEx = db.Column(db.String(8), db.ForeignKey('MKB.DiagID'), index=True)
     dispanser_id = db.Column(db.ForeignKey('rbDispanser.id'), index=True)
     traumaType_id = db.Column(db.ForeignKey('rbTraumaType.id'), index=True)
@@ -2464,7 +2464,8 @@ class Diagnosis(db.Model):
     client = db.relationship('Client')
     diagnosisType = db.relationship('rbDiagnosisType', lazy=False, innerjoin=True)
     character = db.relationship('rbDiseaseCharacter', lazy=False)
-    mkb = db.relationship('Mkb', foreign_keys=[MKB])
+    MKB = db.relationship('Mkb', foreign_keys=[MKB_])
+    mkb = db.relationship('Mkb', foreign_keys=[MKB_])
     mkb_ex = db.relationship('Mkb', foreign_keys=[MKBEx])
     dispanser = db.relationship('rbDispanser', lazy=False)
     mod = db.relationship('Diagnosis', remote_side=[id])
@@ -3223,7 +3224,29 @@ class Mkb(db.Model, Info):
     MKBSubclass_id = db.Column(db.Integer)
 
     def __unicode__(self):
-        return self.DiagID + ' ' + self.DiagName
+        return self.DiagID  # + ' ' + self.DiagName
+
+    @property
+    def descr(self):
+        mainCode = self.DiagID[:5]
+        subclass = self.DiagID[5:]
+        record = Mkb.query.filter(Mkb.DiagID == mainCode).first()
+        result = self.DiagID
+        if record:
+            result = record.DiagName
+            if subclass:
+                subclassId = record.MKBSubclass_id
+                recordSubclass = (RbmkbsubclassItem.
+                                  query.
+                                  filter(RbmkbsubclassItem.master_id == subclassId,
+                                         RbmkbsubclassItem.code == subclass).
+                                  first())
+                if recordSubclass:
+                    result = u'{0} {1}'.format(result, recordSubclass.name)
+                else:
+                    result = u'{0} {1}'.format(result, subclass)
+        return result
+
 
 
 class MkbQuotatypePacientmodel(db.Model):
