@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import calendar
 import jinja2
 from application.database import db
 from ..config import MODULE_NAME
@@ -1593,6 +1594,10 @@ class Client(db.Model, Info):
 
     @property
     def age(self):
+        date = self.date
+        bd = self.birthDate_raw
+        if not date:
+            date = datetime.date.today()
         if not self.ageTuple:
             return u'ещё не родился'
         (days, weeks, months, years) = self.ageTuple
@@ -1601,7 +1606,10 @@ class Client(db.Model, Info):
         elif years > 1:
             return formatYearsMonths(years, months-12*years)
         elif months > 1:
-            return formatMonthsWeeks(months, weeks)
+            add_year, new_month = divmod(bd.month + months, 12)
+            new_day = min(bd.day, calendar.monthrange(bd.year+add_year, new_month)[1])
+            fmonth_date = datetime.date(bd.year+add_year, new_month, new_day)
+            return formatMonthsWeeks(months, (date-fmonth_date).days/7)
         else:
             return formatDays(days)
 
@@ -2734,7 +2742,7 @@ class Event(db.Model, Info):
         persons = Person.query.filter(Person.orgStructure_id == self.orgStructure.id).all() if self.orgStructure else []
         if persons:
             for person in persons:
-                if person.post.flatCode == u'departmentManager':
+                if person.post and person.post.flatCode == u'departmentManager':
                     return person
         return None
 

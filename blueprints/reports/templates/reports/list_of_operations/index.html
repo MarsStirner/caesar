@@ -66,22 +66,22 @@
                 <td>{{ item.Data_otkrytiya }}</td>
                 <td>{{ item.externalId }}</td>
                 <td>{{ item.Data_vremya_protokola }}</td>
-                <td>{{ item.Nomer_operacii }}</td>
+                <td>{% if item.Nomer_operacii %}{{ item.Nomer_operacii }}{% endif %}</td>
                 <td>{{ item.Naimenovanie_operacii|striptags }}</td>
-                <td>{{ item.mkb }}</td>
-                <td>{{ item.ekstr }}</td>
+                <td>{% if item.mkb %}{{ item.mkb }}{% endif %}</td>
+                <td>{% if item.ekstr %}{{ item.ekstr }}{% endif %}</td>
                 <td>{% if item.Cel_operacii %}{{ item.Cel_operacii }}{% endif %}</td>
                 <td>{% if item.Tip_operacii %}{{ item.Tip_operacii }}{% endif %}</td>
-                <td>{{ item.Profil_operacii }}</td>
-                <td>{% if item.Oblast_operacii|striptags %}{{ item.Oblast_operacii|striptags }}{% endif %}</td>
-                <td>{{ item.Oblast_oper_god_ot4et|striptags }}</td>
-                <td>{{ item.po_povodu_zno }}</td>
-                <td>{% if item.ds_do_operacii|striptags %}{{ item.ds_do_operacii|striptags }}{% endif %}</td>
-                <td>{{ item.mo }}</td>
-                <td>{{ item.ina }}</td>
+                <td>{% if item.Profil_operacii %}{{ item.Profil_operacii }}{% endif %}</td>
+                <td>{% if item.Oblast_operacii %}{{ item.Oblast_operacii|striptags }}{% endif %}</td>
+                <td>{% if item.Oblast_oper_god_ot4et %}{{ item.Oblast_oper_god_ot4et|striptags }}{% endif %}</td>
+                <td>{% if item.po_povodu_zno %}{{ item.po_povodu_zno }}{% endif %}</td>
+                <td>{% if item.ds_do_operacii %}{{ item.ds_do_operacii|striptags }}{% endif %}</td>
+                <td>{% if item.mo %}{{ item.mo }}{% endif %}</td>
+                <td>{% if item.ina %}{{ item.ina }}{% endif %}</td>
                 <td>{% if item.ds_posle_operacii %}{{ item.ds_posle_operacii }}{% endif %}</td>
-                <td>{{ item.morf }}</td>
-                <td>{{ item.osl }}</td>
+                <td>{% if item.morf %}{{ item.morf }}{% endif %}</td>
+                <td>{% if item.osl %}{{ item.osl }}{% endif %}</td>
                 <td>{{ item.Isto4nik_finans }}</td>
             </tr>
             {% endfor %}
