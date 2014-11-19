@@ -1739,9 +1739,11 @@ class Clientattach(db.Model, Info):
     @property
     def code(self):
         return self.attachType.code
+
     @property
     def name(self):
         return self.attachType.name
+
     @property
     def outcome(self):
         return self.attachType.outcome
@@ -1760,9 +1762,9 @@ class Clientattach(db.Model, Info):
         return documents[-1]
 
     def __unicode__(self):
-        if self._ok:
+        try:
             result = self.name
-            if self._outcome:
+            if self.outcome:
                 result += ' ' + unicode(self.endDate)
             elif self.attachType.temporary:
                 result += ' ' + self.org.shortName
@@ -1772,7 +1774,7 @@ class Clientattach(db.Model, Info):
                     result += u' по ' + unicode(self.endDate)
             else:
                 result += ' ' + self.org.shortName
-        else:
+        except AttributeError:
             result = ''
         return result
 
