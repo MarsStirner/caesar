@@ -236,3 +236,12 @@ class Print_Template(object):
             'client': client,
             'client_ticket': client_ticket
         }
+
+    def context_risar(self, data):
+        event = None
+        if 'event_id' in data:
+            event_id = data['event_id']
+            event = Event.query.get(event_id)
+        return {
+            'event': event
+        }
