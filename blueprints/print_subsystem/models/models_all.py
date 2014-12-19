@@ -5382,7 +5382,7 @@ class Rbprinttemplate(db.Model):
     render = db.Column(db.Integer, nullable=False, server_default=u"'0'")
     templateText = db.Column(db.String, nullable=False)
 
-    meta_data = db.relationship('Rbprinttemplatemeta')
+    meta_data = db.relationship('Rbprinttemplatemeta', lazy=False)
 
 
 class Rbquotastatu(db.Model):
