@@ -3,7 +3,7 @@ import datetime
 
 from application.utils import string_to_datetime
 from ..models.models_all import Orgstructure, Person, Organisation, v_Client_Quoting, Event, Action, Account, Rbcashoperation, \
-    Client
+    Client, Mkb
 from ..models.schedule import ScheduleClientTicket
 from gui import applyTemplate
 from specialvars import SpecialVariable
@@ -55,6 +55,8 @@ class Print_Template(object):
                 context[name] = Orgstructure.query.get(int(value)) if value else None
             elif typeName == 'Service':
                 context[name] = Rbservice.query.get(int(value)) if value else None
+            elif typeName == 'MKB':
+                context[name] = Mkb.query.get(int(value)) if value else None
 
     def print_template(self, doc):
         context_type = doc['context_type']
