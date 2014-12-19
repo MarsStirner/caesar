@@ -5631,7 +5631,13 @@ class Rbspecialvariablespreference(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), nullable=False, unique=True)
+    arguments_raw = db.Column('arguments', db.Text)
     query_text = db.Column('query', db.Text, nullable=False)
+
+    @property
+    def arguments(self):
+        import json
+        return json.loads(self.arguments_raw) or []
 
 
 class Rbspeciality(db.Model, RBInfo):

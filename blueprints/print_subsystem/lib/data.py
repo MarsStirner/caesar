@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 import datetime
-import re
 
 from application.utils import string_to_datetime
 from ..models.models_all import Orgstructure, Person, Organisation, v_Client_Quoting, Event, Action, Account, Rbcashoperation, \
-    Client, Rbprinttemplate
-from ..models.models_utils import formatTime
+    Client
 from ..models.schedule import ScheduleClientTicket
 from gui import applyTemplate
-from specialvars import get_special_variable_value, SpecialVariable
+from specialvars import SpecialVariable
 
 
 def current_patient_orgStructure(event_id):
@@ -68,21 +66,12 @@ class Print_Template(object):
         context = dict(data['context'])
         self.update_context(data['id'], context)
         if 'special_variables' in context:
-            template = Rbprinttemplate.query.get(data['id'])
-            spvars_in_template = re.findall(r"(SpecialVar_\w+)[^$\(,'\"\w]", template.templateText)  # то,что в фнкции не найдет
-            spvars_in_template = set(spvars_in_template)
-
-            special_variables = context['special_variables']
+            # Я надеюсь, что нам не придётся этим пользоваться
+            ext = {}
+            for sp_name in context['special_variables']:
+                ext[sp_name] = SpecialVariable(sp_name, **context)
             del context['special_variables']
-            if special_variables:
-                for variable_name in special_variables:
-                    if variable_name in spvars_in_template:
-                        variavles_for_query = {}
-                        for name in special_variables[variable_name]:
-                            variavles_for_query[name] = context[name]
-                        sp_variable = get_special_variable_value(variable_name, variavles_for_query)
-                        context[variable_name] = sp_variable
-
+            context.update(ext)
         currentOrganisation = Organisation.query.get(context['currentOrganisation']) if \
             context['currentOrganisation'] else ""
         currentOrgStructure = Orgstructure.query.get(context['currentOrgStructure']) if \
@@ -93,10 +82,7 @@ class Print_Template(object):
         context.update({
             'currentOrganisation': currentOrganisation,
             'currentOrgStructure': currentOrgStructure,
-            'currentPerson': currentPerson
-        })
-
-        context.update({
+            'currentPerson': currentPerson,
             'SpecialVariable': SpecialVariable
         })
 
