@@ -468,7 +468,7 @@ class ActionProperty(db.Model):
 
     def __unicode__(self):
         if self.type.isVector:
-            return '\n'.join([unicode(item) for item in self.value])
+            return ', '.join([unicode(item) for item in self.value])
         else:
             return unicode(self.value)
     # image = property(lambda self: self._property.getImage())
@@ -5824,12 +5824,15 @@ class Rbtransferdatetype(db.Model):
     name = db.Column(db.Text(collation=u'utf8_unicode_ci'), nullable=False)
 
 
-class rbTraumaType(db.Model):
+class rbTraumaType(db.Model, RBInfo):
     __tablename__ = u'rbTraumaType'
 
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(8), nullable=False, index=True)
     name = db.Column(db.String(64), nullable=False, index=True)
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbtreatment(db.Model, RBInfo):

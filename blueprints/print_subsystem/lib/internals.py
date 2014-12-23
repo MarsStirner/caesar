@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from jinja2 import Template
+from jinja2 import FileSystemLoader
+from jinja2.environment import Environment
 
 from context import CTemplateContext
-from html import escape, escapenl, HTMLRipper, date_toString, time_toString
+from html import escape, escapenl, HTMLRipper, date_toString, time_toString, addDays
 from flask import url_for
 
 __author__ = 'mmalkov'
@@ -37,7 +39,7 @@ def renderTemplate(template, data, render=1):
         'setLeftMargin': setLeftMargin,
         'setTopMargin': setTopMargin,
         'setRightMargin': setRightMargin,
-        'setBottomMargin': setBottomMargin,
+        'setBottomMargin': setBottomMargin
     }
     #
     # useful_builtins = dict((key, __builtins__[key]) for key in (
@@ -58,9 +60,13 @@ def renderTemplate(template, data, render=1):
             context.update({"now": execContext.now,
                             "date_toString": date_toString,
                             "time_toString": time_toString,
+                            "addDays": addDays,
                             "images": url_for(".static", filename="i/", _external=True)
                             })
-            result = Template(template, finalize=suppress_nones).render(context)
+            env = Environment()
+            env.loader = FileSystemLoader('blueprints/print_subsystem/templates/print_subsystem')
+            macros = "{% import '_macros.html' as macros %}"
+            result = env.from_string(macros+template, globals=global_vars).render(context)
         except Exception:
             print "ERROR: template.render(data)"
             # QtGui.qApp.log('Template code failed', str(context))
