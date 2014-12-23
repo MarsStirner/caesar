@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
+import datetime
+from sqlalchemy.exc import ProgrammingError, OperationalError
 
 from ..models.models_all import Rbspecialvariablespreference
 from application.database import db
@@ -28,6 +30,36 @@ def SpecialVariable(name, *args, **kwargs):
         else:
             raise RuntimeError(u'Argument "%s" of special variable "%s" is not initialized in call' % (arg_name, name))
 
-    sql_text = re.sub(ur'::(\w+)', ur':\1', sql_text, re.U)
+    # Эта самая страшная функция. Она должна разварачивать каждую переменную SQL-запроса в её значение
+    # Самая жопа в том, что это должно быть БЕЗОПАСНО.
+    # Ну и, конечно, при переходе на PgSql, стопудово придётся переписывать
+    def matcher(match):
+        arg_name = match.group(1)
+        value = arguments[arg_name]
+        if isinstance(value, list):
+            return u','.join(u"'%s'" % unicode(i).replace(ur"'", ur"\'") for i in value)
+        elif isinstance(value, basestring):
+            return value.replace(ur"'", ur"\'")
+        elif value is None:
+            return u'NULL'
+        elif isinstance(value, datetime.datetime):
+            return u"'%s'" % value.strftime('%Y-%m-%d %H:%M')
+        elif isinstance(value, datetime.date):
+            return u"'%s'" % value.strftime('%Y-%m-%d')
+        elif isinstance(value, datetime.time):
+            return u"'%s'" % value.strftime('%H:%M')
+        else:
+            return unicode(value)
 
-    return db.session.execute(sql_text, arguments).fetchall()
+    sql_text = re.sub('::?@?(\w+)', matcher, sql_text, flags=re.U)
+
+    try:
+        result = db.session.execute(sql_text).fetchall()
+    except ProgrammingError:
+        print u"Ошибка в специальной переменной", name
+        raise
+    except OperationalError:
+        print u"Ошибка при выполнении специальной переменной", name
+        raise
+    else:
+        return result

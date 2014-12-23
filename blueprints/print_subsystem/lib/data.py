@@ -33,7 +33,7 @@ class Print_Template(object):
         from ..models.models_all import Rbprinttemplatemeta, Organisation, Orgstructure, Rbservice, Person
         for desc in Rbprinttemplatemeta.query.filter(Rbprinttemplatemeta.template_id == template_id):
             name = desc.name
-            if not name in context:
+            if name not in context:
                 continue
             value = context[name]
             typeName = desc.type

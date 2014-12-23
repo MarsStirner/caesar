@@ -24,6 +24,24 @@ class RenderTemplateException(Exception):
         self.data = data
 
 
+def make_jinja_environment():
+    from .filters import do_datetime_format, do_datetime_combine, do_datetime_add_days, do_sum_columns, \
+        do_table_column, do_table_uniform, do_transpose_table
+    env = Environment(
+        loader=FileSystemLoader('blueprints/print_subsystem/templates/print_subsystem')
+    )
+    env.filters.update({
+        'datetime_format': do_datetime_format,
+        'datetime_combine': do_datetime_combine,
+        'datetime_add_days': do_datetime_add_days,
+        'transpose_table': do_transpose_table,
+        'sum_columns': do_sum_columns,
+        'table_column': do_table_column,
+        'table_uniform': do_table_uniform,
+    })
+    return env
+
+
 def renderTemplate(template, data, render=1):
     # Формируем execContext
     global_vars = {
@@ -41,13 +59,6 @@ def renderTemplate(template, data, render=1):
         'setRightMargin': setRightMargin,
         'setBottomMargin': setBottomMargin
     }
-    #
-    # useful_builtins = dict((key, __builtins__[key]) for key in (
-    #     'abs', 'all', 'any', 'bin', 'bool', 'bytes', 'chr', 'complex', 'dict', 'enumerate', 'filter',
-    #     'float', 'hash', 'hex', 'id', 'int', 'iter', 'len', 'list', 'long', 'map', 'max', 'min', 'next',
-    #     'oct', 'ord', 'pow', 'range', 'reduce', 'reversed', 'round', 'set', 'slice', 'sorted', 'str', 'sum',
-    #     'tuple', 'unichr', 'unicode', 'xrange', 'zip'))
-    # global_vars.update(useful_builtins)
 
     execContext = CTemplateContext(global_vars, data)
 
@@ -63,14 +74,11 @@ def renderTemplate(template, data, render=1):
                             "addDays": addDays,
                             "images": url_for(".static", filename="i/", _external=True)
                             })
-            env = Environment()
-            env.loader = FileSystemLoader('blueprints/print_subsystem/templates/print_subsystem')
+            env = make_jinja_environment()
             macros = "{% import '_macros.html' as macros %}"
             result = env.from_string(macros+template, globals=global_vars).render(context)
         except Exception:
             print "ERROR: template.render(data)"
-            # QtGui.qApp.log('Template code failed', str(context))
-            # QtGui.qApp.logCurrentException()
             raise
     else:
         result = u"<HTML><HEAD></HEAD><BODY>Не удалось выполнить шаблон</BODY></HTML>"
