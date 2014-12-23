@@ -36,7 +36,7 @@ def SpecialVariable(name, *args, **kwargs):
     def matcher(match):
         arg_name = match.group(1)
         if arg_name not in arguments:
-            return match.group(0)
+            return '\\' + match.group(0)
         value = arguments[arg_name]
         if isinstance(value, list):
             return u','.join(u"'%s'" % unicode(i).replace(ur"'", ur"\'") for i in value)

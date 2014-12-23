@@ -5637,7 +5637,10 @@ class Rbspecialvariablespreference(db.Model):
     @property
     def arguments(self):
         import json
-        return json.loads(self.arguments_raw) or []
+        try:
+            return json.loads(self.arguments_raw) or []
+        except:
+            return []
 
 
 class Rbspeciality(db.Model, RBInfo):
