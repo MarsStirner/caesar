@@ -41,7 +41,7 @@ def SpecialVariable(name, *args, **kwargs):
         if isinstance(value, list):
             return u','.join(u"'%s'" % unicode(i).replace(ur"'", ur"\'") for i in value)
         elif isinstance(value, basestring):
-            return value.replace(ur"'", ur"\'")
+            return u"'%s'" % value.replace(ur"'", ur"\'")
         elif value is None:
             return u'NULL'
         elif isinstance(value, datetime.datetime):

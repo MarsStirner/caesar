@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from jinja2 import Template
+import datetime
 from jinja2 import FileSystemLoader
 from jinja2.environment import Environment
 
@@ -28,7 +28,8 @@ def make_jinja_environment():
     from .filters import do_datetime_format, do_datetime_combine, do_datetime_add_days, do_sum_columns, \
         do_table_column, do_table_uniform, do_transpose_table
     env = Environment(
-        loader=FileSystemLoader('blueprints/print_subsystem/templates/print_subsystem')
+        loader=FileSystemLoader('blueprints/print_subsystem/templates/print_subsystem'),
+        finalize=finalizer,
     )
     env.filters.update({
         'datetime_format': do_datetime_format,
@@ -88,8 +89,16 @@ def renderTemplate(template, data, render=1):
     return result
 
 
-def suppress_nones(obj):
-    return obj if obj is not None else ''
+def finalizer(obj):
+    if obj is None:
+        return ''
+    elif isinstance(obj, datetime.datetime):
+        return obj.strftime('%d.%m.%Y %H:%M')
+    elif isinstance(obj, datetime.date):
+        return obj.strftime('%d.%m.%Y')
+    elif isinstance(obj, datetime.time):
+        return obj.strftime('%H:%M')
+    return obj
 
 
 def setPageSize(page_size):
