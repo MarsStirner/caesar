@@ -28,8 +28,9 @@ class ConfigVariables(db.Model):
         return self.code
 
 
-class Info(object):
+class Info(db.Model):
     u"""Базовый класс для представления объектов при передаче в шаблоны печати"""
+    __abstract__ = True
 
     def __cmp__(self, x):
         ss = unicode(self)
@@ -49,6 +50,8 @@ class Info(object):
 
 
 class RBInfo(Info):
+    __abstract__ = True
+    
     def __init__(self):
         self.code = ""
         self.name = ""
@@ -57,7 +60,7 @@ class RBInfo(Info):
         return self.name
 
 
-class Account(db.Model, Info):
+class Account(Info):
     __tablename__ = u'Account'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -97,7 +100,7 @@ class Account(db.Model, Info):
         return u'%s от %s' % (self.number, self.date)
 
 
-class AccountItem(db.Model, Info):
+class AccountItem(Info):
     __tablename__ = u'Account_Item'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -138,7 +141,7 @@ class AccountItem(db.Model, Info):
         return u'%s %s %s' % (self.serviceDate, self.event.client, self.sum)
 
 
-class Action(db.Model):
+class Action(Info):
     __tablename__ = u'Action'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -386,7 +389,7 @@ class Action(db.Model):
             return self.get_property_by_index(key)
 
 
-class ActionProperty(db.Model):
+class ActionProperty(Info):
     __tablename__ = u'ActionProperty'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -475,7 +478,7 @@ class ActionProperty(db.Model):
     # imageUrl = property(_getImageUrl)
 
 
-class Actionpropertytemplate(db.Model):
+class Actionpropertytemplate(Info):
     __tablename__ = u'ActionPropertyTemplate'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -500,7 +503,7 @@ class Actionpropertytemplate(db.Model):
     service_id = db.Column(db.Integer, index=True)
 
 
-class Actionpropertytype(db.Model, Info):
+class Actionpropertytype(Info):
     __tablename__ = u'ActionPropertyType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -547,7 +550,7 @@ class Actionpropertytype(db.Model, Info):
         return type_name
 
 
-class ActionProperty__ValueType(db.Model):
+class ActionProperty__ValueType(Info):
     __abstract__ = True
 
     @classmethod
@@ -911,7 +914,7 @@ class ActionProperty_rbReasonOfAbsence(ActionProperty__ValueType):
     property_object = db.relationship('ActionProperty', backref='_value_rbReasonOfAbsence')
 
 
-class Actiontemplate(db.Model):
+class Actiontemplate(Info):
     __tablename__ = u'ActionTemplate'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -941,7 +944,7 @@ t_ActionTissue = db.Table(
 )
 
 
-class Actiontype(db.Model, Info):
+class Actiontype(Info):
     __tablename__ = u'ActionType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1009,7 +1012,7 @@ class Actiontype(db.Model, Info):
         return None
 
 
-class ActiontypeEventtypeCheck(db.Model):
+class ActiontypeEventtypeCheck(Info):
     __tablename__ = u'ActionType_EventType_check'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1023,7 +1026,7 @@ class ActiontypeEventtypeCheck(db.Model):
     related_actionType = db.relationship(u'Actiontype', primaryjoin='ActiontypeEventtypeCheck.related_actionType_id == Actiontype.id')
 
 
-class ActiontypeQuotatype(db.Model):
+class ActiontypeQuotatype(Info):
     __tablename__ = u'ActionType_QuotaType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1034,7 +1037,7 @@ class ActiontypeQuotatype(db.Model):
     quotaType_id = db.Column(db.Integer, index=True)
 
 
-class ActiontypeService(db.Model):
+class ActiontypeService(Info):
     __tablename__ = u'ActionType_Service'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1047,7 +1050,7 @@ class ActiontypeService(db.Model):
     finance = db.relationship('Rbfinance')
     service = db.relationship('Rbservice')
 
-class ActiontypeTissuetype(db.Model):
+class ActiontypeTissuetype(Info):
     __tablename__ = u'ActionType_TissueType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1062,7 +1065,7 @@ class ActiontypeTissuetype(db.Model):
     unit = db.relationship(u'Rbunit')
 
 
-class ActiontypeUser(db.Model):
+class ActiontypeUser(Info):
     __tablename__ = u'ActionType_User'
     __table_args__ = (
         db.Index(u'person_id_profile_id', u'person_id', u'profile_id'),
@@ -1078,7 +1081,7 @@ class ActiontypeUser(db.Model):
     profile = db.relationship(u'Rbuserprofile')
 
 
-class Address(db.Model, Info):
+class Address(Info):
     __tablename__ = u'Address'
     __table_args__ = (
         db.Index(u'house_id', u'house_id', u'flat'),
@@ -1172,7 +1175,7 @@ class Address(db.Model, Info):
         return self.text
 
 
-class Addressareaitem(db.Model):
+class Addressareaitem(Info):
     __tablename__ = u'AddressAreaItem'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1191,7 +1194,7 @@ class Addressareaitem(db.Model):
     endDate = db.Column(db.Date)
 
 
-class Addresshouse(db.Model):
+class Addresshouse(Info):
     __tablename__ = u'AddressHouse'
     __table_args__ = (
         db.Index(u'KLADRCode', u'KLADRCode', u'KLADRStreetCode', u'number', u'corpus'),
@@ -1209,7 +1212,7 @@ class Addresshouse(db.Model):
     corpus = db.Column(db.String(8), nullable=False)
 
 
-class Applock(db.Model):
+class Applock(Info):
     __tablename__ = u'AppLock'
 
     id = db.Column(db.BigInteger, primary_key=True)
@@ -1240,7 +1243,7 @@ t_AssignmentHour = db.Table(
 )
 
 
-class Bank(db.Model, Info):
+class Bank(Info):
     __tablename__ = u'Bank'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1256,7 +1259,7 @@ class Bank(db.Model, Info):
     subAccount = db.Column(db.String(20), nullable=False)
 
 
-class Blankaction(db.Model):
+class Blankaction(Info):
     __tablename__ = u'BlankActions'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1270,7 +1273,7 @@ class Blankaction(db.Model):
     doctype = db.relationship(u'Actiontype')
 
 
-class BlankactionsMoving(db.Model):
+class BlankactionsMoving(Info):
     __tablename__ = u'BlankActions_Moving'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1296,7 +1299,7 @@ class BlankactionsMoving(db.Model):
     person = db.relationship(u'Person', primaryjoin='BlankactionsMoving.person_id == Person.id')
 
 
-class BlankactionsParty(db.Model):
+class BlankactionsParty(Info):
     __tablename__ = u'BlankActions_Party'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1323,7 +1326,7 @@ class BlankactionsParty(db.Model):
     person = db.relationship(u'Person', primaryjoin='BlankactionsParty.person_id == Person.id')
 
 
-class BlanktempinvalidMoving(db.Model):
+class BlanktempinvalidMoving(Info):
     __tablename__ = u'BlankTempInvalid_Moving'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1349,7 +1352,7 @@ class BlanktempinvalidMoving(db.Model):
     person = db.relationship(u'Person', primaryjoin='BlanktempinvalidMoving.person_id == Person.id')
 
 
-class BlanktempinvalidParty(db.Model):
+class BlanktempinvalidParty(Info):
     __tablename__ = u'BlankTempInvalid_Party'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1376,7 +1379,7 @@ class BlanktempinvalidParty(db.Model):
     person = db.relationship(u'Person', primaryjoin='BlanktempinvalidParty.person_id == Person.id')
 
 
-class Blanktempinvalid(db.Model):
+class Blanktempinvalid(Info):
     __tablename__ = u'BlankTempInvalids'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1390,7 +1393,7 @@ class Blanktempinvalid(db.Model):
     doctype = db.relationship(u'Rbtempinvaliddocument')
 
 
-class Bloodhistory(db.Model):
+class Bloodhistory(Info):
     __tablename__ = u'BloodHistory'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1400,7 +1403,7 @@ class Bloodhistory(db.Model):
     person_id = db.Column(db.Integer, nullable=False)
 
 
-class Calendarexception(db.Model):
+class Calendarexception(Info):
     __tablename__ = u'CalendarExceptions'
     __table_args__ = (
         db.Index(u'CHANGEDAY', u'date', u'fromDate'),
@@ -1421,7 +1424,7 @@ class Calendarexception(db.Model):
     text = db.Column(db.String(250), nullable=False)
 
 
-class Client(db.Model, Info):
+class Client(Info):
     __tablename__ = u'Client'
     __table_args__ = (
         db.Index(u'lastName', u'lastName', u'firstName', u'patrName', u'birthDate', u'id'),
@@ -1628,7 +1631,7 @@ class Client(db.Model, Info):
         return self.formatShortNameInt(self.lastName, self.firstName, self.patrName)
 
 
-class Patientstohs(db.Model):
+class Patientstohs(Info):
     __tablename__ = u'PatientsToHS'
 
     client_id = db.Column(db.ForeignKey('Client.id'), primary_key=True)
@@ -1637,7 +1640,7 @@ class Patientstohs(db.Model):
     info = db.Column(db.String(1024))
 
 
-class Clientaddress(db.Model, Info):
+class Clientaddress(Info):
     __tablename__ = u'ClientAddress'
     __table_args__ = (
         db.Index(u'address_id', u'address_id', u'type'),
@@ -1694,7 +1697,7 @@ class Clientaddress(db.Model, Info):
             return self.freeInput
 
 
-class Clientallergy(db.Model, Info):
+class Clientallergy(Info):
     __tablename__ = u'ClientAllergy'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1716,7 +1719,7 @@ class Clientallergy(db.Model, Info):
         return self.name
 
 
-class Clientattach(db.Model, Info):
+class Clientattach(Info):
     __tablename__ = u'ClientAttach'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1782,7 +1785,7 @@ class Clientattach(db.Model, Info):
         return result
 
 
-class Clientcontact(db.Model, Info):
+class Clientcontact(Info):
     __tablename__ = u'ClientContact'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1808,7 +1811,7 @@ class Clientcontact(db.Model, Info):
         return (self.name+': '+self.contact+' ('+self.notes+')') if self.notes else (self.name+': '+self.contact)
 
 
-class Clientdocument(db.Model, Info):
+class Clientdocument(Info):
     __tablename__ = u'ClientDocument'
     __table_args__ = (
         db.Index(u'Ser_Numb', u'serial', u'number'),
@@ -1841,7 +1844,7 @@ class Clientdocument(db.Model, Info):
                           self.number if self.number else ''])).strip()
 
 
-class Clientfdproperty(db.Model):
+class Clientfdproperty(Info):
     __tablename__ = u'ClientFDProperty'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1853,7 +1856,7 @@ class Clientfdproperty(db.Model):
     flatDirectory = db.relationship(u'Flatdirectory')
 
 
-class Clientflatdirectory(db.Model):
+class Clientflatdirectory(Info):
     __tablename__ = u'ClientFlatDirectory'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1875,7 +1878,7 @@ class Clientflatdirectory(db.Model):
     fdRecord = db.relationship(u'Fdrecord')
 
 
-class Clientidentification(db.Model, Info):
+class Clientidentification(Info):
     __tablename__ = u'ClientIdentification'
     __table_args__ = (
         db.Index(u'accountingSystem_id', u'accountingSystem_id', u'identifier'),
@@ -1908,7 +1911,7 @@ class Clientidentification(db.Model, Info):
     # nameDict = {code: name}
 
 
-class Clientintolerancemedicament(db.Model, Info):
+class Clientintolerancemedicament(Info):
     __tablename__ = u'ClientIntoleranceMedicament'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -1930,7 +1933,7 @@ class Clientintolerancemedicament(db.Model, Info):
         return self.name
 
 
-class Clientpolicy(db.Model, Info):
+class Clientpolicy(Info):
     __tablename__ = u'ClientPolicy'
     __table_args__ = (
         db.Index(u'Serial_Num', u'serial', u'number'),
@@ -1970,7 +1973,7 @@ class Clientpolicy(db.Model, Info):
         return (' '.join([self.policyType.name, unicode(self.insurer), self.serial, self.number])).strip()
 
 
-class Clientrelation(db.Model, Info):
+class Clientrelation(Info):
     __tablename__ = u'ClientRelation'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2114,7 +2117,7 @@ class ReversedClientRelation(Clientrelation):
         return self.name + ' ' + self.other
 
 
-class Clientsocstatus(db.Model, Info):
+class Clientsocstatus(Info):
     __tablename__ = u'ClientSocStatus'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2167,7 +2170,7 @@ class Clientsocstatus(db.Model, Info):
         return self.name
 
 
-class Clientwork(db.Model):
+class Clientwork(Info):
     __tablename__ = u'ClientWork'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2203,7 +2206,7 @@ class Clientwork(db.Model):
     #TODO: насл от OrgInfo
 
 
-class ClientworkHurt(db.Model, Info):
+class ClientworkHurt(Info):
     __tablename__ = u'ClientWork_Hurt'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2225,7 +2228,7 @@ class ClientworkHurt(db.Model, Info):
     name = property(hurtTypeName)
 
 
-class ClientworkHurtFactor(db.Model, Info):
+class ClientworkHurtFactor(Info):
     __tablename__ = u'ClientWork_Hurt_Factor'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2244,7 +2247,7 @@ class ClientworkHurtFactor(db.Model, Info):
         return self.factorType.name
 
 
-class ClientQuoting(db.Model):
+class ClientQuoting(Info):
     __tablename__ = u'Client_Quoting'
     __table_args__ = (
         db.Index(u'deleted_prevTalon_event_id', u'deleted', u'prevTalon_event_id'),
@@ -2282,7 +2285,7 @@ class ClientQuoting(db.Model):
     master = db.relationship(u'Client')
 
 
-class ClientQuotingdiscussion(db.Model):
+class ClientQuotingdiscussion(Info):
     __tablename__ = u'Client_QuotingDiscussion'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2298,7 +2301,7 @@ class ClientQuotingdiscussion(db.Model):
     master = db.relationship(u'Client')
 
 
-class Contract(db.Model, Info):
+class Contract(Info):
     __tablename__ = u'Contract'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2356,7 +2359,7 @@ class Contract(db.Model, Info):
         return self.number + ' ' + self.date
 
 
-class ContractContingent(db.Model):
+class ContractContingent(Info):
     __tablename__ = u'Contract_Contingent'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2376,7 +2379,7 @@ class ContractContingent(db.Model):
     age_ec = db.Column(db.SmallInteger)
 
 
-class ContractContragent(db.Model):
+class ContractContragent(Info):
     __tablename__ = u'Contract_Contragent'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2390,7 +2393,7 @@ class ContractContragent(db.Model):
     endDate = db.Column(db.Date, nullable=False)
 
 
-class ContractSpecification(db.Model):
+class ContractSpecification(Info):
     __tablename__ = u'Contract_Specification'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2399,7 +2402,7 @@ class ContractSpecification(db.Model):
     eventType_id = db.Column(db.Integer, nullable=False, index=True)
 
 
-class ContractTariff(db.Model):
+class ContractTariff(Info):
     __tablename__ = u'Contract_Tariff'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2436,7 +2439,7 @@ class ContractTariff(db.Model):
     rbServiceFinance = db.relationship(u'Rbservicefinance')
 
 
-class Couponstransferquote(db.Model):
+class Couponstransferquote(Info):
     __tablename__ = u'CouponsTransferQuotes'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2451,7 +2454,7 @@ class Couponstransferquote(db.Model):
     rbTransferDateType = db.relationship(u'Rbtransferdatetype')
 
 
-class Diagnosis(db.Model):
+class Diagnosis(Info):
     __tablename__ = u'Diagnosis'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2495,7 +2498,7 @@ class Diagnosis(db.Model):
         }
 
 
-class Diagnostic(db.Model):
+class Diagnostic(Info):
     __tablename__ = u'Diagnostic'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2551,7 +2554,7 @@ class Diagnostic(db.Model):
         return self.diagnosisType + ' ' + self.diagnosis.mkb
 
 
-class Drugchart(db.Model):
+class Drugchart(Info):
     __tablename__ = u'DrugChart'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2569,7 +2572,7 @@ class Drugchart(db.Model):
     master = db.relationship(u'Drugchart', remote_side=[id])
 
 
-class Drugcomponent(db.Model):
+class Drugcomponent(Info):
     __tablename__ = u'DrugComponent'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2584,7 +2587,7 @@ class Drugcomponent(db.Model):
     action = db.relationship(u'Action')
 
 
-class Emergencybrigade(db.Model):
+class Emergencybrigade(Info):
     __tablename__ = u'EmergencyBrigade'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2593,7 +2596,7 @@ class Emergencybrigade(db.Model):
     codeRegional = db.Column(db.String(8), nullable=False, index=True)
 
 
-class EmergencybrigadePersonnel(db.Model):
+class EmergencybrigadePersonnel(Info):
     __tablename__ = u'EmergencyBrigade_Personnel'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2602,7 +2605,7 @@ class EmergencybrigadePersonnel(db.Model):
     person_id = db.Column(db.Integer, nullable=False, index=True)
 
 
-class Emergencycall(db.Model):
+class Emergencycall(Info):
     __tablename__ = u'EmergencyCall'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2642,7 +2645,7 @@ class Emergencycall(db.Model):
     noteCall = db.Column(db.Text, nullable=False)
 
 
-class Event(db.Model, Info):
+class Event(Info):
     __tablename__ = u'Event'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2768,7 +2771,7 @@ class Hsintegration(Event):
     info = db.Column(db.String(1024))
 
 
-class Eventtype(db.Model, RBInfo):
+class Eventtype(RBInfo):
     __tablename__ = u'EventType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2834,7 +2837,7 @@ class Eventtype(db.Model, RBInfo):
     requestType = db.relationship(u'Rbrequesttype')
 
 
-class Eventtypeform(db.Model):
+class Eventtypeform(Info):
     __tablename__ = u'EventTypeForm'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2846,7 +2849,7 @@ class Eventtypeform(db.Model):
     pass_ = db.Column(u'pass', db.Integer, nullable=False)
 
 
-class EventtypeAction(db.Model):
+class EventtypeAction(Info):
     __tablename__ = u'EventType_Action'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2870,7 +2873,7 @@ class EventtypeAction(db.Model):
     tissueType = db.relationship(u'Rbtissuetype')
 
 
-class EventtypeDiagnostic(db.Model):
+class EventtypeDiagnostic(Info):
     __tablename__ = u'EventType_Diagnostic'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2891,7 +2894,7 @@ class EventtypeDiagnostic(db.Model):
     visitType_id = db.Column(db.Integer)
 
 
-class EventFeed(db.Model):
+class EventFeed(Info):
     __tablename__ = u'Event_Feed'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2906,7 +2909,7 @@ class EventFeed(db.Model):
     diet_id = db.Column(db.Integer, index=True)
 
 
-class EventLocalcontract(db.Model, Info):
+class EventLocalcontract(Info):
     __tablename__ = u'Event_LocalContract'
     __table_args__ = (
         db.Index(u'lastName', u'lastName', u'firstName', u'patrName', u'birthDate', u'id'),
@@ -2974,7 +2977,7 @@ class EventLocalcontract(db.Model, Info):
         return self.regAddress
 
 
-class EventPayment(db.Model):
+class EventPayment(Info):
     __tablename__ = u'Event_Payment'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -2996,7 +2999,7 @@ class EventPayment(db.Model):
     cashOperation = db.relationship(u'Rbcashoperation')
 
 
-class EventPerson(db.Model):
+class EventPerson(Info):
     __tablename__ = u'Event_Persons'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3006,7 +3009,7 @@ class EventPerson(db.Model):
     endDate = db.Column(db.DateTime)
 
 
-class Fdfield(db.Model):
+class Fdfield(Info):
     __tablename__ = u'FDField'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3028,7 +3031,7 @@ class Fdfield(db.Model):
         return self.values.filter(Fdfieldvalue.fdRecord_id == record_id).first().value
 
 
-class Fdfieldtype(db.Model):
+class Fdfieldtype(Info):
     __tablename__ = u'FDFieldType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3036,7 +3039,7 @@ class Fdfieldtype(db.Model):
     description = db.Column(db.String(4096))
 
 
-class Fdfieldvalue(db.Model):
+class Fdfieldvalue(Info):
     __tablename__ = u'FDFieldValue'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3047,7 +3050,7 @@ class Fdfieldvalue(db.Model):
     # fdRecord = db.relationship(u'Fdrecord')
 
 
-class Fdrecord(db.Model):
+class Fdrecord(Info):
     __tablename__ = u'FDRecord'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3068,7 +3071,7 @@ class Fdrecord(db.Model):
         #return [field.get_value(self.id) for field in self.FlatDirectory.fields] # в нтк столбцы не упорядочены
 
 
-class Flatdirectory(db.Model):
+class Flatdirectory(Info):
     __tablename__ = u'FlatDirectory'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3080,7 +3083,7 @@ class Flatdirectory(db.Model):
                              lazy='dynamic')
 
 
-class Informermessage(db.Model):
+class Informermessage(Info):
     __tablename__ = u'InformerMessage'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3093,7 +3096,7 @@ class Informermessage(db.Model):
     text = db.Column(db.String, nullable=False)
 
 
-class InformermessageReadmark(db.Model):
+class InformermessageReadmark(Info):
     __tablename__ = u'InformerMessage_readMark'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3101,7 +3104,7 @@ class InformermessageReadmark(db.Model):
     person_id = db.Column(db.Integer, index=True)
 
 
-class Job(db.Model):
+class Job(Info):
     __tablename__ = u'Job'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3121,7 +3124,7 @@ class Job(db.Model):
     org_structure = db.relationship(u'Orgstructure', lazy='joined')
 
 
-class JobTicket(db.Model, Info):
+class JobTicket(Info):
     __tablename__ = u'Job_Ticket'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3152,7 +3155,7 @@ class JobTicket(db.Model, Info):
                                 unicode(self.orgStructure))
 
 
-class Lastchange(db.Model):
+class Lastchange(Info):
     __tablename__ = u'LastChanges'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3161,7 +3164,7 @@ class Lastchange(db.Model):
     flags = db.Column(db.Text, nullable=False)
 
 
-class Layoutattribute(db.Model):
+class Layoutattribute(Info):
     __tablename__ = u'LayoutAttribute'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3173,7 +3176,7 @@ class Layoutattribute(db.Model):
     defaultValue = db.Column(db.String(1023))
 
 
-class Layoutattributevalue(db.Model):
+class Layoutattributevalue(Info):
     __tablename__ = u'LayoutAttributeValue'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3184,7 +3187,7 @@ class Layoutattributevalue(db.Model):
     layoutAttribute = db.relationship(u'Layoutattribute')
 
 
-class Licence(db.Model):
+class Licence(Info):
     __tablename__ = u'Licence'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3201,7 +3204,7 @@ class Licence(db.Model):
     endDate = db.Column(db.Date, nullable=False)
 
 
-class LicenceService(db.Model):
+class LicenceService(Info):
     __tablename__ = u'Licence_Service'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3209,7 +3212,7 @@ class LicenceService(db.Model):
     service_id = db.Column(db.Integer, nullable=False, index=True)
 
 
-class Mkb(db.Model, Info):
+class Mkb(Info):
     __tablename__ = u'MKB'
     __table_args__ = (
         db.Index(u'BlockID', u'BlockID', u'DiagID'),
@@ -3262,7 +3265,7 @@ class Mkb(db.Model, Info):
 
 
 
-class MkbQuotatypePacientmodel(db.Model):
+class MkbQuotatypePacientmodel(Info):
     __tablename__ = u'MKB_QuotaType_PacientModel'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3271,7 +3274,7 @@ class MkbQuotatypePacientmodel(db.Model):
     quotaType_id = db.Column(db.Integer, nullable=False)
 
 
-class Media(db.Model):
+class Media(Info):
     __tablename__ = u'Media'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3279,7 +3282,7 @@ class Media(db.Model):
     file = db.Column(MEDIUMBLOB)
 
 
-class Medicalkindunit(db.Model):
+class Medicalkindunit(Info):
     __tablename__ = u'MedicalKindUnit'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3296,14 +3299,14 @@ class Medicalkindunit(db.Model):
     rbTariffType = db.relationship(u'Rbtarifftype')
 
 
-class Meta(db.Model):
+class Meta(Info):
     __tablename__ = u'Meta'
 
     name = db.Column(db.String(100), primary_key=True)
     value = db.Column(db.Text)
 
 
-class Modeldescription(db.Model):
+class Modeldescription(Info):
     __tablename__ = u'ModelDescription'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3313,7 +3316,7 @@ class Modeldescription(db.Model):
     tableName = db.Column(db.String(64), nullable=False)
 
 
-class Notificationoccurred(db.Model):
+class Notificationoccurred(Info):
     __tablename__ = u'NotificationOccurred'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3324,7 +3327,7 @@ class Notificationoccurred(db.Model):
     Person = db.relationship(u'Person')
 
 
-class Orgstructure(db.Model, Info):
+class Orgstructure(Info):
     __tablename__ = u'OrgStructure'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3403,7 +3406,7 @@ class Orgstructure(db.Model, Info):
     address = property(getAddress)
 
 
-class OrgstructureActiontype(db.Model):
+class OrgstructureActiontype(Info):
     __tablename__ = u'OrgStructure_ActionType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3412,7 +3415,7 @@ class OrgstructureActiontype(db.Model):
     actionType_id = db.Column(db.Integer, index=True)
 
 
-class OrgstructureAddres(db.Model):
+class OrgstructureAddres(Info):
     __tablename__ = u'OrgStructure_Address'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3422,7 +3425,7 @@ class OrgstructureAddres(db.Model):
     lastFlat = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class OrgstructureDisabledattendance(db.Model):
+class OrgstructureDisabledattendance(Info):
     __tablename__ = u'OrgStructure_DisabledAttendance'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3435,7 +3438,7 @@ class OrgstructureDisabledattendance(db.Model):
     master = db.relationship(u'Orgstructure')
 
 
-class OrgstructureEventtype(db.Model):
+class OrgstructureEventtype(Info):
     __tablename__ = u'OrgStructure_EventType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3444,7 +3447,7 @@ class OrgstructureEventtype(db.Model):
     eventType_id = db.Column(db.Integer, index=True)
 
 
-class OrgstructureGap(db.Model):
+class OrgstructureGap(Info):
     __tablename__ = u'OrgStructure_Gap'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3456,7 +3459,7 @@ class OrgstructureGap(db.Model):
     person_id = db.Column(db.Integer, index=True)
 
 
-class OrgstructureHospitalbed(db.Model, Info):
+class OrgstructureHospitalbed(Info):
     __tablename__ = u'OrgStructure_HospitalBed'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3491,7 +3494,7 @@ class OrgstructureHospitalbed(db.Model, Info):
         return self.isPermanentCode == 1
 
 
-class OrgstructureJob(db.Model):
+class OrgstructureJob(Info):
     __tablename__ = u'OrgStructure_Job'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3503,7 +3506,7 @@ class OrgstructureJob(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
 
 
-class OrgstructureStock(db.Model):
+class OrgstructureStock(Info):
     __tablename__ = u'OrgStructure_Stock'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3519,7 +3522,7 @@ class OrgstructureStock(db.Model):
     nomenclature = db.relationship(u'Rbnomenclature')
 
 
-class Organisation(db.Model, Info):
+class Organisation(Info):
     __tablename__ = u'Organisation'
     __table_args__ = (
         db.Index(u'shortName', u'shortName', u'INN', u'OGRN'),
@@ -3583,7 +3586,7 @@ class Organisation(db.Model, Info):
         return self.shortName
 
 
-class OrganisationAccount(db.Model, Info):
+class OrganisationAccount(Info):
     __tablename__ = u'Organisation_Account'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3598,7 +3601,7 @@ class OrganisationAccount(db.Model, Info):
     bank = db.relationship(u'Bank')
 
 
-class OrganisationPolicyserial(db.Model):
+class OrganisationPolicyserial(Info):
     __tablename__ = u'Organisation_PolicySerial'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3607,7 +3610,7 @@ class OrganisationPolicyserial(db.Model):
     policyType_id = db.Column(db.Integer, index=True)
 
 
-class Person(db.Model):
+class Person(Info):
     __tablename__ = u'Person'
     __table_args__ = (
         db.Index(u'lastName', u'lastName', u'firstName', u'patrName'),
@@ -3696,7 +3699,7 @@ class Person(db.Model):
         return unicode(result)
 
 
-class Personaddres(db.Model):
+class Personaddres(Info):
     __tablename__ = u'PersonAddress'
     __table_args__ = (
         db.Index(u'person_id', u'person_id', u'type', u'address_id'),
@@ -3713,7 +3716,7 @@ class Personaddres(db.Model):
     address_id = db.Column(db.Integer)
 
 
-class Persondocument(db.Model):
+class Persondocument(Info):
     __tablename__ = u'PersonDocument'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3730,7 +3733,7 @@ class Persondocument(db.Model):
     origin = db.Column(db.String(64), nullable=False)
 
 
-class Personeducation(db.Model):
+class Personeducation(Info):
     __tablename__ = u'PersonEducation'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3753,7 +3756,7 @@ class Personeducation(db.Model):
     cost = db.Column(db.Float(asdecimal=True))
 
 
-class Personorder(db.Model):
+class Personorder(Info):
     __tablename__ = u'PersonOrder'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3775,7 +3778,7 @@ class Personorder(db.Model):
     post_id = db.Column(db.Integer, index=True)
 
 
-class Persontimetemplate(db.Model):
+class Persontimetemplate(Info):
     __tablename__ = u'PersonTimeTemplate'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3802,7 +3805,7 @@ class Persontimetemplate(db.Model):
     homPlan2 = db.Column(db.SmallInteger, nullable=False)
 
 
-class PersonActivity(db.Model):
+class PersonActivity(Info):
     __tablename__ = u'Person_Activity'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3811,7 +3814,7 @@ class PersonActivity(db.Model):
     activity_id = db.Column(db.Integer, index=True)
 
 
-class PersonProfile(db.Model):
+class PersonProfile(Info):
     __tablename__ = u'Person_Profiles'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3819,7 +3822,7 @@ class PersonProfile(db.Model):
     userProfile_id = db.Column(db.Integer, nullable=False, index=True)
 
 
-class PersonTimetemplate(db.Model):
+class PersonTimetemplate(Info):
     __tablename__ = u'Person_TimeTemplate'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3850,7 +3853,7 @@ class PersonTimetemplate(db.Model):
     modifyPerson = db.relationship(u'Person', primaryjoin='PersonTimetemplate.modifyPerson_id == Person.id')
 
 
-class Pharmacy(db.Model):
+class Pharmacy(Info):
     __tablename__ = u'Pharmacy'
 
     actionId = db.Column(db.Integer, primary_key=True)
@@ -3864,7 +3867,7 @@ class Pharmacy(db.Model):
     value = db.Column(db.Integer, server_default=u"'0'")
 
 
-class Prescriptionsendingre(db.Model):
+class Prescriptionsendingre(Info):
     __tablename__ = u'PrescriptionSendingRes'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3877,7 +3880,7 @@ class Prescriptionsendingre(db.Model):
     interval = db.relationship(u'Drugchart')
 
 
-class Prescriptionsto1c(db.Model):
+class Prescriptionsto1c(Info):
     __tablename__ = u'PrescriptionsTo1C'
 
     interval_id = db.Column(db.Integer, primary_key=True)
@@ -3889,7 +3892,7 @@ class Prescriptionsto1c(db.Model):
     sendTime = db.Column(db.DateTime, nullable=False, server_default=u'CURRENT_TIMESTAMP')
 
 
-class Quotatype(db.Model):
+class Quotatype(Info):
     __tablename__ = u'QuotaType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3908,7 +3911,7 @@ class Quotatype(db.Model):
         return self.name
 
 
-class Quoting(db.Model):
+class Quoting(Info):
     __tablename__ = u'Quoting'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3926,7 +3929,7 @@ class Quoting(db.Model):
     inQueue = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class Quotingbyspeciality(db.Model):
+class Quotingbyspeciality(Info):
     __tablename__ = u'QuotingBySpeciality'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3939,7 +3942,7 @@ class Quotingbyspeciality(db.Model):
     speciality = db.relationship(u'Rbspeciality')
 
 
-class Quotingbytime(db.Model):
+class Quotingbytime(Info):
     __tablename__ = u'QuotingByTime'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3950,7 +3953,7 @@ class Quotingbytime(db.Model):
     QuotingType = db.Column(db.Integer)
 
 
-class QuotingRegion(db.Model):
+class QuotingRegion(Info):
     __tablename__ = u'Quoting_Region'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3967,7 +3970,7 @@ class QuotingRegion(db.Model):
     inQueue = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class Setting(db.Model):
+class Setting(Info):
     __tablename__ = u'Setting'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3975,7 +3978,7 @@ class Setting(db.Model):
     value = db.Column(db.Text, nullable=False)
 
 
-class Socstatu(db.Model):
+class Socstatu(Info):
     __tablename__ = u'SocStatus'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -3988,7 +3991,7 @@ class Socstatu(db.Model):
     socStatusType_id = db.Column(db.Integer, nullable=False, index=True)
 
 
-class Stockmotion(db.Model):
+class Stockmotion(Info):
     __tablename__ = u'StockMotion'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4013,7 +4016,7 @@ class Stockmotion(db.Model):
     supplier = db.relationship(u'Orgstructure', primaryjoin='Stockmotion.supplier_id == Orgstructure.id')
 
 
-class StockmotionItem(db.Model):
+class StockmotionItem(Info):
     __tablename__ = u'StockMotion_Item'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4035,7 +4038,7 @@ class StockmotionItem(db.Model):
     oldFinance = db.relationship(u'Rbfinance', primaryjoin='StockmotionItem.oldFinance_id == Rbfinance.id')
 
 
-class Stockrecipe(db.Model):
+class Stockrecipe(Info):
     __tablename__ = u'StockRecipe'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4053,7 +4056,7 @@ class Stockrecipe(db.Model):
     modifyPerson = db.relationship(u'Person', primaryjoin='Stockrecipe.modifyPerson_id == Person.id')
 
 
-class StockrecipeItem(db.Model):
+class StockrecipeItem(Info):
     __tablename__ = u'StockRecipe_Item'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4067,7 +4070,7 @@ class StockrecipeItem(db.Model):
     nomenclature = db.relationship(u'Rbnomenclature')
 
 
-class Stockrequisition(db.Model):
+class Stockrequisition(Info):
     __tablename__ = u'StockRequisition'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4089,7 +4092,7 @@ class Stockrequisition(db.Model):
     supplier = db.relationship(u'Orgstructure', primaryjoin='Stockrequisition.supplier_id == Orgstructure.id')
 
 
-class StockrequisitionItem(db.Model):
+class StockrequisitionItem(Info):
     __tablename__ = u'StockRequisition_Item'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4105,7 +4108,7 @@ class StockrequisitionItem(db.Model):
     nomenclature = db.relationship(u'Rbnomenclature')
 
 
-class Stocktran(db.Model):
+class Stocktran(Info):
     __tablename__ = u'StockTrans'
     __table_args__ = (
         db.Index(u'cre', u'creOrgStructure_id', u'creNomenclature_id', u'creFinance_id'),
@@ -4133,7 +4136,7 @@ class Stocktran(db.Model):
     stockMotionItem = db.relationship(u'StockmotionItem')
 
 
-class Takentissuejournal(db.Model):
+class Takentissuejournal(Info):
     __tablename__ = u'TakenTissueJournal'
     __table_args__ = (
         db.Index(u'period_barcode', u'period', u'barcode'),
@@ -4161,7 +4164,7 @@ class Takentissuejournal(db.Model):
         return code128C(self.barcode).decode('windows-1252')
 
 
-class Tempinvalid(db.Model):
+class Tempinvalid(Info):
     __tablename__ = u'TempInvalid'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4196,7 +4199,7 @@ class Tempinvalid(db.Model):
     event_id = db.Column(db.Integer)
 
 
-class Tempinvalidduplicate(db.Model):
+class Tempinvalidduplicate(Info):
     __tablename__ = u'TempInvalidDuplicate'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4216,7 +4219,7 @@ class Tempinvalidduplicate(db.Model):
     insuranceOfficeMark = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class TempinvalidPeriod(db.Model):
+class TempinvalidPeriod(Info):
     __tablename__ = u'TempInvalid_Period'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4233,7 +4236,7 @@ class TempinvalidPeriod(db.Model):
     note = db.Column(db.String(256), nullable=False)
 
 
-class Tissue(db.Model):
+class Tissue(Info):
     __tablename__ = u'Tissue'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4246,14 +4249,14 @@ class Tissue(db.Model):
     type = db.relationship(u'Rbtissuetype')
 
 
-class Uuid(db.Model):
+class Uuid(Info):
     __tablename__ = u'UUID'
 
     id = db.Column(db.Integer, primary_key=True)
     uuid = db.Column(db.String(100), nullable=False, unique=True)
 
 
-class Variablesforsql(db.Model):
+class Variablesforsql(Info):
     __tablename__ = u'VariablesforSQL'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4263,7 +4266,7 @@ class Variablesforsql(db.Model):
     label = db.Column(db.String(64), nullable=False)
 
 
-class Version(db.Model):
+class Version(Info):
     __tablename__ = u'Versions'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4271,7 +4274,7 @@ class Version(db.Model):
     version = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class Visit(db.Model, Info):
+class Visit(Info):
     __tablename__ = u'Visit'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4298,7 +4301,7 @@ class Visit(db.Model, Info):
     event = db.relationship(u'Event')
 
 
-class ActionDocument(db.Model):
+class ActionDocument(Info):
     __tablename__ = u'action_document'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4311,7 +4314,7 @@ class ActionDocument(db.Model):
     template = db.relationship(u'Rbprinttemplate')
 
 
-class BbtResponse(db.Model):
+class BbtResponse(Info):
     __tablename__ = u'bbtResponse'
 
     id = db.Column(db.ForeignKey('Action.id'), primary_key=True)
@@ -4337,7 +4340,7 @@ class BbtResponse(db.Model):
     # values_image = db.relationship(u'BbtResultImage')
 
 
-class BbtResultOrganism(db.Model):
+class BbtResultOrganism(Info):
     __tablename__ = u'bbtResult_Organism'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4349,7 +4352,7 @@ class BbtResultOrganism(db.Model):
     sens_values = db.relationship(u'BbtOrganism_SensValues', lazy='joined')
 
 
-class BbtOrganism_SensValues(db.Model):
+class BbtOrganism_SensValues(Info):
     __tablename__ = u'bbtOrganism_SensValues'
     __table_args__ = (
         db.Index(u'bbtResult_Organism_id_index', u'bbtResult_Organism_id'),
@@ -4364,7 +4367,7 @@ class BbtOrganism_SensValues(db.Model):
     antibiotic = db.relationship(u'rbAntibiotic', lazy='joined')
 
 
-class BbtResultText(db.Model):
+class BbtResultText(Info):
     __tablename__ = u'bbtResult_Text'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4372,7 +4375,7 @@ class BbtResultText(db.Model):
     valueText = db.Column(db.Text)
 
 
-class BbtResultTable(db.Model):
+class BbtResultTable(Info):
     __tablename__ = u'bbtResult_Table'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4388,7 +4391,7 @@ class BbtResultTable(db.Model):
     indicator = db.relationship(u'rbBacIndicator')
 
 
-class BbtResultImage(db.Model):
+class BbtResultImage(Info):
     __tablename__ = u'bbtResult_Image'
     __table_args__ = (
         db.Index(u'action_id_index', u'action_id', u'idx'),
@@ -4401,7 +4404,7 @@ class BbtResultImage(db.Model):
     image = db.Column(db.BLOB, nullable=False)
 
 
-class Mrbmodelagegroup(db.Model):
+class Mrbmodelagegroup(Info):
     __tablename__ = u'mrbModelAgeGroup'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4409,7 +4412,7 @@ class Mrbmodelagegroup(db.Model):
     name = db.Column(db.String(128), nullable=False)
 
 
-class Mrbmodelaidcase(db.Model):
+class Mrbmodelaidcase(Info):
     __tablename__ = u'mrbModelAidCase'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4417,7 +4420,7 @@ class Mrbmodelaidcase(db.Model):
     name = db.Column(db.String(128), nullable=False)
 
 
-class Mrbmodelaidpurpose(db.Model):
+class Mrbmodelaidpurpose(Info):
     __tablename__ = u'mrbModelAidPurpose'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4425,7 +4428,7 @@ class Mrbmodelaidpurpose(db.Model):
     name = db.Column(db.String(128), nullable=False)
 
 
-class Mrbmodelcategory(db.Model):
+class Mrbmodelcategory(Info):
     __tablename__ = u'mrbModelCategory'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4433,7 +4436,7 @@ class Mrbmodelcategory(db.Model):
     name = db.Column(db.String(128), nullable=False)
 
 
-class Mrbmodelcontinuation(db.Model):
+class Mrbmodelcontinuation(Info):
     __tablename__ = u'mrbModelContinuation'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4441,7 +4444,7 @@ class Mrbmodelcontinuation(db.Model):
     name = db.Column(db.String(128), nullable=False)
 
 
-class Mrbmodeldiseaseclas(db.Model):
+class Mrbmodeldiseaseclas(Info):
     __tablename__ = u'mrbModelDiseaseClass'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4449,7 +4452,7 @@ class Mrbmodeldiseaseclas(db.Model):
     name = db.Column(db.String(128), nullable=False)
 
 
-class Mrbmodelexpectedresult(db.Model):
+class Mrbmodelexpectedresult(Info):
     __tablename__ = u'mrbModelExpectedResult'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4457,7 +4460,7 @@ class Mrbmodelexpectedresult(db.Model):
     name = db.Column(db.String(128), nullable=False)
 
 
-class Mrbmodelinstitutiontype(db.Model):
+class Mrbmodelinstitutiontype(Info):
     __tablename__ = u'mrbModelInstitutionType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4465,7 +4468,7 @@ class Mrbmodelinstitutiontype(db.Model):
     name = db.Column(db.String(128), nullable=False)
 
 
-class Mrbmodelsertificationrequirement(db.Model):
+class Mrbmodelsertificationrequirement(Info):
     __tablename__ = u'mrbModelSertificationRequirement'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4473,7 +4476,7 @@ class Mrbmodelsertificationrequirement(db.Model):
     name = db.Column(db.String(128), nullable=False)
 
 
-class Mrbmodelstatebadnes(db.Model):
+class Mrbmodelstatebadnes(Info):
     __tablename__ = u'mrbModelStateBadness'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4481,13 +4484,13 @@ class Mrbmodelstatebadnes(db.Model):
     name = db.Column(db.String(128), nullable=False)
 
 
-class NewTable(db.Model):
+class NewTable(Info):
     __tablename__ = u'new_table'
 
     idnew_table = db.Column(db.Integer, primary_key=True)
 
 
-class Rb64district(db.Model):
+class Rb64district(Info):
     __tablename__ = u'rb64District'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4505,28 +4508,28 @@ class Rb64district(db.Model):
     prefix = db.Column(db.Integer, nullable=False)
 
 
-class Rb64placetype(db.Model):
+class Rb64placetype(Info):
     __tablename__ = u'rb64PlaceType'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
 
 
-class Rb64reason(db.Model):
+class Rb64reason(Info):
     __tablename__ = u'rb64Reason'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
 
 
-class Rb64streettype(db.Model):
+class Rb64streettype(Info):
     __tablename__ = u'rb64StreetType'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
 
 
-class Rbaptable(db.Model):
+class Rbaptable(Info):
     __tablename__ = u'rbAPTable'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4536,7 +4539,7 @@ class Rbaptable(db.Model):
     masterField = db.Column(db.String(256), nullable=False)
 
 
-class Rbaptablefield(db.Model):
+class Rbaptablefield(Info):
     __tablename__ = u'rbAPTableField'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4549,7 +4552,7 @@ class Rbaptablefield(db.Model):
     master = db.relationship(u'Rbaptable', backref="fields")
 
 
-class Rbacademicdegree(db.Model, RBInfo):
+class Rbacademicdegree(RBInfo):
     __tablename__ = u'rbAcademicDegree'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4560,7 +4563,7 @@ class Rbacademicdegree(db.Model, RBInfo):
         return self.name
 
 
-class Rbacademictitle(db.Model, RBInfo):
+class Rbacademictitle(RBInfo):
     __tablename__ = u'rbAcademicTitle'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4571,7 +4574,7 @@ class Rbacademictitle(db.Model, RBInfo):
         return self.name
 
 
-class Rbaccountexportformat(db.Model, RBInfo):
+class Rbaccountexportformat(RBInfo):
     __tablename__ = u'rbAccountExportFormat'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4585,7 +4588,7 @@ class Rbaccountexportformat(db.Model, RBInfo):
     message = db.Column(db.Text, nullable=False)
 
 
-class Rbaccountingsystem(db.Model, RBInfo):
+class Rbaccountingsystem(RBInfo):
     __tablename__ = u'rbAccountingSystem'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4595,7 +4598,7 @@ class Rbaccountingsystem(db.Model, RBInfo):
     showInClientInfo = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbacheresult(db.Model, RBInfo):
+class Rbacheresult(RBInfo):
     __tablename__ = u'rbAcheResult'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4606,7 +4609,7 @@ class Rbacheresult(db.Model, RBInfo):
     eventPurpose = db.relationship(u'Rbeventtypepurpose')
 
 
-class Rbactionshedule(db.Model):
+class Rbactionshedule(Info):
     __tablename__ = u'rbActionShedule'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4615,7 +4618,7 @@ class Rbactionshedule(db.Model):
     period = db.Column(db.Integer, nullable=False, server_default=u"'1'")
 
 
-class RbactionsheduleItem(db.Model):
+class RbactionsheduleItem(Info):
     __tablename__ = u'rbActionShedule_Item'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4625,7 +4628,7 @@ class RbactionsheduleItem(db.Model):
     time = db.Column(db.Time, nullable=False, server_default=u"'00:00:00'")
 
 
-class Rbactivity(db.Model):
+class Rbactivity(Info):
     __tablename__ = u'rbActivity'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4634,7 +4637,7 @@ class Rbactivity(db.Model):
     regionalCode = db.Column(db.String(8), nullable=False, index=True)
 
 
-class Rbagreementtype(db.Model):
+class Rbagreementtype(Info):
     __tablename__ = u'rbAgreementType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4643,14 +4646,14 @@ class Rbagreementtype(db.Model):
     quotaStatusModifier = db.Column(db.Integer, server_default=u"'0'")
 
 
-class Rbanalysisstatus(db.Model):
+class Rbanalysisstatus(Info):
     __tablename__ = u'rbAnalysisStatus'
 
     id = db.Column(db.Integer, primary_key=True)
     statusName = db.Column(db.String(80), nullable=False, unique=True)
 
 
-class Rbanalyticalreport(db.Model):
+class Rbanalyticalreport(Info):
     __tablename__ = u'rbAnalyticalReports'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4658,7 +4661,7 @@ class Rbanalyticalreport(db.Model):
     PrintTemplate_id = db.Column(db.Integer)
 
 
-class rbAntibiotic(db.Model, RBInfo):
+class rbAntibiotic(RBInfo):
     __tablename__ = u'rbAntibiotic'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4666,7 +4669,7 @@ class rbAntibiotic(db.Model, RBInfo):
     name = db.Column(db.String(256), nullable=False)
 
 
-class Rbattachtype(db.Model):
+class Rbattachtype(Info):
     __tablename__ = u'rbAttachType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4677,7 +4680,7 @@ class Rbattachtype(db.Model):
     finance_id = db.Column(db.Integer, nullable=False, index=True)
 
 
-class rbBacIndicator(db.Model, RBInfo):
+class rbBacIndicator(RBInfo):
     __tablename__ = u'rbBacIndicator'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4685,7 +4688,7 @@ class rbBacIndicator(db.Model, RBInfo):
     name = db.Column(db.String(256), nullable=False)
 
 
-class Rbblankaction(db.Model):
+class Rbblankaction(Info):
     __tablename__ = u'rbBlankActions'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4699,7 +4702,7 @@ class Rbblankaction(db.Model):
     doctype = db.relationship(u'Actiontype')
 
 
-class Rbblanktempinvalid(db.Model):
+class Rbblanktempinvalid(Info):
     __tablename__ = u'rbBlankTempInvalids'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4713,7 +4716,7 @@ class Rbblanktempinvalid(db.Model):
     doctype = db.relationship(u'Rbtempinvaliddocument')
 
 
-class Rbbloodtype(db.Model, RBInfo):
+class Rbbloodtype(RBInfo):
     __tablename__ = u'rbBloodType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4721,7 +4724,7 @@ class Rbbloodtype(db.Model, RBInfo):
     name = db.Column(db.String(64), nullable=False)
 
 
-class Rbcashoperation(db.Model, RBInfo):
+class Rbcashoperation(RBInfo):
     __tablename__ = u'rbCashOperation'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4729,7 +4732,7 @@ class Rbcashoperation(db.Model, RBInfo):
     name = db.Column(db.Unicode(64), nullable=False)
 
 
-class Rbcomplain(db.Model):
+class Rbcomplain(Info):
     __tablename__ = u'rbComplain'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4738,7 +4741,7 @@ class Rbcomplain(db.Model):
     name = db.Column(db.String(120), nullable=False, index=True)
 
 
-class Rbcontacttype(db.Model, RBInfo):
+class Rbcontacttype(RBInfo):
     __tablename__ = u'rbContactType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4746,7 +4749,7 @@ class Rbcontacttype(db.Model, RBInfo):
     name = db.Column(db.Unicode(64), nullable=False, index=True)
 
 
-class Rbcoreactionproperty(db.Model):
+class Rbcoreactionproperty(Info):
     __tablename__ = u'rbCoreActionProperty'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4755,7 +4758,7 @@ class Rbcoreactionproperty(db.Model):
     actionPropertyType_id = db.Column(db.Integer, nullable=False)
 
 
-class Rbcounter(db.Model):
+class Rbcounter(Info):
     __tablename__ = u'rbCounter'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4770,7 +4773,7 @@ class Rbcounter(db.Model):
     sequenceFlag = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class rbDiagnosisType(db.Model, RBInfo):
+class rbDiagnosisType(RBInfo):
     __tablename__ = u'rbDiagnosisType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4780,7 +4783,7 @@ class rbDiagnosisType(db.Model, RBInfo):
     flatCode = db.Column(db.String(64), nullable=False)
 
 
-class Rbdiet(db.Model):
+class Rbdiet(Info):
     __tablename__ = u'rbDiet'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4788,7 +4791,7 @@ class Rbdiet(db.Model):
     name = db.Column(db.String(64), nullable=False, index=True)
 
 
-class rbDiseaseCharacter(db.Model, RBInfo):
+class rbDiseaseCharacter(RBInfo):
     __tablename__ = u'rbDiseaseCharacter'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4797,7 +4800,7 @@ class rbDiseaseCharacter(db.Model, RBInfo):
     replaceInDiagnosis = db.Column(db.String(8), nullable=False)
 
 
-class rbDiseasePhases(db.Model):
+class rbDiseasePhases(Info):
     __tablename__ = u'rbDiseasePhases'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4806,7 +4809,7 @@ class rbDiseasePhases(db.Model):
     characterRelation = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class rbDiseaseStage(db.Model):
+class rbDiseaseStage(Info):
     __tablename__ = u'rbDiseaseStage'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4815,7 +4818,7 @@ class rbDiseaseStage(db.Model):
     characterRelation = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class rbDispanser(db.Model, RBInfo):
+class rbDispanser(RBInfo):
     __tablename__ = u'rbDispanser'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4824,7 +4827,7 @@ class rbDispanser(db.Model, RBInfo):
     observed = db.Column(db.Integer, nullable=False)
 
 
-class Rbdocumenttype(db.Model, RBInfo):
+class Rbdocumenttype(RBInfo):
     __tablename__ = u'rbDocumentType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4844,7 +4847,7 @@ class Rbdocumenttype(db.Model, RBInfo):
         RBInfo.__init__(self)
 
 
-class Rbdocumenttypegroup(db.Model, RBInfo):
+class Rbdocumenttypegroup(RBInfo):
     __tablename__ = u'rbDocumentTypeGroup'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4855,7 +4858,7 @@ class Rbdocumenttypegroup(db.Model, RBInfo):
         RBInfo.__init__(self)
 
 
-class Rbemergencyaccident(db.Model):
+class Rbemergencyaccident(Info):
     __tablename__ = u'rbEmergencyAccident'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4864,7 +4867,7 @@ class Rbemergencyaccident(db.Model):
     codeRegional = db.Column(db.String(8), nullable=False, index=True)
 
 
-class Rbemergencycausecall(db.Model):
+class Rbemergencycausecall(Info):
     __tablename__ = u'rbEmergencyCauseCall'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4874,7 +4877,7 @@ class Rbemergencycausecall(db.Model):
     typeCause = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbemergencydeath(db.Model):
+class Rbemergencydeath(Info):
     __tablename__ = u'rbEmergencyDeath'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4883,7 +4886,7 @@ class Rbemergencydeath(db.Model):
     codeRegional = db.Column(db.String(8), nullable=False, index=True)
 
 
-class Rbemergencydiseased(db.Model):
+class Rbemergencydiseased(Info):
     __tablename__ = u'rbEmergencyDiseased'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4892,7 +4895,7 @@ class Rbemergencydiseased(db.Model):
     codeRegional = db.Column(db.String(8), nullable=False, index=True)
 
 
-class Rbemergencyebriety(db.Model):
+class Rbemergencyebriety(Info):
     __tablename__ = u'rbEmergencyEbriety'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4901,7 +4904,7 @@ class Rbemergencyebriety(db.Model):
     codeRegional = db.Column(db.String(8), nullable=False, index=True)
 
 
-class Rbemergencymethodtransportation(db.Model):
+class Rbemergencymethodtransportation(Info):
     __tablename__ = u'rbEmergencyMethodTransportation'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4910,7 +4913,7 @@ class Rbemergencymethodtransportation(db.Model):
     codeRegional = db.Column(db.String(8), nullable=False, index=True)
 
 
-class Rbemergencyplacecall(db.Model):
+class Rbemergencyplacecall(Info):
     __tablename__ = u'rbEmergencyPlaceCall'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4919,7 +4922,7 @@ class Rbemergencyplacecall(db.Model):
     codeRegional = db.Column(db.String(8), nullable=False, index=True)
 
 
-class Rbemergencyplacereceptioncall(db.Model):
+class Rbemergencyplacereceptioncall(Info):
     __tablename__ = u'rbEmergencyPlaceReceptionCall'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4928,7 +4931,7 @@ class Rbemergencyplacereceptioncall(db.Model):
     codeRegional = db.Column(db.String(8), nullable=False, index=True)
 
 
-class Rbemergencyreasonddelay(db.Model):
+class Rbemergencyreasonddelay(Info):
     __tablename__ = u'rbEmergencyReasondDelays'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4937,7 +4940,7 @@ class Rbemergencyreasonddelay(db.Model):
     codeRegional = db.Column(db.String(8), nullable=False, index=True)
 
 
-class Rbemergencyreceivedcall(db.Model):
+class Rbemergencyreceivedcall(Info):
     __tablename__ = u'rbEmergencyReceivedCall'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4946,7 +4949,7 @@ class Rbemergencyreceivedcall(db.Model):
     codeRegional = db.Column(db.String(8), nullable=False, index=True)
 
 
-class Rbemergencyresult(db.Model):
+class Rbemergencyresult(Info):
     __tablename__ = u'rbEmergencyResult'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4955,7 +4958,7 @@ class Rbemergencyresult(db.Model):
     codeRegional = db.Column(db.String(8), nullable=False, index=True)
 
 
-class Rbemergencytransferredtransportation(db.Model):
+class Rbemergencytransferredtransportation(Info):
     __tablename__ = u'rbEmergencyTransferredTransportation'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4964,7 +4967,7 @@ class Rbemergencytransferredtransportation(db.Model):
     codeRegional = db.Column(db.String(8), nullable=False, index=True)
 
 
-class Rbemergencytypeasset(db.Model, RBInfo):
+class Rbemergencytypeasset(RBInfo):
     __tablename__ = u'rbEmergencyTypeAsset'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4973,7 +4976,7 @@ class Rbemergencytypeasset(db.Model, RBInfo):
     codeRegional = db.Column(db.String(8), nullable=False, index=True)
 
 
-class Rbeventprofile(db.Model):
+class Rbeventprofile(Info):
     __tablename__ = u'rbEventProfile'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4982,7 +4985,7 @@ class Rbeventprofile(db.Model):
     name = db.Column(db.String(64), nullable=False, index=True)
 
 
-class Rbeventtypepurpose(db.Model, RBInfo):
+class Rbeventtypepurpose(RBInfo):
     __tablename__ = u'rbEventTypePurpose'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4994,7 +4997,7 @@ class Rbeventtypepurpose(db.Model, RBInfo):
         RBInfo.__init__(self)
 
 
-class Rbfinance(db.Model, RBInfo):
+class Rbfinance(RBInfo):
     __tablename__ = u'rbFinance'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5005,7 +5008,7 @@ class Rbfinance(db.Model, RBInfo):
         RBInfo.__init__(self)
 
 
-class Rbfinance1c(db.Model):
+class Rbfinance1c(Info):
     __tablename__ = u'rbFinance1C'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5015,7 +5018,7 @@ class Rbfinance1c(db.Model):
     finance = db.relationship(u'Rbfinance')
 
 
-class rbHealthGroup(db.Model):
+class rbHealthGroup(Info):
     __tablename__ = u'rbHealthGroup'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5023,7 +5026,7 @@ class rbHealthGroup(db.Model):
     name = db.Column(db.String(64), nullable=False, index=True)
 
 
-class Rbhospitalbedprofile(db.Model, RBInfo):
+class Rbhospitalbedprofile(RBInfo):
     __tablename__ = u'rbHospitalBedProfile'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5035,7 +5038,7 @@ class Rbhospitalbedprofile(db.Model, RBInfo):
         RBInfo.__init__(self)
 
 
-class RbhospitalbedprofileService(db.Model):
+class RbhospitalbedprofileService(Info):
     __tablename__ = u'rbHospitalBedProfile_Service'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5046,7 +5049,7 @@ class RbhospitalbedprofileService(db.Model):
     rbService = db.relationship(u'Rbservice')
 
 
-class Rbhospitalbedshedule(db.Model, RBInfo):
+class Rbhospitalbedshedule(RBInfo):
     __tablename__ = u'rbHospitalBedShedule'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5054,7 +5057,7 @@ class Rbhospitalbedshedule(db.Model, RBInfo):
     name = db.Column(db.Unicode(64), nullable=False, index=True)
 
 
-class Rbhospitalbedtype(db.Model, RBInfo):
+class Rbhospitalbedtype(RBInfo):
     __tablename__ = u'rbHospitalBedType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5062,7 +5065,7 @@ class Rbhospitalbedtype(db.Model, RBInfo):
     name = db.Column(db.Unicode(64), nullable=False, index=True)
 
 
-class Rbhurtfactortype(db.Model):
+class Rbhurtfactortype(Info):
     __tablename__ = u'rbHurtFactorType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5070,7 +5073,7 @@ class Rbhurtfactortype(db.Model):
     name = db.Column(db.String(250), nullable=False, index=True)
 
 
-class Rbhurttype(db.Model, RBInfo):
+class Rbhurttype(RBInfo):
     __tablename__ = u'rbHurtType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5078,7 +5081,7 @@ class Rbhurttype(db.Model, RBInfo):
     name = db.Column(db.Unicode(256), nullable=False, index=True)
 
 
-class Rbimagemap(db.Model):
+class Rbimagemap(Info):
     __tablename__ = u'rbImageMap'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5088,7 +5091,7 @@ class Rbimagemap(db.Model):
     markSize = db.Column(db.Integer)
 
 
-class Rbjobtype(db.Model, RBInfo):
+class Rbjobtype(RBInfo):
     __tablename__ = u'rbJobType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5103,7 +5106,7 @@ class Rbjobtype(db.Model, RBInfo):
         RBInfo.__init__(self)
 
 
-class Rblaboratory(db.Model):
+class Rblaboratory(Info):
     __tablename__ = u'rbLaboratory'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5115,7 +5118,7 @@ class Rblaboratory(db.Model):
     labName = db.Column(db.String(128), nullable=False)
 
 
-class RblaboratoryTest(db.Model):
+class RblaboratoryTest(Info):
     __tablename__ = u'rbLaboratory_Test'
     __table_args__ = (
         db.Index(u'code', u'book', u'code'),
@@ -5128,7 +5131,7 @@ class RblaboratoryTest(db.Model):
     code = db.Column(db.String(64), nullable=False)
 
 
-class Rbmkbsubclas(db.Model):
+class Rbmkbsubclas(Info):
     __tablename__ = u'rbMKBSubclass'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5136,7 +5139,7 @@ class Rbmkbsubclas(db.Model):
     name = db.Column(db.String(128), nullable=False)
 
 
-class RbmkbsubclassItem(db.Model):
+class RbmkbsubclassItem(Info):
     __tablename__ = u'rbMKBSubclass_Item'
     __table_args__ = (
         db.Index(u'master_id', u'master_id', u'code'),
@@ -5148,7 +5151,7 @@ class RbmkbsubclassItem(db.Model):
     name = db.Column(db.String(128), nullable=False)
 
 
-class Rbmealtime(db.Model):
+class Rbmealtime(Info):
     __tablename__ = u'rbMealTime'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5158,7 +5161,7 @@ class Rbmealtime(db.Model):
     endTime = db.Column(db.Time, nullable=False)
 
 
-class Rbmedicalaidprofile(db.Model):
+class Rbmedicalaidprofile(Info):
     __tablename__ = u'rbMedicalAidProfile'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5167,7 +5170,7 @@ class Rbmedicalaidprofile(db.Model):
     name = db.Column(db.String(64), nullable=False)
 
 
-class Rbmedicalaidtype(db.Model):
+class Rbmedicalaidtype(Info):
     __tablename__ = u'rbMedicalAidType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5175,7 +5178,7 @@ class Rbmedicalaidtype(db.Model):
     name = db.Column(db.String(64), nullable=False)
 
 
-class Rbmedicalaidunit(db.Model):
+class Rbmedicalaidunit(Info):
     __tablename__ = u'rbMedicalAidUnit'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5185,7 +5188,7 @@ class Rbmedicalaidunit(db.Model):
     regionalCode = db.Column(db.String(1), nullable=False)
 
 
-class Rbmedicalkind(db.Model):
+class Rbmedicalkind(Info):
     __tablename__ = u'rbMedicalKind'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5193,7 +5196,7 @@ class Rbmedicalkind(db.Model):
     name = db.Column(db.String(64, u'utf8_unicode_ci'), nullable=False)
 
 
-class Rbmenu(db.Model):
+class Rbmenu(Info):
     __tablename__ = u'rbMenu'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5201,7 +5204,7 @@ class Rbmenu(db.Model):
     name = db.Column(db.String(64), nullable=False, index=True)
 
 
-class RbmenuContent(db.Model):
+class RbmenuContent(Info):
     __tablename__ = u'rbMenu_Content'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5210,7 +5213,7 @@ class RbmenuContent(db.Model):
     diet_id = db.Column(db.Integer, nullable=False, index=True)
 
 
-class Rbmesspecification(db.Model, RBInfo):
+class Rbmesspecification(RBInfo):
     __tablename__ = u'rbMesSpecification'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5220,7 +5223,7 @@ class Rbmesspecification(db.Model, RBInfo):
     done = db.Column(db.Integer, nullable=False)
 
 
-class Rbmethodofadministration(db.Model):
+class Rbmethodofadministration(Info):
     __tablename__ = u'rbMethodOfAdministration'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5228,7 +5231,7 @@ class Rbmethodofadministration(db.Model):
     name = db.Column(db.String(64), nullable=False, index=True)
 
 
-class rbMicroorganism(db.Model, RBInfo):
+class rbMicroorganism(RBInfo):
     __tablename__ = u'rbMicroorganism'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5236,7 +5239,7 @@ class rbMicroorganism(db.Model, RBInfo):
     name = db.Column(db.String(256), nullable=False)
 
 
-class Rbnet(db.Model, RBInfo):
+class Rbnet(RBInfo):
     __tablename__ = u'rbNet'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5254,7 +5257,7 @@ class Rbnet(db.Model, RBInfo):
         return formatSex(self.sexCode)
 
 
-class Rbnomenclature(db.Model):
+class Rbnomenclature(Info):
     __tablename__ = u'rbNomenclature'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5266,7 +5269,7 @@ class Rbnomenclature(db.Model):
     group = db.relationship(u'Rbnomenclature', remote_side=[id])
 
 
-class Rbokfs(db.Model, RBInfo):
+class Rbokfs(RBInfo):
     __tablename__ = u'rbOKFS'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5275,7 +5278,7 @@ class Rbokfs(db.Model, RBInfo):
     ownership = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbokpf(db.Model, RBInfo):
+class Rbokpf(RBInfo):
     __tablename__ = u'rbOKPF'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5283,7 +5286,7 @@ class Rbokpf(db.Model, RBInfo):
     name = db.Column(db.Unicode(64), nullable=False, index=True)
 
 
-class Rbokved(db.Model):
+class Rbokved(Info):
     __tablename__ = u'rbOKVED'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5296,7 +5299,7 @@ class Rbokved(db.Model):
     name = db.Column(db.String(250), nullable=False, index=True)
 
 
-class Rboperationtype(db.Model):
+class Rboperationtype(Info):
     __tablename__ = u'rbOperationType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5307,7 +5310,7 @@ class Rboperationtype(db.Model):
     name = db.Column(db.String(64), nullable=False, index=True)
 
 
-class Rbpacientmodel(db.Model, RBInfo):
+class Rbpacientmodel(RBInfo):
     __tablename__ = u'rbPacientModel'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5321,7 +5324,7 @@ class Rbpacientmodel(db.Model, RBInfo):
         RBInfo.__init__(self)
 
 
-class Rbpayrefusetype(db.Model, RBInfo):
+class Rbpayrefusetype(RBInfo):
     __tablename__ = u'rbPayRefuseType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5334,7 +5337,7 @@ class Rbpayrefusetype(db.Model, RBInfo):
         RBInfo.__init__(self)
 
 
-class Rbpaytype(db.Model):
+class Rbpaytype(Info):
     __tablename__ = u'rbPayType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5342,7 +5345,7 @@ class Rbpaytype(db.Model):
     name = db.Column(db.String(64, u'utf8_unicode_ci'), nullable=False)
 
 
-class Rbpolicytype(db.Model, RBInfo):
+class Rbpolicytype(RBInfo):
     __tablename__ = u'rbPolicyType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5354,7 +5357,7 @@ class Rbpolicytype(db.Model, RBInfo):
         RBInfo.__init__(self)
 
 
-class Rbpost(db.Model, RBInfo):
+class Rbpost(RBInfo):
     __tablename__ = u'rbPost'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5369,7 +5372,7 @@ class Rbpost(db.Model, RBInfo):
         RBInfo.__init__(self)
 
 
-class Rbprinttemplate(db.Model):
+class Rbprinttemplate(Info):
     __tablename__ = u'rbPrintTemplate'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5385,7 +5388,7 @@ class Rbprinttemplate(db.Model):
     meta_data = db.relationship('Rbprinttemplatemeta')
 
 
-class Rbquotastatu(db.Model):
+class Rbquotastatu(Info):
     __tablename__ = u'rbQuotaStatus'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5393,7 +5396,7 @@ class Rbquotastatu(db.Model):
     name = db.Column(db.String(50), nullable=False, index=True)
 
 
-class Rbreasonofabsence(db.Model, RBInfo):
+class Rbreasonofabsence(RBInfo):
     __tablename__ = u'rbReasonOfAbsence'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5404,7 +5407,7 @@ class Rbreasonofabsence(db.Model, RBInfo):
         RBInfo.__init__(self)
 
 
-class Rbrelationtype(db.Model, RBInfo):
+class Rbrelationtype(RBInfo):
     __tablename__ = u'rbRelationType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5428,7 +5431,7 @@ class Rbrelationtype(db.Model, RBInfo):
         RBInfo.__init__(self)
 
 
-class Rbrequesttype(db.Model, RBInfo):
+class Rbrequesttype(RBInfo):
     __tablename__ = u'rbRequestType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5440,7 +5443,7 @@ class Rbrequesttype(db.Model, RBInfo):
         RBInfo.__init__(self)
 
 
-class Rbresult(db.Model, RBInfo):
+class Rbresult(RBInfo):
     __tablename__ = u'rbResult'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5454,7 +5457,7 @@ class Rbresult(db.Model, RBInfo):
         RBInfo.__init__(self)
 
 
-class Rbscene(db.Model, RBInfo):
+class Rbscene(RBInfo):
     __tablename__ = u'rbScene'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5466,7 +5469,7 @@ class Rbscene(db.Model, RBInfo):
         RBInfo.__init__(self)
 
 
-class Rbservice(db.Model, RBInfo):
+class Rbservice(RBInfo):
     __tablename__ = u'rbService'
     __table_args__ = (
         db.Index(u'infis', u'infis', u'eisLegacy'),
@@ -5497,7 +5500,7 @@ class Rbservice(db.Model, RBInfo):
         RBInfo.__init__(self)
 
 
-class Rbserviceclas(db.Model):
+class Rbserviceclas(Info):
     __tablename__ = u'rbServiceClass'
     __table_args__ = (
         db.Index(u'section', u'section', u'code'),
@@ -5509,7 +5512,7 @@ class Rbserviceclas(db.Model):
     name = db.Column(db.String(200), nullable=False)
 
 
-class Rbservicefinance(db.Model):
+class Rbservicefinance(Info):
     __tablename__ = u'rbServiceFinance'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5517,7 +5520,7 @@ class Rbservicefinance(db.Model):
     name = db.Column(db.String(64, u'utf8_unicode_ci'), nullable=False)
 
 
-class Rbservicegroup(db.Model):
+class Rbservicegroup(Info):
     __tablename__ = u'rbServiceGroup'
     __table_args__ = (
         db.Index(u'group_id', u'group_id', u'service_id'),
@@ -5529,7 +5532,7 @@ class Rbservicegroup(db.Model):
     required = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbservicesection(db.Model):
+class Rbservicesection(Info):
     __tablename__ = u'rbServiceSection'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5537,7 +5540,7 @@ class Rbservicesection(db.Model):
     name = db.Column(db.String(100), nullable=False)
 
 
-class Rbservicetype(db.Model):
+class Rbservicetype(Info):
     __tablename__ = u'rbServiceType'
     __table_args__ = (
         db.Index(u'section', u'section', u'code'),
@@ -5550,7 +5553,7 @@ class Rbservicetype(db.Model):
     description = db.Column(db.Text, nullable=False)
 
 
-class Rbserviceuet(db.Model):
+class Rbserviceuet(Info):
     __tablename__ = u'rbServiceUET'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5561,7 +5564,7 @@ class Rbserviceuet(db.Model):
     rbService = db.relationship(u'Rbservice')
 
 
-class RbserviceProfile(db.Model):
+class RbserviceProfile(Info):
     __tablename__ = u'rbService_Profile'
     __table_args__ = (
         db.Index(u'id', u'id', u'idx'),
@@ -5585,7 +5588,7 @@ class RbserviceProfile(db.Model):
     speciality = db.relationship(u'Rbspeciality')
 
 
-class Rbsocstatusclass(db.Model, Info):
+class Rbsocstatusclass(Info):
     __tablename__ = u'rbSocStatusClass'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5598,7 +5601,7 @@ class Rbsocstatusclass(db.Model, Info):
     def __unicode__(self):
         return self.name
 
-# class Rbsocstatusclasstypeassoc(db.Model):
+# class Rbsocstatusclasstypeassoc(Info):
 #     __tablename__ = u'rbSocStatusClassTypeAssoc'
 #     __table_args__ = (
 #         db.Index(u'type_id', u'type_id', u'class_id'),
@@ -5613,7 +5616,7 @@ Rbsocstatusclasstypeassoc = db.Table('rbSocStatusClassTypeAssoc', db.metadata,
     )
 
 
-class Rbsocstatustype(db.Model, Info):
+class Rbsocstatustype(Info):
     __tablename__ = u'rbSocStatusType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5626,7 +5629,7 @@ class Rbsocstatustype(db.Model, Info):
     classes = db.relationship(u'Rbsocstatusclass', secondary=Rbsocstatusclasstypeassoc)
 
 
-class Rbspecialvariablespreference(db.Model):
+class Rbspecialvariablespreference(Info):
     __tablename__ = u'rbSpecialVariablesPreferences'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5634,7 +5637,8 @@ class Rbspecialvariablespreference(db.Model):
     query_text = db.Column('query', db.Text, nullable=False)
 
 
-class Rbspeciality(db.Model, RBInfo):
+
+class Rbspeciality(RBInfo):
     __tablename__ = u'rbSpeciality'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5657,7 +5661,7 @@ class Rbspeciality(db.Model, RBInfo):
         RBInfo.__init__(self)
 
 
-class Rbstorage(db.Model):
+class Rbstorage(Info):
     __tablename__ = u'rbStorage'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5668,7 +5672,7 @@ class Rbstorage(db.Model):
     orgStructure = db.relationship(u'Orgstructure')
 
 
-class Rbtariffcategory(db.Model, RBInfo):
+class Rbtariffcategory(RBInfo):
     __tablename__ = u'rbTariffCategory'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5676,7 +5680,7 @@ class Rbtariffcategory(db.Model, RBInfo):
     name = db.Column(db.String(64), nullable=False, index=True)
 
 
-class Rbtarifftype(db.Model):
+class Rbtarifftype(Info):
     __tablename__ = u'rbTariffType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5684,7 +5688,7 @@ class Rbtarifftype(db.Model):
     name = db.Column(db.String(64, u'utf8_unicode_ci'), nullable=False)
 
 
-class Rbtempinvalidbreak(db.Model):
+class Rbtempinvalidbreak(Info):
     __tablename__ = u'rbTempInvalidBreak'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5693,7 +5697,7 @@ class Rbtempinvalidbreak(db.Model):
     name = db.Column(db.String(80), nullable=False, index=True)
 
 
-class Rbtempinvaliddocument(db.Model):
+class Rbtempinvaliddocument(Info):
     __tablename__ = u'rbTempInvalidDocument'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5705,7 +5709,7 @@ class Rbtempinvaliddocument(db.Model):
     checkingAmount = db.Column(db.Enum(u'???', u'????????'), nullable=False)
 
 
-class Rbtempinvalidduplicatereason(db.Model):
+class Rbtempinvalidduplicatereason(Info):
     __tablename__ = u'rbTempInvalidDuplicateReason'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5713,7 +5717,7 @@ class Rbtempinvalidduplicatereason(db.Model):
     name = db.Column(db.String(64), nullable=False)
 
 
-class Rbtempinvalidreason(db.Model):
+class Rbtempinvalidreason(Info):
     __tablename__ = u'rbTempInvalidReason'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5728,7 +5732,7 @@ class Rbtempinvalidreason(db.Model):
     regionalCode = db.Column(db.String(3), nullable=False)
 
 
-class Rbtempinvalidregime(db.Model):
+class Rbtempinvalidregime(Info):
     __tablename__ = u'rbTempInvalidRegime'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5738,7 +5742,7 @@ class Rbtempinvalidregime(db.Model):
     name = db.Column(db.String(64), nullable=False, index=True)
 
 
-class Rbtempinvalidresult(db.Model):
+class Rbtempinvalidresult(Info):
     __tablename__ = u'rbTempInvalidResult'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5750,7 +5754,7 @@ class Rbtempinvalidresult(db.Model):
     status = db.Column(db.Integer, nullable=False)
 
 
-class Rbtest(db.Model):
+class Rbtest(Info):
     __tablename__ = u'rbTest'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5759,7 +5763,7 @@ class Rbtest(db.Model):
     deleted = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbtesttubetype(db.Model):
+class Rbtesttubetype(Info):
     __tablename__ = u'rbTestTubeType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5774,7 +5778,7 @@ class Rbtesttubetype(db.Model):
     unit = db.relationship(u'Rbunit')
 
 
-class Rbthesauru(db.Model):
+class Rbthesauru(Info):
     __tablename__ = u'rbThesaurus'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5784,7 +5788,7 @@ class Rbthesauru(db.Model):
     template = db.Column(db.String(255), nullable=False, server_default=u"''")
 
 
-class Rbtimequotingtype(db.Model):
+class Rbtimequotingtype(Info):
     __tablename__ = u'rbTimeQuotingType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5792,7 +5796,7 @@ class Rbtimequotingtype(db.Model):
     name = db.Column(db.Text(collation=u'utf8_unicode_ci'), nullable=False)
 
 
-class Rbtissuetype(db.Model, RBInfo):
+class Rbtissuetype(RBInfo):
     __tablename__ = u'rbTissueType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5810,7 +5814,7 @@ class Rbtissuetype(db.Model, RBInfo):
                 2: u'Ж'}[self.sexCode]
 
 
-class Rbtransferdatetype(db.Model):
+class Rbtransferdatetype(Info):
     __tablename__ = u'rbTransferDateType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5818,7 +5822,7 @@ class Rbtransferdatetype(db.Model):
     name = db.Column(db.Text(collation=u'utf8_unicode_ci'), nullable=False)
 
 
-class rbTraumaType(db.Model):
+class rbTraumaType(RBInfo):
     __tablename__ = u'rbTraumaType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5826,7 +5830,7 @@ class rbTraumaType(db.Model):
     name = db.Column(db.String(64), nullable=False, index=True)
 
 
-class Rbtreatment(db.Model, RBInfo):
+class Rbtreatment(RBInfo):
     __tablename__ = u'rbTreatment'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5837,7 +5841,7 @@ class Rbtreatment(db.Model, RBInfo):
     pacientModel = db.relationship(u'Rbpacientmodel')
 
 
-class Rbtrfubloodcomponenttype(db.Model, RBInfo):
+class Rbtrfubloodcomponenttype(RBInfo):
     __tablename__ = u'rbTrfuBloodComponentType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5847,7 +5851,7 @@ class Rbtrfubloodcomponenttype(db.Model, RBInfo):
     unused = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbtrfulaboratorymeasuretype(db.Model):
+class Rbtrfulaboratorymeasuretype(Info):
     __tablename__ = u'rbTrfuLaboratoryMeasureTypes'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5855,7 +5859,7 @@ class Rbtrfulaboratorymeasuretype(db.Model):
     name = db.Column(db.String(255))
 
 
-class Rbtrfuproceduretype(db.Model):
+class Rbtrfuproceduretype(Info):
     __tablename__ = u'rbTrfuProcedureTypes'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5864,7 +5868,7 @@ class Rbtrfuproceduretype(db.Model):
     unused = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbufms(db.Model):
+class Rbufms(Info):
     __tablename__ = u'rbUFMS'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5872,7 +5876,7 @@ class Rbufms(db.Model):
     name = db.Column(db.String(256, u'utf8_bin'), nullable=False)
 
 
-class Rbunit(db.Model, RBInfo):
+class Rbunit(RBInfo):
     __tablename__ = u'rbUnit'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5880,7 +5884,7 @@ class Rbunit(db.Model, RBInfo):
     name = db.Column(db.Unicode(256), index=True)
 
 
-class Rbuserprofile(db.Model):
+class Rbuserprofile(Info):
     __tablename__ = u'rbUserProfile'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5889,7 +5893,7 @@ class Rbuserprofile(db.Model):
     withDep = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class RbuserprofileRight(db.Model):
+class RbuserprofileRight(Info):
     __tablename__ = u'rbUserProfile_Right'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5897,7 +5901,7 @@ class RbuserprofileRight(db.Model):
     userRight_id = db.Column(db.Integer, nullable=False, index=True)
 
 
-class Rbuserright(db.Model):
+class Rbuserright(Info):
     __tablename__ = u'rbUserRight'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5905,7 +5909,7 @@ class Rbuserright(db.Model):
     name = db.Column(db.String(128), nullable=False, index=True)
 
 
-class Rbvisittype(db.Model, RBInfo):
+class Rbvisittype(RBInfo):
     __tablename__ = u'rbVisitType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -5914,7 +5918,7 @@ class Rbvisittype(db.Model, RBInfo):
     serviceModifier = db.Column(db.Unicode(128), nullable=False)
 
 
-class RbF001Tfom(db.Model):
+class RbF001Tfom(Info):
     __tablename__ = u'rb_F001_Tfoms'
 
     tf_kod = db.Column(db.String(255), primary_key=True)
@@ -5936,7 +5940,7 @@ class RbF001Tfom(db.Model):
     www = db.Column(db.String(255))
 
 
-class RbF002Smo(db.Model):
+class RbF002Smo(Info):
     __tablename__ = u'rb_F002_SMO'
 
     smocod = db.Column(db.String(255), primary_key=True)
@@ -5971,7 +5975,7 @@ class RbF002Smo(db.Model):
     www = db.Column(db.String(255))
 
 
-class RbF003Mo(db.Model):
+class RbF003Mo(Info):
     __tablename__ = u'rb_F003_MO'
 
     mcod = db.Column(db.String(255), primary_key=True)
@@ -6005,7 +6009,7 @@ class RbF003Mo(db.Model):
     www = db.Column(db.String(255))
 
 
-class RbF007Vedom(db.Model):
+class RbF007Vedom(Info):
     __tablename__ = u'rb_F007_Vedom'
 
     idved = db.Column(db.BigInteger, primary_key=True)
@@ -6014,7 +6018,7 @@ class RbF007Vedom(db.Model):
     vedname = db.Column(db.String(255))
 
 
-class RbF008Tipom(db.Model):
+class RbF008Tipom(Info):
     __tablename__ = u'rb_F008_TipOMS'
 
     iddoc = db.Column(db.BigInteger, primary_key=True)
@@ -6023,7 +6027,7 @@ class RbF008Tipom(db.Model):
     docname = db.Column(db.String(255))
 
 
-class RbF009Statzl(db.Model):
+class RbF009Statzl(Info):
     __tablename__ = u'rb_F009_StatZL'
 
     idstatus = db.Column(db.String(255), primary_key=True)
@@ -6032,7 +6036,7 @@ class RbF009Statzl(db.Model):
     statusname = db.Column(db.String(255))
 
 
-class RbF010Subekti(db.Model):
+class RbF010Subekti(Info):
     __tablename__ = u'rb_F010_Subekti'
 
     kod_tf = db.Column(db.String(255), primary_key=True)
@@ -6043,7 +6047,7 @@ class RbF010Subekti(db.Model):
     subname = db.Column(db.String(255))
 
 
-class RbF011Tipdoc(db.Model):
+class RbF011Tipdoc(Info):
     __tablename__ = u'rb_F011_Tipdoc'
 
     iddoc = db.Column(db.BigInteger, primary_key=True)
@@ -6054,7 +6058,7 @@ class RbF011Tipdoc(db.Model):
     docser = db.Column(db.String(255))
 
 
-class RbF015Fedokr(db.Model):
+class RbF015Fedokr(Info):
     __tablename__ = u'rb_F015_FedOkr'
 
     kod_ok = db.Column(db.BigInteger, primary_key=True)
@@ -6063,7 +6067,7 @@ class RbF015Fedokr(db.Model):
     okrname = db.Column(db.String(255))
 
 
-class RbKladr(db.Model):
+class RbKladr(Info):
     __tablename__ = u'rb_Kladr'
 
     code = db.Column(db.String(255), primary_key=True)
@@ -6076,7 +6080,7 @@ class RbKladr(db.Model):
     uno = db.Column(db.String(255))
 
 
-class RbKladrstreet(db.Model):
+class RbKladrstreet(Info):
     __tablename__ = u'rb_KladrStreet'
 
     code = db.Column(db.String(255), primary_key=True)
@@ -6088,7 +6092,7 @@ class RbKladrstreet(db.Model):
     uno = db.Column(db.String(255))
 
 
-class RbM001Mkb10(db.Model):
+class RbM001Mkb10(Info):
     __tablename__ = u'rb_M001_MKB10'
 
     idds = db.Column(db.String(255), primary_key=True)
@@ -6097,7 +6101,7 @@ class RbM001Mkb10(db.Model):
     dsname = db.Column(db.String(255))
 
 
-class RbO001Oksm(db.Model):
+class RbO001Oksm(Info):
     __tablename__ = u'rb_O001_Oksm'
 
     kod = db.Column(db.String(255), primary_key=True)
@@ -6111,7 +6115,7 @@ class RbO001Oksm(db.Model):
     status = db.Column(db.BigInteger)
 
 
-class RbO002Okato(db.Model):
+class RbO002Okato(Info):
     __tablename__ = u'rb_O002_Okato'
 
     ter = db.Column(db.String(255), primary_key=True)
@@ -6127,7 +6131,7 @@ class RbO002Okato(db.Model):
     status = db.Column(db.BigInteger)
 
 
-class RbO003Okved(db.Model):
+class RbO003Okved(Info):
     __tablename__ = u'rb_O003_Okved'
 
     kod = db.Column(db.String(255), primary_key=True)
@@ -6141,7 +6145,7 @@ class RbO003Okved(db.Model):
     status = db.Column(db.BigInteger)
 
 
-class RbO004Okf(db.Model):
+class RbO004Okf(Info):
     __tablename__ = u'rb_O004_Okfs'
 
     kod = db.Column(db.String(255), primary_key=True)
@@ -6152,7 +6156,7 @@ class RbO004Okf(db.Model):
     status = db.Column(db.BigInteger)
 
 
-class RbO005Okopf(db.Model):
+class RbO005Okopf(Info):
     __tablename__ = u'rb_O005_Okopf'
 
     kod = db.Column(db.String(255), primary_key=True)
@@ -6163,7 +6167,7 @@ class RbO005Okopf(db.Model):
     status = db.Column(db.BigInteger)
 
 
-class RbV001Nomerclr(db.Model):
+class RbV001Nomerclr(Info):
     __tablename__ = u'rb_V001_Nomerclr'
 
     idrb = db.Column(db.BigInteger, primary_key=True)
@@ -6172,7 +6176,7 @@ class RbV001Nomerclr(db.Model):
     rbname = db.Column(db.String(255))
 
 
-class RbV002Profot(db.Model):
+class RbV002Profot(Info):
     __tablename__ = u'rb_V002_ProfOt'
 
     idpr = db.Column(db.BigInteger, primary_key=True)
@@ -6181,7 +6185,7 @@ class RbV002Profot(db.Model):
     prname = db.Column(db.String(255))
 
 
-class RbV003Licusl(db.Model):
+class RbV003Licusl(Info):
     __tablename__ = u'rb_V003_LicUsl'
 
     idrl = db.Column(db.BigInteger, primary_key=True)
@@ -6192,7 +6196,7 @@ class RbV003Licusl(db.Model):
     prim = db.Column(db.BigInteger)
 
 
-class RbV004Medspec(db.Model):
+class RbV004Medspec(Info):
     __tablename__ = u'rb_V004_Medspec'
 
     idmsp = db.Column(db.BigInteger, primary_key=True)
@@ -6201,14 +6205,14 @@ class RbV004Medspec(db.Model):
     mspname = db.Column(db.String(255))
 
 
-class RbV005Pol(db.Model):
+class RbV005Pol(Info):
     __tablename__ = u'rb_V005_Pol'
 
     idpol = db.Column(db.BigInteger, primary_key=True)
     polname = db.Column(db.String(255))
 
 
-class RbV006Uslmp(db.Model):
+class RbV006Uslmp(Info):
     __tablename__ = u'rb_V006_UslMp'
 
     idump = db.Column(db.BigInteger, primary_key=True)
@@ -6217,7 +6221,7 @@ class RbV006Uslmp(db.Model):
     umpname = db.Column(db.String(255))
 
 
-class RbV007Nommo(db.Model):
+class RbV007Nommo(Info):
     __tablename__ = u'rb_V007_NomMO'
 
     idnmo = db.Column(db.BigInteger, primary_key=True)
@@ -6226,7 +6230,7 @@ class RbV007Nommo(db.Model):
     nmoname = db.Column(db.String(255))
 
 
-class RbV008Vidmp(db.Model):
+class RbV008Vidmp(Info):
     __tablename__ = u'rb_V008_VidMp'
 
     idvmp = db.Column(db.BigInteger, primary_key=True)
@@ -6235,7 +6239,7 @@ class RbV008Vidmp(db.Model):
     vmpname = db.Column(db.String(255))
 
 
-class RbV009Rezult(db.Model):
+class RbV009Rezult(Info):
     __tablename__ = u'rb_V009_Rezult'
 
     idrmp = db.Column(db.BigInteger, primary_key=True)
@@ -6245,7 +6249,7 @@ class RbV009Rezult(db.Model):
     rmpname = db.Column(db.String(255))
 
 
-class RbV010Sposob(db.Model):
+class RbV010Sposob(Info):
     __tablename__ = u'rb_V010_Sposob'
 
     idsp = db.Column(db.BigInteger, primary_key=True)
@@ -6254,7 +6258,7 @@ class RbV010Sposob(db.Model):
     spname = db.Column(db.String(255))
 
 
-class RbV012Ishod(db.Model):
+class RbV012Ishod(Info):
     __tablename__ = u'rb_V012_Ishod'
 
     idiz = db.Column(db.BigInteger, primary_key=True)
@@ -6264,7 +6268,7 @@ class RbV012Ishod(db.Model):
     izname = db.Column(db.String(255))
 
 
-class Rdfirstname(db.Model):
+class Rdfirstname(Info):
     __tablename__ = u'rdFirstName'
     __table_args__ = (
         db.Index(u'sex', u'sex', u'name'),
@@ -6275,7 +6279,7 @@ class Rdfirstname(db.Model):
     sex = db.Column(db.Integer, nullable=False)
 
 
-class Rdpolis(db.Model):
+class Rdpolis(Info):
     __tablename__ = u'rdPOLIS_S'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -6284,7 +6288,7 @@ class Rdpolis(db.Model):
     TYPEINS = db.Column(db.String(1), nullable=False)
 
 
-class Rdpatrname(db.Model):
+class Rdpatrname(Info):
     __tablename__ = u'rdPatrName'
     __table_args__ = (
         db.Index(u'sex', u'sex', u'name'),
@@ -6295,7 +6299,7 @@ class Rdpatrname(db.Model):
     sex = db.Column(db.Integer, nullable=False)
 
 
-class Rlsactmatter(db.Model):
+class Rlsactmatter(Info):
     __tablename__ = u'rlsActMatters'
     __table_args__ = (
         db.Index(u'name_localName', u'name', u'localName'),
@@ -6306,7 +6310,7 @@ class Rlsactmatter(db.Model):
     localName = db.Column(db.String(255))
 
 
-class Rlsbalanceofgood(db.Model):
+class Rlsbalanceofgood(Info):
     __tablename__ = u'rlsBalanceOfGoods'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -6321,21 +6325,21 @@ class Rlsbalanceofgood(db.Model):
     storage = db.relationship(u'Rbstorage')
 
 
-class Rlsfilling(db.Model):
+class Rlsfilling(Info):
     __tablename__ = u'rlsFilling'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), unique=True)
 
 
-class Rlsform(db.Model):
+class Rlsform(Info):
     __tablename__ = u'rlsForm'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), unique=True)
 
 
-class Rlsnoman(db.Model):
+class Rlsnoman(Info):
     __tablename__ = u'rlsNomen'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -6360,14 +6364,14 @@ class Rlsnoman(db.Model):
     unit = db.relationship(u'Rbunit', primaryjoin='Rlsnoman.unit_id == Rbunit.id')
 
 
-class Rlspacking(db.Model):
+class Rlspacking(Info):
     __tablename__ = u'rlsPacking'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), unique=True)
 
 
-class Rlspharmgroup(db.Model):
+class Rlspharmgroup(Info):
     __tablename__ = u'rlsPharmGroup'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -6379,14 +6383,14 @@ class Rlspharmgroup(db.Model):
     nameRaw = db.Column(db.String(128), index=True)
 
 
-class Rlspharmgrouptocode(db.Model):
+class Rlspharmgrouptocode(Info):
     __tablename__ = u'rlsPharmGroupToCode'
 
     rlsPharmGroup_id = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
     code = db.Column(db.Integer, primary_key=True, nullable=False, index=True, server_default=u"'0'")
 
 
-class Rlstradename(db.Model):
+class Rlstradename(Info):
     __tablename__ = u'rlsTradeName'
     __table_args__ = (
         db.Index(u'name_localName', u'name', u'localName'),
@@ -6397,7 +6401,7 @@ class Rlstradename(db.Model):
     localName = db.Column(db.String(255))
 
 
-class Trfufinalvolume(db.Model):
+class Trfufinalvolume(Info):
     __tablename__ = u'trfuFinalVolume'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -6423,7 +6427,7 @@ class Trfufinalvolume(db.Model):
         return columns[name]
 
 
-class Trfulaboratorymeasure(db.Model):
+class Trfulaboratorymeasure(Info):
     __tablename__ = u'trfuLaboratoryMeasure'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -6448,7 +6452,7 @@ class Trfulaboratorymeasure(db.Model):
         return columns[name]
 
 
-class Trfuorderissueresult(db.Model):
+class Trfuorderissueresult(Info):
     __tablename__ = u'trfuOrderIssueResult'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -6476,7 +6480,7 @@ class Trfuorderissueresult(db.Model):
         return columns[name]
 
 
-class v_Client_Quoting(db.Model):
+class v_Client_Quoting(Info):
     __tablename__ = u'vClient_Quoting'
 
     quotaId = db.Column(u'id', db.Integer, primary_key=True)
@@ -6514,7 +6518,7 @@ class v_Client_Quoting(db.Model):
     treatment = db.relationship(u"Rbtreatment")
 
 
-class v_Nomen(db.Model):
+class v_Nomen(Info):
     __tablename__ = u'vNomen'
 
     id = db.Column(u'id', db.Integer, primary_key=True)
@@ -6542,7 +6546,7 @@ class v_Nomen(db.Model):
         return ', '.join(unicode(field) for field in (self.tradeName, self.form, self.dosageValue, self.filling))
 
 
-class Rbprinttemplatemeta(db.Model):
+class Rbprinttemplatemeta(Info):
     __tablename__ = 'rbPrintTemplateMeta'
     __table_args__ = (
         db.Index('template_id_name', 'template_id', 'name'),
