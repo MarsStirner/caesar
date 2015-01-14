@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import datetime
 from HTMLParser import HTMLParser
 # from PyQt4.QtCore import QDate, QTime
 
@@ -242,6 +243,9 @@ def time_toString(time, format):
         time = time.strftime(format)
     return time
 
+
+def addDays(date, num_of_days):
+    return date + datetime.timedelta(days=num_of_days)
 #
 # def date_toString(object_QDate, format):
 #     return QDate.toString(object_QDate, format)

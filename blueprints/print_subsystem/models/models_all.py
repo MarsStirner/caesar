@@ -468,7 +468,7 @@ class ActionProperty(db.Model):
 
     def __unicode__(self):
         if self.type.isVector:
-            return '\n'.join([unicode(item) for item in self.value])
+            return ', '.join([unicode(item) for item in self.value])
         else:
             return unicode(self.value)
     # image = property(lambda self: self._property.getImage())
@@ -5382,7 +5382,7 @@ class Rbprinttemplate(db.Model):
     render = db.Column(db.Integer, nullable=False, server_default=u"'0'")
     templateText = db.Column(db.String, nullable=False)
 
-    meta_data = db.relationship('Rbprinttemplatemeta')
+    meta_data = db.relationship('Rbprinttemplatemeta', lazy=False)
 
 
 class Rbquotastatu(db.Model):
@@ -5631,7 +5631,16 @@ class Rbspecialvariablespreference(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), nullable=False, unique=True)
+    arguments_raw = db.Column('arguments', db.Text)
     query_text = db.Column('query', db.Text, nullable=False)
+
+    @property
+    def arguments(self):
+        import json
+        try:
+            return json.loads(self.arguments_raw) or []
+        except:
+            return []
 
 
 class Rbspeciality(db.Model, RBInfo):
@@ -5818,12 +5827,15 @@ class Rbtransferdatetype(db.Model):
     name = db.Column(db.Text(collation=u'utf8_unicode_ci'), nullable=False)
 
 
-class rbTraumaType(db.Model):
+class rbTraumaType(db.Model, RBInfo):
     __tablename__ = u'rbTraumaType'
 
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(8), nullable=False, index=True)
     name = db.Column(db.String(64), nullable=False, index=True)
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbtreatment(db.Model, RBInfo):
