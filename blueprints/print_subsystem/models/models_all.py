@@ -2548,7 +2548,7 @@ class Diagnostic(db.Model):
         return self.id
 
     def __unicode__(self):
-        return self.diagnosisType + ' ' + self.diagnosis.mkb
+        return self.diagnosis.mkb + ', ' + self.diagnosisType
 
 
 class Drugchart(db.Model):
