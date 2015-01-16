@@ -33,6 +33,7 @@ BEAKER_SESSION = {'session.type': 'file',
 
 TIME_ZONE = 'Europe/Moscow'
 VESTA_URL = ''
+TRFU_URL = ''
 
 try:
     from config_local import *

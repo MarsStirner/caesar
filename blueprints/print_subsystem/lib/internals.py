@@ -7,6 +7,8 @@ from context import CTemplateContext
 from html import escape, escapenl, HTMLRipper, date_toString, time_toString, addDays
 from flask import url_for
 
+from config import TRFU_URL
+
 __author__ = 'mmalkov'
 
 
@@ -73,7 +75,8 @@ def renderTemplate(template, data, render=1):
                             "date_toString": date_toString,
                             "time_toString": time_toString,
                             "addDays": addDays,
-                            "images": url_for(".static", filename="i/", _external=True)
+                            "images": url_for(".static", filename="i/", _external=True),
+                            "trfu_service": TRFU_URL,
                             })
             env = make_jinja_environment()
             macros = "{% import '_macros.html' as macros %}"

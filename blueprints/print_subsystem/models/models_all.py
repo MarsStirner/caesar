@@ -6472,8 +6472,9 @@ class Trfuorderissueresult(db.Model):
     volume = db.Column(db.Integer)
     dose_count = db.Column(db.Float(asdecimal=True))
     trfu_donor_id = db.Column(db.Integer)
+    stickerUrl = db.Column(db.String(2083))
 
-    action = db.relationship(u'Action')
+    action = db.relationship(u'Action', backref="trfuOrderIssueResult")
     blood_type = db.relationship(u'Rbbloodtype')
     comp_type = db.relationship(u'Rbtrfubloodcomponenttype')
 
