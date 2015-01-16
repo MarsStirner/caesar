@@ -1080,7 +1080,7 @@ class Policlinic(object):
                     WHERE
                         Person.id = {0}
                             AND `EventType`.`purpose_id` = 8
-                            AND `ActionType`.`group_id` = 101
+                            AND `ActionType`.`group_id` IN (101 , 2036, 2037, 2477, 2478)
                             AND (`Action`.`endDate` >= CONCAT('{1}', ' 00:00:00')
                             AND `Action`.`endDate` <= CONCAT('{2}', ' 23:59:59'))
                             AND `Event`.`deleted` = 0
