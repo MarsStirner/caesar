@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+
 import datetime
 import calendar
 import jinja2
+from collections import defaultdict
+
 from application.database import db
 from ..config import MODULE_NAME
 from ..lib.html import escape, convenience_HtmlRip, replace_first_paragraph
@@ -49,6 +52,10 @@ class Info(object):
 
 
 class RBInfo(Info):
+    def __init__(self):
+        self.code = ""
+        self.name = ""
+
     def __unicode__(self):
         return self.name
 
@@ -156,8 +163,8 @@ class Action(db.Model):
     note = db.Column(db.Text, nullable=False)
     person_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
     office = db.Column(db.String(16), nullable=False)
-    amount = db.Column(db.Float(asdecimal=True), nullable=False)
-    uet = db.Column(db.Float(asdecimal=True), server_default=u"'0'")
+    amount = db.Column(db.Float, nullable=False)
+    uet = db.Column(db.Float, server_default=u"'0'")
     expose = db.Column(db.Boolean, nullable=False, server_default=u"'1'")
     payStatus = db.Column(db.Integer, nullable=False)
     account = db.Column(db.Boolean, nullable=False)
@@ -223,7 +230,7 @@ class Action(db.Model):
     @property
     def finance(self):
         if self.contract_id:
-            return self.contract.finance
+            return self.self_contract.finance
         elif self.event:
             return self.event.contract.finance
 
@@ -282,16 +289,18 @@ class Action(db.Model):
 
     @property
     def service(self):
-        finance = self.finance
-        if finance:
-            if not hasattr(self, '_finance_service'):
-                _finance_service = ActiontypeService.query.filter(
-                    ActiontypeService.master_id == self.actionType_id,
-                    ActiontypeService.finance_id == finance.id,
-                ).first()
-                self._finance_service = _finance_service
-            if self._finance_service:
-                return self._finance_service
+        # пока отключено, т.к. по процессу не используется в амбулатории
+
+        # finance = self.finance
+        # if finance:
+        #     if not hasattr(self, '_finance_service'):
+        #         _finance_service = ActiontypeService.query.filter(
+        #             ActiontypeService.master_id == self.actionType_id,
+        #             ActiontypeService.finance_id == finance.id,
+        #         ).first()
+        #         self._finance_service = _finance_service
+        #     if self._finance_service:
+        #         return self._finance_service.service
         return self.actionType.service if self.actionType else None
 
     @property
@@ -384,7 +393,7 @@ class ActionProperty(db.Model):
     __tablename__ = u'ActionProperty'
 
     id = db.Column(db.Integer, primary_key=True)
-    createDatetime = db.Column(db.DateTime, nullable=False)
+    createDatetime = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
     createPerson_id = db.Column(db.Integer, index=True)
     modifyDatetime = db.Column(db.DateTime, nullable=False)
     modifyPerson_id = db.Column(db.Integer, index=True)
@@ -392,13 +401,51 @@ class ActionProperty(db.Model):
     action_id = db.Column(db.Integer, db.ForeignKey('Action.id'), nullable=False, index=True)
     type_id = db.Column(db.Integer, db.ForeignKey('ActionPropertyType.id'), nullable=False, index=True)
     unit_id = db.Column(db.Integer, db.ForeignKey('rbUnit.id'), index=True)
-    norm = db.Column(db.String(64), nullable=False)
+    norm = db.Column(db.String(64), nullable=False, default='')
     isAssigned = db.Column(db.Boolean, nullable=False, server_default=u"'0'")
-    evaluation = db.Column(db.Integer)
+    evaluation = db.Column(db.Integer, default=None)
     version = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
+    action = db.relationship(u'Action')
     type = db.relationship(u'Actionpropertytype')
     unit_all = db.relationship(u'Rbunit')
+
+    def get_value_class(self):
+        # Следующая магия вытаскивает класс, ассоциированный с backref-пропертей, созданной этим же классом у нашего
+        # ActionProperty. Объекты этого класса мы будем создавать для значений
+        return getattr(self.__class__, self.__get_property_name()).property.mapper.class_
+
+    def __get_property_name(self):
+        return '_value_%s' % self.type.get_appendix()
+
+    def get_value_instance(self):
+        class_name = 'ActionProperty_%s' % self.type.get_appendix()
+        cls = globals().get(class_name)
+        if cls is not None:
+            instance = cls()
+            instance.property_object = self
+            instance.idx = 0
+            return instance
+
+    @property
+    def value_object(self):
+        return getattr(self, self.__get_property_name())
+
+    @value_object.setter
+    def value_object(self, value):
+        setattr(self, self.__get_property_name(), value)
+
+    @property
+    def value(self):
+        value_object = self.value_object
+
+        if not value_object:
+            value_object = [self.get_value_instance()]
+
+        if self.type.isVector:
+            return [item.value for item in value_object]
+        else:
+            return value_object[0].value
 
     @property
     def name(self):
@@ -416,33 +463,17 @@ class ActionProperty(db.Model):
     def isAssignable(self):
         return self.type.isAssignable
 
-    @property
-    def value(self):
-        if self.type.typeName == "Constructor":
-            class_name = u'ActionpropertyText'
-        elif self.type.typeName == "AnalysisStatus":
-            class_name = u'ActionpropertyInteger'
-        elif self.type.typeName == u"Запись в др. ЛПУ":
-            class_name = u'ActionpropertyOtherlpurecord'
-        elif self.type.typeName == u"FlatDirectory":
-            class_name = u'ActionpropertyFdrecord'
-        else:
-            class_name = u'Actionproperty{0}'.format(self.type.typeName.capitalize())
+    #     if self.type.typeName == "Table":
+    #         return values[0].get_value(self.type.valueDomain) if values else ""
 
-        cl = globals()[class_name]
-        values = cl.query.filter(cl.id == self.id).all()
-        if self.type.typeName == "Table":
-            return values[0].get_value(self.type.valueDomain) if values else ""
-        else:
-            if values and self.type.isVector:
-                return [value.get_value() for value in values]
-            elif values:
-                return values[0].get_value()
-            else:
-                return ""
+    def __nonzero__(self):
+        return bool(self.value_object is not None and (self.value or self.value == 0))
 
     def __unicode__(self):
-        return unicode(self.value)
+        if self.type.isVector:
+            return '\n'.join([unicode(item) for item in self.value])
+        else:
+            return unicode(self.value)
     # image = property(lambda self: self._property.getImage())
     # imageUrl = property(_getImageUrl)
 
@@ -508,270 +539,280 @@ class Actionpropertytype(db.Model, Info):
     modifyDatetime = db.Column(db.DateTime, nullable=False)
     modifyPerson_id = db.Column(db.Integer)
 
-    @property
-    def value(self):
-        if self.typeName == "Constructor":
-            class_name = u'ActionpropertyText'
-        elif self.typeName == "AnalysisStatus":
-            class_name = u'ActionpropertyInteger'
-        else:
-            class_name = u'Actionproperty{0}'.format(self.typeName.capitalize())
-
-        cl = globals()[class_name]
-        return cl().get_value()
+    def get_appendix(self):
+        type_name = self.typeName
+        if type_name in ["Constructor", u"Жалобы"]:
+            return 'Text'
+        elif type_name == u"Запись в др. ЛПУ":
+            return 'OtherLPURecord'
+        elif type_name == "FlatDirectory":
+            return 'FDRecord'
+        return type_name
 
 
-class ActionpropertyAction(db.Model):
+class ActionProperty__ValueType(db.Model):
+    __abstract__ = True
+
+    @classmethod
+    def format_value(cls, prop, json_data):
+        return json_data
+
+
+class ActionProperty_Action(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_Action'
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(db.Integer, index=True)
+    value_ = db.Column('value', db.ForeignKey('Action.id'), index=True)
 
-    def get_value(self):
-        return self.value if self.value else ''
-
-    def __unicode__(self):
-        return self.value
+    value = db.relationship('Action')
+    property_object = db.relationship('ActionProperty', backref='_value_Action')
 
 
-class ActionpropertyDate(db.Model):
+class ActionProperty_Date(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_Date'
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(db.Date)
+    value_ = db.Column('value', db.Date)
 
-    def get_value(self):
-        return DateInfo(self.value) if self.value else DateInfo()
+    @property
+    def value(self):
+        return DateInfo(self.value_) if self.value_ else ''
+    property_object = db.relationship('ActionProperty', backref='_value_Date')
 
-    def __unicode__(self):
-        return self.value
 
-
-class ActionpropertyDouble(db.Model):
+class ActionProperty_Double(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_Double'
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(db.Float(asdecimal=True, decimal_return_scale=2), nullable=False)
-
-    def get_value(self):
-        return round(self.value, 2) if self.value else 0.0
-
-    def __unicode__(self):
-        return self.value
+    value = db.Column(db.Float, nullable=False)
+    property_object = db.relationship('ActionProperty', backref='_value_Double')
 
 
-class ActionpropertyFdrecord(db.Model):
+class ActionProperty_FDRecord(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_FDRecord'
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True)
     index = db.Column(db.Integer, nullable=False, server_default=u"'0'")
-    value = db.Column(db.ForeignKey('FDRecord.id'), nullable=False, index=True)
+    value_ = db.Column('value', db.ForeignKey('FDRecord.id'), nullable=False, index=True)
 
-    FDRecord = db.relationship(u'Fdrecord')
+    property_object = db.relationship('ActionProperty', backref='_value_FDRecord')
 
-    def get_value(self):
-        return Fdrecord.query.filter(Fdrecord.id == self.value).first().get_value()
+    @property
+    def value(self):
+        return Fdrecord.query.filter(Fdrecord.id == self.value_).first().get_value()
 
 
-class ActionpropertyHospitalbed(db.Model):
+class ActionProperty_HospitalBed(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_HospitalBed'
 
     id = db.Column(db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(db.ForeignKey('OrgStructure_HospitalBed.id'), index=True)
+    value_ = db.Column('value', db.ForeignKey('OrgStructure_HospitalBed.id'), index=True)
 
-    ActionProperty = db.relationship(u'ActionProperty')
-    OrgStructure_HospitalBed = db.relationship(u'OrgstructureHospitalbed')
-
-    def get_value(self):
-        value = OrgstructureHospitalbed.query.filter(OrgstructureHospitalbed.id == self.value).first()
-        return value
+    value = db.relationship(u'OrgstructureHospitalbed')
+    property_object = db.relationship('ActionProperty', backref='_value_HospitalBed')
 
 
-class ActionpropertyHospitalbedprofile(db.Model):
+class ActionProperty_HospitalBedProfile(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_HospitalBedProfile'
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(db.Integer, index=True)
+    value_ = db.Column('value', db.ForeignKey('rbHospitalBedProfile.id'), index=True)
 
-    def get_value(self):
-        #    TODO: переделать
-        return self.value if self.value else ''
+    value = db.relationship('Rbhospitalbedprofile')
+    property_object = db.relationship('ActionProperty', backref='_value_HospitalBedProfile')
 
 
-class ActionpropertyImage(db.Model):
+class ActionProperty_Image(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_Image'
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(MEDIUMBLOB)
-
-    def get_value(self):
-        return self.value if self.value else ''
+    value = db.Column(db.BLOB)
+    property_object = db.relationship('ActionProperty', backref='_value_Image')
 
 
-class ActionpropertyImagemap(db.Model):
+class ActionProperty_ImageMap(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_ImageMap'
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = db.Column(db.String)
-
-    def get_value(self):
-        return self.value if self.value else ''
+    property_object = db.relationship('ActionProperty', backref='_value_ImageMap')
 
 
-class ActionpropertyInteger(db.Model):
+class ActionProperty_Diagnosis(ActionProperty__ValueType):
+    __tablename__ = u'ActionProperty_Diagnosis'
+    id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
+    index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
+    value_ = db.Column('value', db.ForeignKey('Diagnostic.id'), nullable=False)
+
+    value_model = db.relationship('Diagnostic')
+    property_object = db.relationship('ActionProperty', backref='_value_Diagnosis')
+
+    @property
+    def value(self):
+        return self.value_model
+
+    @value.setter
+    def value(self, val):
+        if self.value_model is not None and self.value_model in db.session and self.value_model.id == val.id:
+            self.value_model = db.session.merge(val)
+        else:
+            self.value_model = val
+
+
+class ActionProperty_Integer_Base(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_Integer'
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(db.Integer, nullable=False)
-
-    def get_value(self):
-        return self.value if self.value else 0
-
-    def __unicode__(self):
-        return self.value
+    value_ = db.Column('value', db.Integer, nullable=False)
 
 
-class ActionpropertyRLS(ActionpropertyInteger):
+class ActionProperty_Integer(ActionProperty_Integer_Base):
+    property_object = db.relationship('ActionProperty', backref='_value_Integer')
 
-    def get_value(self):
-        value = v_Nomen.query.filter(v_Nomen.code == self.value).first()
-        return value
+    @property
+    def value(self):
+        return self.value_
 
-
-class ActionpropertyOperationtype(ActionpropertyInteger):
-
-    def get_value(self):
-        value = Rboperationtype.query.filter(Rboperationtype.code == self.value).first()
-        if self.value and value.name:
-            text = '(%s) %s' % (value.code, value.name)
-        elif self.value:
-            text = '{%s}' % self.value
-        else:
-            text = ''
-        return text
+    @value.setter
+    def value(self, val):
+        self.value_ = val
 
 
-class ActionpropertyJobticket(db.Model):
+class ActionProperty_AnalysisStatus(ActionProperty_Integer_Base):
+    property_object = db.relationship('ActionProperty', backref='_value_AnalysisStatus')
+
+    @property
+    def value(self):
+        return Rbanalysisstatus.query.get(self.value_) if self.value_ else None
+
+    @value.setter
+    def value(self, val):
+        self.value_ = val.id if val is not None else None
+
+
+class ActionProperty_OperationType(ActionProperty_Integer_Base):
+    property_object = db.relationship('ActionProperty', backref='_value_OperationType')
+
+    @property
+    def value(self):
+        return Rboperationtype.query.get(self.value_) if self.value_ else None
+
+    @value.setter
+    def value(self, val):
+        self.value_ = val.id if val is not None else None
+
+
+class ActionProperty_JobTicket(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_Job_Ticket'
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(db.Integer, index=True)
+    value_ = db.Column('value', db.ForeignKey('Job_Ticket.id'), index=True)
 
-    def get_value(self):
-        value = JobTicket.query.get(self.value)
-        return value if value else ''
+    value = db.relationship('JobTicket')
+    property_object = db.relationship('ActionProperty', backref='_value_JobTicket')
 
 
-class ActionpropertyMkb(db.Model):
+class ActionProperty_MKB(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_MKB'
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(db.Integer, index=True)
+    value_ = db.Column('value', db.ForeignKey('MKB.id'), index=True)
 
-    def get_value(self):
-        value = Mkb.query.get(self.value)
-        return value if value else ''
+    value = db.relationship('Mkb')
+    property_object = db.relationship('ActionProperty', backref='_value_MKB')
 
 
-class ActionpropertyOrgstructure(db.Model):
+class ActionProperty_OrgStructure(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_OrgStructure'
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(db.Integer, index=True)
+    value_ = db.Column('value', db.ForeignKey('OrgStructure.id'), index=True)
 
-    def get_value(self):
-        value = Orgstructure.query.filter(Orgstructure.id == self.value).first()
-        return value
-
-    def __unicode__(self):
-        return self.value
+    value = db.relationship('Orgstructure')
+    property_object = db.relationship('ActionProperty', backref='_value_OrgStructure')
 
 
-class ActionpropertyOrganisation(db.Model):
+class ActionProperty_Organisation(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_Organisation'
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(db.Integer, index=True)
+    value_ = db.Column('value', db.ForeignKey('Organisation.id'), index=True)
 
-    def get_value(self):
-        value = Organisation.query.filter(Organisation.id == self.value).first()
-        return value
-
-    def __unicode__(self):
-        return self.value
+    value = db.relationship('Organisation')
+    property_object = db.relationship('ActionProperty', backref='_value_Organisation')
 
 
-class ActionpropertyOtherlpurecord(db.Model):
+class ActionProperty_OtherLPURecord(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_OtherLPURecord'
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value = db.Column(db.Text(collation=u'utf8_unicode_ci'), nullable=False)
 
-    def get_value(self):
-        return self.value if self.value else ''
+    property_object = db.relationship('ActionProperty', backref='_value_OtherLPURecord')
 
 
-class ActionpropertyPerson(db.Model):
+class ActionProperty_Person(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_Person'
 
     id = db.Column(db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, nullable=False, server_default=u"'0'")
-    value = db.Column(db.ForeignKey('Person.id'), index=True)
+    value_ = db.Column('value', db.ForeignKey('Person.id'), index=True)
 
-    ActionProperty = db.relationship(u'ActionProperty')
-    Person = db.relationship(u'Person')
-
-    def get_value(self):
-        value = Person.query.filter(Person.id == self.value).first()
-        return value
-
-    def __unicode__(self):
-        return self.value
+    value = db.relationship(u'Person')
+    property_object = db.relationship('ActionProperty', backref='_value_Person')
 
 
-class ActionpropertyString(db.Model):
+class ActionProperty_String_Base(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_String'
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(db.Text, nullable=False)
-
-    def get_value(self):
-        return escape(self.value) if self.value else ''
-
-    def __unicode__(self):
-        return self.value
+    value_ = db.Column('value', db.Text, nullable=False)
 
 
-class ActionpropertyText(ActionpropertyString):
+class ActionProperty_String(ActionProperty_String_Base):
+    property_object = db.relationship('ActionProperty', backref='_value_String')
 
-    def get_value(self):
-        return replace_first_paragraph(convenience_HtmlRip(self.value)) if self.value else ''
-
-
-class ActionpropertyHtml(ActionpropertyString):
-
-    def get_value(self):
-        return convenience_HtmlRip(self.value) if self.value else ''
+    @property
+    def value(self):
+        return self.value_ if self.value_ else ''
 
 
-class ActionpropertyTable(ActionpropertyInteger):
+class ActionProperty_Text(ActionProperty_String_Base):
+    property_object = db.relationship('ActionProperty', backref='_value_Text')
 
-    def get_value(self, table_code):
+    @property
+    def value(self):
+        return replace_first_paragraph(convenience_HtmlRip(self.value_)) if self.value_ else ''
 
+
+class ActionProperty_Html(ActionProperty_String_Base):
+    property_object = db.relationship('ActionProperty', backref='_value_Html')
+
+    @property
+    def value(self):
+        return convenience_HtmlRip(self.value_) if self.value_ else ''
+
+
+class ActionProperty_Table(ActionProperty_Integer_Base):
+    property_object = db.relationship('ActionProperty', backref='_value_Table')
+
+    @property
+    def value(self):
+        table_code = self.property_object.type.valueDomain
         trfu_tables = {"trfuOrderIssueResult": Trfuorderissueresult, "trfuLaboratoryMeasure": Trfulaboratorymeasure,
                        "trfuFinalVolume": Trfufinalvolume}
         table = Rbaptable.query.filter(Rbaptable.code == table_code).first()
@@ -779,8 +820,11 @@ class ActionpropertyTable(ActionpropertyInteger):
         table_filed_names = [field.fieldName for field in table.fields]
         value_table_name = table.tableName
         master_field = table.masterField
-        values = trfu_tables[value_table_name].query.filter("{0}.{1} = {2}".format(value_table_name,
-                                                                                               master_field, self.value)).all()
+        values = trfu_tables[value_table_name].query.filter("{0}.{1} = {2}".format(
+            value_table_name,
+            master_field,
+            self.value_)
+        ).all()
         template = u'''
                     <table width="100%" border="1" align="center" style="border-style:solid;" cellspacing="0">
                         <thead><tr>{% for col in field_names %}<th>{{ col }}</th>{% endfor %}</tr></thead>
@@ -794,62 +838,80 @@ class ActionpropertyTable(ActionpropertyInteger):
         return jinja2.Template(template).render(field_names=field_names, table_filed_names=table_filed_names, values=values)
 
 
-class ActionpropertyTime(db.Model):
+class ActionProperty_Time(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_Time'
 
     id = db.Column(db.Integer, db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(db.Time, nullable=False)
+    value_ = db.Column('value', db.Time, nullable=False)
+    property_object = db.relationship('ActionProperty', backref='_value_Time')
 
-    def get_value(self):
-        return TimeInfo(self.value) if self.value else ''
+    @property
+    def value(self):
+        return TimeInfo(self.value_) if self.value_ else ''
 
-    def __unicode__(self):
-        return self.get_value()
-
-
-class ActionpropertyReferenceRb(ActionpropertyInteger):
-
-    def get_value(self, domain):
-        table_name = domain.split(';')[0]
-        value = table_name.query.get(self.value)
-        return value if value else ''
-
-    def __unicode__(self):
-        return self.get_value()
+    def __str__(self):
+        return self.value
 
 
-class ActionpropertyRbbloodcomponenttype(db.Model):
+class ActionProperty_RLS(ActionProperty_Integer_Base):
+
+    @property
+    def value(self):
+        return v_Nomen.query.get(self.value_).first() if self.value_ else None
+    property_object = db.relationship('ActionProperty', backref='_value_RLS')
+
+
+class ActionProperty_ReferenceRb(ActionProperty_Integer_Base):
+
+    @property
+    def value(self):
+        if not self.value_:
+            return None
+        if not hasattr(self, 'table_name'):
+            domain = self.property_object.type.valueDomain
+            self.table_name = domain.split(';')[0]
+        model = get_model_by_name(self.table_name)
+        return model.query.get(self.value_)
+
+    @value.setter
+    def value(self, val):
+        self.value_ = val.id if val is not None else None
+
+    property_object = db.relationship('ActionProperty', backref='_value_ReferenceRb')
+
+
+class ActionProperty_rbBloodComponentType(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_rbBloodComponentType'
 
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
+    id = db.Column(db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False)
-    value = db.Column(db.Integer, nullable=False)
+    value_ = db.Column('value', db.ForeignKey('rbTrfuBloodComponentType.id'), nullable=False)
 
-    def get_value(self):
-        return self.value if self.value else ''
+    value = db.relationship('Rbtrfubloodcomponenttype')
+    property_object = db.relationship('ActionProperty', backref='_value_rbBloodComponentType')
 
 
-class ActionpropertyRbfinance(db.Model):
+class ActionProperty_rbFinance(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_rbFinance'
 
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
+    id = db.Column(db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(db.Integer, index=True)
+    value_ = db.Column('value', db.ForeignKey('rbFinance.id'), index=True)
 
-    def get_value(self):
-        return self.value if self.value else ''
+    value = db.relationship('Rbfinance')
+    property_object = db.relationship('ActionProperty', backref='_value_rbFinance')
 
 
-class ActionpropertyRbreasonofabsence(db.Model):
+class ActionProperty_rbReasonOfAbsence(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_rbReasonOfAbsence'
 
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
+    id = db.Column(db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
     index = db.Column(db.Integer, primary_key=True, nullable=False, server_default=u"'0'")
-    value = db.Column(db.Integer, index=True)
+    value_ = db.Column('value', db.ForeignKey('rbReasonOfAbsence.id'), index=True)
 
-    def get_value(self):
-        return self.value if self.value else ''
+    value = db.relationship('Rbreasonofabsence')
+    property_object = db.relationship('ActionProperty', backref='_value_rbReasonOfAbsence')
 
 
 class Actiontemplate(db.Model):
@@ -1046,6 +1108,15 @@ class Address(db.Model, Info):
 
     @property
     def city(self):
+        from models_utils import get_kladr_city  # TODO: fix?
+        text = ''
+        if self.KLADRCode:
+            city_info = get_kladr_city(self.KLADRCode)
+            text = city_info.get('fullname', u'-код региона не найден в кладр-')
+        return text
+
+    @property
+    def city_old(self):
         if self.KLADRCode:
             record = Kladr.query.filter(Kladr.CODE == self.KLADRCode).first()
             name = [" ".join([record.NAME, record.SOCR])]
@@ -1085,6 +1156,15 @@ class Address(db.Model, Info):
 
     @property
     def street(self):
+        from models_utils import get_kladr_street  # TODO: fix?
+        text = ''
+        if self.KLADRStreetCode:
+            street_info = get_kladr_street(self.KLADRStreetCode)
+            text = street_info.get('name', u'-код улицы не найден в кладр-')
+        return text
+
+    @property
+    def street_old(self):
         if self.KLADRStreetCode:
             record = Street.query.filter(Street.CODE == self.KLADRStreetCode).first()
             return record.NAME + " " + record.SOCR
@@ -1401,6 +1481,14 @@ class Client(db.Model, Info):
     loc_addresses = db.relationship(u'Clientaddress',
                                  primaryjoin="and_(Client.id==Clientaddress.client_id, Clientaddress.type==1)",
                                  order_by="desc(Clientaddress.id)")
+    appointments = db.relationship(
+        u'ScheduleClientTicket',
+        lazy='dynamic',  #order_by='desc(ScheduleTicket.begDateTime)',
+        primaryjoin='and_('
+                    'ScheduleClientTicket.deleted == 0, '
+                    'ScheduleClientTicket.client_id == Client.id)',
+        innerjoin=True
+    )
 
     @property
     def birthDate(self):
@@ -1455,7 +1543,8 @@ class Client(db.Model, Info):
 
     @property
     def phones(self):
-        contacts = [(contact.name, contact.contact, contact.notes) for contact in self.contacts]
+        contacts = [(contact.name, contact.contact, contact.notes) for contact in self.contacts
+                    if contact.contactType.code not in ('04', '05')]
         return ', '.join([(phone[0]+': '+phone[1]+' ('+phone[2]+')') if phone[2] else (phone[0]+': '+phone[1])
                           for phone in contacts])
 
@@ -1473,11 +1562,11 @@ class Client(db.Model, Info):
 
     @property
     def policy(self):
-        return self.compulsoryPolicy
+        return self.compulsoryPolicy if self.compulsoryPolicy else Clientpolicy()
 
     @property
     def policyDMS(self):
-        return self.voluntaryPolicy
+        return self.voluntaryPolicy if self.voluntaryPolicy else Clientpolicy()
 
     @property
     def fullName(self):
@@ -1521,8 +1610,11 @@ class Client(db.Model, Info):
             return formatYearsMonths(years, months-12*years)
         elif months > 1:
             add_year, new_month = divmod(bd.month + months, 12)
-            new_day = min(bd.day, calendar.monthrange(bd.year+add_year, new_month)[1])
-            fmonth_date = datetime.date(bd.year+add_year, new_month, new_day)
+            if new_month:
+                new_day = min(bd.day, calendar.monthrange(bd.year+add_year, new_month)[1])
+                fmonth_date = datetime.date(bd.year+add_year, new_month, new_day)
+            else:
+                fmonth_date = bd
             return formatMonthsWeeks(months, (date-fmonth_date).days/7)
         else:
             return formatDays(days)
@@ -1653,9 +1745,11 @@ class Clientattach(db.Model, Info):
     @property
     def code(self):
         return self.attachType.code
+
     @property
     def name(self):
         return self.attachType.name
+
     @property
     def outcome(self):
         return self.attachType.outcome
@@ -1674,9 +1768,9 @@ class Clientattach(db.Model, Info):
         return documents[-1]
 
     def __unicode__(self):
-        if self._ok:
+        try:
             result = self.name
-            if self._outcome:
+            if self.outcome:
                 result += ' ' + unicode(self.endDate)
             elif self.attachType.temporary:
                 result += ' ' + self.org.shortName
@@ -1686,7 +1780,7 @@ class Clientattach(db.Model, Info):
                     result += u' по ' + unicode(self.endDate)
             else:
                 result += ' ' + self.org.shortName
-        else:
+        except AttributeError:
             result = ''
         return result
 
@@ -1711,7 +1805,10 @@ class Clientcontact(db.Model, Info):
 
     @property
     def name(self):
-        return self.contactType.names
+        return self.contactType.name
+
+    def __unicode__(self):
+        return (self.name+': '+self.contact+' ('+self.notes+')') if self.notes else (self.name+': '+self.contact)
 
 
 class Clientdocument(db.Model, Info):
@@ -1743,7 +1840,8 @@ class Clientdocument(db.Model, Info):
         return self.documentType.regionalCode
 
     def __unicode__(self):
-        return (' '.join([self.documentType.name, self.serial, self.number])).strip()
+        return (' '.join([self.documentType.name if self.documentType else '', self.serial if self.serial else '',
+                          self.number if self.number else ''])).strip()
 
 
 class Clientfdproperty(db.Model):
@@ -1862,6 +1960,14 @@ class Clientpolicy(db.Model, Info):
     client = db.relationship(u'Client')
     insurer = db.relationship(u'Organisation')
     policyType = db.relationship(u'Rbpolicytype')
+
+    def __init__(self):
+        self.serial = ""
+        self.number = ""
+        self.name = ""
+        self.note = ""
+        self.insurer = Organisation()
+        self.policyType = Rbpolicytype()
 
     def __unicode__(self):
         return (' '.join([self.policyType.name, unicode(self.insurer), self.serial, self.number])).strip()
@@ -2317,12 +2423,12 @@ class ContractTariff(db.Model):
     age_eu = db.Column(db.Integer)
     age_ec = db.Column(db.SmallInteger)
     unit_id = db.Column(db.Integer, index=True)
-    amount = db.Column(db.Float(asdecimal=True), nullable=False)
-    uet = db.Column(db.Float(asdecimal=True), nullable=False, server_default=u"'0'")
-    price = db.Column(db.Float(asdecimal=True), nullable=False, server_default=u"'0'")
+    amount = db.Column(db.Float, nullable=False)
+    uet = db.Column(db.Float, nullable=False, server_default=u"'0'")
+    price = db.Column(db.Float, nullable=False, server_default=u"'0'")
     limitationExceedMode = db.Column(db.Integer, nullable=False, server_default=u"'0'")
-    limitation = db.Column(db.Float(asdecimal=True), nullable=False, server_default=u"'0'")
-    priceEx = db.Column(db.Float(asdecimal=True), nullable=False, server_default=u"'0'")
+    limitation = db.Column(db.Float, nullable=False, server_default=u"'0'")
+    priceEx = db.Column(db.Float, nullable=False, server_default=u"'0'")
     MKB = db.Column(db.String(8), nullable=False)
     rbServiceFinance_id = db.Column(db.ForeignKey('rbServiceFinance.id'), index=True)
     createDatetime = db.Column(db.DateTime, nullable=False)
@@ -2348,60 +2454,104 @@ class Couponstransferquote(db.Model):
     rbTransferDateType = db.relationship(u'Rbtransferdatetype')
 
 
-class Diagnosi(db.Model):
+class Diagnosis(db.Model):
     __tablename__ = u'Diagnosis'
 
     id = db.Column(db.Integer, primary_key=True)
-    createDatetime = db.Column(db.DateTime, nullable=False)
+    createDatetime = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
     createPerson_id = db.Column(db.Integer, index=True)
     modifyDatetime = db.Column(db.DateTime, nullable=False)
     modifyPerson_id = db.Column(db.Integer, index=True)
-    deleted = db.Column(db.Integer, nullable=False, server_default=u"'0'")
-    client_id = db.Column(db.Integer, nullable=False, index=True)
-    diagnosisType_id = db.Column(db.Integer, nullable=False, index=True)
-    character_id = db.Column(db.Integer, index=True)
-    MKB = db.Column(db.String(8), nullable=False)
-    MKBEx = db.Column(db.String(8), nullable=False)
-    dispanser_id = db.Column(db.Integer, index=True)
-    traumaType_id = db.Column(db.Integer, index=True)
+    deleted = db.Column(db.Integer, nullable=False, server_default=u"'0'", default=0)
+    client_id = db.Column(db.ForeignKey('Client.id'), index=True, nullable=False)
+    diagnosisType_id = db.Column(db.ForeignKey('rbDiagnosisType.id'), index=True, nullable=False)
+    character_id = db.Column(db.ForeignKey('rbDiseaseCharacter.id'), index=True)
+    MKB_ = db.Column('MKB', db.String(8), db.ForeignKey('MKB.DiagID'), index=True)
+    MKBEx = db.Column(db.String(8), db.ForeignKey('MKB.DiagID'), index=True)
+    dispanser_id = db.Column(db.ForeignKey('rbDispanser.id'), index=True)
+    traumaType_id = db.Column(db.ForeignKey('rbTraumaType.id'), index=True)
     setDate = db.Column(db.Date)
-    endDate = db.Column(db.Date, nullable=False)
-    mod_id = db.Column(db.Integer, index=True)
-    person_id = db.Column(db.Integer, index=True)
-    diagnosisName = db.Column(db.String(64), nullable=False)
+    endDate = db.Column(db.Date)
+    mod_id = db.Column(db.ForeignKey('Diagnosis.id'), index=True)
+    person_id = db.Column(db.ForeignKey('Person.id'), index=True)
+    # diagnosisName = db.Column(db.String(64), nullable=False)
+
+    person = db.relationship('Person', foreign_keys=[person_id], lazy=False, innerjoin=True)
+    client = db.relationship('Client')
+    diagnosisType = db.relationship('rbDiagnosisType', lazy=False, innerjoin=True)
+    character = db.relationship('rbDiseaseCharacter', lazy=False)
+    MKB = db.relationship('Mkb', foreign_keys=[MKB_])
+    mkb = db.relationship('Mkb', foreign_keys=[MKB_])
+    mkb_ex = db.relationship('Mkb', foreign_keys=[MKBEx])
+    dispanser = db.relationship('rbDispanser', lazy=False)
+    mod = db.relationship('Diagnosis', remote_side=[id])
+    traumaType = db.relationship('rbTraumaType', lazy=False)
+
+    def __int__(self):
+        return self.id
+
+    def __json__(self):
+        return {
+            'id': self.id,
+            'diagnosisType': self.diagnosisType,
+            'character': self.character
+        }
 
 
 class Diagnostic(db.Model):
     __tablename__ = u'Diagnostic'
 
     id = db.Column(db.Integer, primary_key=True)
-    createDatetime = db.Column(db.DateTime, nullable=False)
+    createDatetime = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
     createPerson_id = db.Column(db.Integer, index=True)
     modifyDatetime = db.Column(db.DateTime, nullable=False)
     modifyPerson_id = db.Column(db.Integer, index=True)
-    deleted = db.Column(db.Integer, nullable=False, server_default=u"'0'")
-    event_id = db.Column(db.Integer, nullable=False, index=True)
-    diagnosis_id = db.Column(db.Integer, index=True)
-    diagnosisType_id = db.Column(db.Integer, nullable=False, index=True)
-    character_id = db.Column(db.Integer, index=True)
-    stage_id = db.Column(db.Integer, index=True)
-    phase_id = db.Column(db.Integer, index=True)
-    dispanser_id = db.Column(db.Integer, index=True)
+    deleted = db.Column(db.Integer, nullable=False, server_default=u"'0'", default=0)
+    event_id = db.Column(db.ForeignKey('Event.id'), nullable=False, index=True)
+    diagnosis_id = db.Column(db.ForeignKey('Diagnosis.id'), index=True)
+    diagnosisType_id = db.Column(db.ForeignKey('rbDiagnosisType.id'), index=True, nullable=False)
+    character_id = db.Column(db.ForeignKey('rbDiseaseCharacter.id'), index=True)
+    stage_id = db.Column(db.ForeignKey('rbDiseaseStage.id'), index=True)
+    phase_id = db.Column(db.ForeignKey('rbDiseasePhases.id'), index=True)
+    dispanser_id = db.Column(db.ForeignKey('rbDispanser.id'), index=True)
     sanatorium = db.Column(db.Integer, nullable=False)
     hospital = db.Column(db.Integer, nullable=False)
-    traumaType_id = db.Column(db.Integer, index=True)
+    traumaType_id = db.Column(db.ForeignKey('rbTraumaType.id'), index=True)
     speciality_id = db.Column(db.Integer, nullable=False, index=True)
-    person_id = db.Column(db.Integer, index=True)
-    healthGroup_id = db.Column(db.Integer, index=True)
-    result_id = db.Column(db.Integer, index=True)
+    person_id = db.Column(db.ForeignKey('Person.id'), index=True)
+    healthGroup_id = db.Column(db.ForeignKey('rbHealthGroup.id'), index=True)
+    result_id = db.Column(db.ForeignKey('rbResult.id'), index=True)
     setDate = db.Column(db.DateTime, nullable=False)
     endDate = db.Column(db.DateTime)
-    notes = db.Column(db.Text, nullable=False)
+    notes = db.Column(db.Text, nullable=False, default='')
     rbAcheResult_id = db.Column(db.ForeignKey('rbAcheResult.id'), index=True)
-    version = db.Column(db.Integer, nullable=False)
-    action_id = db.Column(db.Integer, index=True)
+    version = db.Column(db.Integer, nullable=False, default=0)
+    action_id = db.Column(db.Integer, db.ForeignKey('Action.id'), index=True)
+    diagnosis_description = db.Column(db.Text)
 
-    rbAcheResult = db.relationship(u'Rbacheresult')
+    rbAcheResult = db.relationship(u'Rbacheresult', innerjoin=True)
+    result = db.relationship(u'Rbresult', innerjoin=True)
+    person = db.relationship('Person', foreign_keys=[person_id])
+    event = db.relationship('Event', foreign_keys='Diagnostic.event_id', innerjoin=True)
+    diagnoses = db.relationship(
+        'Diagnosis', innerjoin=True, lazy=False, uselist=True,
+        primaryjoin='and_(Diagnostic.diagnosis_id == Diagnosis.id, Diagnosis.deleted == 0)'
+    )
+    diagnosis = db.relationship('Diagnosis')
+    diagnosisType = db.relationship('rbDiagnosisType', lazy=False, innerjoin=True)
+    character = db.relationship('rbDiseaseCharacter')
+    stage = db.relationship('rbDiseaseStage', lazy=False)
+    phase = db.relationship('rbDiseasePhases', lazy=False)
+    dispanser = db.relationship('rbDispanser')
+    traumaType = db.relationship('rbTraumaType')
+    healthGroup = db.relationship('rbHealthGroup', lazy=False)
+    action = db.relationship('Action')
+
+    def __int__(self):
+        return self.id
+
+    def __unicode__(self):
+        return self.diagnosisType + ' ' + self.diagnosis.mkb
 
 
 class Drugchart(db.Model):
@@ -2533,6 +2683,7 @@ class Event(db.Model, Info):
     orgStructure_id = db.Column(db.Integer, db.ForeignKey('Person.orgStructure_id'))
     uuid_id = db.Column(db.Integer, nullable=False, index=True, server_default=u"'0'")
     lpu_transfer = db.Column(db.String(100))
+    localContract_id = db.Column(db.Integer, db.ForeignKey('Event_LocalContract.id'))
 
     actions = db.relationship(u'Action', primaryjoin='and_(Action.event_id==Event.id,'
                                                      'Action.deleted == 0)')
@@ -2547,9 +2698,18 @@ class Event(db.Model, Info):
     rbAcheResult = db.relationship(u'Rbacheresult')
     result = db.relationship(u'Rbresult')
     typeAsset = db.relationship(u'Rbemergencytypeasset')
-    localContract = db.relationship(u'EventLocalcontract')
+    localContract = db.relationship(u'EventLocalcontract',
+                                    backref=db.backref('event'))
     client = db.relationship(u'Client')
     visits = db.relationship(u'Visit')
+
+    diagnosises = db.relationship(
+        u'Diagnosis',
+        secondary=Diagnostic.__table__,
+        primaryjoin='and_(Diagnostic.event_id == Event.id, Diagnostic.deleted == 0)',
+        secondaryjoin='and_(Diagnostic.diagnosis_id == Diagnosis.id, Diagnosis.deleted == 0)',
+        uselist=True
+    )
 
     @property
     def setDate(self):
@@ -2598,6 +2758,20 @@ class Event(db.Model, Info):
     def date(self):
         date = self.execDate if self.execDate is not None else datetime.date.today()
         return date
+
+    def get_grouped_services_and_sum(self):
+        services = defaultdict(lambda: dict(services=[], amount=0, sum=0))
+        total_sum = 0
+        for action in self.actions:
+            if action.account and action.price != 0:
+                services[action.actionType_id]['services'].append(action)
+                services[action.actionType_id]['amount'] += action.amount
+                services[action.actionType_id]['sum'] += action.price
+                total_sum += action.price
+        return {
+            'services': services,
+            'total_sum': total_sum
+        }
 
     def __unicode__(self):
         return unicode(self.eventType)
@@ -2761,7 +2935,7 @@ class EventLocalcontract(db.Model, Info):
     modifyDatetime = db.Column(db.DateTime, nullable=False)
     modifyPerson_id = db.Column(db.Integer, index=True)
     deleted = db.Column(db.Integer, nullable=False)
-    master_id = db.Column(db.Integer, db.ForeignKey('Event.id'), nullable=False, index=True)
+    master_id = db.Column(db.Integer, nullable=False, index=True)
     coordDate = db.Column(db.DateTime)
     coordAgent = db.Column(db.String(128), nullable=False, server_default=u"''")
     coordInspector = db.Column(db.String(128), nullable=False, server_default=u"''")
@@ -2805,9 +2979,16 @@ class EventLocalcontract(db.Model, Info):
     def document(self):
         document = Clientdocument()
         document.documentType = self.documentType
-        document.serial = self.serialLeft + u' ' + self.serialRight
+        if self.serialLeft and self.serialRight:
+            document.serial = self.serialLeft + u' ' + self.serialRight
+        else:
+            document.serial = self.serialLeft or self.serialRight or ''
         document.number = self.number
         return document
+
+    @property
+    def address(self):
+        return self.regAddress
 
 
 class EventPayment(db.Model):
@@ -3073,7 +3254,29 @@ class Mkb(db.Model, Info):
     MKBSubclass_id = db.Column(db.Integer)
 
     def __unicode__(self):
-        return self.DiagID
+        return self.DiagID  # + ' ' + self.DiagName
+
+    @property
+    def descr(self):
+        mainCode = self.DiagID[:5]
+        subclass = self.DiagID[5:]
+        record = Mkb.query.filter(Mkb.DiagID == mainCode).first()
+        result = self.DiagID
+        if record:
+            result = record.DiagName
+            if subclass:
+                subclassId = record.MKBSubclass_id
+                recordSubclass = (RbmkbsubclassItem.
+                                  query.
+                                  filter(RbmkbsubclassItem.master_id == subclassId,
+                                         RbmkbsubclassItem.code == subclass).
+                                  first())
+                if recordSubclass:
+                    result = u'{0} {1}'.format(result, recordSubclass.name)
+                else:
+                    result = u'{0} {1}'.format(result, subclass)
+        return result
+
 
 
 class MkbQuotatypePacientmodel(db.Model):
@@ -3180,7 +3383,7 @@ class Orgstructure(db.Model, Info):
                 self.Net = self.organisation.net
         return self.Net
 
-    def get_org_structure_full_name(self, org_structure_id):
+    def get_org_structure_full_name(self):
         names = [self.code]
         ids = set([self.id])
         parent_id = self.parent_id
@@ -3197,7 +3400,7 @@ class Orgstructure(db.Model, Info):
         return '/'.join(reversed(names))
 
     def getFullName(self):
-        return self.get_org_structure_full_name(self.id)
+        return self.get_org_structure_full_name()
 
     def getAddress(self):
         if not self.Address:
@@ -3383,6 +3586,11 @@ class Organisation(db.Model, Info):
     OKPF = db.relationship(u'Rbokpf')
     OKFS = db.relationship(u'Rbokfs')
     org_accounts = db.relationship(u'OrganisationAccount')
+
+    def __init__(self):
+        self.title = ""
+        self.fullName = ""
+        self.shortName = ""
 
     @property
     def bank(self):
@@ -4104,6 +4312,7 @@ class Visit(db.Model, Info):
     finance = db.relationship(u'Rbfinance')
     scene = db.relationship(u'Rbscene')
     type = db.relationship(u'Rbvisittype')
+    event = db.relationship(u'Event')
 
 
 class ActionDocument(db.Model):
@@ -4451,7 +4660,7 @@ class Rbagreementtype(db.Model):
     quotaStatusModifier = db.Column(db.Integer, server_default=u"'0'")
 
 
-class Rbanalysisstatu(db.Model):
+class Rbanalysisstatus(db.Model):
     __tablename__ = u'rbAnalysisStatus'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4578,7 +4787,7 @@ class Rbcounter(db.Model):
     sequenceFlag = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbdiagnosistype(db.Model):
+class rbDiagnosisType(db.Model, RBInfo):
     __tablename__ = u'rbDiagnosisType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4596,7 +4805,7 @@ class Rbdiet(db.Model):
     name = db.Column(db.String(64), nullable=False, index=True)
 
 
-class Rbdiseasecharacter(db.Model):
+class rbDiseaseCharacter(db.Model, RBInfo):
     __tablename__ = u'rbDiseaseCharacter'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4605,7 +4814,7 @@ class Rbdiseasecharacter(db.Model):
     replaceInDiagnosis = db.Column(db.String(8), nullable=False)
 
 
-class Rbdiseasephase(db.Model):
+class rbDiseasePhases(db.Model):
     __tablename__ = u'rbDiseasePhases'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4614,7 +4823,7 @@ class Rbdiseasephase(db.Model):
     characterRelation = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbdiseasestage(db.Model):
+class rbDiseaseStage(db.Model):
     __tablename__ = u'rbDiseaseStage'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4623,7 +4832,7 @@ class Rbdiseasestage(db.Model):
     characterRelation = db.Column(db.Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbdispanser(db.Model, RBInfo):
+class rbDispanser(db.Model, RBInfo):
     __tablename__ = u'rbDispanser'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4648,6 +4857,9 @@ class Rbdocumenttype(db.Model, RBInfo):
 
     group = db.relationship(u'Rbdocumenttypegroup')
 
+    def __init__(self):
+        RBInfo.__init__(self)
+
 
 class Rbdocumenttypegroup(db.Model, RBInfo):
     __tablename__ = u'rbDocumentTypeGroup'
@@ -4655,6 +4867,9 @@ class Rbdocumenttypegroup(db.Model, RBInfo):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(8), nullable=False, index=True)
     name = db.Column(db.Unicode(64), nullable=False, index=True)
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbemergencyaccident(db.Model):
@@ -4792,6 +5007,9 @@ class Rbeventtypepurpose(db.Model, RBInfo):
     name = db.Column(db.Unicode(64), nullable=False, index=True)
     codePlace = db.Column(db.String(2))
 
+    def __init__(self):
+        RBInfo.__init__(self)
+
 
 class Rbfinance(db.Model, RBInfo):
     __tablename__ = u'rbFinance'
@@ -4799,6 +5017,9 @@ class Rbfinance(db.Model, RBInfo):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(8), nullable=False, index=True)
     name = db.Column(db.Unicode(64), nullable=False, index=True)
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbfinance1c(db.Model):
@@ -4811,7 +5032,7 @@ class Rbfinance1c(db.Model):
     finance = db.relationship(u'Rbfinance')
 
 
-class Rbhealthgroup(db.Model):
+class rbHealthGroup(db.Model):
     __tablename__ = u'rbHealthGroup'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -4826,6 +5047,9 @@ class Rbhospitalbedprofile(db.Model, RBInfo):
     code = db.Column(db.String(8), nullable=False, index=True)
     name = db.Column(db.Unicode(64), nullable=False, index=True)
     service_id = db.Column(db.Integer, index=True)
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class RbhospitalbedprofileService(db.Model):
@@ -4891,6 +5115,9 @@ class Rbjobtype(db.Model, RBInfo):
     name = db.Column(db.Unicode(128), nullable=False)
     laboratory_id = db.Column(db.Integer, index=True)
     isInstant = db.Column(db.Integer, nullable=False, server_default=u"'0'")
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rblaboratory(db.Model):
@@ -5107,6 +5334,9 @@ class Rbpacientmodel(db.Model, RBInfo):
 
     quotaType = db.relationship(u'Quotatype')
 
+    def __init__(self):
+        RBInfo.__init__(self)
+
 
 class Rbpayrefusetype(db.Model, RBInfo):
     __tablename__ = u'rbPayRefuseType'
@@ -5116,6 +5346,9 @@ class Rbpayrefusetype(db.Model, RBInfo):
     name = db.Column(db.Unicode(128), nullable=False, index=True)
     finance_id = db.Column(db.Integer, nullable=False, index=True)
     rerun = db.Column(db.Integer, nullable=False)
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbpaytype(db.Model):
@@ -5134,6 +5367,9 @@ class Rbpolicytype(db.Model, RBInfo):
     name = db.Column(db.Unicode(256), nullable=False, index=True)
     TFOMSCode = db.Column(db.String(8))
 
+    def __init__(self):
+        RBInfo.__init__(self)
+
 
 class Rbpost(db.Model, RBInfo):
     __tablename__ = u'rbPost'
@@ -5145,6 +5381,9 @@ class Rbpost(db.Model, RBInfo):
     key = db.Column(db.String(6), nullable=False, index=True)
     high = db.Column(db.String(6), nullable=False)
     flatCode = db.Column(db.String(65), nullable=False)
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbprinttemplate(db.Model):
@@ -5159,6 +5398,8 @@ class Rbprinttemplate(db.Model):
     dpdAgreement = db.Column(db.Integer, nullable=False, server_default=u"'0'")
     render = db.Column(db.Integer, nullable=False, server_default=u"'0'")
     templateText = db.Column(db.String, nullable=False)
+
+    meta_data = db.relationship('Rbprinttemplatemeta')
 
 
 class Rbquotastatu(db.Model):
@@ -5175,6 +5416,9 @@ class Rbreasonofabsence(db.Model, RBInfo):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.Unicode(8), nullable=False, index=True)
     name = db.Column(db.Unicode(64), nullable=False, index=True)
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbrelationtype(db.Model, RBInfo):
@@ -5197,6 +5441,9 @@ class Rbrelationtype(db.Model, RBInfo):
     regionalCode = db.Column(db.String(64), nullable=False)
     regionalReverseCode = db.Column(db.String(64), nullable=False)
 
+    def __init__(self):
+        RBInfo.__init__(self)
+
 
 class Rbrequesttype(db.Model, RBInfo):
     __tablename__ = u'rbRequestType'
@@ -5205,6 +5452,9 @@ class Rbrequesttype(db.Model, RBInfo):
     code = db.Column(db.String(16), nullable=False, index=True)
     name = db.Column(db.Unicode(64), nullable=False, index=True)
     relevant = db.Column(db.Integer, nullable=False, server_default=u"'1'")
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbresult(db.Model, RBInfo):
@@ -5217,6 +5467,9 @@ class Rbresult(db.Model, RBInfo):
     continued = db.Column(db.Integer, nullable=False)
     regionalCode = db.Column(db.String(8), nullable=False)
 
+    def __init__(self):
+        RBInfo.__init__(self)
+
 
 class Rbscene(db.Model, RBInfo):
     __tablename__ = u'rbScene'
@@ -5225,6 +5478,9 @@ class Rbscene(db.Model, RBInfo):
     code = db.Column(db.String(8), nullable=False, index=True)
     name = db.Column(db.Unicode(64), nullable=False, index=True)
     serviceModifier = db.Column(db.Unicode(128), nullable=False)
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbservice(db.Model, RBInfo):
@@ -5238,7 +5494,7 @@ class Rbservice(db.Model, RBInfo):
     name = db.Column(db.String(255), nullable=False, index=True)
     eisLegacy = db.Column(db.Boolean, nullable=False)
     nomenclatureLegacy = db.Column(db.Integer, nullable=False, server_default=u"'0'")
-    license = db.Column(db.Boolean, nullable=False)
+    license = db.Column(db.Integer, nullable=False)
     infis = db.Column(db.String(31), nullable=False)
     begDate = db.Column(db.Date, nullable=False)
     endDate = db.Column(db.Date, nullable=False)
@@ -5253,6 +5509,9 @@ class Rbservice(db.Model, RBInfo):
 
     medicalAidProfile = db.relationship(u'Rbmedicalaidprofile')
     rbMedicalKind = db.relationship(u'Rbmedicalkind')
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbserviceclas(db.Model):
@@ -5389,7 +5648,7 @@ class Rbspecialvariablespreference(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), nullable=False, unique=True)
-    query = db.Column(db.Text, nullable=False)
+    query_text = db.Column('query', db.Text, nullable=False)
 
 
 class Rbspeciality(db.Model, RBInfo):
@@ -5410,6 +5669,9 @@ class Rbspeciality(db.Model, RBInfo):
     mkbFilter = db.Column(db.String(32), nullable=False)
     regionalCode = db.Column(db.String(16), nullable=False)
     quotingEnabled = db.Column(db.Integer, server_default=u"'0'")
+
+    def __init__(self):
+        RBInfo.__init__(self)
 
 
 class Rbstorage(db.Model):
@@ -5573,7 +5835,7 @@ class Rbtransferdatetype(db.Model):
     name = db.Column(db.Text(collation=u'utf8_unicode_ci'), nullable=False)
 
 
-class Rbtraumatype(db.Model):
+class rbTraumaType(db.Model):
     __tablename__ = u'rbTraumaType'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -6294,4 +6556,51 @@ class v_Nomen(db.Model):
     drugLifetime = db.Column(u'drugLifetime', db.Integer)
 
     def __unicode__(self):
-        return ', '.join([field for field in [self.tradeName, self.form, self.dosageValue, self.filling]])
+        return ', '.join(unicode(field) for field in (self.tradeName, self.form, self.dosageValue, self.filling))
+
+
+class Rbprinttemplatemeta(db.Model):
+    __tablename__ = 'rbPrintTemplateMeta'
+    __table_args__ = (
+        db.Index('template_id_name', 'template_id', 'name'),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    template_id = db.Column(db.ForeignKey('rbPrintTemplate.id'), nullable=False, index=True)
+    type = db.Column(db.Enum(
+        u'Integer', u'Float', u'String', u'Boolean', u'Date', u'Time',
+        u'List', u'Multilist',
+        u'RefBook', u'Organisation', u'OrgStructure', u'Person', u'Service', u'SpecialVariable'
+    ), nullable=False)
+    name = db.Column(db.String(128), nullable=False)
+    title = db.Column(db.String, nullable=False)
+    description = db.Column(db.String, nullable=False)
+    arguments = db.Column(db.String)
+    defaultValue = db.Column(db.Text)
+
+    template = db.relationship(u'Rbprinttemplate')
+
+    def __json__(self):
+        import json
+        if self.arguments:
+            try:
+                args = json.loads(self.arguments)
+            except ValueError:
+                args = []
+        else:
+            args = []
+        if self.defaultValue:
+            try:
+                default = json.loads(self.defaultValue)
+            except ValueError:
+                default = None
+        else:
+            default = None
+        return {
+            'name': self.name,
+            'type': self.type,
+            'title': self.title,
+            'descr': self.description,
+            'arguments': args,
+            'default': default,
+        }

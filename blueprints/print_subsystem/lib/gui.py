@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# from PyQt4 import QtGui, QtCore
-# from PyQt4.QtCore import pyqtSignal, QVariant, QDate, Qt
-# from Reports.ReportView import CReportViewDialog
-# from library.Utils import forceRef, forceString
+
 import logging
+import traceback
+from jinja2 import TemplateSyntaxError
+from blueprints.print_subsystem.lib.internals import RenderTemplateException
+from blueprints.print_subsystem.lib.utils import getTemplateName
 from internals import renderTemplate
-#from specialvars import getSpVarsUsedInTempl, getSpecialVariableValue, SpecialVariable
 from utils import getTemplate
 
 __author__ = 'mmalkov'
@@ -50,15 +50,23 @@ def applyTemplate(templateId, data):
     u"""Выводит на печать шаблон печати номер templateId с данными data"""
     try:
         template = getTemplate(templateId)
-        #spvars = getSpVarsUsedInTempl(templateId)#находим, используемые в шаблоне спец. переменные
-        # if spvars:
-        #     for i in spvars:
-        #         data[i] = getSpecialVariableValue(i, params = None,  parent = widget)
-        # data['SpecialVariable'] = SpecialVariable
         return applyTemplateInt(template, data)
-    except Exception:
-        logging.critical('erroneous template id = %s', templateId)
-        raise
+    except TemplateSyntaxError, e:
+        print e
+        logging.error('syntax error in template id = %s', templateId, exc_info=True)
+        raise RenderTemplateException(e.message, {
+            'type': RenderTemplateException.Type.syntax,
+            'template_name': getTemplateName(templateId),
+            'lineno': e.lineno
+        })
+    except Exception, e:
+        print unicode(traceback.format_exc(), 'utf-8')
+        logging.critical('erroneous template id = %s', templateId, exc_info=True)
+        raise RenderTemplateException(e.message, {
+            'type': RenderTemplateException.Type.other,
+            'template_name': getTemplateName(templateId),
+            'trace': unicode(traceback.format_exc(), 'utf-8')
+        })
 
 
 def applyTemplateInt(template, data, render=1):

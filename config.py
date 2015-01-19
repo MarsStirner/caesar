@@ -31,6 +31,9 @@ BEAKER_SESSION = {'session.type': 'file',
                   'session.data_dir': '/tmp/session/data',
                   'session.lock_dir': '/tmp/session/lock'}
 
+TIME_ZONE = 'Europe/Moscow'
+VESTA_URL = ''
+
 try:
     from config_local import *
 except ImportError:

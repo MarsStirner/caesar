@@ -1,6 +1,17 @@
 # -*- coding: utf-8 -*-
 import struct
 import datetime
+import requests
+
+from config import VESTA_URL
+
+
+def get_model_by_name(name):
+    from blueprints.print_subsystem.models import models_all, schedule
+    for mod in (models_all, schedule):
+        if hasattr(mod, name):
+            return getattr(mod, name)
+    return None
 
 
 def trim(s):
@@ -214,3 +225,43 @@ def formatDate(time):
 
 def formatTime(time):
     return unicode(time.strftime('%H:%M')) if time else ''
+
+
+def get_kladr_city(code):
+    if len(code) == 13:  # убрать после конвертации уже записанных кодов кладр
+        code = code[:-2]
+    result = dict()
+    try:
+        response = requests.get(u'{0}kladr/city/{1}/'.format(VESTA_URL, code))
+    except (requests.ConnectionError, requests.exceptions.MissingSchema):
+        # log
+        pass
+    else:
+        city = response.json().get('data')
+        if city:
+            result = city[0]
+            result['code'] = result['identcode']
+            result['fullname'] = result['name'] = u'{0}. {1}'.format(result['shorttype'], result['name'])
+            if result['parents']:
+                for parent in result['parents']:
+                    result['fullname'] = u'{0}, {1}. {2}'.format(result['fullname'], parent['shorttype'], parent['name'])
+                del result['parents']
+    return result
+
+
+def get_kladr_street(code):
+    if len(code) == 17:  # убрать после конвертации уже записанных кодов кладр
+        code = code[:-2]
+    data = dict()
+    try:
+        response = requests.get(u'{0}kladr/street/{1}/'.format(VESTA_URL, code))
+    except (requests.ConnectionError, requests.exceptions.MissingSchema):
+        # log
+        pass
+    else:
+        street = response.json().get('data')
+        if street:
+            data = street[0]
+            data['code'] = data['identcode']
+            data['name'] = u'{0} {1}'.format(data['fulltype'], data['name'])
+    return data

@@ -1,20 +1,27 @@
 # -*- coding: utf-8 -*-
-from datetime import date
+import datetime
+import re
 
+from application.utils import string_to_datetime
 from ..models.models_all import Orgstructure, Person, Organisation, v_Client_Quoting, Event, Action, Account, Rbcashoperation, \
-    Client
+    Client, Rbprinttemplate
+from ..models.models_utils import formatTime
 from ..models.schedule import ScheduleClientTicket
 from gui import applyTemplate
+from specialvars import get_special_variable_value, SpecialVariable
 
 
 def current_patient_orgStructure(event_id):
-    from ..models.models_all import ActionProperty, ActionpropertyOrgstructure, Actionpropertytype
+    from ..models.models_all import ActionProperty, ActionProperty_OrgStructure, Actionpropertytype
     return Orgstructure.query.\
-        join(ActionpropertyOrgstructure, Orgstructure.id == ActionpropertyOrgstructure.value).\
-        join(ActionProperty, ActionProperty.id == ActionpropertyOrgstructure.id).\
+        join(ActionProperty_OrgStructure, Orgstructure.id == ActionProperty_OrgStructure.value_).\
+        join(ActionProperty, ActionProperty.id == ActionProperty_OrgStructure.id).\
         join(Action).\
         join(Actionpropertytype).\
-        filter(Actionpropertytype.code == 'orgStructStay', Action.event_id == event_id).\
+        filter(
+            Actionpropertytype.code == 'orgStructStay',
+            Action.event_id == event_id,
+            Action.deleted == 0).\
         order_by(Action.begDate_raw.desc()).\
         first()
 
@@ -22,45 +29,80 @@ def current_patient_orgStructure(event_id):
 class Print_Template(object):
 
     def __init__(self):
-        self.today = date.today()
+        self.today = datetime.date.today()
 
-    def get_template_meta(self, template_id):
-        return {}
+    def update_context(self, template_id, context):
+        from ..models.models_all import Rbprinttemplatemeta, Organisation, Orgstructure, Rbservice, Person
+        for desc in Rbprinttemplatemeta.query.filter(Rbprinttemplatemeta.template_id == template_id):
+            name = desc.name
+            if not name in context:
+                continue
+            value = context[name]
+            typeName = desc.type
+            if typeName == 'Integer':
+                context[name] = int(value)
+            elif typeName == 'Float':
+                context[name] = float(value)
+            elif typeName == 'Boolean':
+                context[name] = bool(value)
+            elif typeName == 'Date':
+                context[name] = string_to_datetime(value).date() if value else None
+            elif typeName == 'Time':
+                context[name] = datetime.datetime.strptime(value, '%H:%M').time() if value else None
+            elif typeName == 'Organisation':
+                context[name] = Organisation.query.get(int(value)) if value else None
+            elif typeName == 'Person':
+                context[name] = Person.query.get(int(value)) if value else None
+            elif typeName == 'OrgStructure':
+                context[name] = Orgstructure.query.get(int(value)) if value else None
+            elif typeName == 'Service':
+                context[name] = Rbservice.query.get(int(value)) if value else None
 
-    def print_template(self, context_type, template_id, data):
-        data = self.get_context(context_type, data)
+    def print_template(self, doc):
+        context_type = doc['context_type']
+        template_id = doc['id']
+        data = self.get_context(context_type, doc)
         return applyTemplate(template_id, data)
 
     def get_context(self, context_type, data):
-        additional_context = data['additional_context']
+        context = dict(data['context'])
+        self.update_context(data['id'], context)
+        if 'special_variables' in context:
+            template = Rbprinttemplate.query.get(data['id'])
+            spvars_in_template = re.findall(r"(SpecialVar_\w+)[^$\(,'\"\w]", template.templateText)  # то,что в фнкции не найдет
+            spvars_in_template = set(spvars_in_template)
 
-        currentOrganisation = Organisation.query.get(additional_context['currentOrganisation']) if \
-            additional_context['currentOrganisation'] else ""
-        currentOrgStructure = Orgstructure.query.get(additional_context['currentOrgStructure']) if \
-            additional_context['currentOrgStructure'] else ""
-        currentPerson = Person.query.get(additional_context['currentPerson']) if \
-            additional_context['currentPerson'] else ""
+            special_variables = context['special_variables']
+            del context['special_variables']
+            if special_variables:
+                for variable_name in special_variables:
+                    if variable_name in spvars_in_template:
+                        variavles_for_query = {}
+                        for name in special_variables[variable_name]:
+                            variavles_for_query[name] = context[name]
+                        sp_variable = get_special_variable_value(variable_name, variavles_for_query)
+                        context[variable_name] = sp_variable
 
-        context = {
+        currentOrganisation = Organisation.query.get(context['currentOrganisation']) if \
+            context['currentOrganisation'] else ""
+        currentOrgStructure = Orgstructure.query.get(context['currentOrgStructure']) if \
+            context['currentOrgStructure'] else ""
+        currentPerson = Person.query.get(context['currentPerson']) if \
+            context['currentPerson'] else ""
+
+        context.update({
             'currentOrganisation': currentOrganisation,
             'currentOrgStructure': currentOrgStructure,
             'currentPerson': currentPerson
-        }
+        })
 
-        if 'event_id' in data:
-            event_id = data['event_id']
-            event = Event.query.get(event_id)
-            client = event.client
-
-            client.date = event.execDate.date if event.execDate else self.today
-            quoting = v_Client_Quoting.query.filter_by(event_id=event_id).\
-                filter_by(clientId=event.client.id).first()
-            if not quoting:
-                quoting = v_Client_Quoting()
+        context.update({
+            'SpecialVariable': SpecialVariable
+        })
 
         context_func = getattr(self, 'context_%s' % context_type, None)
         if context_func and callable(context_func):
-            context.update(context_func(data))
+            context.update(context_func(context))
         return context
 
     def context_event(self, data):
@@ -103,6 +145,28 @@ class Print_Template(object):
             'client': event.client,
             'currentActionIndex': 0,
             'quoting': quoting,
+            'patient_orgStructure': current_patient_orgStructure(event.id),
+        }
+
+    def context_services(self, data):
+        event = None
+        client = None
+        chosen_actions = []
+        if 'event_id' in data:
+            event_id = data['event_id']
+            event = Event.query.get(event_id)
+            client = event.client
+            client.date = event.execDate.date if event.execDate else self.today
+
+        if 'actions_ids' in data:
+            actions_ids = data['actions_ids']
+            for action_id in actions_ids:
+                action = Action.query.get(action_id)
+                chosen_actions.append(action)
+        return {
+            'event': event,
+            'chosen_actions': chosen_actions,
+            'client': client,
             'patient_orgStructure': current_patient_orgStructure(event.id),
         }
 
@@ -166,9 +230,18 @@ class Print_Template(object):
         client = Client.query.get(client_id)
         client.date = self.today
         client_ticket = ScheduleClientTicket.query.get(client_ticket_id)
-        person = client_ticket.ticket.schedule.person
+        timeRange = '--:-- - --:--'
+        num = 0
         return {
             'client': client,
-            'person': person,
             'client_ticket': client_ticket
+        }
+
+    def context_risar(self, data):
+        event = None
+        if 'event_id' in data:
+            event_id = data['event_id']
+            event = Event.query.get(event_id)
+        return {
+            'event': event
         }

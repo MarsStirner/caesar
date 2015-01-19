@@ -91,6 +91,11 @@ def getTemplate(templateId):
     return result
 
 
+def getTemplateName(template_id):
+    t = Rbprinttemplate.query.get(template_id)
+    return t.name if t else ''
+
+
 def applyTemplateNoPrint(templateId, data):
     name = forceString(QtGui.qApp.db.translate('rbPrintTemplate', 'id', templateId, 'name'))
     template, render = getTemplate(templateId)
