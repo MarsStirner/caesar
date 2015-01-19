@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+
 import datetime
 import calendar
 import jinja2
+from collections import defaultdict
+
 from application.database import db
 from ..config import MODULE_NAME
 from ..lib.html import escape, convenience_HtmlRip, replace_first_paragraph
@@ -2755,6 +2758,20 @@ class Event(db.Model, Info):
     def date(self):
         date = self.execDate if self.execDate is not None else datetime.date.today()
         return date
+
+    def get_grouped_services_and_sum(self):
+        services = defaultdict(lambda: dict(services=[], amount=0, sum=0))
+        total_sum = 0
+        for action in self.actions:
+            if action.account and action.price != 0:
+                services[action.actionType_id]['services'].append(action)
+                services[action.actionType_id]['amount'] += action.amount
+                services[action.actionType_id]['sum'] += action.price
+                total_sum += action.price
+        return {
+            'services': services,
+            'total_sum': total_sum
+        }
 
     def __unicode__(self):
         return unicode(self.eventType)
