@@ -2850,6 +2850,9 @@ class Eventtype(db.Model, RBInfo):
     service = db.relationship(u'Rbservice')
     requestType = db.relationship(u'Rbrequesttype')
 
+    def __unicode__(self):
+        return self.name
+
 
 class Eventtypeform(db.Model):
     __tablename__ = u'EventTypeForm'
@@ -2996,21 +2999,23 @@ class EventPayment(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     createDatetime = db.Column(db.DateTime, nullable=False)
-    createPerson_id = db.Column(db.Integer, index=True)
+    createPerson_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
     modifyDatetime = db.Column(db.DateTime, nullable=False)
     modifyPerson_id = db.Column(db.Integer, index=True)
     deleted = db.Column(db.Integer, nullable=False)
-    master_id = db.Column(db.Integer, nullable=False, index=True)
+    master_id = db.Column(db.Integer, db.ForeignKey('Event.id'), nullable=False, index=True)
     date = db.Column(db.Date, nullable=False)
     cashOperation_id = db.Column(db.ForeignKey('rbCashOperation.id'), index=True)
-    sum = db.Column(db.Float(asdecimal=True), nullable=False)
+    sum = db.Column(db.Float(), nullable=False)
     typePayment = db.Column(db.Integer, nullable=False)
     settlementAccount = db.Column(db.String(64))
     bank_id = db.Column(db.Integer, index=True)
     numberCreditCard = db.Column(db.String(64))
     cashBox = db.Column(db.String(32), nullable=False)
 
+    createPerson = db.relationship('Person')
     cashOperation = db.relationship(u'Rbcashoperation')
+    event = db.relationship('Event')
 
 
 class EventPerson(db.Model):

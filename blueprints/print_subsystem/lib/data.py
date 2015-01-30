@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import datetime
+from sqlalchemy import func
 
 from application.utils import string_to_datetime
 from ..models.models_all import Orgstructure, Person, Organisation, v_Client_Quoting, Event, Action, Account, Rbcashoperation, \
-    Client, Mkb
+    Client, Mkb, EventPayment
 from ..models.schedule import ScheduleClientTicket
 from gui import applyTemplate
 from specialvars import SpecialVariable
@@ -94,10 +95,10 @@ class Print_Template(object):
         return context
 
     def context_event(self, data):
-        # BaseEventInfoFrame
         event = None
         quoting = None
         client = None
+        patient_os = None
         if 'event_id' in data:
             event_id = data['event_id']
             event = Event.query.get(event_id)
@@ -108,14 +109,18 @@ class Print_Template(object):
                 filter_by(clientId=event.client.id).first()
             if not quoting:
                 quoting = v_Client_Quoting()
+            patient_os = current_patient_orgStructure(event.id)
 
-        return {
+        template_context = {
             'event': event,
             'client': client,
             'tempInvalid': None,
             'quoting': quoting,
-            'patient_orgStructure': current_patient_orgStructure(event.id),
+            'patient_orgStructure': patient_os,
         }
+        if 'payment_id' in data:
+            template_context['payment'] = EventPayment.query.get(data['payment_id'])
+        return template_context
 
     def context_action(self, data):
         # ActionEditDialod, ActionInfoFrame
@@ -136,28 +141,6 @@ class Print_Template(object):
             'patient_orgStructure': current_patient_orgStructure(event.id),
         }
 
-    def context_services(self, data):
-        event = None
-        client = None
-        chosen_actions = []
-        if 'event_id' in data:
-            event_id = data['event_id']
-            event = Event.query.get(event_id)
-            client = event.client
-            client.date = event.execDate.date if event.execDate else self.today
-
-        if 'actions_ids' in data:
-            actions_ids = data['actions_ids']
-            for action_id in actions_ids:
-                action = Action.query.get(action_id)
-                chosen_actions.append(action)
-        return {
-            'event': event,
-            'chosen_actions': chosen_actions,
-            'client': client,
-            'patient_orgStructure': current_patient_orgStructure(event.id),
-        }
-
     def context_account(self, data):
         # расчеты (CAccountingDialog)
         account_id = data['account_id']
@@ -169,29 +152,29 @@ class Print_Template(object):
             'account': accountInfo
         }
 
-    def context_cash_order(self, data):
-        # CashBookDialog, CashDialog
-        # date - datetime, Event_payments
-        event = None
-        client = None
-        if 'event_id' in data:
-            event_id = data['event_id']
-            event = Event.query.get(event_id)
-            client = event.client
+    def context_cashbook_list(self, data):
+        operations = metrics = None
 
-            client.date = event.execDate.date if event.execDate else self.today
-        date = data['date']
-        cash_operation_id = data['cash_operation_id']
-        cashBox = data['cashBox']
-        cash_operation = Rbcashoperation.query.get(cash_operation_id)
+        def get_metrics():
+            m = EventPayment.query.with_entities(
+                func.count(),
+                func.sum(func.IF(EventPayment.sum > 0, EventPayment.sum, 0)),
+                - func.sum(func.IF(EventPayment.sum < 0, EventPayment.sum, 0))
+            ).filter(EventPayment.id.in_(data['payments_id_list'])).first()
+            return {
+                'total': m[0],
+                'income': m[1],
+                'expense': abs(m[2])
+            }
+
+        if 'payments_id_list' in data:
+            operations = EventPayment.query.filter(
+                EventPayment.id.in_(data['payments_id_list'])
+            ).order_by(EventPayment.date.desc(), EventPayment.id.desc()).all()
+            metrics = get_metrics()
         return {
-            'event': event,
-            'client': client,
-            'date': date,
-            'cashOperation': cash_operation,
-            'sum': sum,
-            'cashBox': cashBox,
-            'tempInvalid': None
+            'operations': operations,
+            'metrics': metrics
         }
 
     def context_person(self, data):
