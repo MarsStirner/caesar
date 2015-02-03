@@ -4,9 +4,8 @@ import logging
 import traceback
 from jinja2 import TemplateSyntaxError
 from blueprints.print_subsystem.lib.internals import RenderTemplateException
-from blueprints.print_subsystem.lib.utils import getTemplateName
+from blueprints.print_subsystem.models.models_all import Rbprinttemplate
 from internals import renderTemplate
-from utils import getTemplate
 
 __author__ = 'mmalkov'
 
@@ -48,28 +47,31 @@ __author__ = 'mmalkov'
 
 def applyTemplate(templateId, data):
     u"""Выводит на печать шаблон печати номер templateId с данными data"""
+    template_data = Rbprinttemplate.query.get(templateId)
+    if not template_data:
+        raise RenderTemplateException(u'Шаблон с id=%s не найден' % templateId, {
+            'type': RenderTemplateException.Type.other,
+            'template_name': '<unknown>',
+            'trace': '',
+        })
     try:
-        template = getTemplate(templateId)
-        return applyTemplateInt(template, data)
+        return renderTemplate(template_data.templateText, data)
     except TemplateSyntaxError, e:
         print e
         logging.error('syntax error in template id = %s', templateId, exc_info=True)
         raise RenderTemplateException(e.message, {
             'type': RenderTemplateException.Type.syntax,
-            'template_name': getTemplateName(templateId),
+            'template_name': template_data.name,
             'lineno': e.lineno
         })
     except Exception, e:
         print unicode(traceback.format_exc(), 'utf-8')
         logging.critical('erroneous template id = %s', templateId, exc_info=True)
+        tb = traceback.format_exc()
+        if isinstance(tb, str):
+            tb = tb.decode('utf-8')
         raise RenderTemplateException(e.message, {
             'type': RenderTemplateException.Type.other,
-            'template_name': getTemplateName(templateId),
-            'trace': unicode(traceback.format_exc(), 'utf-8')
+            'template_name': template_data.name,
+            'trace': tb,
         })
-
-
-def applyTemplateInt(template, data, render=1):
-    u"""Выводит на печать шаблон печати по имени name с кодом template и данными data"""
-    html = renderTemplate(template, data, render)
-    return html

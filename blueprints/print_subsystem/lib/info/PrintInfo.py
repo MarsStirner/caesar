@@ -92,10 +92,12 @@ class CTemplatableInfoMixin:
     def formatByTemplateId(self, templateId):
         # формирование html по id шаблона
         from ..internals import renderTemplate
-        from ..utils import getTemplate
-        template, render = getTemplate(templateId)
+        from ...models.models_all import Rbprinttemplate
+        template_data = Rbprinttemplate.query.get(templateId)
+        if not template_data:
+            return ''
         data = self.getData()
-        html, canvases = renderTemplate(template, data, render=render)
+        html, canvases = renderTemplate(template_data.templateText, data, render=template_data.render)
         return html
 
     def formatByTemplate(self, name, printContext=None):
