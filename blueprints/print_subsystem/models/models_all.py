@@ -192,7 +192,9 @@ class Action(db.Model):
     takenTissue = db.relationship(u'Takentissuejournal')
     tissues = db.relationship(u'Tissue', secondary=u'ActionTissue')
     properties = db.relationship(u'ActionProperty',
-                                 primaryjoin="and_(ActionProperty.action_id==Action.id, ActionProperty.type_id==Actionpropertytype.id)",
+                                 primaryjoin="and_(ActionProperty.action_id==Action.id, "
+                                             "ActionProperty.type_id==Actionpropertytype.id, "
+                                             "ActionProperty.deleted==0)",
                                  order_by="Actionpropertytype.idx")
     self_contract = db.relationship('Contract')
     bbt_response = db.relationship(u'BbtResponse', uselist=False)
