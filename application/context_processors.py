@@ -23,11 +23,10 @@ def general_menu():
         except ImportError, e:
             print e
         else:
-            if hasattr(config, 'RUS_NAME'):
-                menu_items.append(dict(module=v.name, name=config.RUS_NAME))
-            else:
-                menu_items.append(dict(module=v.name, name=v.name))
-
+            menu_items.append(dict(module=v.name,
+                                   name=getattr(config, 'RUS_NAME', v.name),
+                                   descr=getattr(config, 'DESCR', u'Нет описания'),
+                                   ))
     return dict(main_menu=menu_items)
 
 

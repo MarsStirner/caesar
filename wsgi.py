@@ -6,4 +6,4 @@ sys.path.insert(0, os.path.dirname(__file__))
 from application.app import app as application
 
 if __name__ == '__main__':
-    application.run()
+    application.run(port=application.config['SERVER_PORT'])

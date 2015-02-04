@@ -11,7 +11,6 @@ from flask.ext.principal import identity_loaded, Permission, RoleNeed, UserNeed
 from flask.ext.login import login_user, logout_user, login_required, current_user
 
 from application.app import app, db, login_manager
-from application.context_processors import general_menu
 from models import Settings, Users, Roles
 from lib.user import User
 from forms import EditUserForm, LoginForm
@@ -23,11 +22,9 @@ login_manager.login_view = 'login'
 
 @app.before_request
 def check_valid_login():
-    login_valid = current_user.is_authenticated()
-
     if (request.endpoint and
             'static' not in request.endpoint and
-            not login_valid and
+            not current_user.is_authenticated() and
             not getattr(app.view_functions[request.endpoint], 'is_public', False)):
         return redirect(url_for('login', next=url_for(request.endpoint)))
 
@@ -69,13 +66,9 @@ def settings():
 @app.route('/login/', methods=['GET', 'POST'])
 @public_endpoint
 def login():
-    # login form that uses Flask-WTF
     form = LoginForm()
-    errors = list()
 
-    # Validate form input
     if form.validate_on_submit():
-        # Retrieve the user from the hypothetical datastore
         user = db.session.query(Users).filter(Users.login == form.login.data.strip()).first()
         if user:
             check_user = User(user.login)
@@ -83,17 +76,17 @@ def login():
             if check_user.check_password(form.password.data.strip(), user.password):
                 # Keep the user info in the session using Flask-Login
                 login_user(user)
-
                 # Tell Flask-Principal the identity changed
                 identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
-
                 return redirect(request.args.get('next') or url_for('index'))
             else:
-                errors.append(u'Неверная пара логин/пароль')
+                flash(u'Неверная пара логин/пароль', 'error')
+                return redirect(url_for('login'))
         else:
-            errors.append(u'Нет пользователя с логином <b>%s</b>' % form.login.data.strip())
+            flash(u'Нет пользователя с логином <b>%s</b>' % form.login.data.strip(), 'error')
+            return redirect(url_for('login'))
 
-    return render_template('user/login.html', form=form, errors=errors)
+    return render_template('user/login.html', form=form)
 
 
 @app.route('/logout/')

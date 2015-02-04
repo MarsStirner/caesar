@@ -1,34 +1,28 @@
 <!DOCTYPE html>
-<html lang="ru">
-  <head>
-    {% include '_header.html' %}
-    {% block modules_css %}{% endblock %}
-  </head>
-  <body>
-  <div id="wrap">
-
-  {%- include '_top.html' -%}
-
-  <div id="container" class="container">
+<html lang="ru-RU">
+    <head>
+        <title>Система администрирования ЛПУ {% block title %}{% endblock %}</title>
+        {% include '_header.html' %}
+        {% block modules_css %}{% endblock %}
+    </head>
+    <body>
     {%- import '_macros.html' as macros -%}
+    {%- import 'common/utils.html' as macro_utils with context -%}
+    {%- import 'common/module_menu.html' as macro_module_menu with context -%}
+        <div id="wrap">
+            {%- include '_top.html' -%}
 
-    {%- block content %}
+            <div id="container" class="container-fluid">
+                {%- block content %}
+                {% endblock -%}
+            </div>
+            <!-- /container -->
+            <div id="push"></div>
+        </div>
 
-      <!-- Jumbotron -->
-      <div class="jumbotron">
-        <h1>Система администрирования ЛПУ</h1>
-        <p class="lead">Добро пожаловать в систему администрирования ЛПУ. Модули, доступные для работы представлены в главном меню.</p>
-      </div>
+        {% include '_bottom.html' %}
+        {% include '_footer.html' %}
+        {% block modules_js %}{% endblock %}
 
-    {% endblock -%}
-
-   </div> <!-- /container -->
-   <div id="push"></div>
-  </div>
-
-  {% include '_bottom.html' %}
-  {% include '_footer.html' %}
-  {% block modules_js %}{% endblock %}
-
-  </body>
+    </body>
 </html>
