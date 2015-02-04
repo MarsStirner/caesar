@@ -15,14 +15,6 @@ html, body {height: 100%;}
 #bottom, #push {height:60px;}
 #footer {height:60px;}
 
-#wrap > #container {
-    padding-top: 60px;
-}
-
-body{
-    padding-top:0;
-}
-
 .container > hr {
     margin: 10px 0;
 }
