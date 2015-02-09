@@ -6494,7 +6494,7 @@ class Trfuorderissueresult(db.Model):
     comp_type_id = db.Column(db.ForeignKey('rbTrfuBloodComponentType.id'), index=True)
     blood_type_id = db.Column(db.ForeignKey('rbBloodType.id'), index=True)
     volume = db.Column(db.Integer)
-    dose_count = db.Column(db.Float(asdecimal=True))
+    dose_count = db.Column(db.Float())
     trfu_donor_id = db.Column(db.Integer)
     stickerUrl = db.Column(db.String(2083))
 
