@@ -819,7 +819,7 @@ class ActionProperty_Table(ActionProperty_Integer_Base):
                        "trfuFinalVolume": Trfufinalvolume}
         table = Rbaptable.query.filter(Rbaptable.code == table_code).first()
         field_names = [field.name for field in table.fields]
-        table_filed_names = [field.fieldName for field in table.fields]
+        table_filed_names = [field.fieldName for field in table.fields if field.fieldName != 'stickerUrl']
         value_table_name = table.tableName
         master_field = table.masterField
         values = trfu_tables[value_table_name].query.filter("{0}.{1} = {2}".format(
