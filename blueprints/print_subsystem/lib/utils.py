@@ -9,6 +9,7 @@ import os
 # from library.Utils import forceString, forceInt, forceRef
 # from internals import renderTemplate, CPageFormat
 #from specialvars import getSpVarsUsedInTempl, getSpecialVariableValue, SpecialVariable
+from flask import g
 from ..models.models_all import Rbprinttemplate
 
 __author__ = 'mmalkov'
@@ -17,6 +18,6 @@ __author__ = 'mmalkov'
 def getPrintTemplates(context):
     return [
         (r.name, r.id, r.dpdAgreement, r.fileName, r.code)
-        for r in Rbprinttemplate.query.filter(Rbprinttemplate.context == context)
+        for r in g.printing_session.query(Rbprinttemplate).filter(Rbprinttemplate.context == context)
     ] if context else []
 

@@ -2,6 +2,8 @@
 
 #from PyQt4 import QtCore, QtGui
 # from library.Utils import *
+from flask import g
+
 
 class CInfoContext(object):
     u"""Отображение (класс объекта, параметры объекта) -> Экземпляр класса"""
@@ -93,7 +95,7 @@ class CTemplatableInfoMixin:
         # формирование html по id шаблона
         from ..internals import renderTemplate
         from ...models.models_all import Rbprinttemplate
-        template_data = Rbprinttemplate.query.get(templateId)
+        template_data = g.printing_session.query(Rbprinttemplate).get(templateId)
         if not template_data:
             return ''
         data = self.getData()

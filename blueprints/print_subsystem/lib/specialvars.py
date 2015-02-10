@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 import re
 import datetime
+from flask import g
 from sqlalchemy.exc import ProgrammingError, OperationalError
 
 from ..models.models_all import Rbspecialvariablespreference
-from application.database import db
 
 __author__ = 'mmalkov'
 
 
 def SpecialVariable(name, *args, **kwargs):
-    sp_variable = Rbspecialvariablespreference.query.filter(Rbspecialvariablespreference.name == name).first()
+    sp_variable = g.printing_session.query(Rbspecialvariablespreference).filter(Rbspecialvariablespreference.name == name).first()
     # Проверка валидности sql-запроса
     sql_text = sp_variable.query_text
     if re.search(r"\W(delete|drop|insert|alter)\s", sql_text, re.I) or not re.match(r"^\s*SELECT", sql_text, re.I):
@@ -56,7 +56,7 @@ def SpecialVariable(name, *args, **kwargs):
     sql_text = re.sub('::?@?(\w+)', matcher, sql_text, flags=re.U)
 
     try:
-        result = db.session.execute(sql_text).fetchall()
+        result = g.printing_session.execute(sql_text).fetchall()
     except ProgrammingError:
         print u"Ошибка в специальной переменной", name
         raise

@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
 import datetime
+from flask import g
+from sqlalchemy import Column, Unicode, ForeignKey, Date, Time, DateTime, SmallInteger, Boolean
+from sqlalchemy import Integer
+from sqlalchemy.orm import relationship
+from ..database import Base
 
-from application.database import db
 from models_all import Person, Client, Rbreasonofabsence, Organisation, Orgstructure
 
 
-class rbReceptionType(db.Model):
+class rbReceptionType(Base):
     __tablename__ = 'rbReceptionType'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    code = db.Column(db.Unicode(32), nullable=False)
-    name = db.Column(db.Unicode(64), nullable=False)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    code = Column(Unicode(32), nullable=False)
+    name = Column(Unicode(64), nullable=False)
 
     def __unicode__(self):
         return u'(%s) %s' % (self.code, self.name)
@@ -22,12 +26,12 @@ class rbReceptionType(db.Model):
         }
 
 
-class rbAttendanceType(db.Model):
+class rbAttendanceType(Base):
     __tablename__ = 'rbAttendanceType'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    code = db.Column(db.Unicode(32), nullable=False)
-    name = db.Column(db.Unicode(64), nullable=False)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    code = Column(Unicode(32), nullable=False)
+    name = Column(Unicode(64), nullable=False)
 
     def __unicode__(self):
         return u'(%s) %s' % (self.code, self.name)
@@ -39,15 +43,15 @@ class rbAttendanceType(db.Model):
         }
 
 
-class Office(db.Model):
+class Office(Base):
     __tablename__ = 'Office'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    code = db.Column(db.Unicode(32), nullable=False)
-    name = db.Column(db.Unicode(64), nullable=False)
-    orgStructure_id = db.Column(db.ForeignKey('OrgStructure.id'))
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    code = Column(Unicode(32), nullable=False)
+    name = Column(Unicode(64), nullable=False)
+    orgStructure_id = Column(ForeignKey('OrgStructure.id'))
 
-    orgStructure = db.relationship('Orgstructure')
+    orgStructure = relationship('Orgstructure')
 
     def __unicode__(self):
         return self.code
@@ -60,12 +64,12 @@ class Office(db.Model):
         }
 
 
-class rbAppointmentType(db.Model):
+class rbAppointmentType(Base):
     __tablename__ = 'rbAppointmentType'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    code = db.Column(db.Unicode(32), nullable=False)
-    name = db.Column(db.Unicode(64), nullable=False)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    code = Column(Unicode(32), nullable=False)
+    name = Column(Unicode(64), nullable=False)
 
     def __unicode__(self):
         return u'(%s) %s' % (self.code, self.name)
@@ -77,54 +81,54 @@ class rbAppointmentType(db.Model):
         }
 
 
-class Schedule(db.Model):
+class Schedule(Base):
     __tablename__ = 'Schedule'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    person_id = db.Column(db.Integer, db.ForeignKey('Person.id'), nullable=False)
-    date = db.Column(db.Date, nullable=False)
-    begTime = db.Column(db.Time, nullable=False)
-    endTime = db.Column(db.Time, nullable=False)
-    numTickets = db.Column(db.Integer, doc=u'Запланированное количество талонов на данный день')
-    office_id = db.Column(db.ForeignKey('Office.id'))
-    reasonOfAbsence_id = db.Column(db.Integer, db.ForeignKey('rbReasonOfAbsence.id'))
-    receptionType_id = db.Column(db.Integer, db.ForeignKey('rbReceptionType.id'))
-    createDatetime = db.Column(db.DateTime, nullable=False)
-    createPerson_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
-    modifyDatetime = db.Column(db.DateTime, nullable=False)
-    modifyPerson_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
-    deleted = db.Column(db.SmallInteger, nullable=False, server_default='0')
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    person_id = Column(Integer, ForeignKey('Person.id'), nullable=False)
+    date = Column(Date, nullable=False)
+    begTime = Column(Time, nullable=False)
+    endTime = Column(Time, nullable=False)
+    numTickets = Column(Integer, doc=u'Запланированное количество талонов на данный день')
+    office_id = Column(ForeignKey('Office.id'))
+    reasonOfAbsence_id = Column(Integer, ForeignKey('rbReasonOfAbsence.id'))
+    receptionType_id = Column(Integer, ForeignKey('rbReceptionType.id'))
+    createDatetime = Column(DateTime, nullable=False)
+    createPerson_id = Column(Integer, ForeignKey('Person.id'), index=True)
+    modifyDatetime = Column(DateTime, nullable=False)
+    modifyPerson_id = Column(Integer, ForeignKey('Person.id'), index=True)
+    deleted = Column(SmallInteger, nullable=False, server_default='0')
 
-    person = db.relationship('Person', foreign_keys=person_id)
-    reasonOfAbsence = db.relationship('Rbreasonofabsence', lazy='joined')
-    receptionType = db.relationship('rbReceptionType', lazy='joined')
-    tickets = db.relationship(
+    person = relationship('Person', foreign_keys=person_id)
+    reasonOfAbsence = relationship('Rbreasonofabsence', lazy='joined')
+    receptionType = relationship('rbReceptionType', lazy='joined')
+    tickets = relationship(
         'ScheduleTicket', lazy=False, primaryjoin=
         "and_(ScheduleTicket.schedule_id == Schedule.id, ScheduleTicket.deleted == 0)")
-    office = db.relationship('Office', lazy='joined')
+    office = relationship('Office', lazy='joined')
     
 
-class ScheduleTicket(db.Model):
+class ScheduleTicket(Base):
     __tablename__ = 'ScheduleTicket'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    schedule_id = db.Column(db.Integer, db.ForeignKey('Schedule.id'), nullable=False)
-    begTime = db.Column(db.Time)
-    endTime = db.Column(db.Time)
-    attendanceType_id = db.Column(db.Integer, db.ForeignKey('rbAttendanceType.id'), nullable=False)
-    createDatetime = db.Column(db.DateTime, nullable=False)
-    createPerson_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
-    modifyDatetime = db.Column(db.DateTime, nullable=False)
-    modifyPerson_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
-    deleted = db.Column(db.SmallInteger, nullable=False, server_default='0')
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    schedule_id = Column(Integer, ForeignKey('Schedule.id'), nullable=False)
+    begTime = Column(Time)
+    endTime = Column(Time)
+    attendanceType_id = Column(Integer, ForeignKey('rbAttendanceType.id'), nullable=False)
+    createDatetime = Column(DateTime, nullable=False)
+    createPerson_id = Column(Integer, ForeignKey('Person.id'), index=True)
+    modifyDatetime = Column(DateTime, nullable=False)
+    modifyPerson_id = Column(Integer, ForeignKey('Person.id'), index=True)
+    deleted = Column(SmallInteger, nullable=False, server_default='0')
 
-    attendanceType = db.relationship('rbAttendanceType', lazy=False)
-    client_ticket = db.relationship(
+    attendanceType = relationship('rbAttendanceType', lazy=False)
+    client_ticket = relationship(
         'ScheduleClientTicket', lazy=False, primaryjoin=
         "and_(ScheduleClientTicket.ticket_id == ScheduleTicket.id, ScheduleClientTicket.deleted == 0)",
         uselist=False)
 
-    schedule = db.relationship(
+    schedule = relationship(
         'Schedule', lazy="joined", innerjoin=True, uselist=False,
         primaryjoin='and_('
                     'Schedule.deleted == 0, ScheduleTicket.deleted == 0, ScheduleTicket.schedule_id == Schedule.id)'
@@ -144,28 +148,28 @@ class ScheduleTicket(db.Model):
         return datetime.datetime.combine(self.schedule.date, self.endTime) if self.endTime is not None else None
 
 
-class ScheduleClientTicket(db.Model):
+class ScheduleClientTicket(Base):
     __tablename__ = 'ScheduleClientTicket'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    client_id = db.Column(db.Integer, db.ForeignKey('Client.id'), nullable=False)
-    ticket_id = db.Column(db.Integer, db.ForeignKey('ScheduleTicket.id'), nullable=False)
-    isUrgent = db.Column(db.Boolean)
-    note = db.Column(db.Unicode(256))
-    appointmentType_id = db.Column(db.Integer, db.ForeignKey('rbAppointmentType.id'))
-    createDatetime = db.Column(db.DateTime, nullable=False)
-    createPerson_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
-    modifyDatetime = db.Column(db.DateTime, nullable=False)
-    modifyPerson_id = db.Column(db.Integer, db.ForeignKey('Person.id'), index=True)
-    deleted = db.Column(db.SmallInteger, nullable=False, server_default='0')
-    event_id = db.Column(db.ForeignKey('Event.id'))
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    client_id = Column(Integer, ForeignKey('Client.id'), nullable=False)
+    ticket_id = Column(Integer, ForeignKey('ScheduleTicket.id'), nullable=False)
+    isUrgent = Column(Boolean)
+    note = Column(Unicode(256))
+    appointmentType_id = Column(Integer, ForeignKey('rbAppointmentType.id'))
+    createDatetime = Column(DateTime, nullable=False)
+    createPerson_id = Column(Integer, ForeignKey('Person.id'), index=True)
+    modifyDatetime = Column(DateTime, nullable=False)
+    modifyPerson_id = Column(Integer, ForeignKey('Person.id'), index=True)
+    deleted = Column(SmallInteger, nullable=False, server_default='0')
+    event_id = Column(ForeignKey('Event.id'))
     
-    client = db.relationship('Client', lazy='joined', uselist=False)
-    appointmentType = db.relationship('rbAppointmentType', lazy=False, innerjoin=True)
-    createPerson = db.relationship('Person', foreign_keys=[createPerson_id])
-    event = db.relationship('Event')
+    client = relationship('Client', lazy='joined', uselist=False)
+    appointmentType = relationship('rbAppointmentType', lazy=False, innerjoin=True)
+    createPerson = relationship('Person', foreign_keys=[createPerson_id])
+    event = relationship('Event')
 
-    ticket = db.relationship(
+    ticket = relationship(
         'ScheduleTicket', lazy="joined", innerjoin=True, uselist=False,
         primaryjoin='and_('
                     'ScheduleClientTicket.deleted == 0, '
@@ -179,7 +183,7 @@ class ScheduleClientTicket(db.Model):
         if not self.infisFrom:
             return
         from models_all import Organisation
-        org = Organisation.query.filter(Organisation.infisCode == self.infisFrom).first()
+        org = g.printing_session.query(Organisation).filter(Organisation.infisCode == self.infisFrom).first()
         if not org:
             return self.infisFrom
         return org.title

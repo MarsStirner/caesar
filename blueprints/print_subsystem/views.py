@@ -3,7 +3,7 @@
 import traceback
 import logging
 
-from flask import render_template, abort, request, url_for, send_file
+from flask import render_template, abort, request, url_for, send_file, g
 from jinja2 import TemplateNotFound
 
 from app import module
@@ -120,7 +120,7 @@ def api_templates(context=None):
     # А в Гиппократе всё работает. Там те же две БД.
     if not context:
         return jsonify(None)
-    templates = Rbprinttemplate.query.filter(Rbprinttemplate.context == context)
+    templates = g.printing_session.query(Rbprinttemplate).filter(Rbprinttemplate.context == context)
     return jsonify([{
         'id': t.id,
         'code': t.code,
