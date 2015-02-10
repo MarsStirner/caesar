@@ -891,7 +891,7 @@ class ActionProperty_Reference(ActionProperty__ValueType):
     value_ = db.Column('value', db.ForeignKey('rbTrfuBloodComponentType.id'), nullable=False)
 
     value = db.relationship('Rbtrfubloodcomponenttype')
-    property_object = db.relationship('ActionProperty', backref='_value_rbBloodComponentType')
+    property_object = db.relationship('ActionProperty', backref='_value_Reference')
 
 
 class ActionProperty_rbFinance(ActionProperty__ValueType):
