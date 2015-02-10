@@ -818,7 +818,7 @@ class ActionProperty_Table(ActionProperty_Integer_Base):
         trfu_tables = {"trfuOrderIssueResult": Trfuorderissueresult, "trfuLaboratoryMeasure": Trfulaboratorymeasure,
                        "trfuFinalVolume": Trfufinalvolume}
         table = Rbaptable.query.filter(Rbaptable.code == table_code).first()
-        field_names = [field.name for field in table.fields]
+        field_names = [field.name for field in table.fields if field.fieldName != 'stickerUrl']
         table_filed_names = [field.fieldName for field in table.fields if field.fieldName != 'stickerUrl']
         value_table_name = table.tableName
         master_field = table.masterField
