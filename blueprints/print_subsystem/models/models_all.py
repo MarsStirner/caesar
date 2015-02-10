@@ -883,7 +883,7 @@ class ActionProperty_ReferenceRb(ActionProperty_Integer_Base):
     property_object = db.relationship('ActionProperty', backref='_value_ReferenceRb')
 
 
-class ActionProperty_rbBloodComponentType(ActionProperty__ValueType):
+class ActionProperty_Reference(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_rbBloodComponentType'
 
     id = db.Column(db.ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
