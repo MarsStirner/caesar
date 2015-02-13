@@ -101,6 +101,7 @@ def print_templates_post():
 ''' % (font_url_eot, font_url_eot, font_url_woff, font_url_ttf, font_url_svg, font_url_ttf128, template_style)
     return style + separator.join(result)
 
+
 @public_endpoint
 @module.route('/fonts')
 @module.route('/fonts/<filename>')
