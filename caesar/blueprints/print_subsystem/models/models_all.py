@@ -200,9 +200,14 @@ class Action(Info):
     setPerson = relationship(u'Person', foreign_keys='Action.setPerson_id')
     takenTissue = relationship(u'Takentissuejournal')
     tissues = relationship(u'Tissue', secondary=u'ActionTissue')
-    properties = relationship(u'ActionProperty',
-                                 primaryjoin="and_(ActionProperty.action_id==Action.id, ActionProperty.type_id==Actionpropertytype.id)",
-                                 order_by="Actionpropertytype.idx")
+    properties = relationship(
+        u'ActionProperty',
+        primaryjoin="and_("
+                    "ActionProperty.action_id==Action.id, "
+                    "ActionProperty.type_id==Actionpropertytype.id, "
+                    "ActionProperty.deleted==0)",
+        order_by="Actionpropertytype.idx"
+    )
     self_contract = relationship('Contract')
     bbt_response = relationship(u'BbtResponse', uselist=False)
 
@@ -825,8 +830,8 @@ class ActionProperty_Table(ActionProperty_Integer_Base):
         trfu_tables = {"trfuOrderIssueResult": Trfuorderissueresult, "trfuLaboratoryMeasure": Trfulaboratorymeasure,
                        "trfuFinalVolume": Trfufinalvolume}
         table = g.printing_session.query(Rbaptable).filter(Rbaptable.code == table_code).first()
-        field_names = [field.name for field in table.fields]
-        table_filed_names = [field.fieldName for field in table.fields]
+        field_names = [field.name for field in table.fields if field.fieldName != 'stickerUrl']
+        table_filed_names = [field.fieldName for field in table.fields if field.fieldName != 'stickerUrl']
         value_table_name = table.tableName
         master_field = table.masterField
         values = g.printing_session.query(trfu_tables[value_table_name]).filter("{0}.{1} = {2}".format(
@@ -890,7 +895,7 @@ class ActionProperty_ReferenceRb(ActionProperty_Integer_Base):
     property_object = relationship('ActionProperty', backref='_value_ReferenceRb')
 
 
-class ActionProperty_rbBloodComponentType(ActionProperty__ValueType):
+class ActionProperty_Reference(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_rbBloodComponentType'
 
     id = Column(ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
@@ -898,7 +903,7 @@ class ActionProperty_rbBloodComponentType(ActionProperty__ValueType):
     value_ = Column('value', ForeignKey('rbTrfuBloodComponentType.id'), nullable=False)
 
     value = relationship('Rbtrfubloodcomponenttype')
-    property_object = relationship('ActionProperty', backref='_value_rbBloodComponentType')
+    property_object = relationship('ActionProperty', backref='_value_Reference')
 
 
 class ActionProperty_rbFinance(ActionProperty__ValueType):
@@ -6531,7 +6536,7 @@ class Trfuorderissueresult(Info):
     comp_type_id = Column(ForeignKey('rbTrfuBloodComponentType.id'), index=True)
     blood_type_id = Column(ForeignKey('rbBloodType.id'), index=True)
     volume = Column(Integer)
-    dose_count = Column(Float(asdecimal=True))
+    dose_count = Column(Float())
     trfu_donor_id = Column(Integer)
     stickerUrl = Column(String(2083))
 
