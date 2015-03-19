@@ -1,0 +1,31 @@
+<table class="table">
+<thead>
+<tr>
+    <th>Источник финансирования</th>
+    <th>Номер</th>
+    <th>Дата начала</th>
+    <th>Дата окончания</th>
+    <th>Приказ</th>
+    <th colspan="2">Комментарий</th>
+</tr>
+</thead>
+<tbody>
+<tr ng-repeat="cat in catalog_list">
+    <td>[[ cat.finance.code ]]</td>
+    <td>[[ cat.catalog_number ]]</td>
+    <td>[[ cat.beg_date ]]</td>
+    <td>[[ cat.end_date ]]</td>
+    <td>[[ cat.document_corresp ]] №[[ cat.document_number ]] от [[ cat.document_date ]]</td>
+    <td>[[ cat.comment ]]</td>
+    <td>
+        <button class="btn btn-primary" ng-click="switch_to_catalog(cat.id)">Edit</button>
+        <button class="btn btn-primary" ng-click="clone_catalog(cat.id)">Edit</button>
+        <button class="btn btn-danger" ng-click="delete_catalog(cat.id)">Delete</button>
+    </td>
+</tr>
+<tr>
+    <td colspan="6"></td>
+    <td><button class="btn btn-success" ng-click="new_catalog()">New</button></td>
+</tr>
+</tbody>
+</table>
