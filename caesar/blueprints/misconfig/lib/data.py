@@ -43,7 +43,7 @@ class QuotaCatalogWorker(object):
         obj = self.__fill_obj(self.model(), data)
         db.session.add(obj)
         db.session.commit()
-        return True
+        return obj
 
     def update(self, _id, data):
         obj = self.get_by_id(_id)
@@ -52,7 +52,7 @@ class QuotaCatalogWorker(object):
         obj = self.__fill_obj(obj, data)
         db.session.add(obj)
         db.session.commit()
-        return True
+        return obj
 
     def delete(self, _id):
         obj = self.get_by_id(_id)
