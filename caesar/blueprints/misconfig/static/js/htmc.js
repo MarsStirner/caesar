@@ -22,20 +22,42 @@ WebMis20
         }
     }
 })
-.controller('HTMCConfigCtrl', function ($scope, HTMCConfigService) {
-    $scope.level = 0;
-    $scope.catalog_list = [];
-    $scope.load_catalog_list = function () {
-        HTMCConfigService.catalog.get_list().then(function (result) {
-            $scope.catalog_list = result;
-        });
+.controller('HTMCConfigCtrl', function ($scope, $modal, HTMCConfigService) {
+    $scope.models = {
+        level: 0,
+        catalog_list: []
     };
-    $scope.switch_to_catalog = function (id) {
-        $scope.level = 1;
+    $scope.catalog = {
+        list: function () {
+            HTMCConfigService.catalog.get_list().then(function (result) {
+                $scope.models.catalog_list = result;
+            })
+        },
+        switch_to: function (catalog) {
+            $scope.models.level = 1;
+        },
+        clone: function (catalog) {},
+        delete: function (catalog) {},
+        edit: function (catalog) {},
+        create: function () {
+            var instance = $modal.open({
+                controller: CatalogEditModalCtrl,
+                size: 'lg',
+                templateUrl: '/caesar/misconfig/htmc/catalog-edit-modal.html',
+                resolve: {
+                    model: function () {return {}}
+                }
+            });
+            instance.result.then(function (model) {
+                HTMCConfigService.catalog.create(model).then(function (result) {
+                    $scope.models.catalog_list.push(result);
+                });
+            })
+        }
     };
-    $scope.clone_catalog = function (id) {};
-    $scope.delete_catalog = function (id) {};
-    $scope.new_catalog = function () {};
-    $scope.load_catalog_list();
+    $scope.catalog.list();
+    var CatalogEditModalCtrl = function ($scope, $modalInstance, model) {
+        $scope.model = model;
+    }
 })
 ;

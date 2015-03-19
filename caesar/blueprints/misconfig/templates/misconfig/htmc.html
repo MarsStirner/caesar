@@ -6,13 +6,14 @@
         <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
         <li>ВМП</li>
     </ul>
-    <div ng-show="level == 0">{% include 'misconfig/htmc/catalog-list.html' %}</div>
-    <div ng-show="level == 1"></div>
-    <div ng-show="level == 2"></div>
-    <div ng-show="level == 3"></div>
+    <div ng-show="models.level == 0">{% include 'misconfig/htmc/catalog-list.html' %}</div>
+    <div ng-show="models.level == 1"></div>
+    <div ng-show="models.level == 2"></div>
+    <div ng-show="models.level == 3"></div>
 </div>
 {% endblock %}
 
 {% block modules_js %}
 <script src="{{ url_for('.static', filename='js/htmc.js', v=version) }}"></script>
+<script type="text/ng-template" id="/caesar/misconfig/htmc/catalog-edit-modal.html">{% include "misconfig/htmc/catalog-edit-modal.html" %}</script>
 {% endblock %}
