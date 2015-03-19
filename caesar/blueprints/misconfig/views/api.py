@@ -1,26 +1,46 @@
 # -*- coding: utf-8 -*-
-from ..app import module
-from nemesis.lib.utils import api_method
-from nemesis.systemwide import db
+from flask import request
+
+from nemesis.lib.apiutils import api_method, ApiException
 from nemesis.models.exists import QuotaCatalog
+
+from ..app import module
+from ..lib.data import worker
 
 
 @module.route('/api/v1/quota_catalog', methods=['GET'])
+@module.route('/api/v1/quota_catalog/<int:_id>', methods=['GET'])
 @api_method
-def api_v1_quota_catalog_get():
-    return [
-        {'id': catalog.id,
-         'finance_id': catalog.finance_id,
-         'create_datetime': catalog.createDatetime,
-         'create_person_id': catalog.createPerson_id,
-         'beg_date': catalog.begDate,
-         'end_date': catalog.endDate,
-         'catalog_number': catalog.catalogNumber,
-         'document_date': catalog.documentDate,
-         'document_number': catalog.documentNumber,
-         'document_corresp': catalog.documentCorresp,
-         'comment': catalog.comment
-         }
-        for catalog in QuotaCatalog.query.order_by(QuotaCatalog.begDate).all()
-    ]
+def api_v1_quota_catalog_get(_id=None):
+    obj = worker(QuotaCatalog)
+    if _id is not None:
+        catalog = obj.get_by_id(_id)
+        if not catalog:
+            raise ApiException(404, u'Значение с id={0} не найдено'.format(_id))
+        return catalog
+    return obj.get_list(order=QuotaCatalog.begDate)
 
+
+@module.route('/api/v1/quota_catalog', methods=['POST'])
+@module.route('/api/v1/quota_catalog/<int:_id>', methods=['POST'])
+@api_method
+def api_v1_quota_catalog_post(_id=None):
+    obj = worker(QuotaCatalog)
+    data = request.get_json()
+    if _id is not None:
+        result = obj.update(_id, data)
+        if result is None:
+            raise ApiException(404, u'Значение с id={0} не найдено'.format(_id))
+    else:
+        result = obj.add(data)
+    return result
+
+
+@module.route('/api/v1/quota_catalog/<int:_id>', methods=['DELETE'])
+@api_method
+def api_v1_quota_catalog_delete(_id):
+    obj = worker(QuotaCatalog)
+    result = obj.delete(_id)
+    if result is None:
+        raise ApiException(404, u'Значение с id={0} не найдено'.format(_id))
+    return result
