@@ -11,22 +11,22 @@
 </thead>
 <tbody>
 <tr ng-repeat="cat in models.catalog_list">
-    <td>[[ cat.finance.code ]]</td>
+    <td>[[ cat.finance.name ]]</td>
     <td>[[ cat.catalog_number ]]</td>
     <td>[[ cat.beg_date ]]</td>
     <td>[[ cat.end_date ]]</td>
     <td>[[ cat.document_corresp ]] №[[ cat.document_number ]] от [[ cat.document_date ]]</td>
     <td>[[ cat.comment ]]</td>
-    <td>
-        <button class="btn btn-primary" ng-click="catalog.switch_to(cat)">Edit meta</button>
-        <button class="btn btn-primary" ng-click="catalog.edit(cat)">Edit profiles</button>
-        <button class="btn btn-primary" ng-click="catalog.clone(cat)">Clone</button>
-        <button class="btn btn-danger" ng-click="catalog.delete(cat)">Delete</button>
+    <td class="nowrap" width="1%">
+        <button class="btn btn-primary" ng-click="catalog.edit($index)"><i class="fa fa-pencil"></i></button>
+        <button class="btn btn-primary" ng-click="catalog.switch_to($index)"><i class="fa fa-list"></i></button>
+        <button class="btn btn-primary" ng-click="catalog.clone($index)" disabled><i class="fa fa-copy"></i></button>
+        <button class="btn btn-danger" ng-click="catalog.delete($index)"><i class="fa fa-trash"></i></button>
     </td>
 </tr>
 <tr>
     <td colspan="6"></td>
-    <td><button class="btn btn-success" ng-click="catalog.create()">New</button></td>
+    <td><button class="btn btn-success" ng-click="catalog.create()"><i class="fa fa-plus"></i></button></td>
 </tr>
 </tbody>
 </table>

@@ -3,13 +3,64 @@
     <h4 class="modal-title" id="myModalLabel">Каталог</h4>
 </div>
 <div class="modal-body">
-    <table class="table">
-    <tbody>
-        <tr>
-            <th>Bcnjx</th>
-        </tr>
-    </tbody>
-    </table>
+<form class="form-horizontal">
+  <div class="form-group">
+    <label for="inputEmail3" class="col-sm-2 control-label">Источник финансировани</label>
+    <div class="col-sm-10">
+      <rb-select ref-book="rbFinance" ng-model="model.finance"></rb-select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="inputEmail3" class="col-sm-2 control-label">Дата начала</label>
+    <div class="col-sm-10">
+      <wm-date ng-model="model.beg_date"></wm-date>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="inputEmail3" class="col-sm-2 control-label">Дата окончания</label>
+    <div class="col-sm-10">
+      <wm-date ng-model="model.end_date"></wm-date>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="inputEmail3" class="col-sm-2 control-label">Номер справочника</label>
+    <div class="col-sm-10">
+      <input ng-model="model.catalog_number" type="text" class="form-control" id="inputEmail3" placeholder="Номер справочника">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="inputEmail3" class="col-sm-2 control-label">Номер приказа</label>
+    <div class="col-sm-10">
+      <input ng-model="model.document_number" type="text" class="form-control" id="inputEmail3" placeholder="Email">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="inputEmail3" class="col-sm-2 control-label">Дата приказа</label>
+    <div class="col-sm-10">
+      <wm-date ng-model="model.document_date"></wm-date>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="inputEmail3" class="col-sm-2 control-label">Корреспондент</label>
+    <div class="col-sm-10">
+      <input ng-model="model.document_corresp" type="text" class="form-control" id="inputEmail3" placeholder="Корреспондент">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="inputEmail3" class="col-sm-2 control-label">Комментарий</label>
+    <div class="col-sm-10">
+      <input ng-model="model.comment" type="text" class="form-control" id="inputEmail3" placeholder="Комментарий">
+    </div>
+  </div>
+
+</form>
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-success" ng-click="$close(model)">Подтвердить</button>

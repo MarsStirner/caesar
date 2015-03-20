@@ -19,6 +19,9 @@ WebMis20
         },
         update: function (id, data) {
             return wrapper('POST', quota_catalog_url +'/' + id, undefined, data)
+        },
+        delete: function (id) {
+            return wrapper('DELETE', quota_catalog_url + '/' + id)
         }
     }
 })
@@ -33,12 +36,32 @@ WebMis20
                 $scope.models.catalog_list = result;
             })
         },
-        switch_to: function (catalog) {
+        switch_to: function (index) {
             $scope.models.level = 1;
         },
-        clone: function (catalog) {},
-        delete: function (catalog) {},
-        edit: function (catalog) {},
+        clone: function (index) {},
+        delete: function (index) {
+            HTMCConfigService.catalog.delete($scope.models.catalog_list[index].id).then(function (result) {
+                $scope.catalog.list();
+            })
+        },
+        edit: function (index) {
+            var instance = $modal.open({
+                controller: CatalogEditModalCtrl,
+                size: 'lg',
+                templateUrl: '/caesar/misconfig/htmc/catalog-edit-modal.html',
+                resolve: {
+                    model: function () {
+                        return angular.extend({}, $scope.models.catalog_list[index])
+                    }
+                }
+            });
+            instance.result.then(function (model) {
+                HTMCConfigService.catalog.update(model.id, model).then(function (result) {
+                    $scope.models.catalog_list.splice(index, 1, result);
+                });
+            })
+        },
         create: function () {
             var instance = $modal.open({
                 controller: CatalogEditModalCtrl,
