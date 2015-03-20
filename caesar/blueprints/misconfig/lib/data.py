@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from dateutil import parser
+from datetime import datetime
 from nemesis.systemwide import db
 from nemesis.models.exists import QuotaCatalog, QuotaType
+from nemesis.models.utils import safe_current_user_id
 
 
 def worker(model):
@@ -31,12 +33,16 @@ class BaseWorker(object):
         raise NotImplementedError('Please implement this method')
 
     def add(self, data):
+        data.update({'create_person_id': safe_current_user_id(),
+                     'create_datetime': datetime.now()})
         obj = self._fill_obj(self.model(), data)
         db.session.add(obj)
         db.session.commit()
         return obj
 
     def update(self, _id, data):
+        data.update({'modify_person_id': safe_current_user_id(),
+                     'modify_datetime': datetime.now()})
         obj = self.get_by_id(_id)
         if not obj:
             return None
@@ -63,6 +69,10 @@ class QuotaCatalogWorker(BaseWorker):
             obj.createDatetime = parser.parse(data['create_datetime'])
         if 'create_person_id' in data:
             obj.createPerson_id = data['create_person_id']
+        if 'modify_datetime' in data and data['modify_datetime']:
+            obj.modifyDatetime = parser.parse(data['modify_datetime'])
+        if 'modify_person_id' in data:
+            obj.modifyPerson_id = data['modify_person_id']
         if 'beg_date' in data and data['beg_date']:
             obj.begDate = parser.parse(data['beg_date']).date()
         if 'end_date' in data and data['end_date']:
@@ -85,6 +95,10 @@ class QuotaTypeWorker(BaseWorker):
             obj.createDatetime = parser.parse(data['create_datetime'])
         if 'create_person_id' in data:
             obj.createPerson_id = data['create_person_id']
+        if 'modify_datetime' in data and data['modify_datetime']:
+            obj.modifyDatetime = parser.parse(data['modify_datetime'])
+        if 'modify_person_id' in data:
+            obj.modifyPerson_id = data['modify_person_id']
         if 'deleted' in data:
             obj.deleted = data['deleted']
         if 'class' in data:
