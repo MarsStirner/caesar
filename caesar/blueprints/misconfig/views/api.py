@@ -103,7 +103,7 @@ def api_v1_quota_type_get(catalog_id, group_code, _id=None):
     return obj.get_list(where=db.and_(QuotaType.catalog_id == catalog_id,
                                       QuotaType.group_code == group_code,
                                       QuotaType.deleted == 0),
-                        order=QuotaType.group_code)
+                        order=QuotaType.id)
 
 
 @module.route('/api/v1/quota_type/<int:catalog_id>/<group_code>', methods=['POST'])
