@@ -177,7 +177,7 @@ class QuotaDetailsWorker(BaseWorker):
             obj.treatment_id = safe_traverse(data['treatment'], 'id')
 
         if 'quota_type_id' in data:
-            obj.quotaType_id = data['quotaType_id']
+            obj.quotaType_id = data['quota_type_id']
         elif 'quota_type' in data:
             obj.quotaType_id = safe_traverse(data['quota_type'], 'id')
 
