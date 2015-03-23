@@ -3,7 +3,7 @@ from flask import request
 
 from nemesis.systemwide import db
 from nemesis.lib.apiutils import api_method, ApiException
-from nemesis.models.exists import QuotaCatalog, QuotaType
+from nemesis.models.exists import QuotaCatalog, QuotaType, VMPQuotaDetails
 
 from ..app import module
 from ..lib.data import worker
@@ -114,6 +114,8 @@ def api_v1_quota_type_post(catalog_id, group_code, _id=None):
     data = request.get_json()
     if 'catalog_id' not in data:
         data.update({'catalog_id': catalog_id})
+    if 'group_code' not in data:
+        data.update({'group_code': group_code})
     if _id is not None:
         result = obj.update(_id, data)
         if result is None:
@@ -123,12 +125,52 @@ def api_v1_quota_type_post(catalog_id, group_code, _id=None):
     return result
 
 
-@module.route('/api/v1/quota_type/<int:catalog_id>/<profile_code>/<int:_id>', methods=['DELETE'])
+@module.route('/api/v1/quota_type/<int:catalog_id>/<group_code>/<int:_id>', methods=['DELETE'])
 @api_method
-def api_v1_quota_type_delete(catalog_id, profile_code, _id):
+def api_v1_quota_type_delete(catalog_id, group_code, _id):
     obj = worker(QuotaType)
     result = obj.delete(_id)
     if result is None:
         raise ApiException(404, u'Значение с id={0} не найдено'.format(_id))
     return result
 
+
+@module.route('/api/v1/quota_detail/<int:quota_type_id>', methods=['GET'])
+@module.route('/api/v1/quota_detail/<int:quota_type_id>/<int:_id>', methods=['GET'])
+@api_method
+def api_v1_quota_detail_get(quota_type_id, _id=None):
+    obj = worker(VMPQuotaDetails)
+    if _id is not None:
+        data = obj.get_by_id(_id)
+        if not data:
+            raise ApiException(404, u'Значение с id={0} не найдено'.format(_id))
+        return data
+    return obj.get_list(where=db.and_(VMPQuotaDetails.quotaType_id == quota_type_id),
+                        order=VMPQuotaDetails.id)
+
+
+@module.route('/api/v1/quota_detail/<int:quota_type_id>', methods=['POST'])
+@module.route('/api/v1/quota_detail/<int:quota_type_id>/<int:_id>', methods=['POST'])
+@api_method
+def api_v1_quota_detail_post(quota_type_id, _id=None):
+    obj = worker(VMPQuotaDetails)
+    data = request.get_json()
+    if 'quota_type_id' not in data:
+        data.update({'quota_type_id': quota_type_id})
+    if _id is not None:
+        result = obj.update(_id, data)
+        if result is None:
+            raise ApiException(404, u'Значение с id={0} не найдено'.format(_id))
+    else:
+        result = obj.add(data)
+    return result
+
+
+@module.route('/api/v1/quota_detail/<int:quota_type_id>/<int:_id>', methods=['DELETE'])
+@api_method
+def api_v1_quota_detail_delete(quota_type_id, _id):
+    obj = worker(VMPQuotaDetails)
+    result = obj.delete(_id)
+    if result is None:
+        raise ApiException(404, u'Значение с id={0} не найдено'.format(_id))
+    return result
