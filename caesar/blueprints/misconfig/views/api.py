@@ -71,6 +71,9 @@ def api_v1_quota_profile_post(catalog_id, _id=None):
     data = request.get_json()
     if 'catalog_id' not in data:
         data.update({'catalog_id': catalog_id})
+    # type_code - код вида ВМП. Для профиля будет являться его кодом и = коду профиля для его видов ВМП
+    if 'code' in data and 'type_code' not in data:
+        data.update({'type_code': data['code']})
     if _id is not None:
         result = obj.update(_id, data)
         if result is None:
@@ -90,38 +93,38 @@ def api_v1_quota_profile_delete(catalog_id, _id):
     return result
 
 
-@module.route('/api/v1/quota_type/<int:group_id>', methods=['GET'])
-@module.route('/api/v1/quota_type/<int:group_id>/<int:_id>', methods=['GET'])
+@module.route('/api/v1/quota_type/<int:profile_id>', methods=['GET'])
+@module.route('/api/v1/quota_type/<int:profile_id>/<int:_id>', methods=['GET'])
 @api_method
-def api_v1_quota_type_get(group_id, _id=None):
+def api_v1_quota_type_get(profile_id, _id=None):
     obj = worker(QuotaType)
     if _id is not None:
         data = obj.get_by_id(_id)
         if not data:
             raise ApiException(404, u'Значение с id={0} не найдено'.format(_id))
         return data
-    group = obj.get_by_id(group_id)
-    if group is None:
+    profile = obj.get_by_id(profile_id)
+    if profile is None:
         raise ApiException(404, u'Значение с group_id={0} не найдено'.format(_id))
-    return obj.get_list(where=db.and_(QuotaType.catalog_id == group.catalog_id,
-                                      QuotaType.group_code == group.code,
+    return obj.get_list(where=db.and_(QuotaType.catalog_id == profile.catalog_id,
+                                      QuotaType.profile_code == profile.code,
                                       QuotaType.deleted == 0),
                         order=QuotaType.id)
 
 
-@module.route('/api/v1/quota_type/<int:group_id>', methods=['POST'])
-@module.route('/api/v1/quota_type/<int:group_id>/<int:_id>', methods=['POST'])
+@module.route('/api/v1/quota_type/<int:profile_id>', methods=['POST'])
+@module.route('/api/v1/quota_type/<int:profile_id>/<int:_id>', methods=['POST'])
 @api_method
-def api_v1_quota_type_post(group_id, _id=None):
+def api_v1_quota_type_post(profile_id, _id=None):
     obj = worker(QuotaType)
     data = request.get_json()
-    group = obj.get_by_id(group_id)
-    if group is None:
-        raise ApiException(404, u'Значение с group_id={0} не найдено'.format(_id))
-    if 'group_code' not in data:
-        data.update({'group_code': group.code})
+    profile = obj.get_by_id(profile_id)
+    if profile is None:
+        raise ApiException(404, u'Значение с profile_id={0} не найдено'.format(_id))
+    if 'profile_code' not in data:
+        data.update({'profile_code': profile.code})
     if 'catalog_id' not in data:
-        data.update({'catalog_id': group.catalog_id})
+        data.update({'catalog_id': profile.catalog_id})
     if _id is not None:
         result = obj.update(_id, data)
         if result is None:
