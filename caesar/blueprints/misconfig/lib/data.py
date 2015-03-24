@@ -3,7 +3,7 @@ from datetime import datetime
 from nemesis.systemwide import db
 from nemesis.models.exists import QuotaCatalog, QuotaType, VMPQuotaDetails
 from nemesis.models.utils import safe_current_user_id
-from nemesis.lib.utils import safe_traverse
+from nemesis.lib.utils import safe_traverse, safe_date
 
 
 def worker(model):
@@ -87,10 +87,10 @@ class QuotaCatalogWorker(BaseWorker):
             obj.modifyPerson_id = data['modify_person_id']
 
         if 'beg_date' in data and data['beg_date']:
-            obj.begDate = data['beg_date'].date()
+            obj.begDate = safe_date(data['beg_date'])
 
         if 'end_date' in data and data['end_date']:
-            obj.endDate = data['end_date'].date()
+            obj.endDate = safe_date(data['end_date'])
 
         if 'catalog_number' in data:
             obj.catalogNumber = data['catalog_number']
@@ -99,7 +99,7 @@ class QuotaCatalogWorker(BaseWorker):
             obj.documentNumber = data['document_number']
 
         if 'document_date' in data:
-            obj.documentDate = data['document_date'].date()
+            obj.documentDate = safe_date(data['document_date'])
 
         if 'document_corresp' in data:
             obj.documentCorresp = data['document_corresp']
