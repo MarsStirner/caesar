@@ -1,0 +1,18 @@
+{% extends 'misconfig/base.html' %}
+
+{% block content %}
+<ul class="breadcrumb">
+    <li>Настройки МИС</li>
+</ul>
+<div class="container">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Настройки
+        </div>
+        <div class="list-group">
+            <a href="{{ url_for('.htmc_html') }}" class="list-group-item">Квоты ВМП</a>
+            <div class="list-group-item">...</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

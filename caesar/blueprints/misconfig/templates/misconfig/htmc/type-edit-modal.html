@@ -1,0 +1,39 @@
+<div class="modal-header" xmlns="http://www.w3.org/1999/html">
+    <button type="button" class="close" ng-click="$dismiss()">&times;</button>
+    <h4 class="modal-title" id="myModalLabel">Тип квоты</h4>
+</div>
+<div class="modal-body">
+<form class="form-horizontal">
+  <div class="form-group">
+    <label for="group_code" class="col-sm-2 control-label">Номер группы</label>
+    <div class="col-sm-10">
+      <input ng-model="model.group_code" type="text" class="form-control" id="group_code" placeholder="Номер группы ВМП">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="code" class="col-sm-2 control-label">Код</label>
+    <div class="col-sm-10">
+      <input ng-model="model.code" type="text" class="form-control" id="code" placeholder="Код типа ВМП">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="name" class="col-sm-2 control-label">Наименование</label>
+    <div class="col-sm-10">
+      <textarea ng-model="model.name" class="form-control" id="name" placeholder="Наименование типа ВМП"></textarea>
+    </div>
+  </div>
+
+    <div class="form-group">
+      <label for="price" class="col-sm-2 control-label">Норматив финансовых затрат</label>
+      <div class="col-sm-10">
+        <input ng-model="model.price" type="text" class="form-control" id="price" placeholder="Норматив финансовых затрат">
+      </div>
+    </div>
+</form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-success" ng-click="$close(model)">Подтвердить</button>
+    <button type="button" class="btn btn-danger" ng-click="$dismiss()">Отмена</button>
+</div>

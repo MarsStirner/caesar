@@ -1,0 +1,32 @@
+<table class="table">
+<thead>
+<tr>
+    <th>Источник финансирования</th>
+    <th>Номер</th>
+    <th>Дата начала</th>
+    <th>Дата окончания</th>
+    <th>Приказ</th>
+    <th colspan="2">Комментарий</th>
+</tr>
+</thead>
+<tbody>
+<tr ng-repeat="profile in models.catalog_list">
+    <td>[[ profile.finance.name ]]</td>
+    <td>[[ profile.catalog_number ]]</td>
+    <td>[[ profile.beg_date ]]</td>
+    <td>[[ profile.end_date ]]</td>
+    <td>Приказ № [[ profile.document_number ]] от [[ profile.document_date  | asDate]]</td>
+    <td>[[ profile.comment ]]</td>
+    <td class="nowrap" width="1%">
+        <button class="btn btn-primary" ng-click="catalog.edit($index)"><i class="fa fa-pencil"></i></button>
+        <button class="btn btn-primary" ng-click="catalog.switch_to($index)"><i class="fa fa-list"></i></button>
+        <button class="btn btn-primary" ng-click="catalog.clone($index)" disabled><i class="fa fa-copy"></i></button>
+        <button class="btn btn-danger" ng-click="catalog.delete($index)"><i class="fa fa-trash"></i></button>
+    </td>
+</tr>
+<tr>
+    <td colspan="6"></td>
+    <td><button class="btn btn-success" ng-click="catalog.create()"><i class="fa fa-plus"></i></button></td>
+</tr>
+</tbody>
+</table>

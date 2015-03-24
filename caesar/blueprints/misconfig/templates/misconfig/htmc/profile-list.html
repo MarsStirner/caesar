@@ -1,0 +1,24 @@
+<table class="table">
+<thead>
+<tr>
+    <th>Код профиля</th>
+    <th colspan="2">Наименование</th>
+</tr>
+</thead>
+<tbody>
+<tr ng-repeat="pro in models.profile_list">
+    <td>[[ pro.code ]]</td>
+    <td>[[ pro.name ]]</td>
+    <td class="nowrap" width="1%">
+        <button class="btn btn-primary" ng-click="profile.edit($index)"><i class="fa fa-pencil"></i></button>
+        <button class="btn btn-primary" ng-click="profile.switch_to($index)"><i class="fa fa-list"></i></button>
+        <button class="btn btn-primary" ng-click="profile.clone($index)" disabled><i class="fa fa-copy"></i></button>
+        <button class="btn btn-danger" ng-click="profile.delete($index)"><i class="fa fa-trash"></i></button>
+    </td>
+</tr>
+<tr>
+    <td colspan="2"></td>
+    <td><button class="btn btn-success" ng-click="profile.create()"><i class="fa fa-plus"></i></button></td>
+</tr>
+</tbody>
+</table>
