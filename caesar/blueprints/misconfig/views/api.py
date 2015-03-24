@@ -62,7 +62,7 @@ def api_v1_quota_profile_get(catalog_id, _id=None):
             QuotaType.catalog_id == catalog_id,
             QuotaType.profile_code.is_(None),
             QuotaType.deleted == 0),
-        order=QuotaType.group_code
+        order=QuotaType.code
     )
 
 
@@ -109,10 +109,11 @@ def api_v1_quota_type_get(profile_id, _id=None):
     profile = obj.get_by_id(profile_id)
     if profile is None:
         raise ApiException(404, u'Значение с group_id={0} не найдено'.format(_id))
-    return obj.get_list(where=db.and_(QuotaType.catalog_id == profile.catalog_id,
-                                      QuotaType.profile_code == profile.code,
-                                      QuotaType.deleted == 0),
-                        order=QuotaType.id)
+    return obj.get_list(
+        where=db.and_(QuotaType.catalog_id == profile.catalog_id,
+                      QuotaType.profile_code == profile.code,
+                      QuotaType.deleted == 0),
+        order=QuotaType.id)
 
 
 @module.route('/api/v1/quota_type/<int:profile_id>', methods=['POST'])
@@ -157,8 +158,9 @@ def api_v1_quota_detail_get(quota_type_id, _id=None):
         if not data:
             raise ApiException(404, u'Значение с id={0} не найдено'.format(_id))
         return data
-    return obj.get_list(where=db.and_(VMPQuotaDetails.quotaType_id == quota_type_id),
-                        order=VMPQuotaDetails.id)
+    return obj.get_list(
+        where=db.and_(VMPQuotaDetails.quotaType_id == quota_type_id),
+        order=VMPQuotaDetails.id)
 
 
 @module.route('/api/v1/quota_detail/<int:quota_type_id>', methods=['POST'])
