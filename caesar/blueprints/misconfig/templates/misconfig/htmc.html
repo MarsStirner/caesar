@@ -4,16 +4,29 @@
 <div class="container-fluid" ng-controller="HTMCConfigCtrl" ng-cloak>
     <ul class="breadcrumb">
         <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
-        <li>ВМП</li>
+        <li ng-if="models.level == 0">Квоты ВМП</li>
+        <li ng-if="models.level > 0"><a ng-click="models.level = 0" href="#">
+        [[ models.catalog_selected.finance.name ]]
+        [[ models.catalog_selected.catalog_number ]]
+        [[ models.catalog_selected.document_corresp ]] № [[ models.catalog_selected.document_number ]] от [[ models.catalog_selected.document_date | asDate ]]
+        </a></li>
+        <li ng-if="models.level == 1">Профили</li>
+        <li ng-if="models.level > 1"><a ng-click="models.level = 1" href="#">Профили ([[ models.profile_selected.name ]])</a></li>
+        <li ng-if="models.level == 2">Виды</li>
+        <li ng-if="models.level > 2"><a ng-click="models.level = 2" href="#">Виды ([[ models.types_selected.code ]])</a></li>
+        <li ng-if="models.level == 3">Детали</li>
     </ul>
     <div ng-show="models.level == 0">{% include 'misconfig/htmc/catalog-list.html' %}</div>
-    <div ng-show="models.level == 1"></div>
-    <div ng-show="models.level == 2"></div>
-    <div ng-show="models.level == 3"></div>
+    <div ng-show="models.level == 1">{% include 'misconfig/htmc/profile-list.html' %}</div>
+    <div ng-show="models.level == 2">{% include 'misconfig/htmc/type-list.html' %}</div>
+    <div ng-show="models.level == 3">{% include 'misconfig/htmc/details-list.html' %}</div>
 </div>
 {% endblock %}
 
 {% block modules_js %}
 <script src="{{ url_for('.static', filename='js/htmc.js', v=version) }}"></script>
 <script type="text/ng-template" id="/caesar/misconfig/htmc/catalog-edit-modal.html">{% include "misconfig/htmc/catalog-edit-modal.html" %}</script>
+<script type="text/ng-template" id="/caesar/misconfig/htmc/profile-edit-modal.html">{% include "misconfig/htmc/profile-edit-modal.html" %}</script>
+<script type="text/ng-template" id="/caesar/misconfig/htmc/type-edit-modal.html">{% include "misconfig/htmc/type-edit-modal.html" %}</script>
+<script type="text/ng-template" id="/caesar/misconfig/htmc/details-edit-modal.html">{% include "misconfig/htmc/details-edit-modal.html" %}</script>
 {% endblock %}

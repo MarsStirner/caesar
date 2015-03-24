@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 from nemesis.systemwide import db
-from nemesis.models.exists import QuotaCatalog, QuotaType, VMPQuotaDetails
+from nemesis.models.exists import QuotaCatalog, QuotaType, VMPQuotaDetails, MKB
 from nemesis.models.utils import safe_current_user_id
 from nemesis.lib.utils import safe_traverse, safe_date
 
@@ -167,8 +167,8 @@ class QuotaDetailsWorker(BaseWorker):
 
         if 'patient_model' in data:
             obj.pacientModel_id = safe_traverse(data['patient_model'], 'id')
-        elif 'pacient_model_id' in data:
-            obj.pacientModel_id = data['pacient_model_id']
+        elif 'patient_model_id' in data:
+            obj.pacientModel_id = data['patient_model_id']
 
         if 'treatment' in data:
             obj.treatment_id = safe_traverse(data['treatment'], 'id')
@@ -179,5 +179,10 @@ class QuotaDetailsWorker(BaseWorker):
             obj.quotaType_id = safe_traverse(data['quota_type'], 'id')
         elif 'quota_type_id' in data:
             obj.quotaType_id = data['quota_type_id']
+
+        if 'mkb' in data and data['mkb']:
+            obj.mkb = MKB.query.filter(MKB.id.in_(
+                [mkb['id'] for mkb in data['mkb']]
+            )).order_by(MKB.DiagID).all()
 
         return obj

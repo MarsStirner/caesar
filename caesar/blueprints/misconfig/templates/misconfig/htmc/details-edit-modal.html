@@ -1,0 +1,34 @@
+<div class="modal-header" xmlns="http://www.w3.org/1999/html">
+    <button type="button" class="close" ng-click="$dismiss()">&times;</button>
+    <h4 class="modal-title" id="myModalLabel">Детали квоты</h4>
+</div>
+<div class="modal-body">
+<form class="form-horizontal">
+  <div class="form-group">
+    <label for="group_code" class="col-sm-2 control-label">МКБ</label>
+    <div class="col-sm-10">
+      <div refbook-multiselect ref-book="MKB" ng-model="model.mkb" items="$refBook.objects" limit="100" placeholder="Введите коды МКБ">
+        [[ item.code ]]
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="code" class="col-sm-2 control-label">Модель пациента</label>
+    <div class="col-sm-10">
+      <rb-select ref-book="rbPacientModel" ng-model="model.patient_model"></rb-select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="name" class="col-sm-2 control-label">Метод лечения</label>
+    <div class="col-sm-10">
+      <rb-select ref-book="rbTreatment" ng-model="model.treatment"></rb-select>
+    </div>
+  </div>
+</form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-success" ng-click="$close(model)">Подтвердить</button>
+    <button type="button" class="btn btn-danger" ng-click="$dismiss()">Отмена</button>
+</div>

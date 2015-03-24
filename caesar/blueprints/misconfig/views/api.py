@@ -57,10 +57,13 @@ def api_v1_quota_profile_get(catalog_id, _id=None):
         if not data:
             raise ApiException(404, u'Значение с id={0} не найдено'.format(_id))
         return data
-    return obj.get_list(where=db.and_(QuotaType.catalog_id == catalog_id,
-                                      QuotaType.group_code == None,
-                                      QuotaType.deleted == 0),
-                        order=QuotaType.group_code)
+    return obj.get_list(
+        where=db.and_(
+            QuotaType.catalog_id == catalog_id,
+            QuotaType.profile_code.is_(None),
+            QuotaType.deleted == 0),
+        order=QuotaType.group_code
+    )
 
 
 @module.route('/api/v1/quota_profile/<int:catalog_id>', methods=['POST'])
