@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from dateutil import parser
 from datetime import datetime
 from nemesis.systemwide import db
 from nemesis.models.exists import QuotaCatalog, QuotaType, VMPQuotaDetails
@@ -70,10 +69,10 @@ class QuotaCatalogWorker(BaseWorker):
 
     def _fill_obj(self, obj, data):
 
-        if 'finance_id' in data:
-            obj.finance_id = data['finance_id']
-        elif 'finance' in data:
+        if 'finance' in data:
             obj.finance_id = safe_traverse(data['finance'], 'id')
+        elif 'finance_id' in data:
+            obj.finance_id = data['finance_id']
 
         if 'create_datetime' in data and data['create_datetime']:
             obj.createDatetime = data['create_datetime']
@@ -88,10 +87,10 @@ class QuotaCatalogWorker(BaseWorker):
             obj.modifyPerson_id = data['modify_person_id']
 
         if 'beg_date' in data and data['beg_date']:
-            obj.begDate = parser.parse(data['beg_date']).date()
+            obj.begDate = data['beg_date'].date()
 
         if 'end_date' in data and data['end_date']:
-            obj.endDate = parser.parse(data['end_date']).date()
+            obj.endDate = data['end_date'].date()
 
         if 'catalog_number' in data:
             obj.catalogNumber = data['catalog_number']
@@ -100,7 +99,7 @@ class QuotaCatalogWorker(BaseWorker):
             obj.documentNumber = data['document_number']
 
         if 'document_date' in data:
-            obj.documentDate = parser.parse(data['document_date'])
+            obj.documentDate = data['document_date'].date()
 
         if 'document_corresp' in data:
             obj.documentCorresp = data['document_corresp']
@@ -121,13 +120,13 @@ class QuotaTypeWorker(BaseWorker):
             obj.catalog_id = safe_traverse(data['catalog'], 'id')
 
         if 'create_datetime' in data and data['create_datetime']:
-            obj.createDatetime = parser.parse(data['create_datetime'])
+            obj.createDatetime = data['create_datetime']
 
         if 'create_person_id' in data:
             obj.createPerson_id = data['create_person_id']
 
         if 'modify_datetime' in data and data['modify_datetime']:
-            obj.modifyDatetime = parser.parse(data['modify_datetime'])
+            obj.modifyDatetime = data['modify_datetime']
 
         if 'modify_person_id' in data:
             obj.modifyPerson_id = data['modify_person_id']
@@ -166,19 +165,19 @@ class QuotaDetailsWorker(BaseWorker):
 
     def _fill_obj(self, obj, data):
 
-        if 'pacient_model_id' in data:
+        if 'patient_model' in data:
+            obj.pacientModel_id = safe_traverse(data['patient_model'], 'id')
+        elif 'pacient_model_id' in data:
             obj.pacientModel_id = data['pacient_model_id']
-        elif 'pacient_model' in data:
-            obj.pacientModel_id = safe_traverse(data['pacient_model'], 'id')
 
-        if 'treatment_id' in data:
-            obj.treatment_id = data['treatment_id']
-        elif 'treatment' in data:
+        if 'treatment' in data:
             obj.treatment_id = safe_traverse(data['treatment'], 'id')
+        elif 'treatment_id' in data:
+            obj.treatment_id = data['treatment_id']
 
-        if 'quota_type_id' in data:
-            obj.quotaType_id = data['quota_type_id']
-        elif 'quota_type' in data:
+        if 'quota_type' in data:
             obj.quotaType_id = safe_traverse(data['quota_type'], 'id')
+        elif 'quota_type_id' in data:
+            obj.quotaType_id = data['quota_type_id']
 
         return obj
