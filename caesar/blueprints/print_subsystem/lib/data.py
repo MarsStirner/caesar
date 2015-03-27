@@ -217,3 +217,12 @@ class Print_Template(object):
         return {
             'event': event
         }
+
+    def context_risar_gravidograma(self, data):
+        event = None
+        if 'event_id' in data:
+            event_id = data['event_id']
+            event = g.printing_session.query(Event).get(event_id)
+        return {
+            'event': event
+        }
