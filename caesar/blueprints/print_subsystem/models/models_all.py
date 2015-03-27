@@ -2295,6 +2295,23 @@ class ClientQuoting(Info):
     version = Column(Integer, nullable=False)
 
     master = relationship(u'Client')
+    details = relationship('VMPQuotaDetails', lazy=False)
+
+    @property
+    def patientModel(self):
+        return self.details.patientModel
+
+    @property
+    def treatment(self):
+        return self.details.treatment
+
+    @property
+    def quotaType(self):
+        return self.details.quotaType
+
+    @property
+    def mkb(self):
+        return self.details.mkb
 
 
 class ClientQuotingdiscussion(Info):
@@ -3940,6 +3957,15 @@ class QuotaCatalog(Info):
     documentCorresp = Column(Unicode(256), nullable=True)
     comment = Column(UnicodeText, nullable=True)
 
+    finance = relationship('rbFinance', lazy=False)
+
+    def __unicode__(self):
+        return u'Приказ %s № %s от %s' % (
+            self.documentCorresp,
+            self.documentNumber,
+            self.documentNumber
+        )
+
 
 class QuotaType(Info):
     __tablename__ = u'QuotaType'
@@ -3960,8 +3986,18 @@ class QuotaType(Info):
     teenOlder = Column(Integer, nullable=False)
     price = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
 
+    catalog = relationship('QuotaCatalog', backref='quotaTypes')
+
     def __unicode__(self):
         return self.name
+
+
+class MKB_VMPQuotaFilter(Info):
+    __tablename__ = u'MKB_VMPQuotaFilter'
+
+    id = Column(Integer, primary_key=True)
+    MKB_id = Column(ForeignKey('MKB.id'), nullable=False, index=True)
+    quotaDetails_id = Column(ForeignKey('VMPQuotaDetails.id'), nullable=False, index=True)
 
 
 class VMPQuotaDetails(Info):
@@ -3972,13 +4008,13 @@ class VMPQuotaDetails(Info):
     treatment_id = Column(ForeignKey('rbTreatment.id'), nullable=False, index=True)
     quotaType_id = Column(ForeignKey('QuotaType.id'), nullable=False, index=True)
 
+    patientModel = relationship('rbPacientModel', lazy=False)
+    treatment = relationship('rbTreatment', lazy=False)
+    quotaType = relationship('QuotaType', lazy=False, backref='quotaDetails')
+    mkb = relationship('MKB', secondary=MKB_VMPQuotaFilter.__table__)
 
-class MKB_VMPQuotaFilter(Info):
-    __tablename__ = u'MKB_VMPQuotaFilter'
-
-    id = Column(Integer, primary_key=True)
-    MKB_id = Column(ForeignKey('MKB.id'), nullable=False, index=True)
-    quotaDetails_id = Column(ForeignKey('VMPQuotaDetails.id'), nullable=False, index=True)
+    def __unicode__(self):
+        return u'%s [%s]' % (self.treatment.name, self.patientModel.name)
 
 
 class Quoting(Info):
@@ -5387,9 +5423,6 @@ class Rbpacientmodel(RBInfo):
     code = Column(String(32), nullable=False)
     name = Column(Text, nullable=False)
 
-    def __init__(self):
-        RBInfo.__init__(self)
-
 
 class Rbpayrefusetype(RBInfo):
     __tablename__ = u'rbPayRefuseType'
@@ -5399,9 +5432,6 @@ class Rbpayrefusetype(RBInfo):
     name = Column(Unicode(128), nullable=False, index=True)
     finance_id = Column(Integer, nullable=False, index=True)
     rerun = Column(Integer, nullable=False)
-
-    def __init__(self):
-        RBInfo.__init__(self)
 
 
 class Rbpaytype(Info):
@@ -5420,9 +5450,6 @@ class Rbpolicytype(RBInfo):
     name = Column(Unicode(256), nullable=False, index=True)
     TFOMSCode = Column(String(8))
 
-    def __init__(self):
-        RBInfo.__init__(self)
-
 
 class Rbpost(RBInfo):
     __tablename__ = u'rbPost'
@@ -5434,9 +5461,6 @@ class Rbpost(RBInfo):
     key = Column(String(6), nullable=False, index=True)
     high = Column(String(6), nullable=False)
     flatCode = Column(String(65), nullable=False)
-
-    def __init__(self):
-        RBInfo.__init__(self)
 
 
 class Rbprinttemplate(Info):
@@ -5470,9 +5494,6 @@ class Rbreasonofabsence(RBInfo):
     code = Column(Unicode(8), nullable=False, index=True)
     name = Column(Unicode(64), nullable=False, index=True)
 
-    def __init__(self):
-        RBInfo.__init__(self)
-
 
 class Rbrelationtype(RBInfo):
     __tablename__ = u'rbRelationType'
@@ -5494,9 +5515,6 @@ class Rbrelationtype(RBInfo):
     regionalCode = Column(String(64), nullable=False)
     regionalReverseCode = Column(String(64), nullable=False)
 
-    def __init__(self):
-        RBInfo.__init__(self)
-
 
 class Rbrequesttype(RBInfo):
     __tablename__ = u'rbRequestType'
@@ -5505,9 +5523,6 @@ class Rbrequesttype(RBInfo):
     code = Column(String(16), nullable=False, index=True)
     name = Column(Unicode(64), nullable=False, index=True)
     relevant = Column(Integer, nullable=False, server_default=u"'1'")
-
-    def __init__(self):
-        RBInfo.__init__(self)
 
 
 class Rbresult(RBInfo):
@@ -5520,9 +5535,6 @@ class Rbresult(RBInfo):
     continued = Column(Integer, nullable=False)
     regionalCode = Column(String(8), nullable=False)
 
-    def __init__(self):
-        RBInfo.__init__(self)
-
 
 class Rbscene(RBInfo):
     __tablename__ = u'rbScene'
@@ -5531,9 +5543,6 @@ class Rbscene(RBInfo):
     code = Column(String(8), nullable=False, index=True)
     name = Column(Unicode(64), nullable=False, index=True)
     serviceModifier = Column(Unicode(128), nullable=False)
-
-    def __init__(self):
-        RBInfo.__init__(self)
 
 
 class Rbservice(RBInfo):
@@ -5562,9 +5571,6 @@ class Rbservice(RBInfo):
 
     medicalAidProfile = relationship(u'Rbmedicalaidprofile')
     rbMedicalKind = relationship(u'Rbmedicalkind')
-
-    def __init__(self):
-        RBInfo.__init__(self)
 
 
 class Rbserviceclas(Info):
@@ -5731,9 +5737,6 @@ class Rbspeciality(RBInfo):
     mkbFilter = Column(String(32), nullable=False)
     regionalCode = Column(String(16), nullable=False)
     quotingEnabled = Column(Integer, server_default=u"'0'")
-
-    def __init__(self):
-        RBInfo.__init__(self)
 
 
 class Rbstorage(Info):
