@@ -6,7 +6,7 @@ from nemesis.lib.apiutils import api_method, ApiException
 from nemesis.models.exists import QuotaCatalog, QuotaType, VMPQuotaDetails
 
 from ..app import module
-from ..lib.data import worker
+from ..lib.data import worker, WorkerException
 
 
 @module.route('/api/v1/quota_catalog', methods=['GET'])
@@ -41,7 +41,10 @@ def api_v1_quota_catalog_post(_id=None):
 @api_method
 def api_v1_quota_catalog_delete(_id):
     obj = worker(QuotaCatalog)
-    result = obj.delete(_id)
+    try:
+        result = obj.delete(_id)
+    except WorkerException as e:
+        raise ApiException(500, e)
     if result is None:
         raise ApiException(404, u'Значение с id={0} не найдено'.format(_id))
     return result
@@ -184,7 +187,10 @@ def api_v1_quota_detail_post(quota_type_id, _id=None):
 @api_method
 def api_v1_quota_detail_delete(quota_type_id, _id):
     obj = worker(VMPQuotaDetails)
-    result = obj.delete(_id)
+    try:
+        result = obj.delete(_id)
+    except WorkerException as e:
+        raise ApiException(500, e)
     if result is None:
         raise ApiException(404, u'Значение с id={0} не найдено'.format(_id))
     return result

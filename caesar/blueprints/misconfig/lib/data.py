@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
+from sqlalchemy import exc
 from nemesis.systemwide import db
 from nemesis.models.exists import QuotaCatalog, QuotaType, VMPQuotaDetails, MKB
 from nemesis.models.utils import safe_current_user_id
@@ -13,6 +14,18 @@ def worker(model):
         return QuotaTypeWorker(model)
     if model == VMPQuotaDetails:
         return QuotaDetailsWorker(model)
+
+
+class WorkerException(Exception):
+    """Исключение в работе с БД
+    :ivar code: код ответа и соответствующий код в метаданных
+    :ivar message: текстовое пояснение ошибки
+    """
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return u'%s' % self.message
 
 
 class BaseWorker(object):
@@ -59,9 +72,14 @@ class BaseWorker(object):
         obj = self.get_by_id(_id)
         if not obj:
             return None
-        # TODO: catch FK constraints
-        db.session.delete(obj)
-        db.session.commit()
+        try:
+            db.session.delete(obj)
+            db.session.commit()
+        except exc.IntegrityError as e:
+            db.session.rollback()
+            print(e)
+            raise WorkerException(
+                u'Ошибка удаления. Существуют непустые зависимости в БД, сначала необходимо удалить их.')
         return True
 
 
@@ -159,6 +177,15 @@ class QuotaTypeWorker(BaseWorker):
             obj.price = float(data['price'])
 
         return obj
+
+    def delete(self, _id):
+        try:
+            super(QuotaTypeWorker, self).delete(_id)
+        except WorkerException as e:
+            obj = self.get_by_id(_id)
+            obj.deleted = 1
+            db.session.commit()
+        return True
 
 
 class QuotaDetailsWorker(BaseWorker):
