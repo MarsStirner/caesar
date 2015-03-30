@@ -3957,7 +3957,7 @@ class QuotaCatalog(Info):
     documentCorresp = Column(Unicode(256), nullable=True)
     comment = Column(UnicodeText, nullable=True)
 
-    finance = relationship('rbFinance', lazy=False)
+    finance = relationship('Rbfinance', lazy=False)
 
     def __unicode__(self):
         return u'Приказ %s № %s от %s' % (
@@ -4008,10 +4008,10 @@ class VMPQuotaDetails(Info):
     treatment_id = Column(ForeignKey('rbTreatment.id'), nullable=False, index=True)
     quotaType_id = Column(ForeignKey('QuotaType.id'), nullable=False, index=True)
 
-    patientModel = relationship('rbPacientModel', lazy=False)
-    treatment = relationship('rbTreatment', lazy=False)
+    patientModel = relationship('Rbpacientmodel', lazy=False)
+    treatment = relationship('Rbtreatment', lazy=False)
     quotaType = relationship('QuotaType', lazy=False, backref='quotaDetails')
-    mkb = relationship('MKB', secondary=MKB_VMPQuotaFilter.__table__)
+    mkb = relationship('Mkb', secondary=MKB_VMPQuotaFilter.__table__)
 
     def __unicode__(self):
         return u'%s [%s]' % (self.treatment.name, self.patientModel.name)
