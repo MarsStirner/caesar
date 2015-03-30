@@ -2,11 +2,12 @@
 import sqlalchemy
 import sqlalchemy.orm.session
 from sqlalchemy.ext.declarative import declarative_base
+from config import SQLALCHEMY_DATABASE_URI
 
 __author__ = 'viruzzz-kun'
 
 
-db = sqlalchemy.create_engine('mysql://tmis:q1w2e3r4t5@10.1.2.11/hospital1?charset=utf8')
+db = sqlalchemy.create_engine(SQLALCHEMY_DATABASE_URI)
 session_maker = sqlalchemy.orm.session.sessionmaker(bind=db)
 
 Base = declarative_base()
