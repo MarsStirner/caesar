@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from nemesis.systemwide import db
 from .config import MODULE_NAME, RUS_NAME
 from flask import Blueprint, g
 
@@ -12,8 +13,7 @@ def module_name():
 
 @module.before_request
 def setup_database():
-    from .database import session_maker
-    g.printing_session = session_maker()
+    g.printing_session = db.session
     g.printing_session._model_changes = {}
 
 @module.after_request
