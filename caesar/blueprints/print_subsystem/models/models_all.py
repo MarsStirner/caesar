@@ -5356,7 +5356,7 @@ class Rbpacientmodel(RBInfo):
     name = Column(Text, nullable=False)
     quotaType_id = Column(ForeignKey('QuotaType.id'), nullable=False, index=True)
 
-    quotaType = relationship(u'Quotatype')
+    quotaType = relationship(u'QuotaType')
 
 
 class Rbpayrefusetype(RBInfo):
