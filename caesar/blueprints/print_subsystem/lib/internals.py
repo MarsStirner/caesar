@@ -29,7 +29,7 @@ def make_jinja_environment():
     from .filters import do_datetime_format, do_datetime_combine, do_datetime_add_days, do_sum_columns, \
         do_table_column, do_table_uniform, do_transpose_table
     env = Environment(
-        loader=FileSystemLoader('blueprints/print_subsystem/templates/print_subsystem'),
+        loader=FileSystemLoader('caesar/blueprints/print_subsystem/templates/print_subsystem'),
         finalize=finalizer,
     )
     env.filters.update({

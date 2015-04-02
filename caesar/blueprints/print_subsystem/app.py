@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-from nemesis.systemwide import db
+import sqlalchemy
+from sqlalchemy.orm.session import sessionmaker
 from .config import MODULE_NAME, RUS_NAME
 from flask import Blueprint, g
+from nemesis.app import app
 
 module = Blueprint(MODULE_NAME, __name__, template_folder='templates', static_folder='static')
 
@@ -13,7 +15,9 @@ def module_name():
 
 @module.before_request
 def setup_database():
-    g.printing_session = db.session
+    db = sqlalchemy.create_engine(app.config['SQLALCHEMY_DATABASE_URI'], pool_recycle=3600)
+    session_maker = sessionmaker(bind=db, autoflush=False, autocommit=False)
+    g.printing_session = session_maker()
     g.printing_session._model_changes = {}
 
 @module.after_request
