@@ -37,6 +37,15 @@ def api_v1_quota_catalog_post(_id=None):
     return result
 
 
+@module.route('/api/v1/quota_catalog/<int:_id>/clone', methods=['POST', 'GET'])
+@api_method
+def api_v1_quota_catalog_clone(_id):
+    obj = worker(QuotaCatalog)
+    result = obj.clone(_id)
+    if not result:
+        raise ApiException(404, u'Значение с id={0} не найдено'.format(_id))
+    return result
+
 @module.route('/api/v1/quota_catalog/<int:_id>', methods=['DELETE'])
 @api_method
 def api_v1_quota_catalog_delete(_id):

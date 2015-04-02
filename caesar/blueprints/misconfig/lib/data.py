@@ -16,6 +16,11 @@ def worker(model):
         return QuotaDetailsWorker(model)
 
 
+def transfer_fields(src, dst, names):
+    for name in names:
+        setattr(dst, name, getattr(src, name))
+
+
 class WorkerException(Exception):
     """Исключение в работе с БД
     :ivar code: код ответа и соответствующий код в метаданных
@@ -73,7 +78,7 @@ class BaseWorker(object):
         if not obj:
             return None
         try:
-            db.session.delete(obj)
+            db.session.execute(self.model.__table__.delete().where(self.model.id == _id))
             db.session.commit()
         except exc.IntegrityError as e:
             db.session.rollback()
@@ -126,6 +131,53 @@ class QuotaCatalogWorker(BaseWorker):
             obj.comment = data['comment']
 
         return obj
+
+    def clone(self, _id):
+        obj = self.get_by_id(_id)
+        now = datetime.now()
+
+        if not obj:
+            return
+
+        def clone_QC(qc):
+            new = QuotaCatalog()
+            new.createDatetime = new.modifyDatetime = now
+            new.createPerson_id = new.modifyPerson_id = safe_current_user_id()
+            transfer_fields(qc, new, ('begDate', 'endDate', 'documentNumber', 'documentDate', 'documentCorresp', 'finance', 'catalogNumber', 'comment'))
+            new.quotaTypes = [
+                clone_QT(qt, new)
+                for qt in qc.quotaTypes
+                if qt
+            ]
+            db.session.add(new)
+            return new
+
+        def clone_QT(qt, qc):
+            new = QuotaType()
+            new.createDatetime = new.modifyDatetime = now
+            new.createPerson_id = new.modifyPerson_id = safe_current_user_id()
+            new.catalog = qc
+            transfer_fields(qt, new, ('class_', 'profile_code', 'group_code', 'type_code', 'code', 'name', 'teenOlder', 'price'))
+            new.quotaDetails = [
+                clone_QD(qd, new)
+                for qd in qt.quotaDetails
+                if qd
+            ]
+            db.session.add(new)
+            return new
+
+        def clone_QD(qd, qt):
+            new = VMPQuotaDetails()
+            new.createDatetime = new.modifyDatetime = now
+            new.createPerson_id = new.modifyPerson_id = safe_current_user_id()
+            new.quota_type = qt
+            transfer_fields(qd, new, ('pacient_model', 'treatment', 'mkb'))
+            db.session.add(new)
+            return new
+
+        result = clone_QC(obj)
+        db.session.commit()
+        return result
 
 
 class QuotaTypeWorker(BaseWorker):

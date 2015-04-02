@@ -73,6 +73,17 @@ WebMis20
                 return self.fill(result);
             })
         };
+        QuotaClass.prototype.clone = function () {
+            var self = this,
+                object = _.pick(self, fields),
+                full_url = url;
+            if (master_field) { full_url = full_url + '/' + self[master_field] }
+            full_url = full_url + '/' + self.id + '/clone';
+            $log.info('Using "POST {0}" to save data'.format(full_url));
+            return wrapper('POST', full_url, undefined, {}).then(function (result) {
+                return new QuotaClass(result);
+            })
+        };
         QuotaClass.prototype.delete = function () {
             var self = this,
                 full_url = url;
@@ -189,15 +200,9 @@ WebMis20
             })
         };
         this.clone = function (index) {
-            get_edit_modal(function () {
-                var model = new klass($scope.models[base_list][index]);
-                model.id = null;
-                return model;
-            }).result.then(function (model) {
-                model.save().then(function (result) {
-                    $scope.models[base_list].push(result);
-                });
-            })
+            $scope.models[base_list][index].clone().then(function (result) {
+                $scope.models[base_list].push(result);
+            });
         };
         this.delete = function (index) {
             var obj = $scope.models[base_list][index];
