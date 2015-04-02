@@ -11,11 +11,10 @@
 <tr ng-repeat="d in models.details_list">
     <td>[[ d.mkb | pluck:'code' | join:', ' | default:'НЕТ' ]]</td>
     <td>[[ d.patient_model.name ]]</td>
-    <td>-</td>
+    <td>[[ d.treatment_type.name | default: '-' ]]</td>
     <td>[[ d.treatment.name ]]</td>
     <td class="nowrap" width="1%">
         <button class="btn btn-primary" ng-click="details.edit($index)"><i class="fa fa-pencil"></i></button>
-        <button class="btn btn-primary" ng-click="details.clone($index)" disabled><i class="fa fa-copy"></i></button>
         <button class="btn btn-danger" ng-click="details.delete($index)"><i class="fa fa-trash"></i></button>
     </td>
 </tr>

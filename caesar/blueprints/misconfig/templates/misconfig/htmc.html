@@ -2,6 +2,7 @@
 
 {% block content %}
 <div class="container-fluid" ng-controller="HTMCConfigCtrl" ng-cloak>
+    <alert-notify></alert-notify>
     <ul class="breadcrumb">
         <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
         <li ng-if="models.level == 0">Квоты ВМП</li>
@@ -10,11 +11,11 @@
         [[ models.catalog_selected.catalog_number ]]
         [[ models.catalog_selected.document_corresp ]] № [[ models.catalog_selected.document_number ]] от [[ models.catalog_selected.document_date | asDate ]]
         </a></li>
-        <li ng-if="models.level == 1">Профили</li>
+        <li ng-if="models.level == 1">Профили ВМП</li>
         <li ng-if="models.level > 1"><a ng-click="models.level = 1" href="#">Профили ([[ models.profile_selected.name ]])</a></li>
-        <li ng-if="models.level == 2">Виды</li>
+        <li ng-if="models.level == 2">Виды ВМП</li>
         <li ng-if="models.level > 2"><a ng-click="models.level = 2" href="#">Виды ([[ models.types_selected.code ]])</a></li>
-        <li ng-if="models.level == 3">Детали</li>
+        <li ng-if="models.level == 3">Детали квот</li>
     </ul>
     <div ng-show="models.level == 0">{% include 'misconfig/htmc/catalog-list.html' %}</div>
     <div ng-show="models.level == 1">{% include 'misconfig/htmc/profile-list.html' %}</div>

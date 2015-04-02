@@ -53,7 +53,7 @@ def api_v1_quota_catalog_delete(_id):
     try:
         result = obj.delete(_id)
     except WorkerException as e:
-        raise ApiException(500, e.message)
+        raise ApiException(418, e.message)
     if result is None:
         raise ApiException(404, u'Значение с id={0} не найдено'.format(_id))
     return result
@@ -199,7 +199,7 @@ def api_v1_quota_detail_delete(quota_type_id, _id):
     try:
         result = obj.delete(_id)
     except WorkerException as e:
-        raise ApiException(500, e.message)
+        raise ApiException(418, e.message)
     if result is None:
         raise ApiException(404, u'Значение с id={0} не найдено'.format(_id))
     return result

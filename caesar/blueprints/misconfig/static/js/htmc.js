@@ -136,7 +136,7 @@ WebMis20
         QuotaProfile
     )
 })
-.controller('HTMCConfigCtrl', function ($scope, $modal, QuotaCatalog, QuotaProfile, QuotaType, QuotaDetails) {
+.controller('HTMCConfigCtrl', function ($scope, $modal, QuotaCatalog, QuotaProfile, QuotaType, QuotaDetails, MessageBox) {
     $scope.models = {
         level: 0,
         catalog_list: [],
@@ -200,15 +200,23 @@ WebMis20
             })
         };
         this.clone = function (index) {
-            $scope.models[base_list][index].clone().then(function (result) {
-                $scope.models[base_list].push(result);
-            });
+            MessageBox.question('Копирование', 'Действительно копировать?').then(function (result) {
+                if (result) {
+                    $scope.models[base_list][index].clone().then(function (result) {
+                        $scope.models[base_list].push(result);
+                    })
+                }
+            })
         };
         this.delete = function (index) {
             var obj = $scope.models[base_list][index];
-            obj.set_master_id(current_master_id);
-            obj.delete().then(function () {
-                self.list(current_master_id);
+            MessageBox.question('Удаление', 'Действительно удалить?').then(function (result) {
+                if (result) {
+                    obj.set_master_id(current_master_id);
+                    obj.delete().then(function () {
+                        self.list(current_master_id);
+                    })
+                }
             })
         }
     };
