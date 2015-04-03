@@ -4,6 +4,7 @@
     <th>МКБ</th>
     <th>Модель пациента</th>
     <th>Вид лечения</th>
+    <th>Код метода лечения</th>
     <th colspan="2">Метод лечения</th>
 </tr>
 </thead>
@@ -12,6 +13,7 @@
     <td>[[ d.mkb | pluck:'code' | join:', ' | default:'НЕТ' ]]</td>
     <td>[[ d.patient_model.name ]]</td>
     <td>[[ d.treatment_type.name | default: '-' ]]</td>
+    <td>[[ d.treatment.code ]]</td>
     <td>[[ d.treatment.name ]]</td>
     <td class="nowrap" width="1%">
         <button class="btn btn-primary" ng-click="details.edit($index)"><i class="fa fa-pencil"></i></button>
@@ -19,7 +21,7 @@
     </td>
 </tr>
 <tr>
-    <td colspan="4"></td>
+    <td colspan="5"></td>
     <td><button class="btn btn-success" ng-click="details.create()"><i class="fa fa-plus"></i></button></td>
 </tr>
 </tbody>
