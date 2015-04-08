@@ -264,4 +264,7 @@ class QuotaDetailsWorker(BaseWorker):
                 [mkb['id'] for mkb in data['mkb']]
             )).order_by(MKB.DiagID).all()
 
+        if 'price' in data:
+            obj.price = data['price']
+
         return obj
