@@ -105,7 +105,7 @@ WebMis20
     var quota_detail_url = '/misconfig/api/v1/quota_detail';
     return QuotaClass(
         quota_detail_url,
-        ['id','quota_type_id','patient_model','treatment', 'mkb'],
+        ['id','quota_type_id','patient_model','treatment', 'mkb', 'price'],
         'quota_type_id'
     )
 })
@@ -159,21 +159,24 @@ WebMis20
         var self = this,
             base_list = '{0}_list'.format(base_name),
             base_selected = '{0}_selected'.format(base_name),
+            current_master,
             current_master_id;
         self.level = level;
         if (!_.isUndefined(child_ui)) {
             this.switch_to = function (index) {
                 var object = $scope.models[base_list][index];
                 $scope.models[base_selected] = object;
-                child_ui.list(object.id).then(function (result) {
+                child_ui.list(object).then(function (result) {
                     $scope.models.level = child_ui.level;
                 })
             }
         }
-        this.list = function (master_id) {
-            current_master_id = master_id;
-            return klass.all(master_id).then(function (result) {
+        this.list = function (master) {
+            current_master = master;
+            current_master_id = (master)?(master.id):(undefined);
+            return klass.all(current_master_id).then(function (result) {
                 $scope.models[base_list] = result;
+                if (master) { result.forEach(function (item) { item._master = master }) }
                 return result;
             })
         };
@@ -181,6 +184,7 @@ WebMis20
             get_edit_modal(function () {
                 var obj = new klass();
                 obj.set_master_id(current_master_id);
+                if (obj instanceof QuotaDetails) {obj.price = current_master.price}
                 return obj;
             }).result.then(function (model) {
                 model.save().then(function (result) {
@@ -192,6 +196,7 @@ WebMis20
             get_edit_modal(function () {
                 var obj = new klass($scope.models[base_list][index]);
                 obj.set_master_id(current_master_id);
+                if (obj instanceof QuotaDetails && !obj.price) {obj.price = current_master.price}
                 return obj;
             }).result.then(function (model) {
                 model.save().then(function (result) {
@@ -214,7 +219,7 @@ WebMis20
                 if (result) {
                     obj.set_master_id(current_master_id);
                     obj.delete().then(function () {
-                        self.list(current_master_id);
+                        self.list(current_master);
                     })
                 }
             })
