@@ -1,7 +1,19 @@
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    {% include '_header.html' %}
+{#    {% include '_header.html' %}#}
+    <meta charset="utf-8">
+    <title>Система администрирования ЛПУ {% block title %}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <link href="{{ url_for('.static', filename='bootstrap/css/bootstrap.min.css') }}" media="screen, print" rel="stylesheet">
+    <link href="{{ url_for('.static', filename='bootstrap/css/bootstrap-responsive.min.css') }}" media="screen, print" rel="stylesheet">
+    <link href="{{ url_for('.static', filename='css/style.css') }}" rel="stylesheet">
+{#    <link href="{{ url_for('.static', filename='css/introjs.css') }}" rel="stylesheet">#}
+
+
     {% block modules_css %}
         <style>
         #wrap > #container {
@@ -21,7 +33,14 @@
    </div> <!-- /container -->
    <div id="push"></div>
   </div>
-  {% include '_footer.html' %}
+{#  {% include '_footer.html' %}#}
+
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="{{ url_for('.static', filename='jquery-ui/js/jquery-1.10.2.js') }}"></script>
+  <script src="{{ url_for('.static', filename='js/script.js') }}"></script>
+<script src="{{ url_for('.static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+{#<script src="{{ url_for('.static', filename='js/intro.js') }}"></script>#}
+{#<script src="{{ url_for('.static', filename='js/help.js') }}"></script>#}
   {% block modules_js %}{% endblock %}
 
   </body>

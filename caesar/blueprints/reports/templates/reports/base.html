@@ -6,13 +6,13 @@
 
 <link href="{{ url_for('.static', filename='css/style.css') }}" media="screen" rel="stylesheet">
 <link href="{{ url_for('.static', filename='css/print.css') }}" media="print" rel="stylesheet">
-<link href="{{ url_for('static', filename='jquery-ui/css/cupertino/jquery-ui-1.10.2.custom.min.css') }}" rel="stylesheet">
+<link href="{{ url_for('.static', filename='jquery-ui/css/cupertino/jquery-ui-1.10.4.custom.min.css') }}" rel="stylesheet">
 {% endblock %}
 
 {% block modules_js %}
     {{ super() }}
-    <script src="{{ url_for('static', filename='jquery-ui/js/jquery-ui-1.10.2.custom.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='jquery-ui/js/i18n/jquery.ui.datepicker-ru.js') }}"></script>
+    <script src="{{ url_for('.static', filename='jquery-ui/js/jquery-ui-1.10.4.custom.min.js') }}"></script>
+    <script src="{{ url_for('.static', filename='jquery-ui/js/i18n/jquery.ui.datepicker-ru.js') }}"></script>
     <script src="{{ url_for('.static', filename='js/script.js') }}"></script>
     <script type="text/javascript">
     $(function() {
