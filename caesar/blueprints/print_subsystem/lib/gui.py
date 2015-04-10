@@ -56,7 +56,7 @@ def applyTemplate(templateId, data):
             'trace': '',
         })
     try:
-        return renderTemplate(template_data.templateText, data)
+        return renderTemplate(template_data.templateText, data, template_data.render)
     except TemplateSyntaxError, e:
         print e
         logging.error('syntax error in template id = %s', templateId, exc_info=True)
