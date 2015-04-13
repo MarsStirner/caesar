@@ -5,6 +5,7 @@
     <th>Модель пациента</th>
     <th>Вид лечения</th>
     <th>Код метода лечения</th>
+    <th>Стоимость</th>
     <th colspan="2">Метод лечения</th>
 </tr>
 </thead>
@@ -15,13 +16,14 @@
     <td>[[ d.treatment_type.name | default: '-' ]]</td>
     <td>[[ d.treatment.code ]]</td>
     <td>[[ d.treatment.name ]]</td>
+    <td>[[ d.price ]]</td>
     <td class="nowrap" width="1%">
         <button class="btn btn-primary" ng-click="details.edit($index)"><i class="fa fa-pencil"></i></button>
         <button class="btn btn-danger" ng-click="details.delete($index)"><i class="fa fa-trash"></i></button>
     </td>
 </tr>
 <tr>
-    <td colspan="5"></td>
+    <td colspan="6"></td>
     <td><button class="btn btn-success" ng-click="details.create()"><i class="fa fa-plus"></i></button></td>
 </tr>
 </tbody>
