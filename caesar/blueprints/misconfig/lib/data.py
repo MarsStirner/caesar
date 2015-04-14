@@ -171,7 +171,7 @@ class QuotaCatalogWorker(BaseWorker):
             new.createDatetime = new.modifyDatetime = now
             new.createPerson_id = new.modifyPerson_id = safe_current_user_id()
             new.quota_type = qt
-            transfer_fields(qd, new, ('pacient_model', 'treatment', 'mkb'))
+            transfer_fields(qd, new, ('pacient_model', 'treatment', 'mkb', 'price'))
             db.session.add(new)
             return new
 

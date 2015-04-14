@@ -176,7 +176,13 @@ WebMis20
             current_master_id = (master)?(master.id):(undefined);
             return klass.all(current_master_id).then(function (result) {
                 $scope.models[base_list] = result;
-                if (master) { result.forEach(function (item) { item._master = master }) }
+                if (master) { result.forEach(function (item) {
+                    item._master = master;
+                    // Ещё один костыль
+                    if (item instanceof QuotaDetails && !item.price) {
+                        item.price = master.price;
+                    }
+                }) }
                 return result;
             })
         };
@@ -184,6 +190,7 @@ WebMis20
             get_edit_modal(function () {
                 var obj = new klass();
                 obj.set_master_id(current_master_id);
+                // Костыль
                 if (obj instanceof QuotaDetails) {obj.price = current_master.price}
                 return obj;
             }).result.then(function (model) {
@@ -196,6 +203,7 @@ WebMis20
             get_edit_modal(function () {
                 var obj = new klass($scope.models[base_list][index]);
                 obj.set_master_id(current_master_id);
+                // Костыль
                 if (obj instanceof QuotaDetails && !obj.price) {obj.price = current_master.price}
                 return obj;
             }).result.then(function (model) {
