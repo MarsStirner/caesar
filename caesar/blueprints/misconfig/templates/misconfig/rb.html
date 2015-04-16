@@ -1,0 +1,62 @@
+{% extends 'misconfig/base.html' %}
+
+{% block content %}
+<div class="container-fluid" ng-controller="RBConfigCtrl" ng-cloak>
+    <alert-notify></alert-notify>
+    <ul class="breadcrumb">
+        <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
+        <li ng-if="!model.selected_rb">Базовые справочники</li>
+        <li ng-if="model.selected_rb"><a ng-click="gotoIndex()">Базовые справочники</a></li>
+        <li ng-if="model.selected_rb">[[ model.selected_rb.desc ]]</li>
+    </ul>
+
+    <div class="row">
+    <div class="col-md-3">
+        <div class="list-group">
+            <a href="#" class="list-group-item" ng-repeat="rb_item in RbList.items" title="[[rb_item.name]]"
+                ng-click="select_rb(rb_item)" ng-class="{'active': isSelected(rb_item.name)}">
+                [[ rb_item.desc ]]
+            </a>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <table class="table" ng-if="model.rb_list.length">
+        <thead>
+        <tr>
+            <th>id</th>
+            <th>Код</th>
+            <th>Наименование</th>
+            <th>Удалено</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="item in model.rb_list" ng-class="{'bg-danger': item.deleted}">
+            <td>[[ item.id ]]</td>
+            <td>[[ item.code ]]</td>
+            <td>[[ item.name ]]</td>
+            <td>[[ item.deleted ]]</td>
+            <td class="nowrap" width="1%">
+                <button type="button" class="btn btn-primary" ng-click="edit($index)" title="Редактировать">
+                    <i class="fa fa-pencil"></i></button>
+                <button type="button" class="btn btn-danger" ng-click="remove($index)" title="Удалить">
+                    <i class="fa fa-trash"></i></button>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4"></td>
+            <td><button type="button" class="btn btn-success" ng-click="create_new(model.selected_rb)"
+                title="Добавить запись">
+                <i class="fa fa-plus"></i></button>
+            </td>
+        </tr>
+        </tbody>
+        </table>
+    </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modules_js %}
+<script src="{{ url_for('.static', filename='js/rb.js', v=version) }}"></script>
+<script type="text/ng-template" id="/caesar/misconfig/htmc/rb-edit-modal.html">{% include "misconfig/htmc/rb-edit-modal.html" %}</script>
+{% endblock %}

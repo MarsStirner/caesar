@@ -13,3 +13,8 @@ def index_html():
 @module.route('/htmc/')
 def htmc_html():
     return render_template('misconfig/htmc.html')
+
+
+@module.route('/rb/')
+def rb_html():
+    return render_template('misconfig/rb.html')

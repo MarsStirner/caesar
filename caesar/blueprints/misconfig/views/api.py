@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+import sys
+
 from flask import request
 
 from nemesis.systemwide import db
 from nemesis.lib.apiutils import api_method, ApiException
-from nemesis.models.exists import QuotaCatalog, QuotaType, VMPQuotaDetails
+from nemesis.models.exists import QuotaCatalog, QuotaType, VMPQuotaDetails, rbPacientModel, rbTreatment, rbTreatmentType
 
 from ..app import module
 from ..lib.data import worker, WorkerException
@@ -203,3 +205,82 @@ def api_v1_quota_detail_delete(quota_type_id, _id):
     if result is None:
         raise ApiException(404, u'Значение с id={0} не найдено'.format(_id))
     return result
+
+
+supported_rbs = {
+    'rbPacientModel': rbPacientModel,
+    'rbTreatment': rbTreatment,
+    'rbTreatmentType': rbTreatmentType
+}
+
+
+@module.route('/api/v1/rb/list/', methods=['GET'])
+@api_method
+def api_v1_rb_list_get():
+    return {
+        'supported_rbs': sorted([
+            dict(name=t.__tablename__, desc=t._table_description)
+            for t_name, t in supported_rbs.iteritems()
+        ], key=lambda k: k['desc'])
+    }
+
+
+@module.route('/api/v1/rb/<name>/', methods=['GET'])
+@api_method
+def api_v1_rb_simple_get(name):
+    rbClass = getattr(sys.modules[__name__], name, None)
+    if not rbClass:
+        raise ApiException(404, u'Не найден справочник по наименованию {0}'.format(name))
+
+    def make_rb(item):
+        r = {
+            'id': item.id,
+            'code': item.code,
+            'name': item.name
+        }
+        if hasattr(item, 'deleted'):
+            r['deleted'] = item.deleted
+        return r
+
+    return {
+        'items': map(make_rb, rbClass.query)
+    }
+
+
+@module.route('/api/v1/rb/<name>/', methods=['POST'])
+@module.route('/api/v1/rb/<name>/<int:item_id>/', methods=['POST'])
+@api_method
+def api_v1_rb_simple_post(name, item_id=None):
+    rbClass = getattr(sys.modules[__name__], name, None)
+    if not rbClass:
+        raise ApiException(404, u'Не найден справочник по наименованию {0}'.format(name))
+    data = request.get_json()
+
+    if item_id:
+        item = rbClass.query.get(item_id)
+    else:
+        item = rbClass()
+    item.code = data['code']
+    item.name = data['name']
+    db.session.add(item)
+    db.session.commit()
+
+    return item
+
+
+@module.route('/api/v1/rb/<name>/<int:item_id>/', methods=['DELETE'])
+@api_method
+def api_v1_rb_simple_delete(name, item_id):
+    rbClass = getattr(sys.modules[__name__], name, None)
+    if not rbClass:
+        raise ApiException(404, u'Не найден справочник по наименованию {0}'.format(name))
+
+    item = rbClass.query.get(item_id)
+    if hasattr(item, 'deleted'):
+        item.deleted = 1
+        db.session.add(item)
+        db.session.commit()
+
+        return item
+    else:
+        raise ApiException(404, u'Физическое удаление записей не реализовано')
