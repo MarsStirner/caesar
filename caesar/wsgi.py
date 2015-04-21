@@ -68,4 +68,4 @@ app.register_blueprint(tfoms_module, url_prefix='/tfoms')
 app.register_blueprint(misconfig_module, url_prefix='/misconfig')
 
 if __name__ == "__main__":
-    app.run()
+    app.run(port=app.config['SERVER_PORT'])
