@@ -12,7 +12,7 @@
 <br>
 {%- endmacro %}
 
-{% macro print_diagnoses(diagnoses) %}
+{% macro print_diagnoses_table(diagnoses) %}
 <table>
     <thead>
         <tr>
@@ -37,4 +37,21 @@
         {% endfor %}
     </tbody>
 </table>
+{%- endmacro %}
+
+{% macro print_diagnoses(diagnoses) %}
+    {% for diagnosis in diagnoses %}
+        {% if diagnosis %}
+            <tr>
+                <td>
+                    <b>Диагноз:</b> {{diagnosis}}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <b>Клинчиеское описание:</b> {{diagnosis.diagnosis_description}}
+                </td>
+            </tr>
+        {% endif %}
+    {% endfor %}
 {%- endmacro %}

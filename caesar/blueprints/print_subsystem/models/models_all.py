@@ -1592,7 +1592,7 @@ class Client(Info):
 
     @property
     def work(self):
-        return self.works[0]
+        return self.works[0] if self.works else Clientwork()
 
     @property
     def ageTuple(self):
