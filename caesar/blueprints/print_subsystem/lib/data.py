@@ -173,7 +173,7 @@ class Print_Template(object):
         if 'payments_id_list' in data:
             operations = g.printing_session.query(EventPayment).filter(
                 EventPayment.id.in_(data['payments_id_list'])
-            ).order_by(EventPayment.date.desc(), EventPayment.id.desc()).all()
+            ).order_by(EventPayment.date, EventPayment.id).all()
             metrics = get_metrics()
         return {
             'operations': operations,
