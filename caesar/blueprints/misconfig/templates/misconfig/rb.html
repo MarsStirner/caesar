@@ -20,7 +20,7 @@
         </div>
     </div>
     <div class="col-md-9">
-        <table class="table" ng-if="model.rb_list.length">
+        <table class="table" ng-if="item_list.length">
         <thead>
         <tr>
             <th>id</th>
@@ -30,7 +30,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr ng-repeat="item in model.rb_list" ng-class="{'bg-danger': item.deleted}">
+        <tr ng-repeat="item in item_list" ng-class="{'bg-danger': item.deleted}">
             <td>[[ item.id ]]</td>
             <td>[[ item.code ]]</td>
             <td>[[ item.name ]]</td>
@@ -44,7 +44,7 @@
         </tr>
         <tr>
             <td colspan="4"></td>
-            <td><button type="button" class="btn btn-success" ng-click="create_new(model.selected_rb)"
+            <td><button type="button" class="btn btn-success" ng-click="create_new()"
                 title="Добавить запись">
                 <i class="fa fa-plus"></i></button>
             </td>
@@ -57,6 +57,8 @@
 {% endblock %}
 
 {% block modules_js %}
+{{ super() }}
 <script src="{{ url_for('.static', filename='js/rb.js', v=version) }}"></script>
-<script type="text/ng-template" id="/caesar/misconfig/htmc/rb-edit-modal.html">{% include "misconfig/htmc/rb-edit-modal.html" %}</script>
+<script type="text/ng-template" id="/caesar/misconfig/refbook/simple-rb-edit-modal.html">{% include "misconfig/refbook/simple-rb-edit-modal.html" %}</script>
+<script type="text/ng-template" id="/caesar/misconfig/refbook/rbTreatment-edit-modal.html">{% include "misconfig/refbook/rbTreatment-edit-modal.html" %}</script>
 {% endblock %}

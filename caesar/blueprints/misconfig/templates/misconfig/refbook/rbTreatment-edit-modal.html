@@ -1,0 +1,35 @@
+<div class="modal-header" xmlns="http://www.w3.org/1999/html">
+    <button type="button" class="close" ng-click="$dismiss()">&times;</button>
+    <h4 class="modal-title" id="myModalLabel">Справочник</h4>
+</div>
+<div class="modal-body">
+<form class="form-horizontal">
+
+  <div class="form-group">
+    <label for="code" class="col-sm-2 control-label">Код</label>
+    <div class="col-sm-10">
+      <input ng-model="model.code" type="text" class="form-control" id="code" placeholder="Код">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="name" class="col-sm-2 control-label">Наименование</label>
+    <div class="col-sm-10">
+      <textarea ng-model="model.name" class="form-control" id="name" placeholder="Наименование"></textarea>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="treatment_type" class="col-sm-2 control-label">Вид лечения</label>
+    <div class="col-sm-10">
+      <rb-select ng-model="model.treatment_type" ref-book="rbTreatmentType"
+        id="treatment_type" placeholder="Вид лечения"></rb-select>
+    </div>
+  </div>
+
+</form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-success" ng-click="$close(model)">Подтвердить</button>
+    <button type="button" class="btn btn-danger" ng-click="$dismiss()">Отмена</button>
+</div>
