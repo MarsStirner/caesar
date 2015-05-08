@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import request
-from nemesis.lib.utils import safe_dict, safe_traverse
+from nemesis.lib.utils import safe_dict, safe_traverse, get_new_uuid
 
 from nemesis.systemwide import db
 from nemesis.lib.apiutils import api_method, ApiException
@@ -338,6 +338,30 @@ class OrganisationModelManager(BaseModelManager):
             'kladr_locality': 'kladr_locality.code',
         }
         super(OrganisationModelManager, self).__init__(Organisation, fm)
+
+    def create(self, data):
+        item = super(OrganisationModelManager, self).create(data)
+        item.obsoleteInfisCode = ''
+        item.OKVED = ''
+        item.INN = ''
+        item.KPP = ''
+        item.OGRN = ''
+        item.OKATO = ''
+        item.OKPF_code = ''
+        item.OKFS_code = 0
+        item.OKPO = ''
+        item.FSS = ''
+        item.region = ''
+        item.chief = ''
+        item.accountant = ''
+        item.notes = ''
+        item.miacCode = ''
+        item.obsoleteInfisCode = ''
+        item.obsoleteInfisCode = ''
+        item.obsoleteInfisCode = ''
+        item.obsoleteInfisCode = ''
+        item.uuid = get_new_uuid()
+        return item
 
 
 @module.route('/api/v1/rb/<name>/', methods=['GET'])
