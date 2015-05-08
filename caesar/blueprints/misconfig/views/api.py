@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-import sys
 
 from flask import request
+from nemesis.lib.utils import safe_dict, safe_traverse, get_new_uuid
 
 from nemesis.systemwide import db
 from nemesis.lib.apiutils import api_method, ApiException
-from nemesis.models.exists import QuotaCatalog, QuotaType, VMPQuotaDetails, rbPacientModel, rbTreatment, rbTreatmentType
+from nemesis.models.exists import QuotaCatalog, QuotaType, VMPQuotaDetails, rbPacientModel, rbTreatment, rbTreatmentType, \
+    Organisation, rbFinance
 
 from ..app import module
 from ..lib.data import worker, WorkerException
@@ -207,11 +208,21 @@ def api_v1_quota_detail_delete(quota_type_id, _id):
     return result
 
 
-supported_rbs = {
+all_rbs = {
     'rbPacientModel': rbPacientModel,
     'rbTreatment': rbTreatment,
-    'rbTreatmentType': rbTreatmentType
+    'rbTreatmentType': rbTreatmentType,
+    'rbFinance': rbFinance,
+    'Organisation': Organisation
 }
+
+basic_rbs = [
+    'rbPacientModel', 'rbTreatment', 'rbTreatmentType', 'rbFinance',
+]
+
+simple_rbs = [
+    'rbPacientModel', 'rbTreatmentType', 'rbFinance',
+]
 
 
 @module.route('/api/v1/rb/list/', methods=['GET'])
@@ -219,68 +230,175 @@ supported_rbs = {
 def api_v1_rb_list_get():
     return {
         'supported_rbs': sorted([
-            dict(name=t.__tablename__, desc=t._table_description)
-            for t_name, t in supported_rbs.iteritems()
+            dict(
+                name=t.__tablename__,
+                desc=getattr(t, '_table_description', t.__tablename__),
+                is_simple=(t_name in simple_rbs)
+            )
+            for t_name, t in all_rbs.iteritems() if t_name in basic_rbs
         ], key=lambda k: k['desc'])
     }
 
 
+def get_manager(name):
+    if name in simple_rbs:
+        return SimpleRefBookModelManager(all_rbs[name])
+    elif name == 'rbTreatment':
+        return RbTreatmentModelManager()
+    elif name == 'Organisation':
+        return OrganisationModelManager()
+
+
+def reverse_dict(d):
+    return dict((v, k) for k, v in d.iteritems())
+
+
+class BaseModelManager(object):
+    def __init__(self, model, fields_map):
+        self._model = model
+        self._fields_map = fields_map
+        self._reverse_fields_map = reverse_dict(fields_map)
+
+    def get_by_id(self, item_id):
+        return self._model.query.get(item_id)
+
+    def get_list(self):
+        return self._model.query.all()
+
+    def fill(self, item, data):
+        for m_field, d_field in self._fields_map.iteritems():
+            setattr(item, m_field, safe_traverse(data, *d_field.split('.')))
+        return item
+
+    def create(self, data):
+        item = self._model()
+        self.fill(item, data)
+        return item
+
+    def update(self, item_id, data):
+        item = self.get_by_id(item_id)
+        self.fill(item, data)
+        return item
+
+    def delete(self, item_id):
+        item = self.get_by_id(item_id)
+        if hasattr(item, 'deleted'):
+            item.deleted = 1
+        return item
+
+    def store(self, *args):
+        db.session.add_all(args)
+        try:
+            db.session.commit()
+        except Exception, e:
+            raise
+        return True
+
+    def represent(self, item):
+        result = {}
+        for d_field, m_field in self._reverse_fields_map.iteritems():
+            d_field = d_field.split('.')[0]
+            result[d_field] = safe_dict(getattr(item, m_field))
+        return result
+
+
+class SimpleRefBookModelManager(BaseModelManager):
+    def __init__(self, model, additional_fields=None):
+        fm = {
+            'id': 'id',
+            'code': 'code',
+            'name': 'name'
+        }
+        if hasattr(model, 'deleted'):
+            fm['deleted'] = 'deleted'
+        if isinstance(additional_fields, dict):
+            fm.update(additional_fields)
+        super(SimpleRefBookModelManager, self).__init__(model, fm)
+
+
+class RbTreatmentModelManager(SimpleRefBookModelManager):
+    def __init__(self):
+        super(RbTreatmentModelManager, self).__init__(rbTreatment, {
+            'treatment_type': 'treatment_type.id'
+        })
+
+
+class OrganisationModelManager(BaseModelManager):
+    def __init__(self):
+        fm = {
+            'id': 'id',
+            'fullName': 'full_name',
+            'shortName': 'short_name',
+            'title': 'title',
+            'infisCode': 'infis',
+            'is_insurer': 'is_insurer',
+            'is_hospital': 'is_hospital',
+            'Address': 'address',
+            'phone': 'phone',
+            'kladr_locality': 'kladr_locality.code',
+        }
+        super(OrganisationModelManager, self).__init__(Organisation, fm)
+
+    def create(self, data):
+        item = super(OrganisationModelManager, self).create(data)
+        item.obsoleteInfisCode = ''
+        item.OKVED = ''
+        item.INN = ''
+        item.KPP = ''
+        item.OGRN = ''
+        item.OKATO = ''
+        item.OKPF_code = ''
+        item.OKFS_code = 0
+        item.OKPO = ''
+        item.FSS = ''
+        item.region = ''
+        item.chief = ''
+        item.accountant = ''
+        item.notes = ''
+        item.miacCode = ''
+        item.obsoleteInfisCode = ''
+        item.obsoleteInfisCode = ''
+        item.obsoleteInfisCode = ''
+        item.obsoleteInfisCode = ''
+        item.uuid = get_new_uuid()
+        return item
+
+
 @module.route('/api/v1/rb/<name>/', methods=['GET'])
 @api_method
-def api_v1_rb_simple_get(name):
-    rbClass = getattr(sys.modules[__name__], name, None)
-    if not rbClass:
+def api_v1_rb_get(name):
+    if name not in all_rbs:
         raise ApiException(404, u'Не найден справочник по наименованию {0}'.format(name))
-
-    def make_rb(item):
-        r = {
-            'id': item.id,
-            'code': item.code,
-            'name': item.name
-        }
-        if hasattr(item, 'deleted'):
-            r['deleted'] = item.deleted
-        return r
-
+    mng = get_manager(name)
     return {
-        'items': map(make_rb, rbClass.query)
+        'items': map(mng.represent, mng.get_list())
     }
 
 
 @module.route('/api/v1/rb/<name>/', methods=['POST'])
 @module.route('/api/v1/rb/<name>/<int:item_id>/', methods=['POST'])
 @api_method
-def api_v1_rb_simple_post(name, item_id=None):
-    rbClass = getattr(sys.modules[__name__], name, None)
-    if not rbClass:
+def api_v1_rb_post(name, item_id=None):
+    if name not in all_rbs:
         raise ApiException(404, u'Не найден справочник по наименованию {0}'.format(name))
+    mng = get_manager(name)
     data = request.get_json()
 
     if item_id:
-        item = rbClass.query.get(item_id)
+        item = mng.update(item_id, data)
     else:
-        item = rbClass()
-    item.code = data['code']
-    item.name = data['name']
-    db.session.add(item)
-    db.session.commit()
-
-    return item
+        item = mng.create(data)
+    mng.store(item)
+    return mng.represent(item)
 
 
 @module.route('/api/v1/rb/<name>/<int:item_id>/', methods=['DELETE'])
 @api_method
-def api_v1_rb_simple_delete(name, item_id):
-    rbClass = getattr(sys.modules[__name__], name, None)
-    if not rbClass:
+def api_v1_rb_delete(name, item_id):
+    if name not in all_rbs:
         raise ApiException(404, u'Не найден справочник по наименованию {0}'.format(name))
 
-    item = rbClass.query.get(item_id)
-    if hasattr(item, 'deleted'):
-        item.deleted = 1
-        db.session.add(item)
-        db.session.commit()
-
-        return item
-    else:
-        raise ApiException(404, u'Физическое удаление записей не реализовано')
+    mng = get_manager(name)
+    result = mng.delete(item_id)
+    mng.store()
+    return result

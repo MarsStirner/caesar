@@ -18,3 +18,8 @@ def htmc_html():
 @module.route('/rb/')
 def rb_html():
     return render_template('misconfig/rb.html')
+
+
+@module.route('/org/')
+def org_html():
+    return render_template('misconfig/org.html')
