@@ -303,19 +303,11 @@ class Action(Info):
 
     @property
     def service(self):
-        # пока отключено, т.к. по процессу не используется в амбулатории
-
-        # finance = self.finance
-        # if finance:
-        #     if not hasattr(self, '_finance_service'):
-        #         _finance_service = g.printing_session.query(ActiontypeService).filter(
-        #             ActiontypeService.master_id == self.actionType_id,
-        #             ActiontypeService.finance_id == finance.id,
-        #         ).first()
-        #         self._finance_service = _finance_service
-        #     if self._finance_service:
-        #         return self._finance_service.service
         return self.actionType.service if self.actionType else None
+
+    @property
+    def services(self):
+        return self.actionType.services if self.actionType else None
 
     @property
     def showTime(self):
@@ -331,47 +323,28 @@ class Action(Info):
 
     @property
     def tariff(self):
-        service = self.service
-        if not service:
+        services = self.services
+        if not services:
             return
         if not hasattr(self, '_tariff'):
+            event_date = self.event.setDate_raw.date()
+            cur_date = datetime.date.today()
+            service_id_list = [ats.service_id for ats in services
+                               if ats.begDate <= event_date <= (ats.endDate or cur_date)]
             contract = self.contract
-            tariff = None
-            _tc_id = self.person.tariffCategory_id if self.person else None
-            query_1 = g.printing_session.query(ContractTariff).filter(
-                ContractTariff.deleted == 0,
+            query = g.printing_session.query(ContractTariff).filter(
                 ContractTariff.master_id == contract.id,
-                or_(
-                    ContractTariff.eventType_id == self.event.eventType_id,
-                    ContractTariff.eventType_id.is_(None)
-                ),
-                ContractTariff.tariffType == 2,
-                ContractTariff.service_id == service.id
+                ContractTariff.service_id.in_(service_id_list),
+                ContractTariff.deleted == 0,
+                ContractTariff.eventType_id == self.event.eventType_id,
+                # or_(
+                #     ContractTariff.eventType_id == self.event.eventType_id,
+                #     ContractTariff.eventType_id.is_(None)
+                # ),
+                ContractTariff.begDate <= event_date,
+                ContractTariff.endDate >= event_date
             )
-            query_2 = query_1.filter(
-                or_(
-                    ContractTariff.tariffCategory_id == _tc_id,
-                    ContractTariff.tariffCategory_id.is_(None)
-                )
-            ) if _tc_id else None
-            query_3 = query_1.filter(
-                ContractTariff.begDate >= self.begDate_raw,
-                ContractTariff.endDate < self.begDate_raw
-            ) if self.begDate_raw else None
-            query_4 = query_1.filter(
-                or_(
-                    ContractTariff.tariffCategory_id == _tc_id,
-                    ContractTariff.tariffCategory_id.is_(None)
-                ),
-                ContractTariff.begDate >= self.begDate_raw,
-                ContractTariff.endDate < self.begDate_raw
-            ) if _tc_id and self.begDate_raw else None
-            for query in (query_4, query_3, query_2, query_1):
-                if query is None:
-                    continue
-                tariff = query.first()
-                if tariff:
-                    break
+            tariff = query.first()
             self._tariff = tariff
         return self._tariff
 
@@ -1009,6 +982,7 @@ class Actiontype(Info):
     mnem = Column(String(32), server_default=u"''")
 
     service = relationship(u'Rbservice', foreign_keys='Actiontype.service_id')
+    services = relationship(u'ActiontypeService')
     nomenclatureService = relationship(u'Rbservice', foreign_keys='Actiontype.nomenclativeService_id')
     property_types = relationship(u'Actionpropertytype')
     group = relationship(u'Actiontype', remote_side=[id])
@@ -1055,14 +1029,14 @@ class ActiontypeService(Info):
     __tablename__ = u'ActionType_Service'
 
     id = Column(Integer, primary_key=True)
-    master_id = Column(ForeignKey('ActionType.id'), nullable=False, index=True)
+    master_id = Column(Integer, ForeignKey('ActionType.id'), nullable=False, index=True)
     idx = Column(Integer, nullable=False, server_default=u"'0'")
-    finance_id = Column(ForeignKey('rbFinance.id'), index=True)
-    service_id = Column(ForeignKey('rbService.id'), index=True)
+    service_id = Column(Integer, ForeignKey('rbService.id'), index=True, nullable=False)
+    begDate = Column(Date, nullable=False)
+    endDate = Column(Date)
 
-    action_type = relationship('Actiontype')
-    finance = relationship('Rbfinance')
     service = relationship('Rbservice')
+
 
 class ActiontypeTissuetype(Info):
     __tablename__ = u'ActionType_TissueType'
