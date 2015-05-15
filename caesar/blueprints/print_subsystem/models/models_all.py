@@ -2694,7 +2694,10 @@ class Event(Info):
                                     backref=backref('event'))
     client = relationship(u'Client')
     visits = relationship(u'Visit')
-
+    diagnostics = relationship(
+        u'Diagnostic', lazy=True, innerjoin=True,
+        primaryjoin="and_(Event.id == Diagnostic.event_id, Diagnostic.deleted == 0)"
+    )
     diagnosises = relationship(
         u'Diagnosis',
         secondary=Diagnostic.__table__,
