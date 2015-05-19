@@ -105,7 +105,7 @@ WebMis20
     var quota_detail_url = '/misconfig/api/v1/quota_detail';
     return QuotaClass(
         quota_detail_url,
-        ['id','quota_type_id','patient_model','treatment', 'mkb', 'price'],
+        ['id','quota_type_id','patient_model','treatment','treatment_type', 'mkb', 'price'],
         'quota_type_id'
     )
 })
