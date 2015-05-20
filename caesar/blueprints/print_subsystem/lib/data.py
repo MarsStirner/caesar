@@ -2,8 +2,10 @@
 import datetime
 from flask import g
 from sqlalchemy import func
+from blueprints.print_subsystem.models.schedule import Schedule
 
-from nemesis.lib.utils import string_to_datetime
+from nemesis.lib.utils import string_to_datetime, safe_date, safe_int
+from nemesis.lib.jsonify import ScheduleVisualizer
 from ..models.models_all import Orgstructure, Person, Organisation, v_Client_Quoting, Event, Action, Account, Rbcashoperation, \
     Client, Mkb, EventPayment
 from ..models.schedule import ScheduleClientTicket
@@ -171,7 +173,7 @@ class Print_Template(object):
         if 'payments_id_list' in data:
             operations = g.printing_session.query(EventPayment).filter(
                 EventPayment.id.in_(data['payments_id_list'])
-            ).order_by(EventPayment.date.desc(), EventPayment.id.desc()).all()
+            ).order_by(EventPayment.date, EventPayment.id).all()
             metrics = get_metrics()
         return {
             'operations': operations,
@@ -225,4 +227,18 @@ class Print_Template(object):
             event = g.printing_session.query(Event).get(event_id)
         return {
             'event': event
+        }
+
+    def context_schedule(self, data):
+        today = datetime.date.today()
+        person_id = safe_int(data['person_id'])
+        start_date = safe_date(data.get('start_date', today))
+        end_date = safe_date(data.get('end_date', today))
+        sviz = ScheduleVisualizer()
+        person = g.printing_session.query(Person).get(person_id)
+        return {
+            'schedule': Schedule(),
+            'person': sviz.make_person(person),
+            'start_date': start_date,
+            'end_date': end_date
         }
