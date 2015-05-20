@@ -2276,7 +2276,7 @@ class ClientQuoting(Info):
     master_id = Column(ForeignKey('Client.id'), index=True)
     identifier = Column(String(16))
     quotaTicket = Column(String(20))
-    quotaType_id = Column(ForeignKey('QuotaType.id'), nullable=False, index=True)
+    quotaDetails_id = Column(ForeignKey(u'VMPQuotaDetails.id'), nullable=False, index=True)
     stage = Column(Integer)
     directionDate = Column(DateTime, nullable=False)
     freeInput = Column(String(128))
@@ -2290,17 +2290,28 @@ class ClientQuoting(Info):
     dateEnd = Column(DateTime, nullable=False)
     orgStructure_id = Column(Integer)
     regionCode = Column(String(13), index=True)
-    pacientModel_id = Column(ForeignKey('rbPacientModel.id'), nullable=False, index=True)
-    treatment_id = Column(ForeignKey('rbTreatment.id'), nullable=False, index=True)
     event_id = Column(Integer, index=True)
     prevTalon_event_id = Column(Integer)
     version = Column(Integer, nullable=False)
 
     master = relationship(u'Client')
+    details = relationship('VMPQuotaDetails', lazy=False)
 
-    patientModel = relationship('Rbpacientmodel', lazy=False)
-    treatment = relationship('Rbtreatment', lazy=False)
-    quotaType = relationship('QuotaType', lazy=False, backref='quotaDetails')
+    @property
+    def patientModel(self):
+        return self.details.patientModel
+
+    @property
+    def treatment(self):
+        return self.details.treatment
+
+    @property
+    def quotaType(self):
+        return self.details.quotaType
+
+    @property
+    def mkb(self):
+        return self.details.mkb
 
 
 class ClientQuotingdiscussion(Info):
@@ -3933,24 +3944,81 @@ class Prescriptionsto1c(Info):
     sendTime = Column(DateTime, nullable=False, server_default=u'CURRENT_TIMESTAMP')
 
 
+class QuotaCatalog(Info):
+    __tablename__ = u'QuotaCatalog'
+
+    id = Column(Integer, primary_key=True)
+    finance_id = Column(ForeignKey('rbFinance.id'), nullable=False, index=True)
+    createDatetime = Column(DateTime, nullable=False)
+    createPerson_id = Column(Integer, index=True)
+    modifyDatetime = Column(DateTime, nullable=False)
+    modifyPerson_id = Column(Integer, index=True)
+    begDate = Column(Date, nullable=False)
+    endDate = Column(Date, nullable=False)
+    catalogNumber = Column(Unicode(45), nullable=False, server_default=u"''")
+    documentDate = Column(Date, nullable=True)
+    documentNumber = Column(Unicode(45), nullable=True)
+    documentCorresp = Column(Unicode(256), nullable=True)
+    comment = Column(UnicodeText, nullable=True)
+
+    finance = relationship('Rbfinance', lazy=False)
+
+    def __unicode__(self):
+        return u'Приказ %s № %s от %s' % (
+            self.documentCorresp,
+            self.documentNumber,
+            self.documentNumber
+        )
+
+
 class QuotaType(Info):
     __tablename__ = u'QuotaType'
 
     id = Column(Integer, primary_key=True)
+    catalog_id = Column(ForeignKey('QuotaCatalog.id'), nullable=False, index=True)
     createDatetime = Column(DateTime, nullable=False)
     createPerson_id = Column(Integer, index=True)
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     class_ = Column(u'class', Integer, nullable=False)
+    profile_code = Column(String(16))
     group_code = Column(String(16))
+    type_code = Column(String(16))
     code = Column(String(16), nullable=False)
     name = Column(Unicode(255), nullable=False)
     teenOlder = Column(Integer, nullable=False)
+    price = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
 
+    catalog = relationship('QuotaCatalog', backref='quotaTypes')
 
     def __unicode__(self):
         return self.name
+
+
+class MKB_VMPQuotaFilter(Info):
+    __tablename__ = u'MKB_VMPQuotaFilter'
+
+    id = Column(Integer, primary_key=True)
+    MKB_id = Column(ForeignKey('MKB.id'), nullable=False, index=True)
+    quotaDetails_id = Column(ForeignKey('VMPQuotaDetails.id'), nullable=False, index=True)
+
+
+class VMPQuotaDetails(Info):
+    __tablename__ = u'VMPQuotaDetails'
+
+    id = Column(Integer, primary_key=True)
+    pacientModel_id = Column(ForeignKey('rbPacientModel.id'), nullable=False, index=True)
+    treatment_id = Column(ForeignKey('rbTreatment.id'), nullable=False, index=True)
+    quotaType_id = Column(ForeignKey('QuotaType.id'), nullable=False, index=True)
+
+    patientModel = relationship('Rbpacientmodel', lazy=False)
+    treatment = relationship('Rbtreatment', lazy=False)
+    quotaType = relationship('QuotaType', lazy=False, backref='quotaDetails')
+    mkb = relationship('Mkb', secondary=MKB_VMPQuotaFilter.__table__)
+
+    def __unicode__(self):
+        return u'%s [%s]' % (self.treatment.name, self.patientModel.name)
 
 
 class Quoting(Info):
@@ -5358,9 +5426,6 @@ class Rbpacientmodel(RBInfo):
     id = Column(Integer, primary_key=True)
     code = Column(String(32), nullable=False)
     name = Column(Text, nullable=False)
-    quotaType_id = Column(ForeignKey('QuotaType.id'), nullable=False, index=True)
-
-    quotaType = relationship(u'QuotaType')
 
 
 class Rbpayrefusetype(RBInfo):
@@ -5855,9 +5920,6 @@ class Rbtreatment(RBInfo):
     id = Column(Integer, primary_key=True)
     code = Column(String(32), nullable=False)
     name = Column(Text, nullable=False)
-    pacientModel_id = Column(ForeignKey('rbPacientModel.id'), nullable=False, index=True)
-
-    pacientModel = relationship(u'Rbpacientmodel')
 
 
 class Rbtrfubloodcomponenttype(RBInfo):
