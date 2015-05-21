@@ -90,13 +90,13 @@ def _get_moving_query(event, dt=None, finished=None):
         Actiontype.flatCode == STATIONARY_MOVING_CODE
     )
     if dt:
-        query = query.filter(Action.begDate <= dt)
+        query = query.filter(Action.begDate_raw <= dt)
     elif finished is not None:
         if finished:
             query = query.filter(Action.status == ActionStatus.finished[0])
         else:
             query = query.filter(Action.status != ActionStatus.finished[0])
-    query = query.order_by(Action.begDate.desc())
+    query = query.order_by(Action.begDate_raw.desc())
     return query
 
 
@@ -121,8 +121,8 @@ def get_hosp_length(event):
     def _get_start_date_from_moving():
         query = _get_moving_query(event)
         start_date = query.with_entities(
-            Action.begDate
-        ).order_by(None).order_by(Action.begDate).first()
+            Action.begDate_raw
+        ).order_by(None).order_by(Action.begDate_raw).first()
         return safe_date(start_date[0]) if start_date else None
 
     def _get_finish_date_from_moving():
@@ -139,12 +139,12 @@ def get_hosp_length(event):
             ActionProperty_Integer.id == None
         )
         end_date = final_moving_q.with_entities(
-            Action.endDate
+            Action.endDate_raw
         ).first()
         return safe_date(end_date[0]) if end_date else None
 
     def calculate_not_finished():
-        date_start = _get_start_date_from_moving() or event.setDate.date()
+        date_start = _get_start_date_from_moving() or event.setDate_raw.date()
         date_to = _get_finish_date_from_moving()
         if not date_to:
             date_to = datetime.date.today()
@@ -172,7 +172,7 @@ def _get_hosp_release_query(event):
         Actiontype.flatCode == STATIONARY_LEAVED_CODE
     ).filter(
         Action.status == ActionStatus.finished[0]
-    ).order_by(Action.begDate.desc())
+    ).order_by(Action.begDate_raw.desc())
     return query
 
 
