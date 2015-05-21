@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import calendar
-from collections import defaultdict
-
-from flask import g
 import jinja2
+
+from collections import defaultdict
+from flask import g
 from sqlalchemy import Column, Integer, String, Unicode, DateTime, ForeignKey, Date, Float, or_, Boolean, Text, \
     SmallInteger, Time, Index, BigInteger, Enum, Table, BLOB, UnicodeText
-
-
-# from application.database import db
 from sqlalchemy.orm import relationship, backref
+
 from ..config import MODULE_NAME
 from ..lib.html import convenience_HtmlRip, replace_first_paragraph
 from ..lib.num_to_text_converter import NumToTextConverter
@@ -18,6 +16,8 @@ from models_utils import *
 from kladr_models import Kladr, Street
 from ..database import Base, metadata
 from sqlalchemy.dialects.mysql.base import MEDIUMBLOB
+from nemesis.lib.const import (STATIONARY_EVENT_CODES, DIAGNOSTIC_EVENT_CODES, POLICLINIC_EVENT_CODES,
+    PAID_EVENT_CODE, OMS_EVENT_CODE, DMS_EVENT_CODE, BUDGET_EVENT_CODE, DAY_HOSPITAL_CODE)
 
 
 TABLE_PREFIX = MODULE_NAME
@@ -2739,6 +2739,71 @@ class Event(Info):
                                                              action.actionType.flatCode == 'moving')]
             return movings[-1][('orgStructStay',)].value if movings else None
         return None
+
+    @property
+    def hospLength(self):
+        if not hasattr(self, '_hosp_length'):
+            from ..lib.data import get_hosp_length
+            self._hosp_length = get_hosp_length(self)
+        return self._hosp_length
+
+    @property
+    def hospitalBed(self):
+        if not hasattr(self, '_hospital_bed'):
+            from ..lib.data import get_patient_hospital_bed
+            self._hospital_bed = get_patient_hospital_bed(self)
+        return self._hospital_bed
+
+    @property
+    def is_closed(self):
+        from nemesis.lib.data import addPeriod
+        if self.is_stationary:
+            # Текущая дата больше, чем дата завершения + 2 рабочих дня
+            # согласно какому-то мегаприказу МЗ и главврача ФНКЦ
+            # Установлен результат обращения
+            return self.is_pre_closed and datetime.date.today() > addPeriod(
+                self.execDate.date(),
+                2,
+                False
+            )
+        else:
+            return self.is_pre_closed
+
+    @property
+    def is_pre_closed(self):
+        return self.execDate and (self.result_id is not None)
+
+    @property
+    def is_policlinic(self):
+        return self.eventType.requestType.code in POLICLINIC_EVENT_CODES
+
+    @property
+    def is_stationary(self):
+        return self.eventType.requestType.code in STATIONARY_EVENT_CODES
+
+    @property
+    def is_day_hospital(self):
+        return self.eventType.requestType.code == DAY_HOSPITAL_CODE
+
+    @property
+    def is_diagnostic(self):
+        return self.eventType.requestType.code in DIAGNOSTIC_EVENT_CODES
+
+    @property
+    def is_paid(self):
+        return self.eventType.finance.code == PAID_EVENT_CODE
+
+    @property
+    def is_oms(self):
+        return self.eventType.finance.code == OMS_EVENT_CODE
+
+    @property
+    def is_dms(self):
+        return self.eventType.finance.code == DMS_EVENT_CODE
+
+    @property
+    def is_budget(self):
+        return self.eventType.finance.code == BUDGET_EVENT_CODE
 
     @property
     def departmentManager(self):
