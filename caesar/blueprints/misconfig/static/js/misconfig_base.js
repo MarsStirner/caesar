@@ -2,22 +2,23 @@
 
 WebMis20
 .factory('BasicModel', ['ApiCalls', function (ApiCalls) {
-    var BasicModelConstructor = function (fields, data) {
-        this._fields = fields;
-        if (fields) this.fill(data);
+    var BasicModelConstructor = function (data) {
+        if (this._fields) this.fill(data);
     };
     BasicModelConstructor.prototype = {
         fill: function (data) {
             var self = this;
             if (_.isObject(data)) {
-                this._fields.forEach(function (field) { self[field] = data[field] });
+                this._fields.forEach(function (field) { self[field] = data[field]; });
             } else {
-                this._fields.forEach(function (field) { self[field] = null });
+                this._fields.forEach(function (field) { self[field] = null; });
             }
             return this;
         },
         save: function (url, data) {
             var self = this;
+            var data = data || _.pick(self, this._fields),
+                url = url || '{0}{|1|/}'.formatNonEmpty(this._base_url, self.id || undefined);
             return ApiCalls.wrapper('POST', url, undefined, data)
                 .then(function (result) {
                     return self.fill(result);
@@ -32,32 +33,51 @@ WebMis20
             return angular.copy(what, where);
         }
     };
+    // static methods
+    BasicModelConstructor.initialize = function (params, obj) {
+        if (params.base_url) {
+            obj.prototype._base_url = params.base_url;
+            obj.getBaseUrl = function () {
+                return obj.prototype._base_url;
+            };
+        }
+        if (params.fields) {
+            obj.prototype._fields = params.fields;
+            obj.getFields = function () {
+                return obj.prototype._fields;
+            };
+        }
+    };
+    BasicModelConstructor.initialize({base_url:'', fields:[]}, BasicModelConstructor);
     return BasicModelConstructor;
 }])
 .factory('SimpleRb', ['BasicModel', function (BasicModel) {
-    var _fields = ['id', 'code', 'name', 'deleted'];
-    var SimpleRb = function (name, data, fields) {
-        var fields = _fields.concat(fields || []);
-        BasicModel.call(this, fields, data);
-        this.rb_name = name;
+    var _fields = ['id', 'code', 'name', 'deleted'],
+        _base_url = '/misconfig/api/v1/rb/';
+    var SimpleRb = function (data) {
+        BasicModel.call(this, data);
     };
-    SimpleRb.prototype = new BasicModel();
-    SimpleRb.prototype.constructor = SimpleRb;
-    SimpleRb.prototype.save = function () {
-        var data = _.pick(this, this._fields),
-            url = '/misconfig/api/v1/rb/{0}/{1|/}'.formatNonEmpty(this.rb_name, this.id || undefined);
-        return BasicModel.prototype.save.call(this, url, data);
-    };
-    SimpleRb.prototype.del = function () {
-        var url = '/misconfig/api/v1/rb/{0}/{1}/'.format(this.rb_name, this.id);
-        return BasicModel.prototype.del.call(this, url);
-    };
+    SimpleRb.inheritsFrom(BasicModel);
+    SimpleRb.initialize({
+        base_url: _base_url,
+        fields: _fields
+    }, SimpleRb);
+    //SimpleRb.prototype.save = function () {
+    //    var data = _.pick(this, this._fields),
+    //        url = '/misconfig/api/v1/rb/{0}/{1|/}'.formatNonEmpty(this.rb_name, this.id || undefined);
+    //    return BasicModel.prototype.save.call(this, url, data);
+    //};
+    //SimpleRb.prototype.del = function () {
+    //    var url = '/misconfig/api/v1/rb/{0}/{1}/'.format(this.rb_name, this.id);
+    //    return BasicModel.prototype.del.call(this, url);
+    //};
     return SimpleRb;
 }])
 .service('RbService', ['$injector', 'ApiCalls', function ($injector, ApiCalls) {
     this.getItemList = function (name) {
         var klass = $injector.get(name);
-        return ApiCalls.wrapper('GET', '/misconfig/api/v1/rb/{0}/'.format(name))
+        var url = klass.getBaseUrl();
+        return ApiCalls.wrapper('GET', url) // '/misconfig/api/v1/rb/{0}/'.format(name)
             .then(function (data) {
                 return data.items.map(function (item) {
                     return new klass(item);
@@ -70,19 +90,24 @@ WebMis20
 }])
 .controller('MisConfigBaseCtrl', ['$scope', '$modal', 'MessageBox',
         function ($scope, $modal, MessageBox) {
-    var get_edit_modal = function (get_model_callback) {
-        return $modal.open({
-            controller: function ($scope, $modalInstance, model) {
-                $scope.model = model;
-            },
-            size: 'lg',
-            templateUrl: $scope.modalTemplate,
-            resolve: {
-                model: get_model_callback
-            }
-        });
+    var _modalParams = {
+        controller: function ($scope, $modalInstance, model) {
+            $scope.model = model;
+        },
+        size: 'lg',
+        templateUrl: null,
+        resolve: {}
     };
-    $scope.modalTemplate = '';
+    $scope.setModalParams = function (params) {
+        _.extend(_modalParams, params);
+    };
+    var get_edit_modal = function (get_model_callback) {
+        _modalParams.resolve.model = get_model_callback;
+        return $modal.open(_modalParams);
+    };
+    var url_params = aux.getQueryParams();
+
+    //$scope.modalTemplate = '';
     $scope.EntityClass = null;
     $scope.item_list = [];
 
@@ -120,5 +145,9 @@ WebMis20
             }
         })
     };
+
+    $scope.getUrlParam = function (name) {
+        return url_params[name];
+    }
 }])
 ;

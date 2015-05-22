@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from nemesis.models.exists import (rbPacientModel, rbTreatment, rbTreatmentType, Organisation, rbFinance)
+from nemesis.models.expert_protocol import rbMeasureType, rbMeasureScheduleType, Measure
 
 from .refbook import SimpleRefBookModelManager, RbTreatmentModelManager
 from .organisation import OrganisationModelManager
+from .expert_protocol import MeasureModelManager, ExpertProtocolModelManager
 
 
 all_rbs = {
@@ -11,14 +13,17 @@ all_rbs = {
     'rbTreatmentType': rbTreatmentType,
     'rbFinance': rbFinance,
     'Organisation': Organisation,
+    'rbMeasureType': rbMeasureType,
+    'rbMeasureScheduleType': rbMeasureScheduleType,
+    'Measure': Measure
 }
 
 basic_rbs = [
-    'rbPacientModel', 'rbTreatment', 'rbTreatmentType', 'rbFinance',
+    'rbPacientModel', 'rbTreatment', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType',
 ]
 
 simple_rbs = [
-    'rbPacientModel', 'rbTreatmentType', 'rbFinance',
+    'rbPacientModel', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType',
 ]
 
 
@@ -29,3 +34,7 @@ def get_manager(name):
         return RbTreatmentModelManager()
     elif name == 'Organisation':
         return OrganisationModelManager()
+    elif name == 'Measure':
+        return MeasureModelManager()
+    elif name == 'ExpertProtocol':
+        return ExpertProtocolModelManager()

@@ -260,3 +260,12 @@ def api_v1_rb_delete(name, item_id):
     result = mng.delete(item_id)
     mng.store()
     return result
+
+
+@module.route('/api/v1/expert/protocol/', methods=['GET'])
+@api_method
+def api_v1_expert_protocol_get():
+    mng = get_manager('ExpertProtocol')
+    return {
+        'items': map(mng.represent, mng.get_list())
+    }
