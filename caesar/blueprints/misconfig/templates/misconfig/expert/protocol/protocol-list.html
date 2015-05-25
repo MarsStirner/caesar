@@ -1,7 +1,7 @@
 {% extends 'misconfig/base.html' %}
 
 {% block content %}
-<div class="container-fluid" ng-controller="ExpertProtocolConfigCtrl" ng-cloak>
+<div class="container-fluid" ng-controller="ExpertProtocolListConfigCtrl" ng-cloak>
     <alert-notify></alert-notify>
     <ul class="breadcrumb">
         <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
@@ -45,5 +45,5 @@
 {% block modules_js %}
 {{ super() }}
 <script src="{{ url_for('.static', filename='js/expert/protocol.js', v=version) }}"></script>
-<script type="text/ng-template" id="/caesar/misconfig/expert/protocol/protocol-edit-modal.html">{% include "misconfig/expert/protocol/protocol-edit-modal.html" %}</script>
+<script type="text/ng-template" id="/caesar/misconfig/expert/protocol/protocol-edit-modal.html">{% include "misconfig/expert/protocol/scheme-edit-modal.html" %}</script>
 {% endblock %}

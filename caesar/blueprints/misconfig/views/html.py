@@ -38,3 +38,8 @@ def expert_protocol_measures_html():
 @module.route('/expert/protocol/protocols/')
 def expert_protocol_protocols_html():
     return render_template('misconfig/expert/protocol/protocol-list.html')
+
+
+@module.route('/expert/protocol/protocols/protocol/')
+def expert_protocol_protocol_html(protocol_id=None):
+    return render_template('misconfig/expert/protocol/protocol-edit.html')

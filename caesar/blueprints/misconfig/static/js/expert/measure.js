@@ -2,14 +2,15 @@
 
 WebMis20
 .factory('Measure', ['SimpleRb', function (SimpleRb) {
-    var name = 'Measure',
-        _fields = ['id', 'measure_type', 'code', 'name', 'deleted', 'uuid', 'action_type',
-            'template_action', 'data_model'];
     var Measure = function (data) {
-        SimpleRb.call(this, name, data, _fields);
+        SimpleRb.call(this, data);
     };
-    Measure.prototype = Object.create(SimpleRb.prototype);
-    Measure.prototype.constructor = Measure;
+    Measure.inheritsFrom(SimpleRb);
+    Measure.initialize({
+        fields: ['id', 'measure_type', 'code', 'name', 'deleted', 'uuid', 'action_type',
+            'template_action', 'data_model'],
+        base_url: '{0}Measure/'.format(Measure.getBaseUrl())
+    }, Measure);
     return Measure;
 }])
 .controller('MeasureConfigCtrl', ['$scope', '$controller', 'RbService',

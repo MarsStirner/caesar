@@ -262,10 +262,83 @@ def api_v1_rb_delete(name, item_id):
     return result
 
 
+# TODO: подумать над именованием
 @module.route('/api/v1/expert/protocol/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/<int:item_id>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/new/', methods=['GET'])
 @api_method
-def api_v1_expert_protocol_get():
+def api_v1_expert_protocol_get(item_id=None):
     mng = get_manager('ExpertProtocol')
+    if item_id:
+        if item_id == 'new':
+            item = mng.create()
+        else:
+            item = mng.get_by_id(item_id)
+        return {
+            'item': mng.represent(item)
+        }
+    else:
+        return {
+            'items': map(mng.represent, mng.get_list())
+        }
+
+
+@module.route('/api/v1/expert/protocol/', methods=['POST'])
+@module.route('/api/v1/expert/protocol/<int:item_id>/', methods=['POST'])
+@api_method
+def api_v1_expert_protocol_post(item_id=None):
+    mng = get_manager('ExpertProtocol')
+    data = request.get_json()
+
+    if item_id:
+        item = mng.update(item_id, data)
+    else:
+        item = mng.create(data)
+    mng.store(item)
+    return mng.represent(item)
+
+
+@module.route('/api/v1/expert/protocol/', methods=['DELETE'])
+@api_method
+def api_v1_expert_protocol_delete():
+    raise NotImplementedError
+
+
+@module.route('/api/v1/expert/protocol/scheme/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/scheme/<int:item_id>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/scheme/<new>/<int:parent_id>/', methods=['GET'])
+@api_method
+def api_v1_expert_scheme_get(item_id=None, new=None, parent_id=None):
+    mng = get_manager('ExpertScheme')
+    if item_id or new:
+        if item_id:
+            item = mng.get_by_id(item_id)
+        elif new == 'new':
+            item = mng.create(parent_id=parent_id)
+        return {
+            'item': mng.represent(item)
+        }
     return {
         'items': map(mng.represent, mng.get_list())
     }
+
+
+@module.route('/api/v1/expert/protocol/scheme/', methods=['POST'])
+@module.route('/api/v1/expert/protocol/scheme/<int:item_id>/', methods=['POST'])
+@api_method
+def api_v1_expert_scheme_post(item_id=None):
+    mng = get_manager('ExpertScheme')
+    data = request.get_json()
+
+    if item_id:
+        item = mng.update(item_id, data)
+    else:
+        item = mng.create(data)
+    mng.store(item)
+    return mng.represent(item)
+
+
+@module.route('/api/v1/expert/protocol/scheme/', methods=['DELETE'])
+@api_method
+def api_v1_expert_scheme_delete():
+    raise NotImplementedError

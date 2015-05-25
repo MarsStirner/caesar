@@ -1,18 +1,21 @@
 # -*- coding: utf-8 -*-
 
-from nemesis.lib.utils import safe_dict, safe_traverse, safe_unicode
+from nemesis.lib.utils import safe_dict, safe_traverse
 from nemesis.systemwide import db
 
 
-def reverse_dict(d):
-    return dict((v, k) for k, v in d.iteritems())
-
-
 class FieldConverter():
-    def __init__(self, model_name, json_name, converter=None):
+    def __init__(self, model_name, json_name, to_model=None, to_json=None):
         self.m_name = model_name
         self.j_name = json_name
-        self.converter = converter or safe_unicode
+        self.to_model = to_model
+        self.to_json = to_json
+
+
+def represent_model(value, manager):
+    if isinstance(value, list):
+        return map(manager.represent, value)
+    return manager.represent(value)
 
 
 class BaseModelManager(object):
@@ -28,13 +31,16 @@ class BaseModelManager(object):
 
     def fill(self, item, data):
         for field in self._fields:
-            value = field.converter(safe_traverse(data, *field.j_name.split('.')))
+            value = safe_traverse(data, *field.j_name.split('.'))
+            if field.to_model:
+                value = field.to_model(value)
             setattr(item, field.m_name, value)
         return item
 
-    def create(self, data):
+    def create(self, data=None, parent_id=None):
         item = self._model()
-        self.fill(item, data)
+        if data is not None:
+            self.fill(item, data)
         return item
 
     def update(self, item_id, data):
@@ -60,5 +66,5 @@ class BaseModelManager(object):
         result = {}
         for field in self._fields:
             j_field = field.j_name.split('.')[0]
-            result[j_field] = safe_dict(getattr(item, j_field))
+            result[j_field] = (field.to_json or safe_dict)(getattr(item, j_field))
         return result

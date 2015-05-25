@@ -9,7 +9,16 @@ WebMis20
         fill: function (data) {
             var self = this;
             if (_.isObject(data)) {
-                this._fields.forEach(function (field) { self[field] = data[field]; });
+                this._fields.forEach(function (field) {
+                    if (_.isObject(field)) {
+                        // переделать под instantiate_all
+                        self[field.name] = data[field.name].map(function (d) {
+                            return new field.klass(d);
+                        });
+                    } else {
+                        self[field] = data[field];
+                    }
+                });
             } else {
                 this._fields.forEach(function (field) { self[field] = null; });
             }
@@ -28,9 +37,8 @@ WebMis20
             return ApiCalls.wrapper('DELETE', url);
         },
         clone: function () {
-            var what = this,
-                where = new this.constructor();
-            return angular.copy(what, where);
+            // redo, if fieldis obj
+            return new this.constructor(_.pick(this, this._fields));
         }
     };
     // static methods
@@ -48,7 +56,16 @@ WebMis20
             };
         }
     };
-    BasicModelConstructor.initialize({base_url:'', fields:[]}, BasicModelConstructor);
+    BasicModelConstructor.initialize({base_url: '', fields: []}, BasicModelConstructor);
+    BasicModelConstructor.instantiate = function (item_id, parent_id) {
+        var klass = this;
+        var url = klass.getBaseUrl();
+        if (item_id !== undefined) url = '{0}{1}/{2|/}'.formatNonEmpty(url, item_id, parent_id);
+        return ApiCalls.wrapper('GET', url)
+            .then(function (data) {
+                return new klass(data.item);
+            });
+    };
     return BasicModelConstructor;
 }])
 .factory('SimpleRb', ['BasicModel', function (BasicModel) {
@@ -107,7 +124,6 @@ WebMis20
     };
     var url_params = aux.getQueryParams();
 
-    //$scope.modalTemplate = '';
     $scope.EntityClass = null;
     $scope.item_list = [];
 
