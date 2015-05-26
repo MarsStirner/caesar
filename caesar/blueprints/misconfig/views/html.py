@@ -41,5 +41,10 @@ def expert_protocol_protocols_html():
 
 
 @module.route('/expert/protocol/protocols/protocol/')
-def expert_protocol_protocol_html(protocol_id=None):
+def expert_protocol_protocol_html():
     return render_template('misconfig/expert/protocol/protocol-edit.html')
+
+
+@module.route('/expert/protocol/protocols/scheme_measures/')
+def expert_protocol_scheme_measures_html():
+    return render_template('misconfig/expert/protocol/scheme-measure-edit.html')

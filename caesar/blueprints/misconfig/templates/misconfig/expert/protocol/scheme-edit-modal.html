@@ -1,6 +1,6 @@
 <div class="modal-header">
     <button type="button" class="close" ng-click="$dismiss()">&times;</button>
-    <h4 class="modal-title">Схема мероприятий</h4>
+    <h4 class="modal-title">Схема протокола</h4>
 </div>
 <div class="modal-body">
 <form class="form-horizontal">
@@ -25,25 +25,25 @@
         </div>
     </div>
 
-    <tabset>
-        <tab heading="МКБ">
-            <h4>Дигнозы, которым соответствует схема</h4>
-            <ui-select multiple id="mkb_list" name="mkb_list" theme="bootstrap"
-                       ng-model="scheme.mkbs" ref-book="MKB">
-                <ui-select-match placeholder="МКБ">[[$item.code]]</ui-select-match>
+    <div class="form-group">
+        <hr>
+        <label for="mkb_list" class="col-sm-2 control-label">Дигнозы МКБ</label>
+        <div class="col-sm-10">
+            <ui-select multiple id="mkb_list" name="mkb_list" theme="select2"
+                   ng-model="proxy_mkb.list" ref-book="MKB">
+                <ui-select-match placeholder="МКБ"><span title="[[$item.name]]" ng-bind="$item.code"></span></ui-select-match>
                 <ui-select-choices repeat="mkb in $refBook.objects | filter: $select.search | limitTo: 100">
                     <div ng-bind-html="mkb.code | highlight: $select.search"></div>
-                    <small style="font-style: italic" ng-bind-html="mkb.name | highlight: $select.search"></small>
+                    <small style="font-style: italic" ng-bind-html="mkb.name"></small>
                 </ui-select-choices>
             </ui-select>
-        </tab>
-        <tab heading="Мероприятия и расписания">список мероприятий с кнопкой доабвления расписания через еще один модальный диалог</tab>
-    </tabset>
+        </div>
+    </div>
 
-    <pre>[[ scheme | json ]]</pre>
+{#    <br><pre>[[ scheme | json ]]</pre><pre>[[ proxy_mkb | json ]]</pre>#}
 </form>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-success" ng-click="close(  )">Сохранить</button>
+    <button type="button" class="btn btn-success" ng-click="close()">Сохранить</button>
     <button type="button" class="btn btn-danger" ng-click="$dismiss()">Закрыть</button>
 </div>

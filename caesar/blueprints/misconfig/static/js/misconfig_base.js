@@ -11,10 +11,14 @@ WebMis20
             if (_.isObject(data)) {
                 this._fields.forEach(function (field) {
                     if (_.isObject(field)) {
-                        // переделать под instantiate_all
-                        self[field.name] = data[field.name].map(function (d) {
-                            return new field.klass(d);
-                        });
+                        // TODO: переделать под instantiate_all
+                        if (_.isArray(data[field.name])) {
+                            self[field.name] = data[field.name].map(function (d) {
+                                return new field.klass(d);
+                            });
+                        } else {
+                            self[field.name] = new field.klass(data[field.name]);
+                        }
                     } else {
                         self[field] = data[field];
                     }
@@ -26,7 +30,7 @@ WebMis20
         },
         save: function (url, data) {
             var self = this;
-            var data = data || _.pick(self, this._fields),
+            var data = data || this._pickData(),
                 url = url || '{0}{|1|/}'.formatNonEmpty(this._base_url, self.id || undefined);
             return ApiCalls.wrapper('POST', url, undefined, data)
                 .then(function (result) {
@@ -37,9 +41,18 @@ WebMis20
             return ApiCalls.wrapper('DELETE', url);
         },
         clone: function () {
-            // redo, if fieldis obj
-            return new this.constructor(_.pick(this, this._fields));
+            return new this.constructor(this._pickData());
+        },
+        _pickData: function () {
+            var self = this,
+                field_list = this._fields.map(function (f) {
+                    return _.isObject(f) ? f.name : f;
+                });
+            return _.pick(self, function (value, key) {
+                return field_list.has(key);
+            });
         }
+
     };
     // static methods
     BasicModelConstructor.initialize = function (params, obj) {
@@ -64,6 +77,16 @@ WebMis20
         return ApiCalls.wrapper('GET', url)
             .then(function (data) {
                 return new klass(data.item);
+            });
+    };
+    BasicModelConstructor.instantiateAll = function () {
+        var klass = this;
+        var url = klass.getBaseUrl();
+        return ApiCalls.wrapper('GET', url)
+            .then(function (data) {
+                return data.items.map(function (item) {
+                    return new klass(item);
+                });
             });
     };
     return BasicModelConstructor;

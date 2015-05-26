@@ -5,7 +5,7 @@
     <alert-notify></alert-notify>
     <ul class="breadcrumb">
         <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
-        <li>Экспертная часть</li>
+        <li><a href="{{ url_for('.index_html') }}">Экспертная часть</a></li>
         <li><a href="{{ url_for('.expert_protocol_index_html') }}">Протоколы лечения</a></li>
         <li><a href="{{ url_for('.expert_protocol_protocols_html') }}">Список протоколов</a></li>
         <li>Протокол &laquo;[[ protocol.name ]]&raquo;</li>
@@ -31,20 +31,22 @@
         </form>
         <hr>
         <div class="pull-right">
-            <button type="button" class="btn btn-success" ng-click="save(protocol)">Сохранить</button>
+            <button type="button" class="btn btn-success" ng-click="saveProtocol()">Сохранить</button>
         </div>
     </div>
     </div>
-    <div class="row">
+    <div class="row" ng-if="protocol.id">
     <div class="col-md-12">
         <h3>Схемы мероприятий</h3>
         <table class="table">
         <thead>
         <tr>
-            <th>id</th>
-            <th>Код</th>
-            <th>Наименование</th>
-            <th>Номер</th>
+            <th width="5%">id</th>
+            <th width="10%">Код</th>
+            <th width="20%">Наименование</th>
+            <th width="10%">Номер</th>
+            <th width="35%">МКБ</th>
+            <th></th>
         </tr>
         </thead>
         <tbody>
@@ -53,16 +55,19 @@
             <td>[[ scheme.code ]]</td>
             <td>[[ scheme.name ]]</td>
             <td>[[ scheme.number ]]</td>
+            <td ng-bind="formatMkbList(scheme.mkbs)"></td>
             <td class="nowrap" width="1%">
-                <button type="button" class="btn btn-primary" ng-click="edit_scheme($index)" title="Редактировать">
+                <button type="button" class="btn btn-primary" ng-click="editScheme($index)" title="Редактировать данные схемы и список МКБ">
                     <i class="fa fa-pencil"></i></button>
+                <button type="button" class="btn btn-primary" ng-click="editMeasures($index)" title="Редактировать мероприятия и расписания">
+                    <i class="fa fa-list"></i></button>
                 <button type="button" class="btn btn-danger" ng-click="remove($index)" title="Удалить">
                     <i class="fa fa-trash"></i></button>
             </td>
         </tr>
         </tbody>
         </table>
-        <button type="button" class="btn btn-lg btn-success pull-right" ng-click="create_new_scheme()"
+        <button type="button" class="btn btn-lg btn-success pull-right" ng-click="createNewScheme()"
             title="Добавить схему"><i class="fa fa-plus"></i>
         </button>
     </div>
@@ -72,6 +77,7 @@
 
 {% block modules_js %}
 {{ super() }}
-<script src="{{ url_for('.static', filename='js/expert/protocol.js', v=version) }}"></script>
+<script src="{{ url_for('.static', filename='js/expert/measure.js', v=version) }}"></script>
+<script src="{{ url_for('.static', filename='js/expert/protocol-scheme.js', v=version) }}"></script>
 <script type="text/ng-template" id="/caesar/misconfig/expert/protocol/scheme-edit-modal.html">{% include "misconfig/expert/protocol/scheme-edit-modal.html" %}</script>
 {% endblock %}

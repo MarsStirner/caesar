@@ -3,7 +3,8 @@ import uuid
 
 from blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, represent_model
 from lib.utils import safe_int, safe_unicode, safe_uuid
-from nemesis.models.expert_protocol import Measure, ExpertProtocol, ExpertScheme, ExpertSchemeMKB
+from nemesis.models.expert_protocol import Measure, ExpertProtocol, ExpertScheme, ExpertSchemeMKB, ExpertSchemeMeasureAssoc
+from nemesis.systemwide import db
 
 
 class MeasureModelManager(BaseModelManager):
@@ -38,42 +39,100 @@ class MeasureModelManager(BaseModelManager):
 
 class ExpertProtocolModelManager(BaseModelManager):
     def __init__(self):
+        self._scheme_manager = ExpertSchemeModelManager()
         fields = [
             FieldConverter('id', 'id', safe_int),
             FieldConverter('code', 'code', safe_unicode),
             FieldConverter('name', 'name', safe_unicode),
-            FieldConverter('schemes', 'schemes', None, lambda val: represent_model(val, ExpertSchemeManager())),
+            FieldConverter('schemes', 'schemes', None, lambda val: represent_model(val, self._scheme_manager)),
         ]
         super(ExpertProtocolModelManager, self).__init__(ExpertProtocol, fields)
 
 
-class ExpertSchemeManager(BaseModelManager):
+class ExpertSchemeModelManager(BaseModelManager):
     def __init__(self):
+        self._mkb_manager = ExpertSchemeMKBModelManager()
         fields = [
             FieldConverter('id', 'id', safe_int),
             FieldConverter('code', 'code', safe_unicode),
             FieldConverter('name', 'name', safe_unicode),
             FieldConverter('number', 'number', safe_unicode),
             FieldConverter('protocol_id', 'protocol_id', safe_int),
-            FieldConverter('mkbs', 'mkbs', None, lambda val: represent_model(val, ExpertSchemeMKBManager())),
+            FieldConverter('mkbs^', 'mkbs', self.handle_mkbs, lambda val: represent_model(val, self._mkb_manager)),
         ]
-        super(ExpertSchemeManager, self).__init__(ExpertScheme, fields)
+        super(ExpertSchemeModelManager, self).__init__(ExpertScheme, fields)
 
-    def create(self, data=None, parent_id=None):
+    def create(self, data=None, parent_id=None, parent_obj=None):
         if data is None:
-            if not parent_id:
-                raise AttributeError('parent_id attribute requiresd')
+            # if not parent_id:
+            #     raise AttributeError('parent_id attribute required')
             data = {
                 'protocol_id': parent_id
             }
-        return super(ExpertSchemeManager, self).create(data)
+        return super(ExpertSchemeModelManager, self).create(data)
+
+    def handle_mkbs(self, mkb_list, parent_obj):
+        if mkb_list is None:
+            return None
+        result = []
+        for item_data in mkb_list:
+            item_id = item_data['id']
+            if item_id:
+                item = self._mkb_manager.update(item_id, item_data, parent_obj)
+            else:
+                item = self._mkb_manager.create(item_data, None, parent_obj)
+            result.append(item)
+
+        # deletion
+        for scheme_mkb in parent_obj.mkbs:
+            if scheme_mkb not in result:
+                db.session.delete(scheme_mkb)
+        db.session.add_all(result)  # or on different level? In store?
+        return result
 
 
-class ExpertSchemeMKBManager(BaseModelManager):
+class ExpertSchemeMKBModelManager(BaseModelManager):
     def __init__(self):
         fields = [
             FieldConverter('id', 'id', safe_int),
             FieldConverter('scheme_id', 'scheme_id', safe_int),
             FieldConverter('mkb', 'mkb.id', safe_int),
+            FieldConverter('^scheme', ''),
         ]
-        super(ExpertSchemeMKBManager, self).__init__(ExpertSchemeMKB, fields)
+        super(ExpertSchemeMKBModelManager, self).__init__(ExpertSchemeMKB, fields)
+
+    def create(self, data=None, parent_id=None, parent_obj=None):
+        if data is None:
+            # if not parent_id:
+            #     raise AttributeError('parent_id attribute required')
+            data = {
+                'scheme_id': parent_id
+            }
+        return super(ExpertSchemeMKBModelManager, self).create(data, parent_id, parent_obj)
+
+
+class ExpertSchemeMeasureModelManager(BaseModelManager):
+    def __init__(self):
+        self._measure_manager = MeasureModelManager()
+        fields = [
+            FieldConverter('id', 'id', safe_int),
+            FieldConverter('scheme_id', 'scheme_id', safe_int),
+            FieldConverter('measure', 'measure.id', None, lambda val: represent_model(val, self._measure_manager)),
+            # FieldConverter('schedules^', 'schedules', self.handle_schedule, lambda val: represent_model(val, self._mkb_manager)),
+        ]
+        super(ExpertSchemeMeasureModelManager, self).__init__(ExpertSchemeMeasureAssoc, fields)
+
+    def get_list(self, **kwargs):
+        where = []
+        if 'scheme_id' in kwargs:
+            where.append(self._model.scheme_id.__eq__(kwargs['scheme_id']))
+        return super(ExpertSchemeMeasureModelManager, self).get_list(where=where)
+
+    def create(self, data=None, parent_id=None, parent_obj=None):
+        if data is None:
+            # if not parent_id:
+            #     raise AttributeError('parent_id attribute required')
+            data = {
+                'scheme_id': parent_id
+            }
+        return super(ExpertSchemeMeasureModelManager, self).create(data, parent_id, parent_obj)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask import request
+from flask import request, abort
 
 from nemesis.systemwide import db
 from nemesis.lib.apiutils import api_method, ApiException
@@ -315,6 +315,8 @@ def api_v1_expert_scheme_get(item_id=None, new=None, parent_id=None):
             item = mng.get_by_id(item_id)
         elif new == 'new':
             item = mng.create(parent_id=parent_id)
+        else:
+            raise abort(404)
         return {
             'item': mng.represent(item)
         }
@@ -341,4 +343,67 @@ def api_v1_expert_scheme_post(item_id=None):
 @module.route('/api/v1/expert/protocol/scheme/', methods=['DELETE'])
 @api_method
 def api_v1_expert_scheme_delete():
+    raise NotImplementedError
+
+
+@module.route('/api/v1/expert/protocol/scheme_mkb/<int:item_id>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/scheme_mkb/<new>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/scheme_mkb/<new>/<int:parent_id>/', methods=['GET'])
+@api_method
+def api_v1_expert_scheme_mkb_get(item_id=None, new=None, parent_id=None):
+    mng = get_manager('ExpertSchemeMKB')
+    if item_id or new:
+        if item_id:
+            item = mng.get_by_id(item_id)
+        elif new == 'new':
+            item = mng.create(parent_id=parent_id)
+        else:
+            raise abort(404)
+        return {
+            'item': mng.represent(item)
+        }
+
+
+@module.route('/api/v1/expert/protocol/scheme_measure/<int:item_id>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/scheme_measure/<new>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/scheme_measure/<new>/<int:parent_id>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/scheme_measure/<by_scheme>/<int:parent_id>/', methods=['GET'])
+@api_method
+def api_v1_expert_scheme_measure_get(item_id=None, new=None, parent_id=None, by_scheme=None):
+    mng = get_manager('ExpertSchemeMeasure')
+    if item_id or new:
+        if item_id:
+            item = mng.get_by_id(item_id)
+        elif new == 'new':
+            item = mng.create(parent_id=parent_id)
+        else:
+            raise abort(404)
+        return {
+            'item': mng.represent(item)
+        }
+    elif by_scheme == 'by_scheme':
+        return {
+            'items': map(mng.represent, mng.get_list(scheme_id=parent_id))
+        }
+
+
+
+@module.route('/api/v1/expert/protocol/scheme_measure/', methods=['POST'])
+@module.route('/api/v1/expert/protocol/scheme_measure/<int:item_id>/', methods=['POST'])
+@api_method
+def api_v1_expert_scheme_measure_post(item_id=None):
+    mng = get_manager('ExpertSchemeMeasure')
+    data = request.get_json()
+
+    if item_id:
+        item = mng.update(item_id, data)
+    else:
+        item = mng.create(data)
+    mng.store(item)
+    return mng.represent(item)
+
+
+@module.route('/api/v1/expert/protocol/scheme_measure/', methods=['DELETE'])
+@api_method
+def api_v1_expert_scheme_measure_delete():
     raise NotImplementedError

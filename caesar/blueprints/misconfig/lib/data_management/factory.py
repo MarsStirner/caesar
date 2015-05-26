@@ -4,7 +4,8 @@ from nemesis.models.expert_protocol import rbMeasureType, rbMeasureScheduleType,
 
 from .refbook import SimpleRefBookModelManager, RbTreatmentModelManager
 from .organisation import OrganisationModelManager
-from .expert_protocol import MeasureModelManager, ExpertProtocolModelManager, ExpertSchemeManager
+from .expert_protocol import (MeasureModelManager, ExpertProtocolModelManager, ExpertSchemeModelManager,
+      ExpertSchemeMKBModelManager, ExpertSchemeMeasureModelManager)
 
 
 all_rbs = {
@@ -39,4 +40,8 @@ def get_manager(name):
     elif name == 'ExpertProtocol':
         return ExpertProtocolModelManager()
     elif name == 'ExpertScheme':
-        return ExpertSchemeManager()
+        return ExpertSchemeModelManager()
+    elif name == 'ExpertSchemeMKB':
+        return ExpertSchemeMKBModelManager()
+    elif name == 'ExpertSchemeMeasure':
+        return ExpertSchemeMeasureModelManager()
