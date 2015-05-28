@@ -49,7 +49,13 @@ class BaseModelManager(object):
                 value = safe_traverse(data, *field.j_name.split('.'))
                 if field.to_model:
                     value = field.to_model(value)
-            setattr(item, item_field, value)
+            if isinstance(getattr(item, item_field), list):
+                if isinstance(value, list):
+                    getattr(item, item_field).extend(value)
+                else:
+                    getattr(item, item_field).append(value)
+            else:
+                setattr(item, item_field, value)
         return item
 
     def create(self, data=None, parent_id=None, parent_obj=None):
@@ -82,5 +88,5 @@ class BaseModelManager(object):
         for field in self._fields:
             if field.j_name:
                 j_field = field.j_name.split('.')[0]
-                result[j_field] = (field.to_json or safe_dict)(getattr(item, j_field))
+                result[j_field] = (field.to_json or safe_dict)(getattr(item, field.m_name.replace('^', '')))
         return result

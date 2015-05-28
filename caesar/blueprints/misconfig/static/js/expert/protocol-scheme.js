@@ -26,7 +26,7 @@ WebMis20
         fields: ['id', 'code', 'name', 'number', 'protocol_id', {
             name: 'mkbs',
             klass: ExpertSchemeMKB
-        }, //{
+        }//, {
            // name: 'scheme_measures',
            // klass: ExpertSchemeMeasure}
         ],
@@ -58,7 +58,8 @@ WebMis20
     }, ExpertSchemeMKB);
     return ExpertSchemeMKB;
 }])
-.factory('ExpertSchemeMeasure', ['ApiCalls', 'BasicModel', 'Measure', function (ApiCalls, BasicModel, Measure) {
+.factory('ExpertSchemeMeasure', ['ApiCalls', 'BasicModel', 'Measure', 'MeasureSchedule',
+        function (ApiCalls, BasicModel, Measure, MeasureSchedule) {
     var ExpertSchemeMeasure = function (data) {
         BasicModel.call(this, data);
     };
@@ -67,6 +68,9 @@ WebMis20
         fields: ['id', 'scheme_id', {
             name: 'measure',
             klass: Measure
+        }, {
+            name: 'schedules',
+            klass: MeasureSchedule
         }],
         base_url: '/misconfig/api/v1/expert/protocol/scheme_measure/'
     }, ExpertSchemeMeasure);
@@ -81,6 +85,17 @@ WebMis20
             });
     };
     return ExpertSchemeMeasure;
+}])
+.factory('MeasureSchedule', ['BasicModel', 'Measure', function (BasicModel, Measure) {
+    var MeasureSchedule = function (data) {
+        BasicModel.call(this, data);
+    };
+    MeasureSchedule.inheritsFrom(BasicModel);
+    MeasureSchedule.initialize({
+        fields: ['id', 'scheme_measure_id', 'schedule_type', 'offset_start', 'offset_end', 'repeat_count'],
+        base_url: '/misconfig/api/v1/expert/protocol/measure_schedule/'
+    }, MeasureSchedule);
+    return MeasureSchedule;
 }])
 .controller('ExpertProtocolListConfigCtrl', ['$scope', '$controller', '$window', 'RbService',
         function ($scope, $controller, $window, RbService) {
@@ -107,7 +122,6 @@ WebMis20
             };
 
             $scope.$watchCollection('proxy_mkb.list', function (new_values) {
-                console.log('watch called: ' + new_values);
                 var new_len = new_values.length;
                 new_values.forEach(function (value, index) {
                     if ($scope.scheme.mkbs.length <= index) {
@@ -173,8 +187,9 @@ WebMis20
             $scope.protocol = protocol;
         });
 }])
-.controller('SchemeMeasureConfigCtrl', ['$scope', '$controller', '$modal', 'ExpertScheme', 'ExpertSchemeMeasure', 'Measure',
-        function ($scope, $controller, $modal, ExpertScheme, ExpertSchemeMeasure, Measure) {
+.controller('SchemeMeasureConfigCtrl', ['$scope', '$controller', '$modal', 'ExpertScheme', 'ExpertSchemeMeasure',
+        'Measure', 'MeasureSchedule',
+        function ($scope, $controller, $modal, ExpertScheme, ExpertSchemeMeasure, Measure, MeasureSchedule) {
     $controller('MisConfigBaseCtrl', {$scope: $scope});
     var schemeMeasureModalParams = {
         controller: function ($scope, $modalInstance, scheme_measure) {
@@ -184,6 +199,15 @@ WebMis20
                 $scope.measure_list = items;
             });
 
+            $scope.addSchedule = function () {
+                MeasureSchedule.instantiate('new', $scope.scheme_measure.id).
+                    then(function (measure_schedule) {
+                        $scope.scheme_measure.schedules.push(measure_schedule);
+                    });
+            };
+            $scope.removeSchedule = function (index) {
+                $scope.scheme_measure.schedules.splice(index, 1);
+            };
             $scope.close = function () {
                 $scope.scheme_measure.save().
                     then(function (scheme_measure) {
@@ -202,10 +226,10 @@ WebMis20
         return $modal.open(schemeMeasureModalParams);
     };
 
-    $scope.formatMkbList = function (mkbs) {
-        return mkbs.map(function (mkb_scheme) {
-            return mkb_scheme.mkb.code;
-        }).join(', ');
+    $scope.formatMeasures = function (scheme_measure) {
+        return scheme_measure.schedules.map(function (sched) {
+            return '{0}c - {1}c, кол-во {2}'.format(sched.offset_start, sched.offset_end, sched.repeat_count);
+        }).join('; ');
     };
     $scope.createNewSchemeMeasure = function () {
         ExpertSchemeMeasure.instantiate('new', $scope.scheme.id).
@@ -225,10 +249,116 @@ WebMis20
     ExpertScheme.instantiate($scope.getUrlParam('scheme_id')).
         then(function (scheme) {
             $scope.scheme = scheme;
+            ExpertSchemeMeasure.instantiateByScheme($scope.getUrlParam('scheme_id')).
+                then(function (scheme_measures) {
+                    $scope.scheme.scheme_measures = scheme_measures;
+                });
         });
-    ExpertSchemeMeasure.instantiateByScheme($scope.getUrlParam('scheme_id')).
-        then(function (scheme_measures) {
-            $scope.scheme.scheme_measures = scheme_measures;
-        })
 }])
+.directive('wmMeasureScheduleConf', function () {
+    return {
+        restrict: 'E',
+        scope: {
+            ident: '@',
+            schedule: '='
+        },
+        template:
+'<div class="form-group">\
+    <label for="schedule_type">Тип расписания</label>\
+    <select id="schedule_type" name="schedule_type" class="form-control"\
+            ng-model="schedule.schedule_type" ref-book="rbMeasureScheduleType"\
+            ng-options="item as item.name for item in $refBook.objects track by item.id">\
+    </select>\
+</div>\
+<div class="row">\
+<div class="col-md-5">\
+    <div class="form-group">\
+        <label for="offset_start">Начало смещения</label>\
+        <wm-timestamp id="offset_start" name="offset_start" ident="[[ident]]_start"\
+            ng-model="schedule.offset_start"></wm-timestamp>\
+    </div>\
+</div>\
+<div class="col-md-offset-2 col-md-5">\
+    <div class="form-group">\
+        <label for="offset_end">Конец смещения</label>\
+        <wm-timestamp id="offset_end" name="offset_end" ident="[[ident]]_end"\
+            ng-model="schedule.offset_end"></wm-timestamp>\
+    </div>\
+</div>\
+</div>\
+<div class="form-group">\
+    <label for="repeat_count">Количество повторений</label>\
+    <input type="text" id="repeat_count" name="repeat_count" class="form-control"\
+           ng-model="schedule.repeat_count">\
+</div>',
+        link: function (scope, element, attrs) {
+
+        }
+    }
+})
+.directive('wmTimestamp', function () {
+    return {
+        restrict: 'EA',
+        replace: true,
+        scope: {
+            ident: '@',
+            ngModel: '='
+        },
+        template:
+'<div class="input-group">\
+    <input type="text" ng-model="ngModel" wm-timestamp-formatter class="form-control">\
+    <span class="input-group-addon">\
+        <label class="radio-inline">\
+            <input type="radio" name="tf_m_[[ident]]" id="tf_m" ng-model="time_format.type" ng-value="\'m\'"> мин.\
+        </label>\
+        <label class="radio-inline">\
+            <input type="radio" name="tf_d_[[ident]]" id="tf_d" ng-model="time_format.type" ng-value="\'d\'"> дн.\
+        </label>\
+        <label class="radio-inline">\
+            <input type="radio" name="tf_w_[[ident]]" id="tf_w" ng-model="time_format.type" ng-value="\'w\'"> нед.\
+        </label>\
+    </span>\
+</div>',
+        link: function (scope, element, attrs) {
+            scope.time_format = {
+                type: 'd'
+            };
+        }
+    }
+})
+.directive('wmTimestampFormatter', function() {
+    return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function (scope, element, attrs, ngModelCtrl) {
+            var formatViewValue = function (viewValue, format_type) {
+                if (format_type === 'm') {
+                    viewValue = viewValue / 60;
+                } else if (format_type === 'd') {
+                    viewValue = viewValue / 86400;
+                } else if(format_type === 'w') {
+                    viewValue = viewValue / 604800;
+                }
+                return viewValue;
+            };
+            scope.$watch('time_format.type', function (newVal) {
+                ngModelCtrl.$setViewValue(formatViewValue(ngModelCtrl.$modelValue, newVal));
+                ngModelCtrl.$render();
+            });
+            ngModelCtrl.$formatters.push(function (viewValue) {
+                formatViewValue(viewValue, scope.time_format.type);
+            });
+            ngModelCtrl.$parsers.unshift(function (value) {
+                if (scope.time_format.type === 'm') {
+                    value = value * 60;
+                } else if (scope.time_format.type === 'd') {
+                    value = value * 86400;
+                } else if(scope.time_format.type === 'w') {
+                    value = value * 604800;
+                }
+                return value;
+            });
+        }
+    }
+})
 ;

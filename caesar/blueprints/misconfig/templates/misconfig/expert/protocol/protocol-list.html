@@ -44,6 +44,7 @@
 
 {% block modules_js %}
 {{ super() }}
+<script src="{{ url_for('.static', filename='js/expert/measure.js', v=version) }}"></script>
 <script src="{{ url_for('.static', filename='js/expert/protocol-scheme.js', v=version) }}"></script>
 <script type="text/ng-template" id="/caesar/misconfig/expert/protocol/protocol-edit-modal.html">{% include "misconfig/expert/protocol/scheme-edit-modal.html" %}</script>
 {% endblock %}

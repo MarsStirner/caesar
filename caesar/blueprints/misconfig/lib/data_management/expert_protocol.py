@@ -3,7 +3,8 @@ import uuid
 
 from blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, represent_model
 from lib.utils import safe_int, safe_unicode, safe_uuid
-from nemesis.models.expert_protocol import Measure, ExpertProtocol, ExpertScheme, ExpertSchemeMKB, ExpertSchemeMeasureAssoc
+from nemesis.models.expert_protocol import (Measure, ExpertProtocol, ExpertScheme, ExpertSchemeMKB,
+    ExpertSchemeMeasureAssoc, MeasureSchedule)
 from nemesis.systemwide import db
 
 
@@ -16,7 +17,7 @@ class MeasureModelManager(BaseModelManager):
             FieldConverter('name', 'name', safe_unicode),
             FieldConverter('deleted', 'deleted', safe_int),
             FieldConverter('uuid', 'uuid', safe_uuid),
-            FieldConverter('actionType_id', 'action_type.id', safe_int),
+            FieldConverter('action_type', 'action_type.id', safe_int),
             FieldConverter('template_action', 'template_action', safe_int)
         ]
         super(MeasureModelManager, self).__init__(Measure, fields)
@@ -44,9 +45,12 @@ class ExpertProtocolModelManager(BaseModelManager):
             FieldConverter('id', 'id', safe_int),
             FieldConverter('code', 'code', safe_unicode),
             FieldConverter('name', 'name', safe_unicode),
-            FieldConverter('schemes', 'schemes', None, lambda val: represent_model(val, self._scheme_manager)),
+            FieldConverter('schemes', 'schemes', self.handle_schemes, lambda val: represent_model(val, self._scheme_manager)),
         ]
         super(ExpertProtocolModelManager, self).__init__(ExpertProtocol, fields)
+
+    def handle_schemes(self, scheme_list):
+        return []
 
 
 class ExpertSchemeModelManager(BaseModelManager):
@@ -73,7 +77,7 @@ class ExpertSchemeModelManager(BaseModelManager):
 
     def handle_mkbs(self, mkb_list, parent_obj):
         if mkb_list is None:
-            return None
+            return []
         result = []
         for item_data in mkb_list:
             item_id = item_data['id']
@@ -114,11 +118,12 @@ class ExpertSchemeMKBModelManager(BaseModelManager):
 class ExpertSchemeMeasureModelManager(BaseModelManager):
     def __init__(self):
         self._measure_manager = MeasureModelManager()
+        self._schedule_manager = MeasureScheduleModelManager()
         fields = [
             FieldConverter('id', 'id', safe_int),
             FieldConverter('scheme_id', 'scheme_id', safe_int),
             FieldConverter('measure', 'measure.id', None, lambda val: represent_model(val, self._measure_manager)),
-            # FieldConverter('schedules^', 'schedules', self.handle_schedule, lambda val: represent_model(val, self._mkb_manager)),
+            FieldConverter('schedules^', 'schedules', self.handle_schedules, lambda val: represent_model(val, self._schedule_manager)),
         ]
         super(ExpertSchemeMeasureModelManager, self).__init__(ExpertSchemeMeasureAssoc, fields)
 
@@ -130,9 +135,47 @@ class ExpertSchemeMeasureModelManager(BaseModelManager):
 
     def create(self, data=None, parent_id=None, parent_obj=None):
         if data is None:
-            # if not parent_id:
-            #     raise AttributeError('parent_id attribute required')
             data = {
                 'scheme_id': parent_id
             }
         return super(ExpertSchemeMeasureModelManager, self).create(data, parent_id, parent_obj)
+
+    def handle_schedules(self, sched_list, parent_obj):
+        if sched_list is None:
+            return []
+        result = []
+        for item_data in sched_list:
+            item_id = item_data['id']
+            if item_id:
+                item = self._schedule_manager.update(item_id, item_data, parent_obj)
+            else:
+                item = self._schedule_manager.create(item_data, None, parent_obj)
+            result.append(item)
+
+        # deletion
+        for sched in parent_obj.schedules:
+            if sched not in result:
+                db.session.delete(sched)
+        db.session.add_all(result)  # or on different level? In store?
+        return result
+
+
+class MeasureScheduleModelManager(BaseModelManager):
+    def __init__(self):
+        self._measure_manager = MeasureModelManager()
+        fields = [
+            FieldConverter('id', 'id', safe_int),
+            FieldConverter('schemeMeasure_id', 'scheme_measure_id', safe_int),
+            FieldConverter('schedule_type', 'schedule_type.id', safe_int),
+            FieldConverter('offsetStart', 'offset_start', safe_int),
+            FieldConverter('offsetEnd', 'offset_end', safe_int),
+            FieldConverter('repeatCount', 'repeat_count', safe_int),
+        ]
+        super(MeasureScheduleModelManager, self).__init__(MeasureSchedule, fields)
+
+    def create(self, data=None, parent_id=None, parent_obj=None):
+        if data is None:
+            data = {
+                'scheme_measure_id': parent_id
+            }
+        return super(MeasureScheduleModelManager, self).create(data, parent_id, parent_obj)

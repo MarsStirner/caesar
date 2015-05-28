@@ -365,27 +365,25 @@ def api_v1_expert_scheme_mkb_get(item_id=None, new=None, parent_id=None):
 
 
 @module.route('/api/v1/expert/protocol/scheme_measure/<int:item_id>/', methods=['GET'])
-@module.route('/api/v1/expert/protocol/scheme_measure/<new>/', methods=['GET'])
-@module.route('/api/v1/expert/protocol/scheme_measure/<new>/<int:parent_id>/', methods=['GET'])
-@module.route('/api/v1/expert/protocol/scheme_measure/<by_scheme>/<int:parent_id>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/scheme_measure/<specify>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/scheme_measure/<specify>/<int:parent_id>/', methods=['GET'])
 @api_method
-def api_v1_expert_scheme_measure_get(item_id=None, new=None, parent_id=None, by_scheme=None):
+def api_v1_expert_scheme_measure_get(item_id=None, specify=None, parent_id=None):
     mng = get_manager('ExpertSchemeMeasure')
-    if item_id or new:
-        if item_id:
-            item = mng.get_by_id(item_id)
-        elif new == 'new':
-            item = mng.create(parent_id=parent_id)
-        else:
-            raise abort(404)
+    if specify == 'new':
+        item = mng.create(parent_id=parent_id)
         return {
             'item': mng.represent(item)
         }
-    elif by_scheme == 'by_scheme':
+    elif specify == 'by_scheme':
         return {
             'items': map(mng.represent, mng.get_list(scheme_id=parent_id))
         }
-
+    else:
+        item = mng.get_by_id(item_id)
+        return {
+            'item': mng.represent(item)
+        }
 
 
 @module.route('/api/v1/expert/protocol/scheme_measure/', methods=['POST'])
@@ -407,3 +405,21 @@ def api_v1_expert_scheme_measure_post(item_id=None):
 @api_method
 def api_v1_expert_scheme_measure_delete():
     raise NotImplementedError
+
+
+@module.route('/api/v1/expert/protocol/measure_schedule/<int:item_id>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/measure_schedule/<specify>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/measure_schedule/<specify>/<int:parent_id>/', methods=['GET'])
+@api_method
+def api_v1_expert_measure_schedule_get(item_id=None, specify=None, parent_id=None):
+    mng = get_manager('MeasureSchedule')
+    if specify == 'new':
+        item = mng.create(parent_id=parent_id)
+        return {
+            'item': mng.represent(item)
+        }
+    else:
+        item = mng.get_by_id(item_id)
+        return {
+            'item': mng.represent(item)
+        }
