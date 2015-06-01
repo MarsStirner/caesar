@@ -69,7 +69,7 @@ WebMis20
             name: 'measure',
             klass: Measure
         }, {
-            name: 'schedules',
+            name: 'schedule',
             klass: MeasureSchedule
         }],
         base_url: '/misconfig/api/v1/expert/protocol/scheme_measure/'
@@ -86,13 +86,13 @@ WebMis20
     };
     return ExpertSchemeMeasure;
 }])
-.factory('MeasureSchedule', ['BasicModel', 'Measure', function (BasicModel, Measure) {
+.factory('MeasureSchedule', ['BasicModel', 'Measure', function (BasicModel) {
     var MeasureSchedule = function (data) {
         BasicModel.call(this, data);
     };
     MeasureSchedule.inheritsFrom(BasicModel);
     MeasureSchedule.initialize({
-        fields: ['id', 'scheme_measure_id', 'schedule_type', 'offset_start', 'offset_end', 'repeat_count'],
+        fields: ['id', 'schedule_type', 'offset_start', 'offset_end', 'repeat_count'],
         base_url: '/misconfig/api/v1/expert/protocol/measure_schedule/'
     }, MeasureSchedule);
     return MeasureSchedule;
@@ -226,10 +226,12 @@ WebMis20
         return $modal.open(schemeMeasureModalParams);
     };
 
-    $scope.formatMeasures = function (scheme_measure) {
-        return scheme_measure.schedules.map(function (sched) {
-            return '{0}c - {1}c, кол-во {2}'.format(sched.offset_start, sched.offset_end, sched.repeat_count);
-        }).join('; ');
+    $scope.formatSchedule = function (scheme_measure) {
+        return '{0}c - {1}c, кол-во {2}'.format(
+            scheme_measure.schedule.offset_start,
+            scheme_measure.schedule.offset_end,
+            scheme_measure.schedule.repeat_count
+        );
     };
     $scope.createNewSchemeMeasure = function () {
         ExpertSchemeMeasure.instantiate('new', $scope.scheme.id).

@@ -12,7 +12,7 @@ class MeasureModelManager(BaseModelManager):
     def __init__(self):
         fields = [
             FieldConverter('id', 'id', safe_int),
-            FieldConverter('measureType_id', 'measure_type.id', safe_int),
+            FieldConverter('measure_type', 'measure_type.id', safe_int),
             FieldConverter('code', 'code', safe_unicode),
             FieldConverter('name', 'name', safe_unicode),
             FieldConverter('deleted', 'deleted', safe_int),
@@ -123,7 +123,7 @@ class ExpertSchemeMeasureModelManager(BaseModelManager):
             FieldConverter('id', 'id', safe_int),
             FieldConverter('scheme_id', 'scheme_id', safe_int),
             FieldConverter('measure', 'measure.id', None, lambda val: represent_model(val, self._measure_manager)),
-            FieldConverter('schedules^', 'schedules', self.handle_schedules, lambda val: represent_model(val, self._schedule_manager)),
+            FieldConverter('schedule^', 'schedule', self.handle_schedule, lambda val: represent_model(val, self._schedule_manager)),
         ]
         super(ExpertSchemeMeasureModelManager, self).__init__(ExpertSchemeMeasureAssoc, fields)
 
@@ -140,24 +140,17 @@ class ExpertSchemeMeasureModelManager(BaseModelManager):
             }
         return super(ExpertSchemeMeasureModelManager, self).create(data, parent_id, parent_obj)
 
-    def handle_schedules(self, sched_list, parent_obj):
-        if sched_list is None:
-            return []
-        result = []
-        for item_data in sched_list:
-            item_id = item_data['id']
-            if item_id:
-                item = self._schedule_manager.update(item_id, item_data, parent_obj)
-            else:
-                item = self._schedule_manager.create(item_data, None, parent_obj)
-            result.append(item)
+    def handle_schedule(self, schedule, parent_obj):
+        if schedule is None:
+            return None
+        item_id = schedule['id']
+        if item_id:
+            item = self._schedule_manager.update(item_id, schedule, parent_obj)
+        else:
+            item = self._schedule_manager.create(schedule, None, parent_obj)
 
-        # deletion
-        for sched in parent_obj.schedules:
-            if sched not in result:
-                db.session.delete(sched)
-        db.session.add_all(result)  # or on different level? In store?
-        return result
+        db.session.add(item)  # or on different level? In store?
+        return item
 
 
 class MeasureScheduleModelManager(BaseModelManager):
@@ -165,17 +158,9 @@ class MeasureScheduleModelManager(BaseModelManager):
         self._measure_manager = MeasureModelManager()
         fields = [
             FieldConverter('id', 'id', safe_int),
-            FieldConverter('schemeMeasure_id', 'scheme_measure_id', safe_int),
             FieldConverter('schedule_type', 'schedule_type.id', safe_int),
             FieldConverter('offsetStart', 'offset_start', safe_int),
             FieldConverter('offsetEnd', 'offset_end', safe_int),
             FieldConverter('repeatCount', 'repeat_count', safe_int),
         ]
         super(MeasureScheduleModelManager, self).__init__(MeasureSchedule, fields)
-
-    def create(self, data=None, parent_id=None, parent_obj=None):
-        if data is None:
-            data = {
-                'scheme_measure_id': parent_id
-            }
-        return super(MeasureScheduleModelManager, self).create(data, parent_id, parent_obj)

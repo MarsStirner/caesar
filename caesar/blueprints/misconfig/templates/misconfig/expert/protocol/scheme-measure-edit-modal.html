@@ -19,27 +19,11 @@
     </div>
 
     <hr>
-    <div ng-repeat="shed in scheme_measure.schedules">
-        <div class="row">
-        <div class="col-md-1">
-            [[$index + 1]]
-        </div>
-        <div class="col-md-10">
-            <ng-form name="schedCompositeForm[[$index]]">
-                <wm-measure-schedule-conf schedule="shed" ident="[[$index]]"></wm-measure-schedule-conf>
-            </ng-form>
-        </div>
-        <div class="col-md-1">
-            <button type="button" class="btn btn-danger" title="Удалить" ng-click="removeSchedule($index)">
-                <span class="fa fa-remove"></span></button>
-        </div>
-        </div>
-    </div>
     <div class="row">
-    <div class="col-md-12">
-        <div class="pull-right">
-            <button type="button" class="btn btn-primary" ng-click="addSchedule()">Добавить расписание</button>
-        </div>
+    <div class="col-md-offset-1 col-md-10">
+        <ng-form name="schedForm">
+            <wm-measure-schedule-conf schedule="scheme_measure.schedule" ident="sched1"></wm-measure-schedule-conf>
+        </ng-form>
     </div>
     </div>
 
