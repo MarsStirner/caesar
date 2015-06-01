@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import calendar
-from collections import defaultdict
-
-from flask import g
 import jinja2
+
+from collections import defaultdict
+from flask import g
 from sqlalchemy import Column, Integer, String, Unicode, DateTime, ForeignKey, Date, Float, or_, Boolean, Text, \
     SmallInteger, Time, Index, BigInteger, Enum, Table, BLOB, UnicodeText
-
-
-# from application.database import db
 from sqlalchemy.orm import relationship, backref
+
 from ..config import MODULE_NAME
 from ..lib.html import convenience_HtmlRip, replace_first_paragraph
 from ..lib.num_to_text_converter import NumToTextConverter
@@ -18,6 +16,8 @@ from models_utils import *
 from kladr_models import Kladr, Street
 from ..database import Base, metadata
 from sqlalchemy.dialects.mysql.base import MEDIUMBLOB
+from nemesis.lib.const import (STATIONARY_EVENT_CODES, DIAGNOSTIC_EVENT_CODES, POLICLINIC_EVENT_CODES,
+    PAID_EVENT_CODE, OMS_EVENT_CODE, DMS_EVENT_CODE, BUDGET_EVENT_CODE, DAY_HOSPITAL_CODE)
 
 
 TABLE_PREFIX = MODULE_NAME
@@ -303,19 +303,11 @@ class Action(Info):
 
     @property
     def service(self):
-        # пока отключено, т.к. по процессу не используется в амбулатории
-
-        # finance = self.finance
-        # if finance:
-        #     if not hasattr(self, '_finance_service'):
-        #         _finance_service = g.printing_session.query(ActiontypeService).filter(
-        #             ActiontypeService.master_id == self.actionType_id,
-        #             ActiontypeService.finance_id == finance.id,
-        #         ).first()
-        #         self._finance_service = _finance_service
-        #     if self._finance_service:
-        #         return self._finance_service.service
         return self.actionType.service if self.actionType else None
+
+    @property
+    def services(self):
+        return self.actionType.services if self.actionType else None
 
     @property
     def showTime(self):
@@ -331,47 +323,28 @@ class Action(Info):
 
     @property
     def tariff(self):
-        service = self.service
-        if not service:
+        services = self.services
+        if not services:
             return
         if not hasattr(self, '_tariff'):
+            event_date = self.event.setDate_raw.date()
+            cur_date = datetime.date.today()
+            service_id_list = [ats.service_id for ats in services
+                               if ats.begDate <= event_date <= (ats.endDate or cur_date)]
             contract = self.contract
-            tariff = None
-            _tc_id = self.person.tariffCategory_id if self.person else None
-            query_1 = g.printing_session.query(ContractTariff).filter(
-                ContractTariff.deleted == 0,
+            query = g.printing_session.query(ContractTariff).filter(
                 ContractTariff.master_id == contract.id,
-                or_(
-                    ContractTariff.eventType_id == self.event.eventType_id,
-                    ContractTariff.eventType_id.is_(None)
-                ),
-                ContractTariff.tariffType == 2,
-                ContractTariff.service_id == service.id
+                ContractTariff.service_id.in_(service_id_list),
+                ContractTariff.deleted == 0,
+                ContractTariff.eventType_id == self.event.eventType_id,
+                # or_(
+                #     ContractTariff.eventType_id == self.event.eventType_id,
+                #     ContractTariff.eventType_id.is_(None)
+                # ),
+                ContractTariff.begDate <= event_date,
+                ContractTariff.endDate >= event_date
             )
-            query_2 = query_1.filter(
-                or_(
-                    ContractTariff.tariffCategory_id == _tc_id,
-                    ContractTariff.tariffCategory_id.is_(None)
-                )
-            ) if _tc_id else None
-            query_3 = query_1.filter(
-                ContractTariff.begDate >= self.begDate_raw,
-                ContractTariff.endDate < self.begDate_raw
-            ) if self.begDate_raw else None
-            query_4 = query_1.filter(
-                or_(
-                    ContractTariff.tariffCategory_id == _tc_id,
-                    ContractTariff.tariffCategory_id.is_(None)
-                ),
-                ContractTariff.begDate >= self.begDate_raw,
-                ContractTariff.endDate < self.begDate_raw
-            ) if _tc_id and self.begDate_raw else None
-            for query in (query_4, query_3, query_2, query_1):
-                if query is None:
-                    continue
-                tariff = query.first()
-                if tariff:
-                    break
+            tariff = query.first()
             self._tariff = tariff
         return self._tariff
 
@@ -1009,6 +982,7 @@ class Actiontype(Info):
     mnem = Column(String(32), server_default=u"''")
 
     service = relationship(u'Rbservice', foreign_keys='Actiontype.service_id')
+    services = relationship(u'ActiontypeService')
     nomenclatureService = relationship(u'Rbservice', foreign_keys='Actiontype.nomenclativeService_id')
     property_types = relationship(u'Actionpropertytype')
     group = relationship(u'Actiontype', remote_side=[id])
@@ -1055,14 +1029,14 @@ class ActiontypeService(Info):
     __tablename__ = u'ActionType_Service'
 
     id = Column(Integer, primary_key=True)
-    master_id = Column(ForeignKey('ActionType.id'), nullable=False, index=True)
+    master_id = Column(Integer, ForeignKey('ActionType.id'), nullable=False, index=True)
     idx = Column(Integer, nullable=False, server_default=u"'0'")
-    finance_id = Column(ForeignKey('rbFinance.id'), index=True)
-    service_id = Column(ForeignKey('rbService.id'), index=True)
+    service_id = Column(Integer, ForeignKey('rbService.id'), index=True, nullable=False)
+    begDate = Column(Date, nullable=False)
+    endDate = Column(Date)
 
-    action_type = relationship('Actiontype')
-    finance = relationship('Rbfinance')
     service = relationship('Rbservice')
+
 
 class ActiontypeTissuetype(Info):
     __tablename__ = u'ActionType_TissueType'
@@ -2731,7 +2705,10 @@ class Event(Info):
                                     backref=backref('event'))
     client = relationship(u'Client')
     visits = relationship(u'Visit')
-
+    diagnostics = relationship(
+        u'Diagnostic', lazy=True, innerjoin=True,
+        primaryjoin="and_(Event.id == Diagnostic.event_id, Diagnostic.deleted == 0)"
+    )
     diagnosises = relationship(
         u'Diagnosis',
         secondary=Diagnostic.__table__,
@@ -2773,6 +2750,71 @@ class Event(Info):
                                                              action.actionType.flatCode == 'moving')]
             return movings[-1][('orgStructStay',)].value if movings else None
         return None
+
+    @property
+    def hospLength(self):
+        if not hasattr(self, '_hosp_length'):
+            from ..lib.data import get_hosp_length
+            self._hosp_length = get_hosp_length(self)
+        return self._hosp_length
+
+    @property
+    def hospitalBed(self):
+        if not hasattr(self, '_hospital_bed'):
+            from ..lib.data import get_patient_hospital_bed
+            self._hospital_bed = get_patient_hospital_bed(self)
+        return self._hospital_bed
+
+    @property
+    def is_closed(self):
+        from nemesis.lib.data import addPeriod
+        if self.is_stationary:
+            # Текущая дата больше, чем дата завершения + 2 рабочих дня
+            # согласно какому-то мегаприказу МЗ и главврача ФНКЦ
+            # Установлен результат обращения
+            return self.is_pre_closed and datetime.date.today() > addPeriod(
+                self.execDate.date(),
+                2,
+                False
+            )
+        else:
+            return self.is_pre_closed
+
+    @property
+    def is_pre_closed(self):
+        return self.execDate and (self.result_id is not None)
+
+    @property
+    def is_policlinic(self):
+        return self.eventType.requestType.code in POLICLINIC_EVENT_CODES
+
+    @property
+    def is_stationary(self):
+        return self.eventType.requestType.code in STATIONARY_EVENT_CODES
+
+    @property
+    def is_day_hospital(self):
+        return self.eventType.requestType.code == DAY_HOSPITAL_CODE
+
+    @property
+    def is_diagnostic(self):
+        return self.eventType.requestType.code in DIAGNOSTIC_EVENT_CODES
+
+    @property
+    def is_paid(self):
+        return self.eventType.finance.code == PAID_EVENT_CODE
+
+    @property
+    def is_oms(self):
+        return self.eventType.finance.code == OMS_EVENT_CODE
+
+    @property
+    def is_dms(self):
+        return self.eventType.finance.code == DMS_EVENT_CODE
+
+    @property
+    def is_budget(self):
+        return self.eventType.finance.code == BUDGET_EVENT_CODE
 
     @property
     def departmentManager(self):

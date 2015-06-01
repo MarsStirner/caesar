@@ -2,6 +2,7 @@
 import os
 from nemesis.app import app, bootstrap_app
 import config
+from version import version as app_version
 
 __author__ = 'viruzzz-kun'
 
@@ -47,6 +48,13 @@ def general_menu():
         visible=UserProfileManager.has_ui_admin(),
     )]
     return dict(main_menu=menu_items)
+
+
+@app.context_processor
+def app_enum():
+    return {
+        'app_version': app_version,
+    }
 
 
 from blueprints.print_subsystem.app import module as print_subsystem_module
