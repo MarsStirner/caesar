@@ -3740,6 +3740,10 @@ class Person(Info):
     def name(self):
         return formatShortNameInt(self.lastName, self.firstName, self.patrName)
 
+    @property
+    def nameText(self):
+        return u' '.join((u'%s %s %s' % (self.lastName, self.firstName, self.patrName)).split())
+
     def __unicode__(self):
         result = formatShortNameInt(self.lastName, self.firstName, self.patrName)
         if self.speciality:
@@ -5476,7 +5480,7 @@ class Rbprinttemplate(Info):
     render = Column(Integer, nullable=False, server_default=u"'0'")
     templateText = Column(String, nullable=False)
 
-    meta_data = relationship('Rbprinttemplatemeta', lazy=False)
+    meta_data = relationship('Rbprinttemplatemeta', lazy=False, order_by='Rbprinttemplatemeta.id')
 
 
 class Rbquotastatu(Info):

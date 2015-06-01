@@ -15,7 +15,7 @@ def module_name():
 
 @module.before_request
 def setup_database():
-    db = sqlalchemy.create_engine(app.config['SQLALCHEMY_DATABASE_URI'], pool_recycle=3600)
+    db = sqlalchemy.create_engine(app.config['SQLALCHEMY_DATABASE_URI'], pool_recycle=3600, echo=app.config['SQLALCHEMY_ECHO'])
     session_maker = sessionmaker(bind=db, autoflush=False, autocommit=False)
     g.printing_session = session_maker()
     g.printing_session._model_changes = {}

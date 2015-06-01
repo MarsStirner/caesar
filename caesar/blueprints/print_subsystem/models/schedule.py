@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 from flask import g
-from sqlalchemy import Column, Unicode, ForeignKey, Date, Time, DateTime, SmallInteger, Boolean
+from sqlalchemy import Column, Unicode, ForeignKey, Date, Time, DateTime, SmallInteger, Boolean, UnicodeText
 from sqlalchemy import Integer
 from sqlalchemy.orm import relationship
 from ..database import Base
@@ -106,7 +106,12 @@ class Schedule(Base):
         'ScheduleTicket', lazy=False, primaryjoin=
         "and_(ScheduleTicket.schedule_id == Schedule.id, ScheduleTicket.deleted == 0)")
     office = relationship('Office', lazy='joined')
-    
+
+    def getQueuedPatientsTickets(self, person_id, start_date, end_date):
+        from nemesis.lib.jsonify import ScheduleVisualizer
+        sviz = ScheduleVisualizer()
+        return sviz.make_patient_queue_by_dates(person_id, start_date, end_date)
+
 
 class ScheduleTicket(Base):
     __tablename__ = 'ScheduleTicket'
@@ -155,7 +160,7 @@ class ScheduleClientTicket(Base):
     client_id = Column(Integer, ForeignKey('Client.id'), nullable=False)
     ticket_id = Column(Integer, ForeignKey('ScheduleTicket.id'), nullable=False)
     isUrgent = Column(Boolean)
-    note = Column(Unicode(256))
+    note = Column(UnicodeText, default=u'')
     appointmentType_id = Column(Integer, ForeignKey('rbAppointmentType.id'))
     createDatetime = Column(DateTime, nullable=False)
     createPerson_id = Column(Integer, ForeignKey('Person.id'), index=True)
