@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter
-from lib.utils import safe_int, safe_unicode
+from nemesis.lib.utils import safe_int, safe_unicode
 from nemesis.models.exists import rbTreatment
 
 

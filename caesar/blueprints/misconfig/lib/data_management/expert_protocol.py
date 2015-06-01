@@ -2,7 +2,7 @@
 import uuid
 
 from blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, represent_model
-from lib.utils import safe_int, safe_unicode, safe_uuid
+from nemesis.lib.utils import safe_int, safe_unicode, safe_uuid
 from nemesis.models.expert_protocol import (Measure, ExpertProtocol, ExpertScheme, ExpertSchemeMKB,
     ExpertSchemeMeasureAssoc, MeasureSchedule)
 from nemesis.systemwide import db
