@@ -58,10 +58,10 @@ def SpecialVariable(name, *args, **kwargs):
     try:
         result = g.printing_session.execute(sql_text).fetchall()
     except ProgrammingError:
-        print u"Ошибка в специальной переменной", name
+        print "Special Variable ERROR: ", name
         raise
     except OperationalError:
-        print u"Ошибка при выполнении специальной переменной", name
+        print "Special Variable execution ERROR: ", name
         raise
     else:
         return result
