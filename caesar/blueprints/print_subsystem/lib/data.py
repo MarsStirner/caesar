@@ -365,7 +365,8 @@ class Print_Template(object):
             event_id = data['event_id']
             event = g.printing_session.query(Event).get(event_id)
         return {
-            'event': event
+            'event': event,
+            'client': event.client if event else None
         }
 
     def context_risar_gravidograma(self, data):
