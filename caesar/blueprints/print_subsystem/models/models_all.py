@@ -1088,29 +1088,40 @@ class Address(Info):
 
     @property
     def KLADRCode(self):
-        return self.house.KLADRCode
+        # без учета последних двух цифр, которые относятся к версии кода
+        return self.house.KLADRCode[:-2] if len(self.house.KLADRCode) == 13 else self.house.KLADRCode
 
     @property
     def KLADRStreetCode(self):
-        return self.house.KLADRStreetCode
+        # без учета последних двух цифр, которые относятся к версии кода
+        return (
+            self.house.KLADRStreetCode[:-2]
+            if self.house.KLADRStreetCode and len(self.house.KLADRStreetCode) == 17
+            else self.house.KLADRStreetCode
+        )
+
+    @property
+    def kladr_locality(self):
+        if self.KLADRCode:
+            if not hasattr(self, '_kladr_locality'):
+                from nemesis.lib.vesta import Vesta
+                self._kladr_locality = Vesta.get_kladr_locality(self.KLADRCode)
+            return self._kladr_locality
+        else:
+            return None
 
     @property
     def city(self):
-        from models_utils import get_kladr_city  # TODO: fix?
-        text = ''
-        if self.KLADRCode:
-            city_info = get_kladr_city(self.KLADRCode)
-            text = city_info.get('fullname', u'-код региона не найден в кладр-')
-        return text
+        return self.kladr_locality.fullname if self.kladr_locality else ''
 
     @property
     def city_old(self):
-        if self.KLADRCode:
-            record = g.printing_session.query(Kladr).filter(Kladr.CODE == self.KLADRCode).first()
+        if self.house.KLADRCode:
+            record = Kladr.query.filter(Kladr.CODE == self.house.KLADRCode).first()
             name = [" ".join([record.NAME, record.SOCR])]
             parent = record.parent
             while parent:
-                record = g.printing_session.query(Kladr).filter(Kladr.CODE == parent.ljust(13, "0")).first()
+                record = Kladr.query.filter(Kladr.CODE == parent.ljust(13, "0")).first()
                 name.insert(0, " ".join([record.NAME, record.SOCR]))
                 parent = record.parent
             return ", ".join(name)
@@ -1122,10 +1133,36 @@ class Address(Info):
         return self.city
 
     @property
+    def kladr_street(self):
+        if self.KLADRStreetCode:
+            if not hasattr(self, '_kladr_street'):
+                from nemesis.lib.vesta import Vesta
+                self._kladr_street = Vesta.get_kladr_street(self.KLADRStreetCode)
+            return self._kladr_street
+        else:
+            return None
+
+    @property
+    def street(self):
+        return self.kladr_street.name if self.kladr_street else ''
+
+    @property
+    def street_free(self):
+        return self.house.streetFreeInput if self.house else None
+
+    @property
+    def street_old(self):
+        if self.house.KLADRStreetCode:
+            record = Street.query.filter(Street.CODE == self.house.KLADRStreetCode).first()
+            return record.NAME + " " + record.SOCR
+        else:
+            return ''
+
+    @property
     def text(self):
         parts = [self.city]
-        if self.street:
-            parts.append(self.street)
+        if self.street or self.street_free:
+            parts.append(self.street or self.street_free)
         if self.number:
             parts.append(u'д.'+self.number)
         if self.corpus:
@@ -1141,23 +1178,6 @@ class Address(Info):
     @property
     def corpus(self):
         return self.house.corpus
-
-    @property
-    def street(self):
-        from models_utils import get_kladr_street  # TODO: fix?
-        text = ''
-        if self.KLADRStreetCode:
-            street_info = get_kladr_street(self.KLADRStreetCode)
-            text = street_info.get('name', u'-код улицы не найден в кладр-')
-        return text
-
-    @property
-    def street_old(self):
-        if self.KLADRStreetCode:
-            record = g.printing_session.query(Street).filter(Street.CODE == self.KLADRStreetCode).first()
-            return record.NAME + " " + record.SOCR
-        else:
-            return ''
 
     def __unicode__(self):
         return self.text
@@ -1195,7 +1215,8 @@ class Addresshouse(Info):
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     KLADRCode = Column(String(13), nullable=False)
-    KLADRStreetCode = Column(String(17), nullable=False)
+    KLADRStreetCode = Column(String(17))
+    streetFreeInput = Column(Unicode(128))
     number = Column(String(8), nullable=False)
     corpus = Column(String(8), nullable=False)
 
@@ -1644,8 +1665,8 @@ class Clientaddress(Info):
     client_id = Column(ForeignKey('Client.id'), nullable=False)
     type = Column(Integer, nullable=False)
     address_id = Column(Integer, ForeignKey('Address.id'))
-    freeInput = Column(String(200), nullable=False)
-    version = Column(Integer, nullable=False)
+    freeInput = Column(String(255), nullable=False, server_default="''")
+    version = Column(Integer, nullable=False, server_default="'0'")
     localityType = Column(Integer, nullable=False)
 
     address = relationship(u'Address')
@@ -1677,6 +1698,16 @@ class Clientaddress(Info):
     @property
     def corpus(self):
         return self.address.corpus if self.address else ''
+
+    @property
+    def is_russian(self):
+        return bool(self.KLADRCode)
+
+    def is_from_kladr(self, full=True):
+        if full:
+            return bool(self.KLADRCode and self.KLADRStreetCode)
+        else:
+            return bool(self.KLADRCode)
 
     def __unicode__(self):
         if self.text:
@@ -2117,7 +2148,7 @@ class Clientsocstatus(Info):
     client_id = Column(ForeignKey('Client.id'), nullable=False, index=True)
     socStatusClass_id = Column(ForeignKey('rbSocStatusClass.id'), index=True)
     socStatusType_id = Column(ForeignKey('rbSocStatusType.id'), nullable=False, index=True)
-    begDate = Column(Date, nullable=False)
+    begDate = Column(Date)
     endDate = Column(Date)
     document_id = Column(ForeignKey('ClientDocument.id'), index=True)
     version = Column(Integer, nullable=False)
