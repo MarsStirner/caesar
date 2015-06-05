@@ -2148,7 +2148,7 @@ class Clientsocstatus(Info):
     client_id = Column(ForeignKey('Client.id'), nullable=False, index=True)
     socStatusClass_id = Column(ForeignKey('rbSocStatusClass.id'), index=True)
     socStatusType_id = Column(ForeignKey('rbSocStatusType.id'), nullable=False, index=True)
-    begDate = Column(Date, nullable=False)
+    begDate = Column(Date)
     endDate = Column(Date)
     document_id = Column(ForeignKey('ClientDocument.id'), index=True)
     version = Column(Integer, nullable=False)
