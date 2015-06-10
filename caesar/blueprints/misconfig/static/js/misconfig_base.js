@@ -79,7 +79,8 @@ WebMis20
             templateUrl: $scope.modalTemplate,
             resolve: {
                 model: get_model_callback
-            }
+            },
+            backdrop: 'static' // TMIS-623 Саша нервный наркоман; в порыве ярости кликает по бэкдропу и теряет данные.
         });
     };
     $scope.modalTemplate = '';
