@@ -8,7 +8,7 @@ WebMis20
     Organisation.inheritsFrom(SimpleRb);
     Organisation.initialize({
         fields: ['id', 'short_name', 'full_name', 'title', 'infis', 'is_insurer',
-            'is_hospital', 'address', 'phone', 'kladr_locality'],
+            'is_hospital', 'address', 'phone', 'kladr_locality', 'deleted'],
         base_url: '{0}Organisation/'.format(Organisation.getBaseUrl())
     }, Organisation);
     return Organisation;

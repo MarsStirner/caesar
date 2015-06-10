@@ -92,6 +92,12 @@ class BaseModelManager(object):
             item.deleted = 1
         return item
 
+    def undelete(self, item_id):
+        item = self.get_by_id(item_id)
+        if hasattr(item, 'deleted'):
+            item.deleted = 0
+        return item
+
     def store(self, *args):
         db.session.add_all(args)
         try:

@@ -26,10 +26,12 @@
             <td>[[ item.code ]]</td>
             <td>[[ item.name ]]</td>
             <td class="nowrap" width="1%">
-                <button type="button" class="btn btn-primary" ng-click="edit($index)" title="Редактировать">
+                <button type="button" class="btn btn-primary" ng-if="canEdit(item)" ng-click="edit($index)" title="Редактировать">
                     <i class="fa fa-pencil"></i></button>
-                <button type="button" class="btn btn-danger" ng-click="remove($index)" title="Удалить">
+                <button type="button" class="btn btn-danger" ng-if="canDelete(item)" ng-click="remove($index)" title="Удалить">
                     <i class="fa fa-trash"></i></button>
+                <button type="button" class="btn btn-info" ng-if="canUndelete(item)" ng-click="restore($index)" title="Восстановить">
+                    <i class="fa fa-undo"></i></button>
             </td>
         </tr>
         </tbody>

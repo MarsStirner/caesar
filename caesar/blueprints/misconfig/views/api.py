@@ -269,9 +269,21 @@ def api_v1_rb_delete(name, item_id):
         raise ApiException(404, u'Не найден справочник по наименованию {0}'.format(name))
 
     mng = get_manager(name)
-    result = mng.delete(item_id)
+    item = mng.delete(item_id)
     mng.store()
-    return result
+    return mng.represent(item)
+
+
+@module.route('/api/v1/rb/<name>/<int:item_id>/undelete/', methods=['POST'])
+@api_method
+def api_v1_rb_undelete(name, item_id):
+    if name not in all_rbs:
+        raise ApiException(404, u'Не найден справочник по наименованию {0}'.format(name))
+
+    mng = get_manager(name)
+    item = mng.undelete(item_id)
+    mng.store()
+    return mng.represent(item)
 
 
 @module.route('/api/v1/expert/protocol/', methods=['GET'])

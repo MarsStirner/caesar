@@ -38,7 +38,20 @@ WebMis20
                 });
         },
         del: function (url) {
-            return ApiCalls.wrapper('DELETE', url);
+            var self = this,
+                url = url || '{0}{|1|/}'.formatNonEmpty(this._base_url, self.id);
+            return ApiCalls.wrapper('DELETE', url)
+                .then(function (result) {
+                    return self.fill(result);
+                });
+        },
+        undel: function (url) {
+            var self = this,
+                url = url || '{0}{|1|/undelete/}'.formatNonEmpty(this._base_url, self.id);
+            return ApiCalls.wrapper('POST', url)
+                .then(function (result) {
+                    return self.fill(result);
+                });
         },
         clone: function () {
             return new this.constructor(this._pickData());
@@ -109,6 +122,7 @@ WebMis20
     var _simpleModalConfig = {
         controller: 'SimpleConfigModalCtrl',
         size: 'lg',
+        backdrop: 'static',
         templateUrl: null,
         resolve: {}
     };
@@ -150,15 +164,22 @@ WebMis20
         var item = $scope.item_list[index];
         MessageBox.question('Удаление записи', 'Действительно удалить?').then(function (result) {
             if (result) {
-                item.del().then(function (result) {
-                    if (item.hasOwnProperty('deleted')) {
-                        $scope.model.rb_list.splice(index, 1, result)
-                    } else {
-                        $scope.model.rb_list.splice(index, 1);
-                    }
-                });
+                item.del();
             }
         });
+    };
+    $scope.restore = function (index) {
+        var item = $scope.item_list[index];
+        item.undel();
+    };
+    $scope.canEdit = function (item) {
+        return !item.deleted;
+    };
+    $scope.canDelete = function (item) {
+        return item.deleted !== undefined && !item.deleted;
+    };
+    $scope.canUndelete = function (item) {
+        return item.deleted !== undefined && item.deleted;
     };
 }])
 .controller('SimpleConfigModalCtrl', ['$scope', '$modalInstance', 'model',

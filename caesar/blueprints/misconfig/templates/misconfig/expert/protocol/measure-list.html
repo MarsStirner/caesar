@@ -12,6 +12,9 @@
 
     <div class="row">
     <div class="col-md-12">
+        <button type="button" class="btn btn-lg btn-success pull-right" ng-click="create_new()"
+            title="Добавить запись"><i class="fa fa-plus"></i>
+        </button>
         <table class="table">
         <thead>
         <tr>
@@ -21,10 +24,11 @@
             <th>Наименование</th>
             <th>UUID</th>
             <th>Удалено</th>
+            <th></th>
         </tr>
         </thead>
         <tbody>
-        <tr ng-repeat="item in item_list">
+        <tr ng-repeat="item in item_list" ng-class="{'bg-danger': item.deleted}">
             <td>[[ item.id ]]</td>
             <td>[[ item.measure_type.name ]]</td>
             <td>[[ item.code ]]</td>
@@ -32,15 +36,17 @@
             <td>[[ item.uuid ]]</td>
             <td>[[ item.deleted ]]</td>
             <td class="nowrap" width="1%">
-                <button type="button" class="btn btn-primary" ng-click="edit($index)" title="Редактировать">
+                <button type="button" class="btn btn-primary" ng-if="canEdit(item)" ng-click="edit($index)" title="Редактировать">
                     <i class="fa fa-pencil"></i></button>
-                <button type="button" class="btn btn-danger" ng-click="remove($index)" title="Удалить">
+                <button type="button" class="btn btn-danger" ng-if="canDelete(item)" ng-click="remove($index)" title="Удалить">
                     <i class="fa fa-trash"></i></button>
+                <button type="button" class="btn btn-info" ng-if="canUndelete(item)" ng-click="restore($index)" title="Восстановить">
+                    <i class="fa fa-undo"></i></button>
             </td>
         </tr>
         </tbody>
         </table>
-        <button type="button" class="btn btn-lg btn-success pull-right" ng-click="create_new()"
+        <button type="button" class="btn btn-lg btn-success pull-right" ng-if="item_list.length" ng-click="create_new()"
             title="Добавить запись"><i class="fa fa-plus"></i>
         </button>
     </div>

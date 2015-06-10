@@ -17,6 +17,7 @@ class OrganisationModelManager(BaseModelManager):
             FieldConverter(FCType.basic, 'Address', safe_unicode, 'address'),
             FieldConverter(FCType.basic, 'phone', safe_unicode, 'phone'),
             FieldConverter(FCType.relation, 'kladr_locality', self.handle_kladr_locality, 'kladr_locality'),
+            FieldConverter(FCType.basic, 'deleted', safe_int, 'deleted'),
         ]
         super(OrganisationModelManager, self).__init__(Organisation, fields)
 
