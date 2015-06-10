@@ -14,7 +14,7 @@
     <div class="col-md-3">
         <div class="list-group">
             <a href="javascript:void(0);" class="list-group-item" ng-repeat="rb_item in RbList.items" title="[[rb_item.name]]"
-                ng-click="select_rb(rb_item)" ng-class="{'active': isSelected(rb_item.name)}">
+                ng-click="selectRb(rb_item)" ng-class="{'active': isSelected(rb_item.name)}">
                 [[ rb_item.desc ]]
             </a>
         </div>

@@ -2,22 +2,25 @@
 
 WebMis20
 .factory('Organisation', ['SimpleRb', function (SimpleRb) {
-    var name = 'Organisation',
-        _fields = ['id', 'short_name', 'full_name', 'title', 'infis', 'is_insurer',
-            'is_hospital', 'address', 'phone', 'kladr_locality'];
     var Organisation = function (data) {
-        SimpleRb.call(this, name, data, _fields);
+        SimpleRb.call(this, data);
     };
-    Organisation.prototype = Object.create(SimpleRb.prototype);
-    Organisation.prototype.constructor = Organisation;
+    Organisation.inheritsFrom(SimpleRb);
+    Organisation.initialize({
+        fields: ['id', 'short_name', 'full_name', 'title', 'infis', 'is_insurer',
+            'is_hospital', 'address', 'phone', 'kladr_locality'],
+        base_url: '{0}Organisation/'.format(Organisation.getBaseUrl())
+    }, Organisation);
     return Organisation;
 }])
-.controller('OrgConfigCtrl', ['$scope', '$controller', 'RbService',
-        function ($scope, $controller, RbService) {
+.controller('OrgConfigCtrl', ['$scope', '$controller', 'Organisation',
+        function ($scope, $controller, Organisation) {
     $controller('MisConfigBaseCtrl', {$scope: $scope});
-    $scope.modalTemplate = "/caesar/misconfig/refbook/org-edit-modal.html";
-    $scope.EntityClass = RbService.getClass('Organisation');
-    RbService.getItemList('Organisation').then(function (orgs) {
+    $scope.setSimpleModalConfig({
+        templateUrl: '/caesar/misconfig/refbook/org-edit-modal.html'
+    });
+    $scope.EntityClass = Organisation;
+    Organisation.instantiateAll().then(function (orgs) {
         $scope.item_list = orgs;
     });
 }])

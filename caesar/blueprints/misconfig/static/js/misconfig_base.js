@@ -102,72 +102,48 @@ WebMis20
         base_url: _base_url,
         fields: _fields
     }, SimpleRb);
-    //SimpleRb.prototype.save = function () {
-    //    var data = _.pick(this, this._fields),
-    //        url = '/misconfig/api/v1/rb/{0}/{1|/}'.formatNonEmpty(this.rb_name, this.id || undefined);
-    //    return BasicModel.prototype.save.call(this, url, data);
-    //};
-    //SimpleRb.prototype.del = function () {
-    //    var url = '/misconfig/api/v1/rb/{0}/{1}/'.format(this.rb_name, this.id);
-    //    return BasicModel.prototype.del.call(this, url);
-    //};
     return SimpleRb;
-}])
-.service('RbService', ['$injector', 'ApiCalls', function ($injector, ApiCalls) {
-    this.getItemList = function (name) {
-        var klass = $injector.get(name);
-        var url = klass.getBaseUrl();
-        return ApiCalls.wrapper('GET', url) // '/misconfig/api/v1/rb/{0}/'.format(name)
-            .then(function (data) {
-                return data.items.map(function (item) {
-                    return new klass(item);
-                });
-            });
-    };
-    this.getClass = function (name) {
-        return $injector.get(name);
-    };
 }])
 .controller('MisConfigBaseCtrl', ['$scope', '$modal', 'MessageBox',
         function ($scope, $modal, MessageBox) {
-    var _modalParams = {
-        controller: function ($scope, $modalInstance, model) {
-            $scope.model = model;
-        },
+    var _simpleModalConfig = {
+        controller: 'SimpleConfigModalCtrl',
         size: 'lg',
         templateUrl: null,
         resolve: {}
     };
-    $scope.setModalParams = function (params) {
-        _.extend(_modalParams, params);
+    $scope.setSimpleModalConfig = function (config) {
+        _.extend(_simpleModalConfig, config);
     };
-    var get_edit_modal = function (get_model_callback) {
-        _modalParams.resolve.model = get_model_callback;
-        return $modal.open(_modalParams);
+    var getSimpleEditModal = function (model) {
+        _simpleModalConfig.resolve.model = function () {
+            return model;
+        };
+        return $scope.getEditModal(_simpleModalConfig);
     };
+    $scope.getEditModal = function (config) {
+        return $modal.open(config);
+    };
+
     var url_params = aux.getQueryParams();
+    $scope.getUrlParam = function (name) {
+        return url_params[name];
+    };
 
     $scope.EntityClass = null;
     $scope.item_list = [];
-
     $scope.create_new = function () {
-        var item = new $scope.EntityClass();
-        get_edit_modal(function () {
-            return item;
-        }).result.then(function () {
-            item.save().then(function (result) {
-                $scope.item_list.push(result);
+        $scope.EntityClass.instantiate('new').
+            then(function (item) {
+                getSimpleEditModal(item).result.then(function (item) {
+                    $scope.item_list.push(item);
+                });
             });
-        });
     };
     $scope.edit = function (index) {
         var item = $scope.item_list[index].clone();
-        get_edit_modal(function () {
-            return item;
-        }).result.then(function () {
-            item.save().then(function (result) {
-                $scope.item_list.splice(index, 1, result)
-            });
+        getSimpleEditModal(item).result.then(function (item) {
+            $scope.item_list.splice(index, 1, item)
         });
     };
     $scope.remove = function (index) {
@@ -182,11 +158,17 @@ WebMis20
                     }
                 });
             }
-        })
+        });
     };
-
-    $scope.getUrlParam = function (name) {
-        return url_params[name];
-    }
+}])
+.controller('SimpleConfigModalCtrl', ['$scope', '$modalInstance', 'model',
+    function ($scope, $modalInstance, model) {
+        $scope.model = model;
+        $scope.close = function () {
+            $scope.model.save().
+                then(function (model) {
+                    $scope.$close(model);
+                });
+        };
 }])
 ;

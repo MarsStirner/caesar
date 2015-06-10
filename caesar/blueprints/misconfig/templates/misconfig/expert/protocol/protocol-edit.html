@@ -55,7 +55,7 @@
             <td>[[ scheme.code ]]</td>
             <td>[[ scheme.name ]]</td>
             <td>[[ scheme.number ]]</td>
-            <td ng-bind="formatMkbList(scheme.mkbs)"></td>
+            <td ng-bind="formatMkbList(scheme.scheme_mkbs)"></td>
             <td class="nowrap" width="1%">
                 <button type="button" class="btn btn-primary" ng-click="editScheme($index)" title="Редактировать данные схемы и список МКБ">
                     <i class="fa fa-pencil"></i></button>
@@ -77,7 +77,7 @@
 
 {% block modules_js %}
 {{ super() }}
-<script src="{{ url_for('.static', filename='js/expert/measure.js', v=version) }}"></script>
+<script src="{{ url_for('.static', filename='js/expert/models.js', v=version) }}"></script>
 <script src="{{ url_for('.static', filename='js/expert/protocol-scheme.js', v=version) }}"></script>
 <script type="text/ng-template" id="/caesar/misconfig/expert/protocol/scheme-edit-modal.html">{% include "misconfig/expert/protocol/scheme-edit-modal.html" %}</script>
 {% endblock %}

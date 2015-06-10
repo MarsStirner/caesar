@@ -1,7 +1,7 @@
 'use strict';
 
 WebMis20
-.service('RbList', ['ApiCalls', function (ApiCalls) {
+.service('RbList', ['$injector', 'ApiCalls', function ($injector, ApiCalls) {
     var self = this;
     this.loading = ApiCalls.wrapper('GET', '/misconfig/api/v1/rb/list/')
     .then(function (data) {
@@ -11,7 +11,10 @@ WebMis20
         return _.find(self.items, function (item) {
             return item.name === name;
         })
-    }
+    };
+    this.getEntityClass = function (name) {
+        return $injector.get(name);
+    };
 }])
 .factory('rbTreatment', ['SimpleRb', function (SimpleRb) {
     var rbTreatment = function (data) {
@@ -31,7 +34,7 @@ WebMis20
     rbTreatmentType.inheritsFrom(SimpleRb);
     rbTreatmentType.initialize({
         base_url: '{0}rbTreatmentType/'.format(rbTreatmentType.getBaseUrl())
-    });
+    }, rbTreatmentType);
     return rbTreatmentType;
 }])
 .factory('rbPacientModel', ['SimpleRb', function (SimpleRb) {
@@ -41,7 +44,7 @@ WebMis20
     rbPacientModel.inheritsFrom(SimpleRb);
     rbPacientModel.initialize({
         base_url: '{0}rbPacientModel/'.format(rbPacientModel.getBaseUrl())
-    });
+    }, rbPacientModel);
     return rbPacientModel;
 }])
 .factory('rbFinance', ['SimpleRb', function (SimpleRb) {
@@ -74,8 +77,8 @@ WebMis20
     }, rbMeasureScheduleType);
     return rbMeasureScheduleType;
 }])
-.controller('RBConfigCtrl', ['$scope', '$controller', '$location', 'RbList', 'RbService',
-        function ($scope, $controller, $location, RbList, RbService) {
+.controller('RBConfigCtrl', ['$scope', '$controller', '$location', 'RbList',
+        function ($scope, $controller, $location, RbList) {
     $controller('MisConfigBaseCtrl', {$scope: $scope});
 
     $scope.RbList = RbList;
@@ -86,7 +89,7 @@ WebMis20
         var path = $location.path() + '?name=' + rb_name;
         $location.url(path).replace();
     };
-    $scope.select_rb = function (rb_item) {
+    $scope.selectRb = function (rb_item) {
         $scope.model.selected_rb = rb_item;
         var template = '';
         if (rb_item.is_simple) {
@@ -94,12 +97,12 @@ WebMis20
         } else {
             template = '/caesar/misconfig/refbook/{0}-edit-modal.html'.format(rb_item.name);
         }
-        $scope.setModalParams({
+        $scope.setSimpleModalConfig({
             templateUrl: template
         });
-        $scope.EntityClass = RbService.getClass(rb_item.name);
-        RbService.getItemList(rb_item.name).then(function (orgs) {
-            $scope.item_list = orgs;
+        $scope.EntityClass = RbList.getEntityClass(rb_item.name);
+        $scope.EntityClass.instantiateAll().then(function (items) {
+            $scope.item_list = items;
         });
         changePath(rb_item.name)
     };
@@ -116,7 +119,7 @@ WebMis20
             $scope.RbList.loading.then(function () {
                 var rb_item = $scope.RbList.getByName(selected_rb);
                 if (rb_item) {
-                    $scope.select_rb(rb_item);
+                    $scope.selectRb(rb_item);
                 }
             });
         }

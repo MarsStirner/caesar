@@ -4,11 +4,23 @@ from nemesis.lib.utils import safe_dict, safe_traverse
 from nemesis.systemwide import db
 
 
+class FCType(object):
+    basic = 0  # простое поле для отображения и сохранения
+    basic_repr = 1  # простое поле только для отображения
+    relation = 2  # поле, представляющее отношение с другими сущностями, для отображения и редактирования
+    relation_repr = 3  # поле, представляющее отношение с другими сущностями, только для отображения
+    parent = 4  # поле, представляющее родительскую сущность
+
+
 class FieldConverter():
-    def __init__(self, model_name, json_name, to_model=None, to_json=None):
+
+    def __init__(self, field_type, model_name, to_model=None, json_name=None, to_json=None):
+        self.field_type = field_type
         self.m_name = model_name
-        self.j_name = json_name
         self.to_model = to_model
+        if self.field_type in (FCType.basic, FCType.relation) and self.to_model is None:
+            raise AttributeError('`to_model` parameter is required for valid model value conversion')
+        self.j_name = json_name
         self.to_json = to_json
 
 
@@ -19,6 +31,12 @@ def represent_model(value, manager):
 
 
 class BaseModelManager(object):
+
+    @classmethod
+    def get_manager(cls, name):
+        from blueprints.misconfig.lib.data_management.factory import get_manager
+        return get_manager(name)
+
     def __init__(self, model, fields):
         self._model = model
         self._fields = fields
@@ -35,27 +53,26 @@ class BaseModelManager(object):
 
     def fill(self, item, data, parent_obj=None):
         for field in self._fields:
-            if field.m_name.startswith('^'):
-                # setting parent
-                item_field = field.m_name[1:]
-                value = parent_obj
-            elif field.m_name.endswith('^'):
-                # setting fields that require parent to be saved
-                item_field = field.m_name[:-1]
-                value = field.to_model(data.get(field.j_name), item)
-            else:
-                # setting fields without relationships
-                item_field = field.m_name
-                value = safe_traverse(data, *field.j_name.split('.'))
-                if field.to_model:
-                    value = field.to_model(value)
-            if isinstance(getattr(item, item_field), list):
-                if isinstance(value, list):
-                    getattr(item, item_field).extend(value)
+            if field.field_type not in (FCType.basic_repr, FCType.relation_repr):
+                item_field_name = field.m_name
+                if field.field_type == FCType.parent:
+                    value = parent_obj
+                elif field.field_type == FCType.relation:
+                    value = field.to_model(data.get(field.j_name), item)
+                elif field.field_type == FCType.basic:
+                    value = data.get(field.j_name)
+                    if field.to_model:
+                        value = field.to_model(value)
                 else:
-                    getattr(item, item_field).append(value)
-            else:
-                setattr(item, item_field, value)
+                    raise AttributeError('bad field type')
+
+                if isinstance(getattr(item, item_field_name), list):
+                    if isinstance(value, list):
+                        getattr(item, item_field_name).extend(value)
+                    else:
+                        getattr(item, item_field_name).append(value)
+                else:
+                    setattr(item, item_field_name, value)
         return item
 
     def create(self, data=None, parent_id=None, parent_obj=None):
@@ -87,6 +104,18 @@ class BaseModelManager(object):
         result = {}
         for field in self._fields:
             if field.j_name:
-                j_field = field.j_name.split('.')[0]
-                result[j_field] = (field.to_json or safe_dict)(getattr(item, field.m_name.replace('^', '')))
+                j_field = field.j_name
+                result[j_field] = (field.to_json or safe_dict)(getattr(item, field.m_name))
         return result
+
+    def handle_onetomany_nonedit(self, manager, json_data, parent_obj=None):
+        if json_data is None:
+            return None
+        item_id = json_data['id']
+        item = manager.get_by_id(item_id)
+        return item
+
+    def handle_onetomany(self, json_data, parent_obj=None):
+        item_id = json_data['id']
+        item = self._measure_type_manager.get_by_id(item_id)
+        return item

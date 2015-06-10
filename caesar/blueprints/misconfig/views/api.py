@@ -223,11 +223,23 @@ def api_v1_rb_list_get():
 
 
 @module.route('/api/v1/rb/<name>/', methods=['GET'])
+@module.route('/api/v1/rb/<name>/<int:item_id>/', methods=['GET'])
+@module.route('/api/v1/rb/<name>/<new>/', methods=['GET'])
 @api_method
-def api_v1_rb_get(name):
+def api_v1_rb_get(name, item_id=None, new=None):
     if name not in all_rbs:
         raise ApiException(404, u'Не найден справочник по наименованию {0}'.format(name))
     mng = get_manager(name)
+    if item_id or new:
+        if item_id:
+            item = mng.get_by_id(item_id)
+        elif new == 'new':
+            item = mng.create()
+        else:
+            raise abort(404)
+        return {
+            'item': mng.represent(item)
+        }
     return {
         'items': map(mng.represent, mng.get_list())
     }
@@ -262,18 +274,19 @@ def api_v1_rb_delete(name, item_id):
     return result
 
 
-# TODO: подумать над именованием
 @module.route('/api/v1/expert/protocol/', methods=['GET'])
 @module.route('/api/v1/expert/protocol/<int:item_id>/', methods=['GET'])
-@module.route('/api/v1/expert/protocol/new/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/<new>/', methods=['GET'])
 @api_method
-def api_v1_expert_protocol_get(item_id=None):
+def api_v1_expert_protocol_get(item_id=None, new=None):
     mng = get_manager('ExpertProtocol')
     if item_id:
-        if item_id == 'new':
+        if item_id:
+            item = mng.get_by_id(item_id)
+        elif new == 'new':
             item = mng.create()
         else:
-            item = mng.get_by_id(item_id)
+            raise abort(404)
         return {
             'item': mng.represent(item)
         }

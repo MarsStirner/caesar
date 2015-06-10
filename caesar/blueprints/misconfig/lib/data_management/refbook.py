@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter
+from blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, FCType
 from nemesis.lib.utils import safe_int, safe_unicode
 from nemesis.models.exists import rbTreatment
 
@@ -7,13 +7,13 @@ from nemesis.models.exists import rbTreatment
 class SimpleRefBookModelManager(BaseModelManager):
     def __init__(self, model, additional_fields=None):
         fields = [
-            FieldConverter('id', 'id', safe_int),
-            FieldConverter('code', 'code', safe_unicode),
-            FieldConverter('name', 'name', safe_unicode),
+            FieldConverter(FCType.basic, 'id', safe_int, 'id'),
+            FieldConverter(FCType.basic, 'code', safe_unicode, 'code'),
+            FieldConverter(FCType.basic, 'name', safe_unicode, 'name'),
         ]
         if hasattr(model, 'deleted'):
             fields.append(
-                FieldConverter('deleted', 'deleted', safe_int)
+                FieldConverter(FCType.basic, 'deleted', safe_int, 'deleted'),
             )
         if isinstance(additional_fields, list):
             fields.extend(additional_fields)
@@ -22,6 +22,10 @@ class SimpleRefBookModelManager(BaseModelManager):
 
 class RbTreatmentModelManager(SimpleRefBookModelManager):
     def __init__(self):
-        super(RbTreatmentModelManager, self).__init__(rbTreatment, {
-            'treatment_type': 'treatment_type.id'
-        })
+        self._rbtt_mng = self.get_manager('rbTreatmentType')
+        super(RbTreatmentModelManager, self).__init__(rbTreatment, [
+            FieldConverter(
+                FCType.relation,
+                'treatmentType', lambda val, par: self.handle_onetomany_nonedit(self._rbtt_mng, val, par),
+                'treatment_type')
+        ])
