@@ -2,6 +2,7 @@
 from nemesis.models.exists import (rbPacientModel, rbTreatment, rbTreatmentType, Organisation, rbFinance, MKB)
 from nemesis.models.expert_protocol import rbMeasureType, rbMeasureScheduleType, Measure
 from nemesis.models.actions import ActionType
+from nemesis.lib.settings import Settings
 
 from .refbook import SimpleRefBookModelManager, RbTreatmentModelManager
 from .organisation import OrganisationModelManager
@@ -27,6 +28,35 @@ basic_rbs = [
 simple_rbs = [
     'rbPacientModel', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType',
 ]
+
+rb_groups = {
+    'vmp': (u'ВМП', ['rbPacientModel', 'rbTreatment', 'rbTreatmentType']),
+    'expert_protocol': (u'Протоколы лечения', ['rbMeasureType', 'rbMeasureScheduleType']),
+    'other': (u'Остальные', ['rbFinance'])
+}
+
+
+def make_refbook_list(rb_list):
+    return sorted([
+        dict(
+            name=t.__tablename__,
+            desc=getattr(t, '_table_description', t.__tablename__),
+            is_simple=(t_name in simple_rbs)
+        )
+        for t_name, t in all_rbs.iteritems() if t_name in rb_list
+    ], key=lambda k: k['desc'])
+
+
+def get_grouped_refbooks():
+    grouped = {}
+    for group_code, (group_descr, rb_list) in rb_groups.iteritems():
+        if group_code == 'expert_protocol' and not Settings.getBool('Expert.Protocol.Enabled', False):
+            continue
+        grouped[group_code] = {
+            'descr': group_descr,
+            'rb_list': make_refbook_list(rb_list)
+        }
+    return grouped
 
 
 def get_manager(name):

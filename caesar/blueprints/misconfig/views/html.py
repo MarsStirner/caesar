@@ -25,6 +25,7 @@ def org_html():
     return render_template('misconfig/org.html')
 
 
+@module.route('/expert/protocol/')
 @module.route('/expert/protocol/index/')
 def expert_protocol_index_html():
     return render_template('misconfig/expert/protocol/index.html')

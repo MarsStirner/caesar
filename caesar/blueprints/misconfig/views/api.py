@@ -8,7 +8,7 @@ from nemesis.models.exists import QuotaCatalog, QuotaType, VMPQuotaDetails
 
 from ..app import module
 from ..lib.data import worker, WorkerException
-from ..lib.data_management.factory import get_manager, all_rbs, basic_rbs, simple_rbs
+from ..lib.data_management.factory import get_manager, all_rbs, get_grouped_refbooks
 
 
 @module.route('/api/v1/quota_catalog', methods=['GET'])
@@ -211,14 +211,7 @@ def api_v1_quota_detail_delete(quota_type_id, _id):
 @api_method
 def api_v1_rb_list_get():
     return {
-        'supported_rbs': sorted([
-            dict(
-                name=t.__tablename__,
-                desc=getattr(t, '_table_description', t.__tablename__),
-                is_simple=(t_name in simple_rbs)
-            )
-            for t_name, t in all_rbs.iteritems() if t_name in basic_rbs
-        ], key=lambda k: k['desc'])
+        'supported_rbs': get_grouped_refbooks()
     }
 
 

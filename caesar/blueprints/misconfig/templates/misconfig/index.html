@@ -17,6 +17,7 @@
         </div>
     </div>
 
+    {% if mis_settings.getBool('Expert.Protocol.Enabled', False) %}
     <div class="panel panel-default">
         <div class="panel-heading">
             Настройки экспертной части МИС
@@ -27,5 +28,6 @@
             <div class="list-group-item">...</div>
         </div>
     </div>
+    {% endif %}
 </div>
 {% endblock %}

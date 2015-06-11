@@ -12,11 +12,14 @@
 
     <div class="row">
     <div class="col-md-3">
-        <div class="list-group">
-            <a href="javascript:void(0);" class="list-group-item" ng-repeat="rb_item in RbList.items" title="[[rb_item.name]]"
-                ng-click="selectRb(rb_item)" ng-class="{'active': isSelected(rb_item.name)}">
-                [[ rb_item.desc ]]
-            </a>
+        <div ng-repeat="(group_key, rb_group) in RbList.items">
+            <span class="text-bold">[[rb_group.descr]]</span>
+            <div class="list-group" >
+                <a href="javascript:void(0);" class="list-group-item" ng-repeat="rb_item in rb_group.rb_list" title="[[rb_item.name]]"
+                    ng-click="selectRb(rb_item)" ng-class="{'active': isSelected(rb_item.name)}">
+                    [[ rb_item.desc ]]
+                </a>
+            </div>
         </div>
     </div>
     <div class="col-md-9">
