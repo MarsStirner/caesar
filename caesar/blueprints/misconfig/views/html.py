@@ -23,3 +23,29 @@ def rb_html():
 @module.route('/org/')
 def org_html():
     return render_template('misconfig/org.html')
+
+
+@module.route('/expert/protocol/')
+@module.route('/expert/protocol/index/')
+def expert_protocol_index_html():
+    return render_template('misconfig/expert/protocol/index.html')
+
+
+@module.route('/expert/protocol/measures/')
+def expert_protocol_measures_html():
+    return render_template('misconfig/expert/protocol/measure-list.html')
+
+
+@module.route('/expert/protocol/protocols/')
+def expert_protocol_protocols_html():
+    return render_template('misconfig/expert/protocol/protocol-list.html')
+
+
+@module.route('/expert/protocol/protocols/protocol/')
+def expert_protocol_protocol_html():
+    return render_template('misconfig/expert/protocol/protocol-edit.html')
+
+
+@module.route('/expert/protocol/protocols/scheme_measures/')
+def expert_protocol_scheme_measures_html():
+    return render_template('misconfig/expert/protocol/scheme-measure-edit.html')

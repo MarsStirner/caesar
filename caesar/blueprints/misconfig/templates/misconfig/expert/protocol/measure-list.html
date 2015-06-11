@@ -1,37 +1,28 @@
 {% extends 'misconfig/base.html' %}
 
 {% block content %}
-<div class="container-fluid" ng-controller="RBConfigCtrl" ng-cloak>
+<div class="container-fluid" ng-controller="MeasureConfigCtrl" ng-cloak>
     <alert-notify></alert-notify>
     <ul class="breadcrumb">
         <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
-        <li ng-if="!model.selected_rb">Базовые справочники</li>
-        <li ng-if="model.selected_rb"><a ng-click="gotoIndex()">Базовые справочники</a></li>
-        <li ng-if="model.selected_rb">[[ model.selected_rb.desc ]]</li>
+        <li><a href="{{ url_for('.index_html') }}">Экспертная часть</a></li>
+        <li><a href="{{ url_for('.expert_protocol_index_html') }}">Протоколы лечения</a></li>
+        <li>Мероприятия</li>
     </ul>
 
     <div class="row">
-    <div class="col-md-3">
-        <div ng-repeat="(group_key, rb_group) in RbList.items">
-            <span class="text-bold">[[rb_group.descr]]</span>
-            <div class="list-group" >
-                <a href="javascript:void(0);" class="list-group-item" ng-repeat="rb_item in rb_group.rb_list" title="[[rb_item.name]]"
-                    ng-click="selectRb(rb_item)" ng-class="{'active': isSelected(rb_item.name)}">
-                    [[ rb_item.desc ]]
-                </a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-9">
+    <div class="col-md-12">
         <button type="button" class="btn btn-lg btn-success pull-right" ng-click="create_new()"
             title="Добавить запись"><i class="fa fa-plus"></i>
         </button>
-        <table class="table" ng-if="item_list.length">
+        <table class="table">
         <thead>
         <tr>
             <th>id</th>
+            <th>Тип</th>
             <th>Код</th>
             <th>Наименование</th>
+            <th>UUID</th>
             <th>Удалено</th>
             <th></th>
         </tr>
@@ -39,8 +30,10 @@
         <tbody>
         <tr ng-repeat="item in item_list" ng-class="{'bg-danger': item.deleted}">
             <td>[[ item.id ]]</td>
+            <td>[[ item.measure_type.name ]]</td>
             <td>[[ item.code ]]</td>
             <td>[[ item.name ]]</td>
+            <td>[[ item.uuid ]]</td>
             <td>[[ item.deleted ]]</td>
             <td class="nowrap" width="1%">
                 <button type="button" class="btn btn-primary" ng-if="canEdit(item)" ng-click="edit($index)" title="Редактировать">
@@ -63,7 +56,7 @@
 
 {% block modules_js %}
 {{ super() }}
-<script src="{{ url_for('.static', filename='js/rb.js', v=version) }}"></script>
-<script type="text/ng-template" id="/caesar/misconfig/refbook/simple-rb-edit-modal.html">{% include "misconfig/refbook/simple-rb-edit-modal.html" %}</script>
-<script type="text/ng-template" id="/caesar/misconfig/refbook/rbTreatment-edit-modal.html">{% include "misconfig/refbook/rbTreatment-edit-modal.html" %}</script>
+<script src="{{ url_for('.static', filename='js/expert/models.js', v=version) }}"></script>
+<script src="{{ url_for('.static', filename='js/expert/measure.js', v=version) }}"></script>
+<script type="text/ng-template" id="/caesar/misconfig/expert/protocol/measure-edit-modal.html">{% include "misconfig/expert/protocol/measure-edit-modal.html" %}</script>
 {% endblock %}

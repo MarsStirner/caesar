@@ -1,0 +1,36 @@
+<div class="modal-header">
+    <button type="button" class="close" ng-click="$dismiss()">&times;</button>
+    <h4 class="modal-title">Схема мероприятий</h4>
+</div>
+<div class="modal-body">
+<form class="form-horizontal">
+    <div class="form-group">
+        <label for="measure" class="col-sm-2 control-label">Мероприятие</label>
+        <div class="col-sm-10">
+            <ui-select id="measure" name="measure" theme="bootstrap"
+                   ng-model="scheme_measure.measure">
+                <ui-select-match placeholder="Мероприятие"><span ng-bind="$select.selected.name"></span></ui-select-match>
+                <ui-select-choices repeat="measure in measure_list | filter: $select.search | limitTo: 100">
+                    <div ng-bind-html="measure.name | highlight: $select.search"></div>
+                    <small style="font-style: italic">Данные: [[ measure.action_type.name ]]</small>
+                </ui-select-choices>
+            </ui-select>
+        </div>
+    </div>
+
+    <hr>
+    <div class="row">
+    <div class="col-md-offset-1 col-md-10">
+        <ng-form name="schedForm">
+            <wm-measure-schedule-conf schedule="scheme_measure.schedule" ident="sched1"></wm-measure-schedule-conf>
+        </ng-form>
+    </div>
+    </div>
+
+{#    <br><pre>[[ scheme_measure | json ]]</pre>#}
+</form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-success" ng-click="close()">Сохранить</button>
+    <button type="button" class="btn btn-danger" ng-click="$dismiss()">Закрыть</button>
+</div>

@@ -1,34 +1,30 @@
 {% extends 'misconfig/base.html' %}
 
 {% block content %}
-<div class="container-fluid" ng-controller="OrgConfigCtrl" ng-cloak>
+<div class="container-fluid" ng-controller="ExpertProtocolListConfigCtrl" ng-cloak>
     <alert-notify></alert-notify>
     <ul class="breadcrumb">
         <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
-        <li>Организации и ЛПУ</li>
+        <li><a href="{{ url_for('.index_html') }}">Экспертная часть</a></li>
+        <li><a href="{{ url_for('.expert_protocol_index_html') }}">Протоколы лечения</a></li>
+        <li>Список протоколов</li>
     </ul>
 
     <div class="row">
     <div class="col-md-12">
-        <button type="button" class="btn btn-lg btn-success pull-right" ng-click="create_new()"
-            title="Добавить запись"><i class="fa fa-plus"></i>
-        </button>
         <table class="table">
         <thead>
         <tr>
             <th>id</th>
-            <th>Полное наименование</th>
-            <th>Краткое наименование</th>
-            <th>Удалено</th>
-            <th></th>
+            <th>Код</th>
+            <th>Наименование</th>
         </tr>
         </thead>
         <tbody>
-        <tr ng-repeat="item in item_list" ng-class="{'bg-danger': item.deleted}">
+        <tr ng-repeat="item in item_list">
             <td>[[ item.id ]]</td>
-            <td>[[ item.full_name ]]</td>
-            <td>[[ item.short_name ]]</td>
-            <td>[[ item.deleted ]]</td>
+            <td>[[ item.code ]]</td>
+            <td>[[ item.name ]]</td>
             <td class="nowrap" width="1%">
                 <button type="button" class="btn btn-primary" ng-if="canEdit(item)" ng-click="edit($index)" title="Редактировать">
                     <i class="fa fa-pencil"></i></button>
@@ -40,7 +36,7 @@
         </tr>
         </tbody>
         </table>
-        <button type="button" class="btn btn-lg btn-success pull-right" ng-if="item_list.length" ng-click="create_new()"
+        <button type="button" class="btn btn-lg btn-success pull-right" ng-click="create_new()"
             title="Добавить запись"><i class="fa fa-plus"></i>
         </button>
     </div>
@@ -50,7 +46,7 @@
 
 {% block modules_js %}
 {{ super() }}
-<script src="{{ url_for('.static', filename='js/org.js', v=version) }}"></script>
-<script src="{{ url_for('static', filename='js/directives/kladr-directives.js', v=nemesis_version) }}"></script>
-<script type="text/ng-template" id="/caesar/misconfig/refbook/org-edit-modal.html">{% include "misconfig/refbook/org-edit-modal.html" %}</script>
+<script src="{{ url_for('.static', filename='js/expert/models.js', v=version) }}"></script>
+<script src="{{ url_for('.static', filename='js/expert/protocol-scheme.js', v=version) }}"></script>
+<script type="text/ng-template" id="/caesar/misconfig/expert/protocol/protocol-edit-modal.html">{% include "misconfig/expert/protocol/scheme-edit-modal.html" %}</script>
 {% endblock %}

@@ -1,0 +1,96 @@
+{% extends 'misconfig/base.html' %}
+
+{% block content %}
+<div class="container-fluid" ng-controller="RBConfigCtrl" ng-cloak>
+    <alert-notify></alert-notify>
+    <ul class="breadcrumb">
+        <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
+        <li><a href="{{ url_for('.index_html') }}">Экспертная часть</a></li>
+        <li>Протоколы лечения</li>
+        <li>Главная</li>
+    </ul>
+
+    <div class="row">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">Настройка базовых справочников</div>
+            <div class="panel-body">
+                <p>В рамках процесса работы с протоколами используются следующие базовые справочники</p>
+            </div>
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <a href="{{ url_for('.rb_html') + '#?name=rbMeasureType' }}" target="_blank" class="btn btn-lg btn-default pull-right">
+                        Настроить <i class="fa fa-external-link"></i>
+                    </a>
+                    <div>
+                        <h4>Типы мероприятий</h4>
+                        <p>&lt;описание&gt;&lt;описание&gt;<br>&lt;описание&gt;</p>
+                    </div>
+                </li>
+                <li class="list-group-item">
+                    <a href="{{ url_for('.rb_html') + '#?name=rbMeasureScheduleType' }}" target="_blank" class="btn btn-lg btn-default pull-right">
+                        Настроить <i class="fa fa-external-link"></i>
+                    </a>
+                    <div>
+                        <h4>Типы расписаний мероприятий</h4>
+                        <p>&lt;описание&gt;&lt;описание&gt;<br>&lt;описание&gt;</p>
+                    </div>
+                </li>
+            </ul>
+            <div class="panel-body">
+                <p>А также следующие справочники общего плана</p>
+            </div>
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <button type="button" class="btn btn-lg btn-default pull-right disabled">
+                        Настроить <i class="fa fa-external-link"></i>
+                    </button>
+                    <div>
+                        <h4>МКБ</h4>
+                        <p>&lt;описание&gt;&lt;описание&gt;<br>&lt;описание&gt;</p>
+                    </div>
+                </li>
+                <li class="list-group-item">
+                    <button type="button" class="btn btn-lg btn-default pull-right disabled">
+                        Настроить <i class="fa fa-external-link"></i>
+                    </button>
+                    <div>
+                        <h4>Типы действий</h4>
+                        <p>&lt;описание&gt;&lt;описание&gt;<br>&lt;описание&gt;</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">Настройка мероприятий</div>
+            <div class="panel-body">
+                <p>Описание что такое мероприятия</p>
+                <p><a href="{{ url_for('.expert_protocol_measures_html') }}" target="_self" class="btn btn-lg btn-primary">
+                    Перейти к редактированию мероприятий &Gt;</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">Настройка протоколов лечения</div>
+            <div class="panel-body">
+                <p>Описание что такое протоколы, что они состоят их схем, схемы содержат наборы мероприятий</p>
+                <p><a href="{{ url_for('.expert_protocol_protocols_html') }}" target="_self" class="btn btn-lg btn-primary">
+                    Перейти к редактированию протоколов и схем &Gt;</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modules_js %}
+{{ super() }}
+<script src="{{ url_for('.static', filename='js/rb.js', v=version) }}"></script>
+<script type="text/ng-template" id="/caesar/misconfig/refbook/simple-rb-edit-modal.html">{% include "misconfig/refbook/simple-rb-edit-modal.html" %}</script>
+<script type="text/ng-template" id="/caesar/misconfig/refbook/rbTreatment-edit-modal.html">{% include "misconfig/refbook/rbTreatment-edit-modal.html" %}</script>
+{% endblock %}

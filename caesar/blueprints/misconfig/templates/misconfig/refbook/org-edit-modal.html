@@ -5,14 +5,14 @@
 <div class="modal-body">
 <form class="form-horizontal">
   <div class="form-group">
-    <label for="code" class="col-sm-2 control-label">Сокращенное наименование</label>
+    <label for="short_name" class="col-sm-2 control-label">Сокращенное наименование</label>
     <div class="col-sm-10">
       <input ng-model="model.short_name" type="text" class="form-control" id="short_name" placeholder="Сокращенное наименование">
     </div>
   </div>
 
   <div class="form-group">
-    <label for="name" class="col-sm-2 control-label">Полное наименование</label>
+    <label for="full_name" class="col-sm-2 control-label">Полное наименование</label>
     <div class="col-sm-10">
       <textarea ng-model="model.full_name" class="form-control" id="full_name" placeholder="Полное наименование"></textarea>
     </div>
@@ -49,7 +49,7 @@
   <div class="form-group">
     <label for="name" class="col-sm-2 control-label">КЛАДР код региона</label>
     <div class="col-sm-10">
-      <wm-kladr-locality model="model.kladr_locality" id="area" class="form-control"></wm-kladr-locality>
+      <wm-kladr-locality ng-model="model.kladr_locality" id="area"></wm-kladr-locality>
     </div>
   </div>
 
@@ -69,6 +69,6 @@
 </form>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-success" ng-click="$close(model)">Подтвердить</button>
+    <button type="button" class="btn btn-success" ng-click="close()">Подтвердить</button>
     <button type="button" class="btn btn-danger" ng-click="$dismiss()">Отмена</button>
 </div>

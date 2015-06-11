@@ -1,0 +1,81 @@
+{% extends 'misconfig/base.html' %}
+
+{% block content %}
+<div class="container-fluid" ng-controller="ExpertProtocolConfigCtrl" ng-cloak>
+    <alert-notify></alert-notify>
+    <ul class="breadcrumb">
+        <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
+        <li><a href="{{ url_for('.index_html') }}">Экспертная часть</a></li>
+        <li><a href="{{ url_for('.expert_protocol_index_html') }}">Протоколы лечения</a></li>
+        <li><a href="{{ url_for('.expert_protocol_protocols_html') }}">Список протоколов</a></li>
+        <li>Протокол &laquo;[[ protocol.name ]]&raquo;</li>
+    </ul>
+
+    <h3 class="modal-title">Протокол</h3>
+    <div class="row">
+    <div class="col-md-12">
+        <form class="form-horizontal">
+            <div class="form-group">
+                <label for="code" class="col-sm-2 control-label">Код</label>
+                <div class="col-sm-10">
+                    <input ng-model="protocol.code" type="text" class="form-control" id="code" placeholder="Код">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="name" class="col-sm-2 control-label">Наименование</label>
+                <div class="col-sm-10">
+                    <textarea ng-model="protocol.name" class="form-control" id="name" placeholder="Наименование"></textarea>
+                </div>
+            </div>
+        </form>
+        <hr>
+        <div class="pull-right">
+            <button type="button" class="btn btn-success" ng-click="saveProtocol()">Сохранить</button>
+        </div>
+    </div>
+    </div>
+    <div class="row" ng-if="protocol.id">
+    <div class="col-md-12">
+        <h3>Схемы мероприятий</h3>
+        <table class="table">
+        <thead>
+        <tr>
+            <th width="5%">id</th>
+            <th width="10%">Код</th>
+            <th width="20%">Наименование</th>
+            <th width="10%">Номер</th>
+            <th width="35%">МКБ</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="scheme in protocol.schemes">
+            <td>[[ scheme.id ]]</td>
+            <td>[[ scheme.code ]]</td>
+            <td>[[ scheme.name ]]</td>
+            <td>[[ scheme.number ]]</td>
+            <td ng-bind="formatMkbList(scheme.scheme_mkbs)"></td>
+            <td class="nowrap" width="1%">
+                <button type="button" class="btn btn-primary" ng-click="editScheme($index)" title="Редактировать данные схемы и список МКБ">
+                    <i class="fa fa-pencil"></i></button>
+                <button type="button" class="btn btn-primary" ng-click="editMeasures($index)" title="Редактировать мероприятия и расписания">
+                    <i class="fa fa-list"></i></button>
+            </td>
+        </tr>
+        </tbody>
+        </table>
+        <button type="button" class="btn btn-lg btn-success pull-right" ng-click="createNewScheme()"
+            title="Добавить схему"><i class="fa fa-plus"></i>
+        </button>
+    </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modules_js %}
+{{ super() }}
+<script src="{{ url_for('.static', filename='js/expert/models.js', v=version) }}"></script>
+<script src="{{ url_for('.static', filename='js/expert/protocol-scheme.js', v=version) }}"></script>
+<script type="text/ng-template" id="/caesar/misconfig/expert/protocol/scheme-edit-modal.html">{% include "misconfig/expert/protocol/scheme-edit-modal.html" %}</script>
+{% endblock %}

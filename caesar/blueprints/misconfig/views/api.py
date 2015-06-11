@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask import request
+from flask import request, abort
 
 from nemesis.systemwide import db
 from nemesis.lib.apiutils import api_method, ApiException
@@ -8,7 +8,7 @@ from nemesis.models.exists import QuotaCatalog, QuotaType, VMPQuotaDetails
 
 from ..app import module
 from ..lib.data import worker, WorkerException
-from ..lib.data_management.factory import get_manager, all_rbs, basic_rbs, simple_rbs
+from ..lib.data_management.factory import get_manager, all_rbs, get_grouped_refbooks
 
 
 @module.route('/api/v1/quota_catalog', methods=['GET'])
@@ -211,23 +211,28 @@ def api_v1_quota_detail_delete(quota_type_id, _id):
 @api_method
 def api_v1_rb_list_get():
     return {
-        'supported_rbs': sorted([
-            dict(
-                name=t.__tablename__,
-                desc=getattr(t, '_table_description', t.__tablename__),
-                is_simple=(t_name in simple_rbs)
-            )
-            for t_name, t in all_rbs.iteritems() if t_name in basic_rbs
-        ], key=lambda k: k['desc'])
+        'supported_rbs': get_grouped_refbooks()
     }
 
 
 @module.route('/api/v1/rb/<name>/', methods=['GET'])
+@module.route('/api/v1/rb/<name>/<int:item_id>/', methods=['GET'])
+@module.route('/api/v1/rb/<name>/<new>/', methods=['GET'])
 @api_method
-def api_v1_rb_get(name):
+def api_v1_rb_get(name, item_id=None, new=None):
     if name not in all_rbs:
         raise ApiException(404, u'Не найден справочник по наименованию {0}'.format(name))
     mng = get_manager(name)
+    if item_id or new:
+        if item_id:
+            item = mng.get_by_id(item_id)
+        elif new == 'new':
+            item = mng.create()
+        else:
+            raise abort(404)
+        return {
+            'item': mng.represent(item)
+        }
     return {
         'items': map(mng.represent, mng.get_list())
     }
@@ -257,6 +262,182 @@ def api_v1_rb_delete(name, item_id):
         raise ApiException(404, u'Не найден справочник по наименованию {0}'.format(name))
 
     mng = get_manager(name)
-    result = mng.delete(item_id)
+    item = mng.delete(item_id)
     mng.store()
-    return result
+    return mng.represent(item)
+
+
+@module.route('/api/v1/rb/<name>/<int:item_id>/undelete/', methods=['POST'])
+@api_method
+def api_v1_rb_undelete(name, item_id):
+    if name not in all_rbs:
+        raise ApiException(404, u'Не найден справочник по наименованию {0}'.format(name))
+
+    mng = get_manager(name)
+    item = mng.undelete(item_id)
+    mng.store()
+    return mng.represent(item)
+
+
+@module.route('/api/v1/expert/protocol/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/<int:item_id>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/<new>/', methods=['GET'])
+@api_method
+def api_v1_expert_protocol_get(item_id=None, new=None):
+    mng = get_manager('ExpertProtocol')
+    if item_id:
+        if item_id:
+            item = mng.get_by_id(item_id)
+        elif new == 'new':
+            item = mng.create()
+        else:
+            raise abort(404)
+        return {
+            'item': mng.represent(item)
+        }
+    else:
+        return {
+            'items': map(mng.represent, mng.get_list())
+        }
+
+
+@module.route('/api/v1/expert/protocol/', methods=['POST'])
+@module.route('/api/v1/expert/protocol/<int:item_id>/', methods=['POST'])
+@api_method
+def api_v1_expert_protocol_post(item_id=None):
+    mng = get_manager('ExpertProtocol')
+    data = request.get_json()
+
+    if item_id:
+        item = mng.update(item_id, data)
+    else:
+        item = mng.create(data)
+    mng.store(item)
+    return mng.represent(item)
+
+
+@module.route('/api/v1/expert/protocol/', methods=['DELETE'])
+@api_method
+def api_v1_expert_protocol_delete():
+    raise NotImplementedError
+
+
+@module.route('/api/v1/expert/protocol/scheme/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/scheme/<int:item_id>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/scheme/<new>/<int:parent_id>/', methods=['GET'])
+@api_method
+def api_v1_expert_scheme_get(item_id=None, new=None, parent_id=None):
+    mng = get_manager('ExpertScheme')
+    if item_id or new:
+        if item_id:
+            item = mng.get_by_id(item_id)
+        elif new == 'new':
+            item = mng.create(parent_id=parent_id)
+        else:
+            raise abort(404)
+        return {
+            'item': mng.represent(item)
+        }
+    return {
+        'items': map(mng.represent, mng.get_list())
+    }
+
+
+@module.route('/api/v1/expert/protocol/scheme/', methods=['POST'])
+@module.route('/api/v1/expert/protocol/scheme/<int:item_id>/', methods=['POST'])
+@api_method
+def api_v1_expert_scheme_post(item_id=None):
+    mng = get_manager('ExpertScheme')
+    data = request.get_json()
+
+    if item_id:
+        item = mng.update(item_id, data)
+    else:
+        item = mng.create(data)
+    mng.store(item)
+    return mng.represent(item)
+
+
+@module.route('/api/v1/expert/protocol/scheme/', methods=['DELETE'])
+@api_method
+def api_v1_expert_scheme_delete():
+    raise NotImplementedError
+
+
+@module.route('/api/v1/expert/protocol/scheme_mkb/<int:item_id>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/scheme_mkb/<new>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/scheme_mkb/<new>/<int:parent_id>/', methods=['GET'])
+@api_method
+def api_v1_expert_scheme_mkb_get(item_id=None, new=None, parent_id=None):
+    mng = get_manager('ExpertSchemeMKB')
+    if item_id or new:
+        if item_id:
+            item = mng.get_by_id(item_id)
+        elif new == 'new':
+            item = mng.create(parent_id=parent_id)
+        else:
+            raise abort(404)
+        return {
+            'item': mng.represent(item)
+        }
+
+
+@module.route('/api/v1/expert/protocol/scheme_measure/<int:item_id>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/scheme_measure/<specify>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/scheme_measure/<specify>/<int:parent_id>/', methods=['GET'])
+@api_method
+def api_v1_expert_scheme_measure_get(item_id=None, specify=None, parent_id=None):
+    mng = get_manager('ExpertSchemeMeasure')
+    if specify == 'new':
+        item = mng.create(parent_id=parent_id)
+        return {
+            'item': mng.represent(item)
+        }
+    elif specify == 'by_scheme':
+        return {
+            'items': map(mng.represent, mng.get_list(scheme_id=parent_id))
+        }
+    else:
+        item = mng.get_by_id(item_id)
+        return {
+            'item': mng.represent(item)
+        }
+
+
+@module.route('/api/v1/expert/protocol/scheme_measure/', methods=['POST'])
+@module.route('/api/v1/expert/protocol/scheme_measure/<int:item_id>/', methods=['POST'])
+@api_method
+def api_v1_expert_scheme_measure_post(item_id=None):
+    mng = get_manager('ExpertSchemeMeasure')
+    data = request.get_json()
+
+    if item_id:
+        item = mng.update(item_id, data)
+    else:
+        item = mng.create(data)
+    mng.store(item)
+    return mng.represent(item)
+
+
+@module.route('/api/v1/expert/protocol/scheme_measure/', methods=['DELETE'])
+@api_method
+def api_v1_expert_scheme_measure_delete():
+    raise NotImplementedError
+
+
+@module.route('/api/v1/expert/protocol/measure_schedule/<int:item_id>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/measure_schedule/<specify>/', methods=['GET'])
+@module.route('/api/v1/expert/protocol/measure_schedule/<specify>/<int:parent_id>/', methods=['GET'])
+@api_method
+def api_v1_expert_measure_schedule_get(item_id=None, specify=None, parent_id=None):
+    mng = get_manager('MeasureSchedule')
+    if specify == 'new':
+        item = mng.create(parent_id=parent_id)
+        return {
+            'item': mng.represent(item)
+        }
+    else:
+        item = mng.get_by_id(item_id)
+        return {
+            'item': mng.represent(item)
+        }

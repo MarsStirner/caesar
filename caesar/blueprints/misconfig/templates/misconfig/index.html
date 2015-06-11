@@ -16,5 +16,18 @@
             <div class="list-group-item">...</div>
         </div>
     </div>
+
+    {% if mis_settings.getBool('Expert.Protocol.Enabled', False) %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Настройки экспертной части МИС
+        </div>
+        <div class="list-group">
+            <a href="{{ url_for('.expert_protocol_index_html') }}" class="list-group-item">Протоколы лечения</a>
+            <a href="#" class="list-group-item">Маршрутизация беременных</a>
+            <div class="list-group-item">...</div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
