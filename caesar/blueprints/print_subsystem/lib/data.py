@@ -4,6 +4,7 @@ import datetime
 from flask import g
 from sqlalchemy import func, and_
 from blueprints.print_subsystem.models.schedule import Schedule
+from blueprints.print_subsystem.lib.utils import get_action
 
 from nemesis.lib.utils import string_to_datetime, safe_date, safe_int
 from nemesis.lib.jsonify import ScheduleVisualizer
@@ -366,7 +367,14 @@ class Print_Template(object):
             event = g.printing_session.query(Event).get(event_id)
         return {
             'event': event,
-            'client': event.client if event else None
+            'client': event.client if event else None,
+            'card_attributes': get_action(event, 'cardAttributes'),
+            'mother_amamnesis': get_action(event, 'risar_mother_anamnesis'),
+            'father_amamnesis': get_action(event, 'risar_father_anamnesis'),
+            'transfusions': get_action(event, 'risar_anamnesis_transfusion', one=False),
+            'prev_pregnancies': get_action(event, 'risar_anamnesis_pregnancy', one=False),
+            'first_inspection': get_action(event, 'risarFirstInspection'),
+            'second_inspections': get_action(event, 'risarSecondInspection', one=False)
         }
 
     def context_risar_gravidograma(self, data):

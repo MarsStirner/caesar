@@ -4,11 +4,13 @@ import calendar
 import jinja2
 
 from collections import defaultdict
+from config import VESTA_URL
 from flask import g
 from sqlalchemy import Column, Integer, String, Unicode, DateTime, ForeignKey, Date, Float, or_, Boolean, Text, \
     SmallInteger, Time, Index, BigInteger, Enum, Table, BLOB, UnicodeText
 from sqlalchemy.orm import relationship, backref
 
+from nemesis.models.enums import AllergyPower
 from ..config import MODULE_NAME
 from ..lib.html import convenience_HtmlRip, replace_first_paragraph
 from ..lib.num_to_text_converter import NumToTextConverter
@@ -430,9 +432,9 @@ class ActionProperty(Info):
             value_object = [self.get_value_instance()]
 
         if self.type.isVector:
-            return [item.value for item in value_object]
+            return [item.value for item in value_object if item.id]
         else:
-            return value_object[0].value
+            return value_object[0].value if value_object[0].id else None
 
     @property
     def name(self):
@@ -697,6 +699,18 @@ class ActionProperty_OperationType(ActionProperty_Integer_Base):
         self.value_ = val.id if val is not None else None
 
 
+class ActionProperty_Boolean(ActionProperty_Integer_Base):
+    property_object = relationship('ActionProperty', backref='_value_Boolean')
+
+    @property
+    def value(self):
+        return bool(self.value_)
+
+    @value.setter
+    def value(self, val):
+        self.value_ = 1 if val else 0
+
+
 class ActionProperty_JobTicket(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_Job_Ticket'
 
@@ -853,19 +867,38 @@ class ActionProperty_ReferenceRb(ActionProperty_Integer_Base):
 
     @property
     def value(self):
-        if not self.value_:
-            return None
         if not hasattr(self, 'table_name'):
-            domain = self.property_object.type.valueDomain
+            domain = g.printing_session.query(ActionProperty).get(self.id).type.valueDomain
             self.table_name = domain.split(';')[0]
         model = get_model_by_name(self.table_name)
         return g.printing_session.query(model).get(self.value_)
 
-    @value.setter
-    def value(self, val):
-        self.value_ = val.id if val is not None else None
-
     property_object = relationship('ActionProperty', backref='_value_ReferenceRb')
+
+
+class ActionProperty_ExtReferenceRb(ActionProperty__ValueType):
+    __tablename__ = u'ActionProperty_ExtRef'
+
+    id = Column(Integer, ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
+    index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
+    value_ = Column('value', Text, nullable=False)
+
+    @property
+    def value(self):
+        if not hasattr(self, 'table_name'):
+            domain = g.printing_session.query(ActionProperty).get(self.id).type.valueDomain
+            self.table_name = domain.split(';')[0]
+        try:
+            response = requests.get(u'{0}v1/{1}/code/{2}'.format(VESTA_URL, self.table_name, self.value_))
+            result = response.json()['data']
+        except Exception, e:
+            import traceback
+            traceback.print_exc()
+            return
+        else:
+            return {'id': result['_id'], 'name': result['name'], 'code': result['code']}
+
+    property_object = relationship('ActionProperty', backref='_value_ExtReferenceRb')
 
 
 class ActionProperty_Reference(ActionProperty__ValueType):
@@ -1407,9 +1440,21 @@ class Bloodhistory(Info):
 
     id = Column(Integer, primary_key=True)
     bloodDate = Column(Date, nullable=False)
-    client_id = Column(Integer, nullable=False)
-    bloodType_id = Column(Integer, nullable=False)
-    person_id = Column(Integer, nullable=False)
+    client_id = Column(Integer, ForeignKey('Client.id'), nullable=False)
+    bloodType_id = Column(Integer, ForeignKey('rbBloodType.id'), nullable=False)
+    person_id = Column(Integer, ForeignKey('Person.id'), nullable=False)
+
+    bloodType = relationship("rbBloodType")
+    person = relationship('Person')
+
+    def __init__(self, blood_type, date, person, client):
+        self.bloodType_id = int(blood_type) if blood_type else None
+        self.bloodDate = date
+        self.person_id = int(person) if person else None
+        self.client = client
+
+    def __int__(self):
+        return self.id
 
 
 class Calendarexception(Info):
@@ -1462,9 +1507,13 @@ class Client(Info):
     embryonalPeriodWeek = Column(String(16), nullable=False, server_default=u"''")
     uuid_id = Column(Integer, nullable=False, index=True, server_default=u"'0'")
 
-    bloodType = relationship(u'Rbbloodtype')
     client_attachments = relationship(u'Clientattach', primaryjoin='and_(Clientattach.client_id==Client.id, Clientattach.deleted==0)',
                                       order_by="desc(Clientattach.id)")
+    blood_history = relationship(
+        u'Bloodhistory',
+        backref=backref('client'),
+        order_by='desc(Bloodhistory.id)'
+    )
     socStatuses = relationship(u'Clientsocstatus',
                                primaryjoin="and_(Clientsocstatus.deleted == 0,Clientsocstatus.client_id==Client.id,"
                                "or_(Clientsocstatus.endDate == None, Clientsocstatus.endDate>='{0}'))".format(datetime.date.today()))
@@ -1589,35 +1638,30 @@ class Client(Info):
     def work(self):
         return self.works[0] if self.works else Clientwork()
 
-    @property
-    def ageTuple(self):
-        date = self.date
-        if not date:
-            date = datetime.date.today()
-        d = calcAgeInDays(self.birthDate, date)
-        if d >= 0:
-            return (d,
-                    d/7,
-                    calcAgeInMonths(self.birthDate, date),
-                    calcAgeInYears(self.birthDate, date))
-        else:
+    def age_tuple(self, moment=None):
+        """
+        @type moment: datetime.datetime
+        """
+        if not self.birthDate:
             return None
-        return ""
+        if not moment:
+            moment = datetime.date.today()
+        return calcAgeTuple(self.birthDate, moment)
 
     @property
     def age(self):
-        date = self.date
-        bd = self.birthDate_raw
-        if not date:
-            date = datetime.date.today()
-        if not self.ageTuple:
+        bd = self.birthDate
+        date = datetime.date.today()
+        if not self.age_tuple():
             return u'ещё не родился'
-        (days, weeks, months, years) = self.ageTuple
+        (days, weeks, months, years) = self.age_tuple()
         if years > 7:
             return formatYears(years)
         elif years > 1:
             return formatYearsMonths(years, months-12*years)
         elif months > 1:
+            # TODO: отрефакторить магию, здесь неясен смысл divmod(bd.month + months, 12)
+            #  в декабре это вызывало проблемы с определением возраста пациента младше года
             add_year, new_month = divmod(bd.month + months, 12)
             if new_month:
                 new_day = min(bd.day, calendar.monthrange(bd.year+add_year, new_month)[1])
@@ -1733,6 +1777,10 @@ class Clientallergy(Info):
     version = Column(Integer, nullable=False)
 
     client = relationship(u'Client')
+
+    @property
+    def power_name(self):
+        return AllergyPower.names[self.power]
 
     def __unicode__(self):
         return self.name
@@ -1947,6 +1995,10 @@ class Clientintolerancemedicament(Info):
     version = Column(Integer, nullable=False)
 
     client = relationship(u'Client')
+
+    @property
+    def power_name(self):
+        return AllergyPower.names[self.power]
 
     def __unicode__(self):
         return self.name
@@ -4899,7 +4951,7 @@ class Rbblanktempinvalid(Info):
     doctype = relationship(u'Rbtempinvaliddocument')
 
 
-class Rbbloodtype(RBInfo):
+class rbBloodType(RBInfo):
     __tablename__ = u'rbBloodType'
 
     id = Column(Integer, primary_key=True)
@@ -6621,7 +6673,7 @@ class Trfuorderissueresult(Info):
     stickerUrl = Column(String(2083))
 
     action = relationship(u'Action', backref="trfuOrderIssueResult")
-    blood_type = relationship(u'Rbbloodtype')
+    blood_type = relationship(u'rbBloodType')
     comp_type = relationship(u'Rbtrfubloodcomponenttype')
 
     def __getitem__(self, name):

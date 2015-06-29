@@ -91,6 +91,18 @@ def calcAgeInYears(birthDay, today):
     return result
 
 
+def calcAgeTuple(birthDay, today):
+    d = calcAgeInDays(birthDay, today)
+    if d >= 0:
+        return (
+            d,
+            d / 7,
+            calcAgeInMonths(birthDay, today),
+            calcAgeInYears(birthDay, today)
+        )
+    return None
+
+
 def formatYears(years):
     return '%d %s' % (years, agreeNumberAndWord(years, (u'год', u'года', u'лет')))
 
