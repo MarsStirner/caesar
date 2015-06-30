@@ -377,6 +377,21 @@ class Print_Template(object):
             'second_inspections': get_action(event, 'risarSecondInspection', one=False)
         }
 
+    def context_risar_inspection(self, data):
+        event = None
+        action = None
+        if 'event_id' in data:
+            event_id = data['event_id']
+            event = g.printing_session.query(Event).get(event_id)
+        if 'action_id' in data:
+            action_id = data['action_id']
+            action = g.printing_session.query(Action).get(action_id)
+        return {
+            'event': event,
+            'client': event.client if event else None,
+            'action': action
+        }
+
     def context_risar_gravidograma(self, data):
         event = None
         if 'event_id' in data:
