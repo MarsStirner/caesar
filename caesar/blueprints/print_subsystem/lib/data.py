@@ -374,7 +374,8 @@ class Print_Template(object):
             'transfusions': get_action(event, 'risar_anamnesis_transfusion', one=False),
             'prev_pregnancies': get_action(event, 'risar_anamnesis_pregnancy', one=False),
             'first_inspection': get_action(event, 'risarFirstInspection'),
-            'second_inspections': get_action(event, 'risarSecondInspection', one=False)
+            'second_inspections': get_action(event, 'risarSecondInspection', one=False),
+            'epicrisis': get_action(event, 'epicrisis'),
         }
 
     def context_risar_inspection(self, data):
