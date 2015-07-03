@@ -257,8 +257,8 @@ class Print_Template(object):
             client = event.client
 
             client.date = event.execDate.date if event.execDate else self.today
-            quoting = g.printing_session.query(v_Client_Quoting).filter_by(event_id=event_id).\
-                filter_by(clientId=event.client.id).first()
+            quoting = g.printing_session.query(v_Client_Quoting).filter_by(event_id=387778).\
+                filter_by(clientId=event.client.id).filter_by(deleted=0).first()
             if not quoting:
                 quoting = v_Client_Quoting()
             patient_os = current_patient_orgStructure(event.id)
@@ -281,7 +281,7 @@ class Print_Template(object):
         event = action.event
         event.client.date = event.execDate.date if event.execDate.date else self.today
         quoting = g.printing_session.query(v_Client_Quoting).filter_by(event_id=event.id).\
-            filter_by(clientId=event.client.id).first()
+            filter_by(clientId=event.client.id).filter_by(deleted=0).first()
         if not quoting:
             quoting = v_Client_Quoting()
         return {
