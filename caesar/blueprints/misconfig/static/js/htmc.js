@@ -150,7 +150,12 @@ WebMis20
     var UI = function (klass, template_url, base_name, level, child_ui) {
         var get_edit_modal = function (get_model_callback) {
             return $modal.open({
-                controller: function ($scope, $modalInstance, model) { $scope.model = model; },
+                controller: function ($scope, $modalInstance, model) {
+                    $scope.model = model;
+                    $scope.itemCodeName = function (item) {
+                        return item ? '{0} {1}'.format(item.code, item.name) : undefined;
+                    };
+                },
                 size: 'lg',
                 templateUrl: template_url,
                 resolve: { model: get_model_callback }
@@ -231,7 +236,7 @@ WebMis20
                     })
                 }
             })
-        }
+        };
     };
     $scope.details = new UI(QuotaDetails, '/caesar/misconfig/htmc/details-edit-modal.html', 'details', 3);
     $scope.types   = new UI(QuotaType,    '/caesar/misconfig/htmc/type-edit-modal.html',    'types',   2, $scope.details);

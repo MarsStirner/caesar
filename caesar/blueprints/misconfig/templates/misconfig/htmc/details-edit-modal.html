@@ -19,7 +19,7 @@
             <label for="code" class="col-sm-2 control-label">Модель пациента</label>
 
             <div class="col-sm-10">
-                <rb-select ref-book="rbPacientModel" ng-model="model.patient_model"></rb-select>
+                <rb-select ref-book="rbPacientModel" ng-model="model.patient_model" custom-name="itemCodeName"></rb-select>
             </div>
         </div>
 
@@ -27,7 +27,7 @@
             <label for="name" class="col-sm-2 control-label">Метод лечения</label>
 
             <div class="col-sm-10">
-                <rb-select ref-book="rbTreatment" ng-model="model.treatment"></rb-select>
+                <rb-select ref-book="rbTreatment" ng-model="model.treatment" custom-name="itemCodeName"></rb-select>
             </div>
         </div>
 
