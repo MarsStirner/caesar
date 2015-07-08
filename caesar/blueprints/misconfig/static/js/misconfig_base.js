@@ -10,6 +10,9 @@ WebMis20
             var self = this;
             if (_.isObject(data)) {
                 this._fields.forEach(function (field) {
+                    if (field.optional && !data.hasOwnProperty(field.name)) {
+                        return;
+                    }
                     if (_.isObject(field)) {
                         // TODO: переделать под instantiate_all
                         if (_.isArray(data[field.name])) {
@@ -28,11 +31,11 @@ WebMis20
             }
             return this;
         },
-        save: function (url, data) {
+        save: function (url, data, args) {
             var self = this;
             var data = data || this._pickData(),
                 url = url || '{0}{|1|/}'.formatNonEmpty(this._base_url, self.id || undefined);
-            return ApiCalls.wrapper('POST', url, undefined, data)
+            return ApiCalls.wrapper('POST', url, args, data)
                 .then(function (result) {
                     return self.fill(result);
                 });
@@ -83,19 +86,21 @@ WebMis20
         }
     };
     BasicModelConstructor.initialize({base_url: '', fields: []}, BasicModelConstructor);
-    BasicModelConstructor.instantiate = function (item_id, parent_id) {
+    BasicModelConstructor.instantiate = function (item_id, parent_id, url, args) {
         var klass = this;
-        var url = klass.getBaseUrl();
-        if (item_id !== undefined) url = '{0}{1}/{2|/}'.formatNonEmpty(url, item_id, parent_id);
-        return ApiCalls.wrapper('GET', url)
+        if (!url) {
+            url = klass.getBaseUrl();
+            if (item_id !== undefined) url = '{0}{1}/{2|/}'.formatNonEmpty(url, item_id, parent_id);
+        }
+        return ApiCalls.wrapper('GET', url, args)
             .then(function (data) {
                 return new klass(data.item);
             });
     };
-    BasicModelConstructor.instantiateAll = function () {
+    BasicModelConstructor.instantiateAll = function (args) {
         var klass = this;
         var url = klass.getBaseUrl();
-        return ApiCalls.wrapper('GET', url)
+        return ApiCalls.wrapper('GET', url, args)
             .then(function (data) {
                 return data.items.map(function (item) {
                     return new klass(item);

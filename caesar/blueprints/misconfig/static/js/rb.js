@@ -77,6 +77,16 @@ WebMis20
     }, rbMeasureScheduleType);
     return rbMeasureScheduleType;
 }])
+.factory('rbPerinatalRiskRate', ['SimpleRb', function (SimpleRb) {
+    var rbPerinatalRiskRate = function (data) {
+        SimpleRb.call(this, data);
+    };
+    rbPerinatalRiskRate.inheritsFrom(SimpleRb);
+    rbPerinatalRiskRate.initialize({
+        base_url: '{0}rbPerinatalRiskRate/'.format(rbPerinatalRiskRate.getBaseUrl())
+    }, rbPerinatalRiskRate);
+    return rbPerinatalRiskRate;
+}])
 .controller('RBConfigCtrl', ['$scope', '$controller', '$location', 'RbList',
         function ($scope, $controller, $location, RbList) {
     $controller('MisConfigBaseCtrl', {$scope: $scope});

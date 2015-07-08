@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-from nemesis.models.exists import (rbPacientModel, rbTreatment, rbTreatmentType, Organisation, rbFinance, MKB)
+from nemesis.models.exists import (rbPacientModel, rbTreatment, rbTreatmentType, rbFinance, MKB)
 from nemesis.models.expert_protocol import rbMeasureType, rbMeasureScheduleType, Measure
+from nemesis.models.organisation import Organisation
 from nemesis.models.actions import ActionType
+from nemesis.models.risar import rbPerinatalRiskRate
 from nemesis.lib.settings import Settings
 
 from .refbook import SimpleRefBookModelManager, RbTreatmentModelManager
-from .organisation import OrganisationModelManager
+from .organisation import (OrganisationModelManager, OrganisationBCLModelManager, Organisation_OBCLModelManager)
 from .expert_protocol import (MeasureModelManager, ExpertProtocolModelManager, ExpertSchemeModelManager,
       ExpertSchemeMKBModelManager, ExpertSchemeMeasureModelManager, MeasureScheduleModelManager)
 
@@ -18,20 +20,23 @@ all_rbs = {
     'Organisation': Organisation,
     'rbMeasureType': rbMeasureType,
     'rbMeasureScheduleType': rbMeasureScheduleType,
-    'Measure': Measure
+    'Measure': Measure,
+    'rbPerinatalRiskRate': rbPerinatalRiskRate
 }
 
 basic_rbs = [
     'rbPacientModel', 'rbTreatment', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType',
+    'rbPerinatalRiskRate'
 ]
 
 simple_rbs = [
-    'rbPacientModel', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType',
+    'rbPacientModel', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType', 'rbPerinatalRiskRate'
 ]
 
 rb_groups = {
     'vmp': (u'ВМП', ['rbPacientModel', 'rbTreatment', 'rbTreatmentType']),
     'expert_protocol': (u'Протоколы лечения', ['rbMeasureType', 'rbMeasureScheduleType']),
+    'risar': (u'РИСАР', ['rbPerinatalRiskRate']),
     'other': (u'Остальные', ['rbFinance'])
 }
 
@@ -59,7 +64,7 @@ def get_grouped_refbooks():
     return grouped
 
 
-def get_manager(name):
+def get_manager(name, **params):
     if name in simple_rbs:
         return SimpleRefBookModelManager(all_rbs[name])
     elif name == 'rbTreatment':
@@ -82,3 +87,7 @@ def get_manager(name):
         return SimpleRefBookModelManager(ActionType)
     elif name == 'MKB':
         return SimpleRefBookModelManager(MKB)
+    elif name == 'OrganisationBirthCareLevel':
+        return OrganisationBCLModelManager(**params)
+    elif name == 'Organisation_OrganisationHCL':
+        return Organisation_OBCLModelManager()

@@ -1,0 +1,57 @@
+{% extends 'misconfig/base.html' %}
+
+{% block content %}
+<div class="container-fluid" ng-controller="OrgConfigCtrl" ng-cloak>
+    <alert-notify></alert-notify>
+    <ul class="breadcrumb">
+        <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
+        <li>Организации и ЛПУ</li>
+    </ul>
+
+    <div class="row">
+    <div class="col-md-12">
+        <button type="button" class="btn btn-lg btn-success pull-right" ng-click="create_new()"
+            title="Добавить запись"><i class="fa fa-plus"></i>
+        </button>
+        <table class="table">
+        <thead>
+        <tr>
+            <th>id</th>
+            <th>Полное наименование</th>
+            <th>Краткое наименование</th>
+            <th>Удалено</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="item in item_list" ng-class="{'bg-danger': item.deleted}">
+            <td>[[ item.id ]]</td>
+            <td>[[ item.full_name ]]</td>
+            <td>[[ item.short_name ]]</td>
+            <td>[[ item.deleted ]]</td>
+            <td class="nowrap" width="1%">
+                <button type="button" class="btn btn-primary" ng-if="canEdit(item)" ng-click="edit($index)" title="Редактировать">
+                    <i class="fa fa-pencil"></i></button>
+                <button type="button" class="btn btn-danger" ng-if="canDelete(item)" ng-click="remove($index)" title="Удалить">
+                    <i class="fa fa-trash"></i></button>
+                <button type="button" class="btn btn-info" ng-if="canUndelete(item)" ng-click="restore($index)" title="Восстановить">
+                    <i class="fa fa-undo"></i></button>
+            </td>
+        </tr>
+        </tbody>
+        </table>
+        <button type="button" class="btn btn-lg btn-success pull-right" ng-if="item_list.length" ng-click="create_new()"
+            title="Добавить запись"><i class="fa fa-plus"></i>
+        </button>
+    </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modules_js %}
+{{ super() }}
+<script src="{{ url_for('.static', filename='js/org/models.js', v=version) }}"></script>
+<script src="{{ url_for('.static', filename='js/org/org.js', v=version) }}"></script>
+<script src="{{ url_for('static', filename='js/directives/kladr-directives.js', v=nemesis_version) }}"></script>
+<script type="text/ng-template" id="/caesar/misconfig/org/org-edit-modal.html">{% include "misconfig/org/org-edit-modal.html" %}</script>
+{% endblock %}

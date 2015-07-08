@@ -22,7 +22,7 @@ def rb_html():
 
 @module.route('/org/')
 def org_html():
-    return render_template('misconfig/org.html')
+    return render_template('misconfig/org/org.html')
 
 
 @module.route('/expert/protocol/')
@@ -46,6 +46,16 @@ def expert_protocol_protocol_html():
     return render_template('misconfig/expert/protocol/protocol-edit.html')
 
 
-@module.route('/expert/protocol/protocols/scheme_measures/')
+@module.route('/expert/protocol/protocols/scheme-measures/')
 def expert_protocol_scheme_measures_html():
     return render_template('misconfig/expert/protocol/scheme-measure-edit.html')
+
+
+@module.route('/org-birth-care-level/')
+def org_birth_care_level_html():
+    return render_template('misconfig/org/org-birth-care-level.html')
+
+
+@module.route('/org-birth-care-level/orgs/')
+def org_obcl_html():
+    return render_template('misconfig/org/org-birth-care-level-orgs.html')

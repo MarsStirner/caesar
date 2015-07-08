@@ -441,3 +441,93 @@ def api_v1_expert_measure_schedule_get(item_id=None, specify=None, parent_id=Non
         return {
             'item': mng.represent(item)
         }
+
+
+@module.route('/api/v1/org_birth_care_level/', methods=['GET'])
+@module.route('/api/v1/org_birth_care_level/<int:item_id>/', methods=['GET'])
+@api_method
+def api_v1_org_birth_care_level_get(item_id=None):
+    with_orgs = request.args.get('with_orgs', False)
+    mng = get_manager('OrganisationBirthCareLevel', with_orgs=with_orgs)
+    if item_id:
+        item = mng.get_by_id(item_id)
+        return {
+            'item': mng.represent(item)
+        }
+    return {
+        'items': map(mng.represent, mng.get_list()) # TODO: order and deleted
+    }
+
+
+@module.route('/api/v1/org_birth_care_level/new/', methods=['GET'])
+@api_method
+def api_v1_org_birth_care_level_get_new():
+    mng = get_manager('OrganisationBirthCareLevel')
+    item = mng.create()
+    return {
+        'item': mng.represent(item)
+    }
+
+
+@module.route('/api/v1/org_birth_care_level/', methods=['POST'])
+@module.route('/api/v1/org_birth_care_level/<int:item_id>/', methods=['POST'])
+@api_method
+def api_v1_org_birth_care_level_post(item_id=None):
+    with_orgs = request.args.get('with_orgs', False)
+    mng = get_manager('OrganisationBirthCareLevel', with_orgs=with_orgs)
+    data = request.get_json()
+
+    if item_id:
+        item = mng.update(item_id, data)
+    else:
+        item = mng.create(data)
+    mng.store(item)
+    return mng.represent(item)
+
+
+@module.route('/api/v1/org_birth_care_level/', methods=['DELETE'])
+@module.route('/api/v1/org_birth_care_level/<int:item_id>/', methods=['DELETE'])
+@api_method
+def api_v1_org_birth_care_level_delete(item_id=None):
+    mng = get_manager('OrganisationBirthCareLevel')
+    item = mng.delete(item_id)
+    mng.store()
+    return mng.represent(item)
+
+
+@module.route('/api/v1/org_birth_care_level/<int:item_id>/undelete/', methods=['POST'])
+@api_method
+def api_v1_org_birth_care_level_undelete(item_id):
+    mng = get_manager('OrganisationBirthCareLevel')
+    item = mng.undelete(item_id)
+    mng.store()
+    return mng.represent(item)
+
+
+@module.route('/api/v1/org_birth_care_level/')
+@module.route('/api/v1/org_birth_care_level/<int:obcl_id>/orgs/')
+@api_method
+def api_v1_obcl_orgs_get(obcl_id=None):
+    if not obcl_id:
+        raise ApiException(404, u'`obcl_id` required')
+    mng = get_manager('Organisation_OrganisationHCL')
+    org_obcl = mng.get_by_obcl_id(obcl_id)
+    return {
+        'items': map(mng.represent, org_obcl)
+    }
+
+
+@module.route('/api/v1/org_birth_care_level/')
+@module.route('/api/v1/org_birth_care_level/<int:obcl_id>/orgs/new/')
+@api_method
+def api_v1_obcl_orgs_get_new(obcl_id=None):
+    if not obcl_id:
+        raise ApiException(404, u'`obcl_id` required')
+    org_id = request.args.get('org_id')
+    mng = get_manager('Organisation_OrganisationHCL')
+    org_obcl = mng.create(data={
+        'org_id': org_id
+    }, parent_id=obcl_id)
+    return {
+        'item': mng.represent(org_obcl)
+    }

@@ -1,0 +1,75 @@
+{% extends 'misconfig/base.html' %}
+
+{% block content %}
+<div class="container-fluid" ng-controller="OrgOBCLConfigCtrl" ng-cloak>
+    <alert-notify></alert-notify>
+    <ul class="breadcrumb">
+        <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
+        <li><a href="{{ url_for('.org_birth_care_level_html') }}">Уровни оказания перинатальной помощи</a></li>
+        <li>Связь с ЛПУ</li>
+    </ul>
+
+    <div class="row">
+    <div class="col-md-12">
+        <accordion close-others="false">
+            <accordion-group ng-repeat="(key, item) in model" is-open="true">
+                <accordion-heading>
+                    <div style="margin: -15px; padding: 15px;"><h4>[[ item.obcl.name ]]</h4></div>
+                </accordion-heading>
+                <div class="row">
+                    <div class="col-md-4">
+                        <span>[[ item.obcl.name ]]</span><br>
+                        <span>([[ item.obcl.description ]])</span><br>
+                        <span>Степень перинатального риска: [[ item.obcl.perinatal_risk_rate.name ]]</span>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <div class="btn-group btn-group-sm pull-right">
+                                <button type="button" class="btn btn-primary" ng-click="startEditing(key)" ng-if="!inEditState(key)">Редактировать</button>
+                                <button type="button" class="btn btn-success" ng-click="finishEditing(key)" ng-if="inEditState(key)">Сохранить</button>
+                                <button type="button" class="btn btn-danger" ng-click="cancelEditing(key)" ng-if="inEditState(key)">Отменить</button>
+                            </div>
+                            Список ЛПУ
+                        </div>
+                        <ul class="list-group">
+                            <li ng-repeat="org_obcl in item.obcl.org_obcls" class="list-group-item">
+                                [[ org_obcl.organisation.short_name ]]
+                                <span class="label label-danger pull-right" ng-show="inEditState(key)"
+                                    ng-click="removeOrgOBCL(key, $index)">
+                                    <i class="fa fa-remove"></i>
+                                </span>
+                            </li>
+                        </ul>
+                        <div class="panel-body" ng-show="inEditState(key)">
+                            <div class="alert alert-danger" role="alert" ng-if="alertOrgDublVisible(key)">
+                                Выбранное ЛПУ уже присутствует в списке. Выберите другое значение.
+                            </div>
+                            <div class="row">
+                                <div class="col-md-11">
+                                    <rb-select ng-model="item.newOrg" ref-book="Organisation"
+                                        custom-name="formatOrgName" ng-change="checkOrgDubl(key)"></rb-select>
+                                </div>
+                                <div class="col-md-1">
+                                    <button type="button" class="btn btn-primary" ng-click="addOrgOBCL(key)"
+                                        ng-disabled="!btnAddOrgAvailable(key)">
+                                        <i class="fa fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </accordion-group>
+        </accordion>
+    </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modules_js %}
+{{ super() }}
+<script src="{{ url_for('.static', filename='js/org/models.js', v=version) }}"></script>
+<script src="{{ url_for('.static', filename='js/org/org-birth-care-level.js', v=version) }}"></script>
+{% endblock %}
