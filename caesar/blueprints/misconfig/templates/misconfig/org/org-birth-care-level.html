@@ -1,11 +1,11 @@
 {% extends 'misconfig/base.html' %}
 
 {% block content %}
-<div class="container-fluid" ng-controller="OrgConfigCtrl" ng-cloak>
+<div class="container-fluid" ng-controller="OrgBCLConfigCtrl" ng-cloak>
     <alert-notify></alert-notify>
     <ul class="breadcrumb">
         <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
-        <li>Организации и ЛПУ</li>
+        <li>Уровни оказания перинатальной помощи</li>
     </ul>
 
     <div class="row">
@@ -17,8 +17,11 @@
         <thead>
         <tr>
             <th>id</th>
-            <th>Полное наименование</th>
-            <th>Краткое наименование</th>
+            <th>Код</th>
+            <th>Наименование</th>
+            <th>Описание</th>
+            <th>Порядок</th>
+            <th>Степень перинатального риска</th>
             <th>Удалено</th>
             <th></th>
         </tr>
@@ -26,8 +29,11 @@
         <tbody>
         <tr ng-repeat="item in item_list" ng-class="{'bg-danger': item.deleted}">
             <td>[[ item.id ]]</td>
-            <td>[[ item.full_name ]]</td>
-            <td>[[ item.short_name ]]</td>
+            <td>[[ item.code ]]</td>
+            <td>[[ item.name ]]</td>
+            <td>[[ item.description ]]</td>
+            <td>[[ item.idx ]]</td>
+            <td>[[ item.perinatal_risk_rate.name ]]</td>
             <td>[[ item.deleted ]]</td>
             <td class="nowrap" width="1%">
                 <button type="button" class="btn btn-primary" ng-if="canEdit(item)" ng-click="edit($index)" title="Редактировать">
@@ -43,6 +49,10 @@
         <button type="button" class="btn btn-lg btn-success pull-right" ng-if="item_list.length" ng-click="create_new()"
             title="Добавить запись"><i class="fa fa-plus"></i>
         </button>
+        <div ng-if="item_list.length">
+            <hr>
+            <a href="{{ url_for('.org_obcl_html') }}"><h3>Настроить связи с ЛПУ</h3></a>
+        </div>
     </div>
     </div>
 </div>
@@ -50,7 +60,7 @@
 
 {% block modules_js %}
 {{ super() }}
-<script src="{{ url_for('.static', filename='js/org.js', v=version) }}"></script>
-<script src="{{ url_for('static', filename='js/directives/kladr-directives.js', v=nemesis_version) }}"></script>
-<script type="text/ng-template" id="/caesar/misconfig/refbook/org-edit-modal.html">{% include "misconfig/refbook/org-edit-modal.html" %}</script>
+<script src="{{ url_for('.static', filename='js/org/models.js', v=version) }}"></script>
+<script src="{{ url_for('.static', filename='js/org/org-birth-care-level.js', v=version) }}"></script>
+<script type="text/ng-template" id="/caesar/misconfig/org/org-bcl-edit-modal.html">{% include "misconfig/org/org-bcl-edit-modal.html" %}</script>
 {% endblock %}

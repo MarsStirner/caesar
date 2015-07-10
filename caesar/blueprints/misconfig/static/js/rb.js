@@ -8,9 +8,17 @@ WebMis20
         self.items = data.supported_rbs;
     });
     this.getByName = function (name) {
-        return _.find(self.items, function (item) {
-            return item.name === name;
-        })
+        var curRbList;
+        for (var prop in self.items) {
+            if (self.items.hasOwnProperty(prop)) {
+                curRbList = self.items[prop].rb_list;
+                for (var i = 0; i < curRbList.length; i++) {
+                    if (curRbList[i].name === name) {
+                        return curRbList[i];
+                    }
+                }
+            }
+        }
     };
     this.getEntityClass = function (name) {
         return $injector.get(name);
@@ -76,6 +84,26 @@ WebMis20
         base_url: '{0}rbMeasureScheduleType/'.format(rbMeasureScheduleType.getBaseUrl())
     }, rbMeasureScheduleType);
     return rbMeasureScheduleType;
+}])
+.factory('rbPerinatalRiskRate', ['SimpleRb', function (SimpleRb) {
+    var rbPerinatalRiskRate = function (data) {
+        SimpleRb.call(this, data);
+    };
+    rbPerinatalRiskRate.inheritsFrom(SimpleRb);
+    rbPerinatalRiskRate.initialize({
+        base_url: '{0}rbPerinatalRiskRate/'.format(rbPerinatalRiskRate.getBaseUrl())
+    }, rbPerinatalRiskRate);
+    return rbPerinatalRiskRate;
+}])
+.factory('rbOrgCurationLevel', ['SimpleRb', function (SimpleRb) {
+    var rbOrgCurationLevel = function (data) {
+        SimpleRb.call(this, data);
+    };
+    rbOrgCurationLevel.inheritsFrom(SimpleRb);
+    rbOrgCurationLevel.initialize({
+        base_url: '{0}rbOrgCurationLevel/'.format(rbOrgCurationLevel.getBaseUrl())
+    }, rbOrgCurationLevel);
+    return rbOrgCurationLevel;
 }])
 .controller('RBConfigCtrl', ['$scope', '$controller', '$location', 'RbList',
         function ($scope, $controller, $location, RbList) {

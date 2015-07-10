@@ -120,8 +120,3 @@ class BaseModelManager(object):
         item_id = json_data['id']
         item = manager.get_by_id(item_id)
         return item
-
-    def handle_onetomany(self, json_data, parent_obj=None):
-        item_id = json_data['id']
-        item = self._measure_type_manager.get_by_id(item_id)
-        return item

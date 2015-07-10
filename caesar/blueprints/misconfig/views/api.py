@@ -441,3 +441,254 @@ def api_v1_expert_measure_schedule_get(item_id=None, specify=None, parent_id=Non
         return {
             'item': mng.represent(item)
         }
+
+
+@module.route('/api/v1/org/', methods=['GET'])
+@module.route('/api/v1/org/<int:item_id>/', methods=['GET'])
+@api_method
+def api_v1_org_get(item_id=None):
+    with_curations = request.args.get('with_curations', False)
+    mng = get_manager('Organisation', with_curations=with_curations)
+    if item_id:
+        item = mng.get_by_id(item_id)
+        return {
+            'item': mng.represent(item)
+        }
+    return {
+        'items': map(mng.represent, mng.get_list())
+    }
+
+
+@module.route('/api/v1/org/new/', methods=['GET'])
+@api_method
+def api_v1_org_get_new():
+    mng = get_manager('Organisation')
+    item = mng.create()
+    return {
+        'item': mng.represent(item)
+    }
+
+
+@module.route('/api/v1/org/', methods=['POST'])
+@module.route('/api/v1/org/<int:item_id>/', methods=['POST'])
+@api_method
+def api_v1_org_post(item_id=None):
+    with_curations = request.args.get('with_curations', False)
+    mng = get_manager('Organisation', with_curations=with_curations)
+    data = request.get_json()
+
+    if item_id:
+        item = mng.update(item_id, data)
+    else:
+        item = mng.create(data)
+    mng.store(item)
+    return mng.represent(item)
+
+
+@module.route('/api/v1/org/', methods=['DELETE'])
+@module.route('/api/v1/org/<int:item_id>/', methods=['DELETE'])
+@api_method
+def api_v1_org_delete(item_id=None):
+    mng = get_manager('Organisation')
+    item = mng.delete(item_id)
+    mng.store()
+    return mng.represent(item)
+
+
+@module.route('/api/v1/org/<int:item_id>/undelete/', methods=['POST'])
+@api_method
+def api_v1_org_undelete(item_id):
+    mng = get_manager('Organisation')
+    item = mng.undelete(item_id)
+    mng.store()
+    return mng.represent(item)
+
+
+@module.route('/api/v1/org/')
+@module.route('/api/v1/org/<int:org_id>/curation/new/')
+@api_method
+def api_v1_org_curation_get_new(org_id=None):
+    if not org_id:
+        raise ApiException(404, u'`org_id` required')
+    mng = get_manager('OrganisationCuration')
+    item = mng.create(parent_id=org_id)
+    return {
+        'item': mng.represent(item)
+    }
+
+
+@module.route('/api/v1/org_birth_care_level/', methods=['GET'])
+@module.route('/api/v1/org_birth_care_level/<int:item_id>/', methods=['GET'])
+@api_method
+def api_v1_org_birth_care_level_get(item_id=None):
+    with_orgs = request.args.get('with_orgs', False)
+    mng = get_manager('OrganisationBirthCareLevel', with_orgs=with_orgs)
+    if item_id:
+        item = mng.get_by_id(item_id)
+        return {
+            'item': mng.represent(item)
+        }
+    return {
+        'items': map(mng.represent, mng.get_list()) # TODO: order and deleted
+    }
+
+
+@module.route('/api/v1/org_birth_care_level/new/', methods=['GET'])
+@api_method
+def api_v1_org_birth_care_level_get_new():
+    mng = get_manager('OrganisationBirthCareLevel')
+    item = mng.create()
+    return {
+        'item': mng.represent(item)
+    }
+
+
+@module.route('/api/v1/org_birth_care_level/', methods=['POST'])
+@module.route('/api/v1/org_birth_care_level/<int:item_id>/', methods=['POST'])
+@api_method
+def api_v1_org_birth_care_level_post(item_id=None):
+    with_orgs = request.args.get('with_orgs', False)
+    mng = get_manager('OrganisationBirthCareLevel', with_orgs=with_orgs)
+    data = request.get_json()
+
+    if item_id:
+        item = mng.update(item_id, data)
+    else:
+        item = mng.create(data)
+    mng.store(item)
+    return mng.represent(item)
+
+
+@module.route('/api/v1/org_birth_care_level/', methods=['DELETE'])
+@module.route('/api/v1/org_birth_care_level/<int:item_id>/', methods=['DELETE'])
+@api_method
+def api_v1_org_birth_care_level_delete(item_id=None):
+    mng = get_manager('OrganisationBirthCareLevel')
+    item = mng.delete(item_id)
+    mng.store()
+    return mng.represent(item)
+
+
+@module.route('/api/v1/org_birth_care_level/<int:item_id>/undelete/', methods=['POST'])
+@api_method
+def api_v1_org_birth_care_level_undelete(item_id):
+    mng = get_manager('OrganisationBirthCareLevel')
+    item = mng.undelete(item_id)
+    mng.store()
+    return mng.represent(item)
+
+
+@module.route('/api/v1/org_birth_care_level/')
+@module.route('/api/v1/org_birth_care_level/<int:obcl_id>/orgs/')
+@api_method
+def api_v1_obcl_orgs_get(obcl_id=None):
+    if not obcl_id:
+        raise ApiException(404, u'`obcl_id` required')
+    mng = get_manager('Organisation_OrganisationHCL')
+    org_obcl = mng.get_by_obcl_id(obcl_id)
+    return {
+        'items': map(mng.represent, org_obcl)
+    }
+
+
+@module.route('/api/v1/org_birth_care_level/')
+@module.route('/api/v1/org_birth_care_level/<int:obcl_id>/orgs/new/')
+@api_method
+def api_v1_obcl_orgs_get_new(obcl_id=None):
+    if not obcl_id:
+        raise ApiException(404, u'`obcl_id` required')
+    org_id = request.args.get('org_id')
+    mng = get_manager('Organisation_OrganisationHCL')
+    item = mng.create(data={
+        'org_id': org_id
+    }, parent_id=obcl_id)
+    return {
+        'item': mng.represent(item)
+    }
+
+
+@module.route('/api/v1/person/', methods=['GET'])
+@module.route('/api/v1/person/<int:item_id>/', methods=['GET'])
+@api_method
+def api_v1_person_get(item_id=None):
+    with_curations = request.args.get('with_curations', False)
+    mng = get_manager('Person', with_curations=with_curations)
+    if item_id:
+        item = mng.get_by_id(item_id)
+        return {
+            'item': mng.represent(item)
+        }
+    return {
+        'items': map(mng.represent, mng.get_list())
+    }
+
+
+@module.route('/api/v1/person/new/', methods=['GET'])
+@api_method
+def api_v1_person_get_new():
+    raise NotImplementedError()
+    mng = get_manager('Person')
+    item = mng.create()
+    return {
+        'item': mng.represent(item)
+    }
+
+
+@module.route('/api/v1/person/', methods=['POST'])
+@module.route('/api/v1/person/<int:item_id>/', methods=['POST'])
+@api_method
+def api_v1_person_post(item_id=None):
+    with_curations = request.args.get('with_curations', False)
+    mng = get_manager('Person', with_curations=with_curations)
+    data = request.get_json()
+
+    if item_id:
+        item = mng.update(item_id, data)
+    else:
+        item = mng.create(data)
+    mng.store(item)
+    return mng.represent(item)
+
+
+@module.route('/api/v1/person/', methods=['DELETE'])
+@module.route('/api/v1/person/<int:item_id>/', methods=['DELETE'])
+@api_method
+def api_v1_person_delete(item_id=None):
+    raise NotImplementedError()
+    mng = get_manager('Person')
+    item = mng.delete(item_id)
+    mng.store()
+    return mng.represent(item)
+
+
+@module.route('/api/v1/person/<int:item_id>/undelete/', methods=['POST'])
+@api_method
+def api_v1_person_undelete(item_id):
+    raise NotImplementedError()
+    mng = get_manager('Person')
+    item = mng.undelete(item_id)
+    mng.store()
+    return mng.represent(item)
+
+
+@module.route('/api/v1/person_curation_level/')
+@api_method
+def api_v1_person_curation_level_get():
+    mng = get_manager('PersonCuration')
+    items = mng.get_list()
+    return {
+        'items': map(mng.represent, items)
+    }
+
+
+@module.route('/api/v1/person/person_curation_level/')
+@module.route('/api/v1/person/person_curation_level/<int:person_id>/new/')
+@api_method
+def api_v1_person_org_curation_level_get_new(person_id=None):
+    if not person_id:
+        raise ApiException(404, u'`person_id` required')
+    mng = get_manager('PersonCuration')
+    item = mng.create(parent_id=person_id)
+    return {
+        'item': mng.represent(item)
+    }
