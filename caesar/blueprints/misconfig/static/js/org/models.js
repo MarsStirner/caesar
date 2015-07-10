@@ -1,16 +1,27 @@
 'use strict';
 
 WebMis20
-.factory('Organisation', ['SimpleRb', function (SimpleRb) {
+.factory('Organisation', ['BasicModel', 'OrganisationCuration', function (BasicModel, OrganisationCuration) {
     var Organisation = function (data) {
-        SimpleRb.call(this, data);
+        BasicModel.call(this, data);
     };
-    Organisation.inheritsFrom(SimpleRb);
+    Organisation.inheritsFrom(BasicModel);
     Organisation.initialize({
         fields: ['id', 'short_name', 'full_name', 'title', 'infis', 'is_insurer',
-            'is_hospital', 'address', 'phone', 'kladr_locality', 'deleted'],
-        base_url: '{0}Organisation/'.format(Organisation.getBaseUrl())
+            'is_hospital', 'address', 'phone', 'kladr_locality', 'deleted', {
+                name: 'org_curations',
+                optional: true,
+                klass: OrganisationCuration
+            }],
+        base_url: '/misconfig/api/v1/org/'
     }, Organisation);
+    Organisation.prototype.getNewOrgCuration = function () {
+        var url = OrganisationCuration.getBaseUrl().format(this.id) + 'new/';
+        return OrganisationCuration.instantiate(undefined, undefined, url);
+    };
+    Organisation.prototype.addOrgCuration = function (org_curation) {
+        this.org_curations.push(org_curation);
+    };
     return Organisation;
 }])
 .factory('OrganisationBirthCareLevel', ['BasicModel', 'OrganisationOBCL', function (BasicModel, OrganisationOBCL) {
@@ -47,5 +58,16 @@ WebMis20
         base_url: '/misconfig/api/v1/org_birth_care_level/{0}/orgs/'
     }, OrganisationOBCL);
     return OrganisationOBCL;
+}])
+.factory('OrganisationCuration', ['BasicModel', function (BasicModel) {
+    var OrganisationCuration = function (data) {
+        BasicModel.call(this, data);
+    };
+    OrganisationCuration.inheritsFrom(BasicModel);
+    OrganisationCuration.initialize({
+        fields: ['id', 'org_id', 'person_curation_id', 'person_curation'],
+        base_url: '/misconfig/api/v1/org/{0}/curation/'
+    }, OrganisationCuration);
+    return OrganisationCuration;
 }])
 ;

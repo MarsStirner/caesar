@@ -1,0 +1,82 @@
+{% extends 'misconfig/base.html' %}
+
+{% block content %}
+<div class="container-fluid" ng-controller="OrgCurationConfigCtrl" ng-cloak>
+    <alert-notify></alert-notify>
+    <ul class="breadcrumb">
+        <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
+        <li>Курирование ЛПУ</li>
+    </ul>
+
+    <div class="row">
+    <div class="col-md-12">
+        <table class="table table-condensed">
+            <thead>
+                <tr>
+                <th>ЛПУ</th>
+                <th>Курирование</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="(key, item) in model">
+                <td bind-once>[[ item.org.short_name ]]</td>
+                <td width="60%">
+                    <div class="row">
+                    <div class="col-md-10">
+                        <div class="panel panel-default">
+                        <ul class="list-group">
+                            <li ng-repeat="org_cur in item.org.org_curations" class="list-group-item">
+                                [[ org_cur.person_curation.person.full_name ]], [[ org_cur.person_curation.org_curation_level.name ]]
+                                <span class="label label-danger pull-right" ng-show="inEditState(key)"
+                                    ng-click="removeOrgCuration(key, $index)">
+                                    <i class="fa fa-remove"></i>
+                                </span>
+                            </li>
+                        </ul>
+                        <div class="panel-body" ng-if="inEditState(key)">
+                            <div class="alert alert-danger" role="alert" ng-if="alertCurationDublVisible(key)">
+                                Выбранный уровень уже присутствует в списке. Выберите другое значение.
+                            </div>
+                            <div class="row">
+                                <div class="col-md-10">
+                                    <ui-select theme="bootstrap" ng-model="item.newCuration"
+                                        ng-change="checkCurationDubl(key)">
+                                        <ui-select-match>[[ $select.selected.person.full_name ]], [[ $select.selected.org_curation_level.name ]]</ui-select-match>
+                                        <ui-select-choices repeat="pc in person_curation_list | filter: $select.search">
+                                            <div>[[ pc.person.full_name ]], [[ pc.org_curation_level.name ]]</div>
+                                        </ui-select-choices>\
+                                    </ui-select>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-primary" ng-click="addOrgCuration(key)"
+                                        ng-disabled="!btnAddCurationAvailable(key)">
+                                        <i class="fa fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="btn-group btn-group-sm pull-right">
+                            <button type="button" class="btn btn-primary" ng-click="startEditing(key)" ng-if="!inEditState(key)">Редактировать</button>
+                            <button type="button" class="btn btn-success" ng-click="finishEditing(key)" ng-if="inEditState(key)">Сохранить</button>
+                            <button type="button" class="btn btn-danger" ng-click="cancelEditing(key)" ng-if="inEditState(key)">Отменить</button>
+                        </div>
+                    </div>
+                    </div>
+                </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modules_js %}
+{{ super() }}
+<script src="{{ url_for('.static', filename='js/org/models.js', v=version) }}"></script>
+<script src="{{ url_for('.static', filename='js/person/models.js', v=version) }}"></script>
+<script src="{{ url_for('.static', filename='js/org/org-curation.js', v=version) }}"></script>
+{% endblock %}

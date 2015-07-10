@@ -51,11 +51,20 @@ def expert_protocol_scheme_measures_html():
     return render_template('misconfig/expert/protocol/scheme-measure-edit.html')
 
 
-@module.route('/org-birth-care-level/')
+@module.route('/org/org-birth-care-level/')
 def org_birth_care_level_html():
     return render_template('misconfig/org/org-birth-care-level.html')
 
 
-@module.route('/org-birth-care-level/orgs/')
+@module.route('/org/org-birth-care-level/orgs/')
 def org_obcl_html():
     return render_template('misconfig/org/org-birth-care-level-orgs.html')
+
+
+@module.route('/person-curation-level/')
+def person_curation_level_html():
+    return render_template('misconfig/person/person-curation-level.html')
+
+@module.route('/org/org-curation/')
+def org_curation_html():
+    return render_template('misconfig/org/org-curation.html')
