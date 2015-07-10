@@ -64,6 +64,8 @@ def get_grouped_refbooks():
     for group_code, (group_descr, rb_list) in rb_groups.iteritems():
         if group_code == 'expert_protocol' and not Settings.getBool('Expert.Protocol.Enabled', False):
             continue
+        elif group_code == 'risar' and not Settings.getBool('RISAR.Enabled', False):
+            continue
         grouped[group_code] = {
             'descr': group_descr,
             'rb_list': make_refbook_list(rb_list)
