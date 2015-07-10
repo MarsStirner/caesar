@@ -444,7 +444,7 @@ class ActionProperty(Info):
 
     @property
     def unit(self):
-        return self.unit_all.code
+        return self.type.unit
 
     @property
     def isAssignable(self):
@@ -525,6 +525,10 @@ class Actionpropertytype(Info):
     createPerson_id = Column(Integer)
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer)
+
+    unit = relationship('Rbunit', lazy=False)
+    test = relationship('Rbtest')
+    template = relationship('Actionpropertytemplate')
 
     def get_appendix(self):
         type_name = self.typeName
