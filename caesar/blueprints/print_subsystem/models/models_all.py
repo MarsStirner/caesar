@@ -446,7 +446,7 @@ class ActionProperty(Info):
 
     @property
     def unit(self):
-        return self.unit_all.code
+        return self.type.unit
 
     @property
     def isAssignable(self):
@@ -499,10 +499,10 @@ class Actionpropertytype(Info):
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     actionType_id = Column(Integer, ForeignKey('ActionType.id'), nullable=False, index=True)
     idx = Column(Integer, nullable=False, server_default=u"'0'")
-    template_id = Column(Integer, index=True)
+    template_id = Column(ForeignKey('ActionPropertyTemplate.id'), index=True)
     name = Column(String(128), nullable=False)
     descr = Column(String(128), nullable=False)
-    unit_id = Column(Integer, index=True)
+    unit_id = Column(ForeignKey('rbUnit.id'), index=True)
     typeName = Column(String(64), nullable=False)
     valueDomain = Column(Text, nullable=False)
     defaultValue = Column(String(5000), nullable=False)
@@ -517,7 +517,7 @@ class Actionpropertytype(Info):
     penalty = Column(Integer, nullable=False, server_default=u"'0'")
     visibleInJobTicket = Column(Integer, nullable=False, server_default=u"'0'")
     isAssignable = Column(Integer, nullable=False, server_default=u"'0'")
-    test_id = Column(Integer, index=True)
+    test_id = Column(ForeignKey('rbTest.id'), index=True)
     defaultEvaluation = Column(Integer, nullable=False, server_default=u"'0'")
     toEpicrisis = Column(Integer, nullable=False, server_default=u"'0'")
     code = Column(String(25), index=True)
@@ -527,6 +527,10 @@ class Actionpropertytype(Info):
     createPerson_id = Column(Integer)
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer)
+
+    unit = relationship('Rbunit', lazy=False)
+    test = relationship('Rbtest')
+    template = relationship('Actionpropertytemplate')
 
     def get_appendix(self):
         type_name = self.typeName
