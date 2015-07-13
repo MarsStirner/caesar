@@ -1,5 +1,5 @@
 .scrolled700{
     max-height: 700px;
-    overflow-y: scroll;
+    overflow-y: auto;
     margin-bottom: 20px;
 }

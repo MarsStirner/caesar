@@ -23,9 +23,7 @@
         </div>
     </div>
     <div class="col-md-9">
-        <button type="button" class="btn btn-lg btn-success pull-right" ng-click="create_new()"
-            title="Добавить запись"><i class="fa fa-plus"></i>
-        </button>
+        <div class="scrolled700">
         <table class="table" ng-if="item_list.length">
         <thead>
         <tr>
@@ -53,10 +51,12 @@
         </tr>
         </tbody>
         </table>
-        <button type="button" class="btn btn-lg btn-success pull-right" ng-if="item_list.length" ng-click="create_new()"
-            title="Добавить запись"><i class="fa fa-plus"></i>
-        </button>
-    </div>
+        </div>
+        <div class="clearfix">
+            <button type="button" class="btn btn-lg btn-success pull-right" ng-if="item_list.length" ng-click="create_new()"
+                title="Добавить запись"><i class="fa fa-plus"> Добавить запись</i>
+            </button>
+        </div>
     </div>
 </div>
 {% endblock %}

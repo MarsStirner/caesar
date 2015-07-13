@@ -174,7 +174,7 @@ def api_v1_quota_detail_get(quota_type_id, _id=None):
         return data
     return obj.get_list(
         where=db.and_(VMPQuotaDetails.quotaType_id == quota_type_id),
-        order=VMPQuotaDetails.id)
+        order=db.desc(VMPQuotaDetails.id))
 
 
 @module.route('/api/v1/quota_detail/<int:quota_type_id>', methods=['POST'])
