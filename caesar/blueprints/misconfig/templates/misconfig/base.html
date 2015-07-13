@@ -1,5 +1,9 @@
 {% extends 'caesar_base.html' %}
 
+{%- block modules_css %}
+{{ super() }}
+<link href="{{ url_for('.static', filename='css/style.css', v=version) }}" rel="stylesheet">
+{% endblock -%}
 {% block modules_js %}
 {{ super() }}
 <script src="{{ url_for('.static', filename='js/misconfig_base.js') }}"></script>

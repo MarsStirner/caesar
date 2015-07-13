@@ -54,6 +54,7 @@ def general_menu():
 def app_enum():
     return {
         'app_version': app_version,
+        'version': app_version
     }
 
 
