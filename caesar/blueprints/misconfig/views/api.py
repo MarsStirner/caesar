@@ -522,6 +522,7 @@ def api_v1_org_curation_get_new(org_id=None):
 @api_method
 def api_v1_org_birth_care_level_get(item_id=None):
     with_orgs = request.args.get('with_orgs', False)
+    with_deleted = request.args.get('with_deleted', False)
     mng = get_manager('OrganisationBirthCareLevel', with_orgs=with_orgs)
     if item_id:
         item = mng.get_by_id(item_id)
@@ -529,7 +530,12 @@ def api_v1_org_birth_care_level_get(item_id=None):
             'item': mng.represent(item)
         }
     return {
-        'items': map(mng.represent, mng.get_list()) # TODO: order and deleted
+        'items': map(mng.represent, mng.get_list(
+            order={
+                'idx': 'asc'
+            },
+            with_deleted=with_deleted
+        ))
     }
 
 

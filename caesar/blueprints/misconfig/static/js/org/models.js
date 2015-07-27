@@ -34,7 +34,7 @@ WebMis20
             name: 'org_obcls',
             optional: true,
             klass: OrganisationOBCL
-        }],
+        }, 'color'],
         base_url: '/misconfig/api/v1/org_birth_care_level/'
     }, OrganisationBirthCareLevel);
     OrganisationBirthCareLevel.prototype.getNewOrgOBCL = function (org_id) {

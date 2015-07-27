@@ -8,7 +8,9 @@ WebMis20
         templateUrl: '/caesar/misconfig/org/org-bcl-edit-modal.html'
     });
     $scope.EntityClass = OrganisationBirthCareLevel;
-    OrganisationBirthCareLevel.instantiateAll().then(function (orgs) {
+    OrganisationBirthCareLevel.instantiateAll({
+        with_deleted: true
+    }).then(function (orgs) {
         $scope.item_list = orgs;
     });
 }])
