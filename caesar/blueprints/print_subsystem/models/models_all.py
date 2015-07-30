@@ -3743,6 +3743,8 @@ class Organisation(Info):
     miacCode = Column(String(10), nullable=False)
     isOrganisation = Column(Integer, nullable=False, server_default=u"'0'")
     uuid_id = Column(Integer, nullable=False, index=True, server_default=u"'0'")
+    isLPU = Column(Integer, nullable=False, server_default=u"'0'")
+    isStationary = Column(Integer, nullable=False, server_default=u"'0'")
 
 
     net = relationship(u'Rbnet')

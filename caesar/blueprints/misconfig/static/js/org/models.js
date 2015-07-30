@@ -7,8 +7,8 @@ WebMis20
     };
     Organisation.inheritsFrom(BasicModel);
     Organisation.initialize({
-        fields: ['id', 'short_name', 'full_name', 'title', 'infis', 'is_insurer',
-            'is_hospital', 'address', 'phone', 'kladr_locality', 'deleted', {
+        fields: ['id', 'short_name', 'full_name', 'title', 'infis', 'is_insurer', 'is_hospital', 'is_lpu',
+            'is_stationary', 'address', 'phone', 'kladr_locality', 'deleted', {
                 name: 'org_curations',
                 optional: true,
                 klass: OrganisationCuration

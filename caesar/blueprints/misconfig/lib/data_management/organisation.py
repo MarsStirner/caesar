@@ -17,6 +17,8 @@ class OrganisationModelManager(BaseModelManager):
             FieldConverter(FCType.basic, 'infisCode', safe_unicode, 'infis'),
             FieldConverter(FCType.basic, 'isInsurer', safe_int, 'is_insurer', safe_bool),
             FieldConverter(FCType.basic, 'isHospital', safe_int, 'is_hospital', safe_bool),
+            FieldConverter(FCType.basic, 'isLPU', safe_int, 'is_lpu', safe_bool),
+            FieldConverter(FCType.basic, 'isStationary', safe_int, 'is_stationary', safe_bool),
             FieldConverter(FCType.basic, 'Address', safe_unicode, 'address'),
             FieldConverter(FCType.basic, 'phone', safe_unicode, 'phone'),
             FieldConverter(FCType.relation, 'kladr_locality', self.handle_kladr_locality, 'kladr_locality'),
@@ -35,6 +37,8 @@ class OrganisationModelManager(BaseModelManager):
         item = super(OrganisationModelManager, self).create(data)
         item.isHospital = False
         item.isInsurer = False
+        item.isLPU = False
+        item.isStationary = False
         item.obsoleteInfisCode = ''
         item.OKVED = ''
         item.INN = ''

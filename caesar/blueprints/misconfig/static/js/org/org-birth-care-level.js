@@ -59,6 +59,11 @@ WebMis20
     $scope.alertOrgDublVisible = function (key) {
         return $scope.model[key].orgDubl;
     };
+    $scope.fltStationaryLPU = function () {
+        return function (org) {
+            return org && Boolean(org.is_stationary);
+        }
+    };
 
     OrganisationBirthCareLevel.instantiateAll({
         with_orgs: true
