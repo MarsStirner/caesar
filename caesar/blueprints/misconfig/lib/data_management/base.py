@@ -49,6 +49,9 @@ class BaseModelManager(object):
         where = kwargs.get('where')
         if where:
             query = query.filter(*where)
+        order = kwargs.get('order')
+        if order:
+            query = query.order_by(*order)
         return query.all()
 
     def fill(self, item, data, parent_obj=None):

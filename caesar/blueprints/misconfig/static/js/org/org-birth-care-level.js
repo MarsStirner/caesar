@@ -8,7 +8,9 @@ WebMis20
         templateUrl: '/caesar/misconfig/org/org-bcl-edit-modal.html'
     });
     $scope.EntityClass = OrganisationBirthCareLevel;
-    OrganisationBirthCareLevel.instantiateAll().then(function (orgs) {
+    OrganisationBirthCareLevel.instantiateAll({
+        with_deleted: true
+    }).then(function (orgs) {
         $scope.item_list = orgs;
     });
 }])
@@ -56,6 +58,11 @@ WebMis20
     };
     $scope.alertOrgDublVisible = function (key) {
         return $scope.model[key].orgDubl;
+    };
+    $scope.fltStationaryLPU = function () {
+        return function (org) {
+            return org && Boolean(org.is_stationary);
+        }
     };
 
     OrganisationBirthCareLevel.instantiateAll({

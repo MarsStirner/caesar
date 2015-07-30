@@ -3,7 +3,7 @@ from .base import BaseModelManager, FieldConverter, FCType, represent_model
 from nemesis.models.organisation import (Organisation, OrganisationBirthCareLevel,
     Organisation_OrganisationBCLAssoc, OrganisationCurationAssoc)
 from nemesis.lib.utils import (get_new_uuid, safe_int, safe_unicode, safe_traverse, safe_bool,
-       get_max_item_attribute_value)
+       get_max_item_attribute_value, safe_hex_color, format_hex_color)
 from nemesis.systemwide import db
 
 
@@ -17,6 +17,8 @@ class OrganisationModelManager(BaseModelManager):
             FieldConverter(FCType.basic, 'infisCode', safe_unicode, 'infis'),
             FieldConverter(FCType.basic, 'isInsurer', safe_int, 'is_insurer', safe_bool),
             FieldConverter(FCType.basic, 'isHospital', safe_int, 'is_hospital', safe_bool),
+            FieldConverter(FCType.basic, 'isLPU', safe_int, 'is_lpu', safe_bool),
+            FieldConverter(FCType.basic, 'isStationary', safe_int, 'is_stationary', safe_bool),
             FieldConverter(FCType.basic, 'Address', safe_unicode, 'address'),
             FieldConverter(FCType.basic, 'phone', safe_unicode, 'phone'),
             FieldConverter(FCType.relation, 'kladr_locality', self.handle_kladr_locality, 'kladr_locality'),
@@ -35,6 +37,8 @@ class OrganisationModelManager(BaseModelManager):
         item = super(OrganisationModelManager, self).create(data)
         item.isHospital = False
         item.isInsurer = False
+        item.isLPU = False
+        item.isStationary = False
         item.obsoleteInfisCode = ''
         item.OKVED = ''
         item.INN = ''
@@ -116,6 +120,7 @@ class OrganisationBCLModelManager(BaseModelManager):
                 'perinatal_risk_rate', lambda val, par: self.handle_onetomany_nonedit(self._prr_mng, val, par),
                 'perinatal_risk_rate'
             ),
+            FieldConverter(FCType.basic, 'color', safe_hex_color, 'color', format_hex_color),
         ]
         if with_orgs:
             self._org_obcl_mng = self.get_manager('Organisation_OrganisationHCL')
@@ -125,6 +130,17 @@ class OrganisationBCLModelManager(BaseModelManager):
                 'org_obcls', lambda val: represent_model(val, self._org_obcl_mng)
             ))
         super(OrganisationBCLModelManager, self).__init__(OrganisationBirthCareLevel, fields)
+
+    def get_list(self, **kwargs):
+        where = []
+        order = []
+        if not kwargs.get('with_deleted'):
+            where.append(self._model.deleted.__eq__(0))
+        if 'order' in kwargs:
+            korder = kwargs['order']
+            if 'idx' in korder:
+                order.append(self._model.idx.desc() if korder['idx'] == 'desc' else self._model.idx)
+        return super(OrganisationBCLModelManager, self).get_list(where=where, order=order)
 
     def create(self, data=None, parent_id=None, parent_obj=None):
         item = super(OrganisationBCLModelManager, self).create(data)

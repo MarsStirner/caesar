@@ -13,7 +13,7 @@ __author__ = 'viruzzz-kun'
 @module.route('/api/routing.json', methods=['GET'])
 @api_method
 def api_routing_get():
-    return map(represent_organisation, Organisation.query.filter(Organisation.isHospital == 1))
+    return map(represent_organisation, Organisation.query.filter(Organisation.isStationary == 1))
 
 
 @module.route('/api/routing.json', methods=['POST'])
@@ -33,7 +33,7 @@ def api_routing_post():
     )
     org_dict = dict(
         (org.id, org)
-        for org in Organisation.query.filter(Organisation.isHospital == 1)
+        for org in Organisation.query.filter(Organisation.isStationary == 1)
     )
     for org in data:
         org_dict[org['id']].mkbs = [
@@ -42,4 +42,4 @@ def api_routing_post():
             if 'id' in mkb
         ]
     db.session.commit()
-    return map(represent_organisation, Organisation.query.filter(Organisation.isHospital == 1))
+    return map(represent_organisation, Organisation.query.filter(Organisation.isStationary == 1))
