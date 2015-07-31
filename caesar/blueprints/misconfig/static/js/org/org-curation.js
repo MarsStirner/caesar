@@ -55,7 +55,7 @@ WebMis20
     }).then(function (orgs) {
         $scope.model = {};
         // TODO: filter on server
-        orgs = orgs.filter(function (o) { return o.is_hospital; });
+        orgs = orgs.filter(function (o) { return o.is_stationary; });
         angular.forEach(orgs, function (org, key) {
             $scope.model[key] = {
                 org: org,
