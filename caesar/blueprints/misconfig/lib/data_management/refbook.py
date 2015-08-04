@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-from blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, FCType
+from blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, FCType, represent_model
 from nemesis.lib.utils import safe_int, safe_unicode
 from nemesis.models.exists import rbTreatment
+from nemesis.models.risar import rbPerinatalRiskRate, rbPerinatalRiskRateMkb
+from nemesis.systemwide import db
 
 
 class SimpleRefBookModelManager(BaseModelManager):
@@ -29,3 +31,57 @@ class RbTreatmentModelManager(SimpleRefBookModelManager):
                 'treatmentType', lambda val, par: self.handle_onetomany_nonedit(self._rbtt_mng, val, par),
                 'treatment_type')
         ])
+
+
+class RbPerinatalRRModelManager(BaseModelManager):
+    def __init__(self):
+        self._prr_mkb_mng = RbPRRMKBModelManager()
+        fields = [
+            FieldConverter(FCType.basic_repr, 'id', None, 'id'),
+            FieldConverter(FCType.basic_repr, 'code', None, 'code'),
+            FieldConverter(FCType.basic_repr, 'name', None, 'name'),
+            FieldConverter(
+                FCType.relation,
+                'prr_mkbs', self.handle_mkbs,
+                'prr_mkbs', lambda val: represent_model(val, self._prr_mkb_mng)
+            )
+        ]
+        super(RbPerinatalRRModelManager, self).__init__(rbPerinatalRiskRate, fields)
+
+    def handle_mkbs(self, mkb_list, parent_obj):
+        if mkb_list is None:
+            return []
+        result = []
+        for item_data in mkb_list:
+            item_id = item_data['id']
+            if item_id:
+                item = self._prr_mkb_mng.update(item_id, item_data, parent_obj)
+            else:
+                item = self._prr_mkb_mng.create(item_data, None, parent_obj)
+            result.append(item)
+
+        # deletion
+        for prr_mkb in parent_obj.prr_mkbs:
+            if prr_mkb not in result:
+                db.session.delete(prr_mkb)
+        return result
+
+
+class RbPRRMKBModelManager(BaseModelManager):
+    def __init__(self):
+        self._mkb_mng = self.get_manager('MKB')
+        fields = [
+            FieldConverter(FCType.basic, 'id', safe_int, 'id'),
+            FieldConverter(FCType.basic, 'riskRate_id', safe_int, 'risk_rate_id'),
+            FieldConverter(
+                FCType.relation,
+                'mkb', lambda val, par: self.handle_onetomany_nonedit(self._mkb_mng, val),
+                'mkb'
+            )
+        ]
+        super(RbPRRMKBModelManager, self).__init__(rbPerinatalRiskRateMkb, fields)
+
+    def create(self, data=None, parent_id=None, parent_obj=None):
+        item = super(RbPRRMKBModelManager, self).create(data, parent_id, parent_obj)
+        item.riskRate_id = data.get('risk_rate_id') if data is not None else parent_id
+        return item

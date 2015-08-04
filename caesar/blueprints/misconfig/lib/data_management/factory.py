@@ -6,7 +6,7 @@ from nemesis.models.person import rbPost, rbOrgCurationLevel, rbSpeciality
 from nemesis.models.risar import rbPerinatalRiskRate
 from nemesis.lib.settings import Settings
 
-from .refbook import SimpleRefBookModelManager, RbTreatmentModelManager
+from .refbook import SimpleRefBookModelManager, RbTreatmentModelManager, RbPerinatalRRModelManager, RbPRRMKBModelManager
 from .organisation import (OrganisationModelManager, OrganisationBCLModelManager, Organisation_OBCLModelManager,
     OrganisationCurationModelManager)
 from .expert_protocol import (MeasureModelManager, ExpertProtocolModelManager, ExpertSchemeModelManager,
@@ -106,3 +106,7 @@ def get_manager(name, **params):
         return PersonCurationModelManager()
     elif name == 'OrganisationCuration':
         return OrganisationCurationModelManager()
+    elif name == 'rbPerinatalRiskRateWithMKBs':
+        return RbPerinatalRRModelManager()
+    elif name == 'rbPerinatalRiskRateMkb':
+        return RbPRRMKBModelManager()

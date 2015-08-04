@@ -65,6 +65,12 @@ def org_obcl_html():
 def person_curation_level_html():
     return render_template('misconfig/person/person-curation-level.html')
 
+
 @module.route('/org/org-curation/')
 def org_curation_html():
     return render_template('misconfig/org/org-curation.html')
+
+
+@module.route('/perinatal-risk-rate-mkb/')
+def perinatal_risk_rate_mkb_html():
+    return render_template('misconfig/perinatal-risk-rate-mkb.html')
