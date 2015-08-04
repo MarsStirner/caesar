@@ -1,0 +1,60 @@
+{% extends 'misconfig/base.html' %}
+
+{% block content %}
+<div class="container-fluid" ng-controller="PRRMKBConfigCtrl" ng-cloak>
+    <alert-notify></alert-notify>
+    <ul class="breadcrumb">
+        <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
+        <li>Связь МКБ со степенями перинатального риска</li>
+    </ul>
+
+    <div class="row">
+    <div class="col-md-12">
+        <accordion close-others="false">
+            <accordion-group ng-repeat="(key, item) in model" is-open="true">
+                <accordion-heading>
+                    <div style="margin: -15px; padding: 15px;"><h4>[[ item.prr.name ]]</h4></div>
+                </accordion-heading>
+                <div class="row">
+                    <div class="col-md-4">
+                        <span>Степень перинатального риска: [[ item.prr.name ]]</span><br>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <div class="btn-group btn-group-sm pull-right">
+                                <button type="button" class="btn btn-primary" ng-click="startEditing(key)" ng-if="!inEditState(key)">Редактировать</button>
+                                <button type="button" class="btn btn-success" ng-click="finishEditing(key)" ng-if="inEditState(key)">Сохранить</button>
+                                <button type="button" class="btn btn-danger" ng-click="cancelEditing(key)" ng-if="inEditState(key)">Отменить</button>
+                            </div>
+                            Список МКБ
+                        </div>
+                        <div class="panel-body">
+                            <div class="row">
+                            <div class="col-md-9">
+                            <ui-select multiple theme="select2" ng-disabled="!inEditState(key)"
+                                   ng-model="item.proxyMkbList" ref-book="MKB" close-on-select="false" ng-change="onMkbListChanged(item)">
+                                <ui-select-match placeholder="МКБ"><span title="[[$item.name]]" ng-bind="$item.code"></span></ui-select-match>
+                                <ui-select-choices repeat="mkb in $refBook.objects | filter: $select.search | limitTo: 100 | filter:filterMkbChoices(item)">
+                                    <div ng-bind-html="mkb.code | highlight: $select.search"></div>
+                                    <small style="font-style: italic" ng-bind-html="mkb.name"></small>
+                                </ui-select-choices>
+                            </ui-select>
+                            </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </accordion-group>
+        </accordion>
+    </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modules_js %}
+{{ super() }}
+<script src="{{ url_for('.static', filename='js/rb.js', v=version) }}"></script>
+<script src="{{ url_for('.static', filename='js/perinatal-risk-rate-mkb.js', v=version) }}"></script>
+{% endblock %}

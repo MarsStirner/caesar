@@ -698,3 +698,50 @@ def api_v1_person_org_curation_level_get_new(person_id=None):
     return {
         'item': mng.represent(item)
     }
+
+
+@module.route('/api/v1/rb_perinatal_risk_rate/', methods=['GET'])
+@module.route('/api/v1/rb_perinatal_risk_rate/<int:item_id>/', methods=['GET'])
+@api_method
+def api_v1_rb_perinatal_risk_rate_get(item_id=None):
+    mng = get_manager('rbPerinatalRiskRateWithMKBs')
+    if item_id:
+        item = mng.get_by_id(item_id)
+        return {
+            'item': mng.represent(item)
+        }
+    return {
+        'items': map(mng.represent, mng.get_list(
+            order={
+                'id': 'asc'
+            }
+        ))
+    }
+
+
+@module.route('/api/v1/rb_perinatal_risk_rate/', methods=['POST'])
+@module.route('/api/v1/rb_perinatal_risk_rate/<int:item_id>/', methods=['POST'])
+@api_method
+def api_v1_rb_perinatal_risk_rate_post(item_id=None):
+    mng = get_manager('rbPerinatalRiskRateWithMKBs')
+    data = request.get_json()
+
+    if item_id:
+        item = mng.update(item_id, data)
+    else:
+        item = mng.create(data)
+    mng.store(item)
+    return mng.represent(item)
+
+
+@module.route('/api/v1/rb_perinatal_risk_rate/')
+@module.route('/api/v1/rb_perinatal_risk_rate/<int:prr_id>/mkbs/new/')
+@api_method
+def api_v1_rb_perinatal_risk_rate_get_new(prr_id=None):
+    if not prr_id:
+        raise ApiException(404, u'`prr_id` required')
+    mng = get_manager('rbPerinatalRiskRateMkb')
+    item = mng.create(parent_id=prr_id)
+    return {
+        'item': mng.represent(item)
+    }
