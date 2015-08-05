@@ -183,8 +183,8 @@ class Print_Template(object):
         self.today = datetime.date.today()
 
     def update_context(self, template_id, context):
-        from ..models.models_all import Rbprinttemplatemeta, Organisation, Orgstructure, Rbservice, Person
-        for desc in g.printing_session.query(Rbprinttemplatemeta).filter(Rbprinttemplatemeta.template_id == template_id):
+        from ..models.models_all import rbPrintTemplateMeta, Organisation, Orgstructure, rbService, Person
+        for desc in g.printing_session.query(rbPrintTemplateMeta).filter(rbPrintTemplateMeta.template_id == template_id):
             name = desc.name
             if name not in context:
                 continue
@@ -207,7 +207,7 @@ class Print_Template(object):
             elif typeName == 'OrgStructure':
                 context[name] = g.printing_session.query(Orgstructure).get(int(value)) if value else None
             elif typeName == 'Service':
-                context[name] = g.printing_session.query(Rbservice).get(int(value)) if value else None
+                context[name] = g.printing_session.query(rbService).get(int(value)) if value else None
             elif typeName == 'MKB':
                 context[name] = g.printing_session.query(Mkb).get(int(value)) if value else None
 

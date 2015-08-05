@@ -5,7 +5,7 @@ import traceback
 from flask import g
 from jinja2 import TemplateSyntaxError
 from blueprints.print_subsystem.lib.internals import RenderTemplateException
-from blueprints.print_subsystem.models.models_all import Rbprinttemplate
+from blueprints.print_subsystem.models.models_all import rbPrintTemplate
 from internals import renderTemplate
 
 __author__ = 'mmalkov'
@@ -48,7 +48,7 @@ __author__ = 'mmalkov'
 
 def applyTemplate(templateId, data):
     u"""Выводит на печать шаблон печати номер templateId с данными data"""
-    template_data = g.printing_session.query(Rbprinttemplate).get(templateId)
+    template_data = g.printing_session.query(rbPrintTemplate).get(templateId)
     if not template_data:
         raise RenderTemplateException(u'Шаблон с id=%s не найден' % templateId, {
             'type': RenderTemplateException.Type.other,

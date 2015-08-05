@@ -4,13 +4,13 @@ import datetime
 from flask import g
 from sqlalchemy.exc import ProgrammingError, OperationalError
 
-from ..models.models_all import Rbspecialvariablespreference
+from ..models.models_all import rbSpecialVariablesPreferences
 
 __author__ = 'mmalkov'
 
 
 def SpecialVariable(name, *args, **kwargs):
-    sp_variable = g.printing_session.query(Rbspecialvariablespreference).filter(Rbspecialvariablespreference.name == name).first()
+    sp_variable = g.printing_session.query(rbSpecialVariablesPreferences).filter(rbSpecialVariablesPreferences.name == name).first()
     # Проверка валидности sql-запроса
     sql_text = sp_variable.query_text
     if re.search(r"\W(delete|drop|insert|alter)\s", sql_text, re.I) or not re.match(r"^\s*SELECT", sql_text, re.I):

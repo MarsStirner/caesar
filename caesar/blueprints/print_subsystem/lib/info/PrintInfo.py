@@ -94,8 +94,8 @@ class CTemplatableInfoMixin:
     def formatByTemplateId(self, templateId):
         # формирование html по id шаблона
         from ..internals import renderTemplate
-        from ...models.models_all import Rbprinttemplate
-        template_data = g.printing_session.query(Rbprinttemplate).get(templateId)
+        from ...models.models_all import rbPrintTemplate
+        template_data = g.printing_session.query(rbPrintTemplate).get(templateId)
         if not template_data:
             return ''
         data = self.getData()

@@ -9,7 +9,7 @@ from jinja2 import TemplateNotFound
 from app import module
 from nemesis.lib.utils import jsonify, crossdomain, public_endpoint
 from blueprints.print_subsystem.lib.internals import RenderTemplateException
-from blueprints.print_subsystem.models.models_all import Rbprinttemplate
+from blueprints.print_subsystem.models.models_all import rbPrintTemplate
 from lib.data import Print_Template
 
 
@@ -123,7 +123,7 @@ def api_templates(context=None):
     # А в Гиппократе всё работает. Там те же две БД.
     if not context:
         return jsonify(None)
-    templates = g.printing_session.query(Rbprinttemplate).filter(Rbprinttemplate.context == context)
+    templates = g.printing_session.query(rbPrintTemplate).filter(rbPrintTemplate.context == context)
     return jsonify([{
         'id': t.id,
         'code': t.code,

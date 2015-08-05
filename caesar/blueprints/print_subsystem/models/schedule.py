@@ -6,7 +6,7 @@ from sqlalchemy import Integer
 from sqlalchemy.orm import relationship
 from ..database import Base
 
-from models_all import Person, Client, Rbreasonofabsence, Organisation, Orgstructure
+from models_all import Person, Client, rbReasonOfAbsence, Organisation, Orgstructure
 
 
 class rbReceptionType(Base):
@@ -100,7 +100,7 @@ class Schedule(Base):
     deleted = Column(SmallInteger, nullable=False, server_default='0')
 
     person = relationship('Person', foreign_keys=person_id)
-    reasonOfAbsence = relationship('Rbreasonofabsence', lazy='joined')
+    reasonOfAbsence = relationship('rbReasonOfAbsence', lazy='joined')
     receptionType = relationship('rbReceptionType', lazy='joined')
     tickets = relationship(
         'ScheduleTicket', lazy=False, primaryjoin=

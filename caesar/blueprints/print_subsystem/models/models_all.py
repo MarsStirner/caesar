@@ -99,7 +99,7 @@ class Account(Info):
     payer = relationship(u'Organisation')
     orgStructure = relationship(u'Orgstructure')
     contract = relationship(u'Contract')
-    format = relationship(u'Rbaccountexportformat')
+    format = relationship(u'rbAccountExportFormat')
     items = relationship(u'AccountItem')
 
     @property
@@ -138,10 +138,10 @@ class AccountItem(Info):
     event = relationship(u'Event')
     visit = relationship(u'Visit')
     action = relationship(u'Action')
-    refuseType = relationship(u'Rbpayrefusetype')
+    refuseType = relationship(u'rbPayRefuseType')
     reexposeItem = relationship(u'AccountItem', remote_side=[id])
-    service = relationship(u'Rbservice')
-    unit = relationship(u'Rbmedicalaidunit')
+    service = relationship(u'rbService')
+    unit = relationship(u'rbMedicalAidUnit')
 
     @property
     def sumInWords(self):
@@ -200,7 +200,7 @@ class Action(Info):
     event = relationship(u'Event')
     person = relationship(u'Person', foreign_keys='Action.person_id')
     setPerson = relationship(u'Person', foreign_keys='Action.setPerson_id')
-    takenTissue = relationship(u'Takentissuejournal')
+    takenTissue = relationship(u'TakenTissueJournal')
     tissues = relationship(u'Tissue', secondary=u'ActionTissue')
     properties = relationship(
         u'ActionProperty',
@@ -397,7 +397,7 @@ class ActionProperty(Info):
 
     action = relationship(u'Action')
     type = relationship(u'Actionpropertytype')
-    unit_all = relationship(u'Rbunit')
+    unit_all = relationship(u'rbUnit')
 
     def get_value_class(self):
         # Следующая магия вытаскивает класс, ассоциированный с backref-пропертей, созданной этим же классом у нашего
@@ -528,8 +528,8 @@ class Actionpropertytype(Info):
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer)
 
-    unit = relationship('Rbunit', lazy=False)
-    test = relationship('Rbtest')
+    unit = relationship('rbUnit', lazy=False)
+    test = relationship('rbTest')
     template = relationship('Actionpropertytemplate')
 
     def get_appendix(self):
@@ -616,7 +616,7 @@ class ActionProperty_HospitalBedProfile(ActionProperty__ValueType):
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value_ = Column('value', ForeignKey('rbHospitalBedProfile.id'), index=True)
 
-    value = relationship('Rbhospitalbedprofile')
+    value = relationship('rbHospitalBedProfile')
     property_object = relationship('ActionProperty', backref='_value_HospitalBedProfile')
 
 
@@ -684,7 +684,7 @@ class ActionProperty_AnalysisStatus(ActionProperty_Integer_Base):
 
     @property
     def value(self):
-        return g.printing_session.query(Rbanalysisstatus).get(self.value_) if self.value_ else None
+        return g.printing_session.query(rbAnalysisStatus).get(self.value_) if self.value_ else None
 
     @value.setter
     def value(self, val):
@@ -696,7 +696,7 @@ class ActionProperty_OperationType(ActionProperty_Integer_Base):
 
     @property
     def value(self):
-        return g.printing_session.query(Rboperationtype).get(self.value_) if self.value_ else None
+        return g.printing_session.query(rbOperationType).get(self.value_) if self.value_ else None
 
     @value.setter
     def value(self, val):
@@ -818,9 +818,9 @@ class ActionProperty_Table(ActionProperty_Integer_Base):
     @property
     def value(self):
         table_code = self.property_object.type.valueDomain
-        trfu_tables = {"trfuOrderIssueResult": Trfuorderissueresult, "trfuLaboratoryMeasure": Trfulaboratorymeasure,
-                       "trfuFinalVolume": Trfufinalvolume}
-        table = g.printing_session.query(Rbaptable).filter(Rbaptable.code == table_code).first()
+        trfu_tables = {"trfuOrderIssueResult": trfuOrderIssueResult, "trfuLaboratoryMeasure": trfuLaboratoryMeasure,
+                       "trfuFinalVolume": trfuFinalVolume}
+        table = g.printing_session.query(rbAPTable).filter(rbAPTable.code == table_code).first()
         field_names = [field.name for field in table.fields if field.fieldName != 'stickerUrl']
         table_filed_names = [field.fieldName for field in table.fields if field.fieldName != 'stickerUrl']
         value_table_name = table.tableName
@@ -905,17 +905,6 @@ class ActionProperty_ExtReferenceRb(ActionProperty__ValueType):
     property_object = relationship('ActionProperty', backref='_value_ExtReferenceRb')
 
 
-class ActionProperty_Reference(ActionProperty__ValueType):
-    __tablename__ = u'ActionProperty_rbBloodComponentType'
-
-    id = Column(ForeignKey('ActionProperty.id'), primary_key=True, nullable=False)
-    index = Column(Integer, primary_key=True, nullable=False)
-    value_ = Column('value', ForeignKey('rbTrfuBloodComponentType.id'), nullable=False)
-
-    value = relationship('Rbtrfubloodcomponenttype')
-    property_object = relationship('ActionProperty', backref='_value_Reference')
-
-
 class ActionProperty_rbFinance(ActionProperty__ValueType):
     __tablename__ = u'ActionProperty_rbFinance'
 
@@ -923,7 +912,7 @@ class ActionProperty_rbFinance(ActionProperty__ValueType):
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value_ = Column('value', ForeignKey('rbFinance.id'), index=True)
 
-    value = relationship('Rbfinance')
+    value = relationship('rbFinance')
     property_object = relationship('ActionProperty', backref='_value_rbFinance')
 
 
@@ -934,7 +923,7 @@ class ActionProperty_rbReasonOfAbsence(ActionProperty__ValueType):
     index = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     value_ = Column('value', ForeignKey('rbReasonOfAbsence.id'), index=True)
 
-    value = relationship('Rbreasonofabsence')
+    value = relationship('rbReasonOfAbsence')
     property_object = relationship('ActionProperty', backref='_value_rbReasonOfAbsence')
 
 
@@ -1018,9 +1007,9 @@ class Actiontype(Info):
     jobType_id = Column(Integer, index=True)
     mnem = Column(String(32), server_default=u"''")
 
-    service = relationship(u'Rbservice', foreign_keys='Actiontype.service_id')
+    service = relationship(u'rbService', foreign_keys='Actiontype.service_id')
     services = relationship(u'ActiontypeService')
-    nomenclatureService = relationship(u'Rbservice', foreign_keys='Actiontype.nomenclativeService_id')
+    nomenclatureService = relationship(u'rbService', foreign_keys='Actiontype.nomenclativeService_id')
     property_types = relationship(u'Actionpropertytype')
     group = relationship(u'Actiontype', remote_side=[id])
 
@@ -1072,7 +1061,7 @@ class ActiontypeService(Info):
     begDate = Column(Date, nullable=False)
     endDate = Column(Date)
 
-    service = relationship('Rbservice')
+    service = relationship('rbService')
 
 
 class ActiontypeTissuetype(Info):
@@ -1086,8 +1075,8 @@ class ActiontypeTissuetype(Info):
     unit_id = Column(ForeignKey('rbUnit.id'), index=True)
 
     master = relationship(u'Actiontype')
-    tissueType = relationship(u'Rbtissuetype')
-    unit = relationship(u'Rbunit')
+    tissueType = relationship(u'rbTissueType')
+    unit = relationship(u'rbUnit')
 
 
 class ActiontypeUser(Info):
@@ -1103,7 +1092,7 @@ class ActiontypeUser(Info):
 
     actionType = relationship(u'Actiontype')
     person = relationship(u'Person')
-    profile = relationship(u'Rbuserprofile')
+    profile = relationship(u'rbUserProfile')
 
 
 class Address(Info):
@@ -1367,7 +1356,7 @@ class BlankactionsParty(Info):
     writing = Column(Integer, nullable=False, server_default=u"'0'")
 
     createPerson = relationship(u'Person', primaryjoin='BlankactionsParty.createPerson_id == Person.id')
-    doctype = relationship(u'Rbblankaction')
+    doctype = relationship(u'rbBlankActions')
     modifyPerson = relationship(u'Person', primaryjoin='BlankactionsParty.modifyPerson_id == Person.id')
     person = relationship(u'Person', primaryjoin='BlankactionsParty.person_id == Person.id')
 
@@ -1420,7 +1409,7 @@ class BlanktempinvalidParty(Info):
     writing = Column(Integer, nullable=False, server_default=u"'0'")
 
     createPerson = relationship(u'Person', primaryjoin='BlanktempinvalidParty.createPerson_id == Person.id')
-    doctype = relationship(u'Rbblanktempinvalid')
+    doctype = relationship(u'rbBlankTempInvalids')
     modifyPerson = relationship(u'Person', primaryjoin='BlanktempinvalidParty.modifyPerson_id == Person.id')
     person = relationship(u'Person', primaryjoin='BlanktempinvalidParty.person_id == Person.id')
 
@@ -1436,7 +1425,7 @@ class Blanktempinvalid(Info):
     checkingNumber = Column(Integer, nullable=False)
     checkingAmount = Column(Integer, nullable=False)
 
-    doctype = relationship(u'Rbtempinvaliddocument')
+    doctype = relationship(u'rbTempInvalidDocument')
 
 
 class Bloodhistory(Info):
@@ -1811,7 +1800,7 @@ class Clientattach(Info):
     self_document = relationship(u'Clientdocument')
     org = relationship(u'Organisation')
     orgStructure = relationship(u'Orgstructure')
-    attachType = relationship(u'Rbattachtype')
+    attachType = relationship(u'rbAttachType')
 
     @property
     def code(self):
@@ -1872,7 +1861,7 @@ class Clientcontact(Info):
     version = Column(Integer, nullable=False)
 
     client = relationship(u'Client')
-    contactType = relationship(u'Rbcontacttype')
+    contactType = relationship(u'rbContactType')
 
     @property
     def name(self):
@@ -1904,7 +1893,7 @@ class Clientdocument(Info):
     endDate = Column(Date)
 
     client = relationship(u'Client')
-    documentType = relationship(u'Rbdocumenttype')
+    documentType = relationship(u'rbDocumentType')
 
     @property
     def documentTypeCode(self):
@@ -1968,7 +1957,7 @@ class Clientidentification(Info):
     version = Column(Integer, nullable=False)
 
     client = relationship(u'Client')
-    accountingSystems = relationship(u'Rbaccountingsystem')
+    accountingSystems = relationship(u'rbAccountingSystem')
 
     @property
     def code(self):
@@ -2034,7 +2023,7 @@ class Clientpolicy(Info):
 
     client = relationship(u'Client')
     insurer = relationship(u'Organisation')
-    policyType = relationship(u'Rbpolicytype')
+    policyType = relationship(u'rbPolicyType')
 
     def __init__(self):
         self.serial = ""
@@ -2042,7 +2031,7 @@ class Clientpolicy(Info):
         self.name = ""
         self.note = ""
         self.insurer = Organisation()
-        self.policyType = Rbpolicytype()
+        self.policyType = rbPolicyType()
 
     def __unicode__(self):
         return (' '.join([self.policyType.name, unicode(self.insurer), self.serial, self.number])).strip()
@@ -2062,7 +2051,7 @@ class Clientrelation(Info):
     relative_id = Column(Integer, ForeignKey('Client.id'), nullable=False, index=True)
     version = Column(Integer, nullable=False)
 
-    relativeType = relationship(u'Rbrelationtype')
+    relativeType = relationship(u'rbRelationType')
 
     @property
     def leftName(self):
@@ -2212,7 +2201,7 @@ class Clientsocstatus(Info):
     benefitCategory_id = Column(Integer)
 
     client = relationship(u'Client')
-    socStatusType = relationship(u'Rbsocstatustype')
+    socStatusType = relationship(u'rbSocStatusType')
     self_document = relationship(u'Clientdocument')
 
     @property
@@ -2290,7 +2279,7 @@ class ClientworkHurt(Info):
     stage = Column(Integer, nullable=False)
 
     clientWork = relationship(u'Clientwork')
-    hurtType = relationship(u'Rbhurttype')
+    hurtType = relationship(u'rbHurtType')
     factors = relationship(u'ClientworkHurtFactor')
 
     def hurtTypeCode(self):
@@ -2311,7 +2300,7 @@ class ClientworkHurtFactor(Info):
     factorType_id = Column(ForeignKey('rbHurtFactorType.id'), nullable=False, index=True)
 
     master = relationship(u'ClientworkHurt')
-    factorType = relationship(u'Rbhurtfactortype')
+    factorType = relationship(u'rbHurtFactorType')
 
     @property
     def code(self):
@@ -2425,7 +2414,7 @@ class Contract(Info):
 
     recipient = relationship(u'Organisation', foreign_keys='Contract.recipient_id')
     payer = relationship(u'Organisation', foreign_keys='Contract.payer_id')
-    finance = relationship(u'Rbfinance')
+    finance = relationship(u'rbFinance')
     recipientAccount = relationship(u'OrganisationAccount', foreign_keys='Contract.recipientAccount_id')
     payerAccount = relationship(u'OrganisationAccount', foreign_keys='Contract.payerAccount_id')
 
@@ -2526,7 +2515,7 @@ class ContractTariff(Info):
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer)
 
-    rbServiceFinance = relationship(u'Rbservicefinance')
+    rbServiceFinance = relationship(u'rbServiceFinance')
 
 
 class Couponstransferquote(Info):
@@ -2539,9 +2528,9 @@ class Couponstransferquote(Info):
     transferTime = Column(Time, nullable=False)
     couponsEnabled = Column(Integer, server_default=u"'0'")
 
-    dstQuotingType = relationship(u'Rbtimequotingtype', primaryjoin='Couponstransferquote.dstQuotingType_id == Rbtimequotingtype.code')
-    srcQuotingType = relationship(u'Rbtimequotingtype', primaryjoin='Couponstransferquote.srcQuotingType_id == Rbtimequotingtype.code')
-    rbTransferDateType = relationship(u'Rbtransferdatetype')
+    dstQuotingType = relationship(u'rbTimeQuotingType', primaryjoin='Couponstransferquote.dstQuotingType_id == rbTimeQuotingType.code')
+    srcQuotingType = relationship(u'rbTimeQuotingType', primaryjoin='Couponstransferquote.srcQuotingType_id == rbTimeQuotingType.code')
+    rbTransferDateType = relationship(u'rbTransferDateType')
 
 
 class Diagnosis(Info):
@@ -2619,8 +2608,8 @@ class Diagnostic(Info):
     action_id = Column(Integer, ForeignKey('Action.id'), index=True)
     diagnosis_description = Column(Text)
 
-    rbAcheResult = relationship(u'Rbacheresult', innerjoin=True)
-    result = relationship(u'Rbresult', innerjoin=True)
+    rbAcheResult = relationship(u'rbAcheResult', innerjoin=True)
+    result = relationship(u'rbResult', innerjoin=True)
     person = relationship('Person', foreign_keys=[person_id])
     event = relationship('Event', foreign_keys='Diagnostic.event_id', innerjoin=True)
     diagnoses = relationship(
@@ -2784,10 +2773,10 @@ class Event(Info):
     assistant = relationship(u'Person', foreign_keys='Event.assistant_id')
     contract = relationship(u'Contract')
     organisation = relationship(u'Organisation')
-    mesSpecification = relationship(u'Rbmesspecification')
-    rbAcheResult = relationship(u'Rbacheresult')
-    result = relationship(u'Rbresult')
-    typeAsset = relationship(u'Rbemergencytypeasset')
+    mesSpecification = relationship(u'rbMesSpecification')
+    rbAcheResult = relationship(u'rbAcheResult')
+    result = relationship(u'rbResult')
+    typeAsset = relationship(u'rbEmergencyTypeAsset')
     localContract = relationship(u'EventLocalcontract',
                                     backref=backref('event'))
     client = relationship(u'Client')
@@ -3001,12 +2990,12 @@ class Eventtype(RBInfo):
     age_ec = Column(SmallInteger)
     requestType_id = Column(Integer, ForeignKey('rbRequestType.id'))
 
-    counter = relationship(u'Rbcounter')
-    rbMedicalKind = relationship(u'Rbmedicalkind')
-    purpose = relationship(u'Rbeventtypepurpose')
-    finance = relationship(u'Rbfinance')
-    service = relationship(u'Rbservice')
-    requestType = relationship(u'Rbrequesttype')
+    counter = relationship(u'rbCounter')
+    rbMedicalKind = relationship(u'rbMedicalKind')
+    purpose = relationship(u'rbEventTypePurpose')
+    finance = relationship(u'rbFinance')
+    service = relationship(u'rbService')
+    requestType = relationship(u'rbRequestType')
 
     def __unicode__(self):
         return self.name
@@ -3045,7 +3034,7 @@ class EventtypeAction(Info):
     payable = Column(Integer, nullable=False, server_default=u"'0'")
     academicDegree_id = Column(Integer, index=True)
 
-    tissueType = relationship(u'Rbtissuetype')
+    tissueType = relationship(u'rbTissueType')
 
 
 class EventtypeDiagnostic(Info):
@@ -3116,7 +3105,7 @@ class EventLocalcontract(Info):
     org_id = Column(Integer, ForeignKey('Organisation.id'), index=True)
 
     org = relationship(u'Organisation')
-    documentType = relationship(u'Rbdocumenttype')
+    documentType = relationship(u'rbDocumentType')
 
     def __unicode__(self):
         parts = []
@@ -3172,7 +3161,7 @@ class EventPayment(Info):
     cashBox = Column(String(32), nullable=False)
 
     createPerson = relationship('Person')
-    cashOperation = relationship(u'Rbcashoperation')
+    cashOperation = relationship(u'rbCashOperation')
     event = relationship('Event')
 
 
@@ -3297,7 +3286,7 @@ class Job(Info):
     endTime = Column(Time, nullable=False)
     quantity = Column(Integer, nullable=False)
 
-    job_type = relationship(u'Rbjobtype', lazy='joined')
+    job_type = relationship(u'rbJobType', lazy='joined')
     org_structure = relationship(u'Orgstructure', lazy='joined')
 
 
@@ -3470,10 +3459,10 @@ class Medicalkindunit(Info):
     rbTariffType_id = Column(ForeignKey('rbTariffType.id'), nullable=False, index=True)
 
     eventType = relationship(u'Eventtype')
-    rbMedicalAidUnit = relationship(u'Rbmedicalaidunit')
-    rbMedicalKind = relationship(u'Rbmedicalkind')
-    rbPayType = relationship(u'Rbpaytype')
-    rbTariffType = relationship(u'Rbtarifftype')
+    rbMedicalAidUnit = relationship(u'rbMedicalAidUnit')
+    rbMedicalKind = relationship(u'rbMedicalKind')
+    rbPayType = relationship(u'rbPayType')
+    rbTariffType = relationship(u'rbTariffType')
 
 
 class Meta(Info):
@@ -3536,7 +3525,7 @@ class Orgstructure(Info):
 
     parent = relationship(u'Orgstructure', lazy="immediate", remote_side=[id])
     organisation = relationship(u'Organisation')
-    Net = relationship(u'Rbnet')
+    Net = relationship(u'rbNet')
 
     def getNet(self):
         if self.Net is None:
@@ -3611,7 +3600,7 @@ class OrgstructureDisabledattendance(Info):
     attachType_id = Column(ForeignKey('rbAttachType.id'), index=True)
     disabledType = Column(Integer, nullable=False, server_default=u"'0'")
 
-    attachType = relationship(u'Rbattachtype')
+    attachType = relationship(u'rbAttachType')
     master = relationship(u'Orgstructure')
 
 
@@ -3662,9 +3651,9 @@ class OrgstructureHospitalbed(Info):
     endDateInvolute = Column(Date)
 
     orgStructure = relationship(u'Orgstructure')
-    type = relationship(u'Rbhospitalbedtype')
-    profile = relationship(u'Rbhospitalbedprofile')
-    schedule = relationship(u'Rbhospitalbedshedule')
+    type = relationship(u'rbHospitalBedType')
+    profile = relationship(u'rbHospitalBedProfile')
+    schedule = relationship(u'rbHospitalBedShedule')
 
     @property
     def isPermanent(self):
@@ -3694,9 +3683,9 @@ class OrgstructureStock(Info):
     constrainedQnt = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
     orderQnt = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
 
-    finance = relationship(u'Rbfinance')
+    finance = relationship(u'rbFinance')
     master = relationship(u'Orgstructure')
-    nomenclature = relationship(u'Rbnomenclature')
+    nomenclature = relationship(u'rbNomenclature')
 
 
 class Organisation(Info):
@@ -3747,9 +3736,9 @@ class Organisation(Info):
     isStationary = Column(Integer, nullable=False, server_default=u"'0'")
 
 
-    net = relationship(u'Rbnet')
-    OKPF = relationship(u'Rbokpf')
-    OKFS = relationship(u'Rbokfs')
+    net = relationship(u'rbNet')
+    OKPF = relationship(u'rbOKPF')
+    OKFS = relationship(u'rbOKFS')
     org_accounts = relationship(u'OrganisationAccount')
 
     def __init__(self):
@@ -3847,13 +3836,13 @@ class Person(Info):
     academicdegree_id = Column(Integer, ForeignKey('rbAcademicDegree.id'))
     academicTitle_id = Column(Integer, ForeignKey('rbAcademicTitle.id'))
 
-    post = relationship(u'Rbpost')
-    speciality = relationship(u'Rbspeciality')
+    post = relationship(u'rbPost')
+    speciality = relationship(u'rbSpeciality')
     organisation = relationship(u'Organisation')
     orgStructure = relationship(u'Orgstructure')
-    academicDegree = relationship(u'Rbacademicdegree')
-    academicTitle = relationship(u'Rbacademictitle')
-    tariffCategory = relationship(u'Rbtariffcategory')
+    academicDegree = relationship(u'rbAcademicDegree')
+    academicTitle = relationship(u'rbAcademicTitle')
+    tariffCategory = relationship(u'rbTariffCategory')
 
     @property
     def fullName(self):
@@ -4092,7 +4081,7 @@ class QuotaCatalog(Info):
     documentCorresp = Column(Unicode(256), nullable=True)
     comment = Column(UnicodeText, nullable=True)
 
-    finance = relationship('Rbfinance', lazy=False)
+    finance = relationship('rbFinance', lazy=False)
 
     def __unicode__(self):
         return u'Приказ %s № %s от %s' % (
@@ -4143,8 +4132,8 @@ class VMPQuotaDetails(Info):
     treatment_id = Column(ForeignKey('rbTreatment.id'), nullable=False, index=True)
     quotaType_id = Column(ForeignKey('QuotaType.id'), nullable=False, index=True)
 
-    patientModel = relationship('Rbpacientmodel', lazy=False)
-    treatment = relationship('Rbtreatment', lazy=False)
+    patientModel = relationship('rbPacientModel', lazy=False)
+    treatment = relationship('rbTreatment', lazy=False)
     quotaType = relationship('QuotaType', lazy=False, backref='quotaDetails')
     mkb = relationship('Mkb', secondary=MKB_VMPQuotaFilter.__table__)
 
@@ -4180,7 +4169,7 @@ class Quotingbyspeciality(Info):
     coupons_remaining = Column(Integer)
 
     organisation = relationship(u'Organisation')
-    speciality = relationship(u'Rbspeciality')
+    speciality = relationship(u'rbSpeciality')
 
 
 class Quotingbytime(Info):
@@ -4273,10 +4262,10 @@ class StockmotionItem(Info):
     isOut = Column(Integer, nullable=False, server_default=u"'0'")
     note = Column(String, nullable=False)
 
-    finance = relationship(u'Rbfinance', primaryjoin='StockmotionItem.finance_id == Rbfinance.id')
+    finance = relationship(u'rbFinance', primaryjoin='StockmotionItem.finance_id == rbFinance.id')
     master = relationship(u'Stockmotion')
-    nomenclature = relationship(u'Rbnomenclature')
-    oldFinance = relationship(u'Rbfinance', primaryjoin='StockmotionItem.oldFinance_id == Rbfinance.id')
+    nomenclature = relationship(u'rbNomenclature')
+    oldFinance = relationship(u'rbFinance', primaryjoin='StockmotionItem.oldFinance_id == rbFinance.id')
 
 
 class Stockrecipe(Info):
@@ -4308,7 +4297,7 @@ class StockrecipeItem(Info):
     isOut = Column(Integer, nullable=False, server_default=u"'0'")
 
     master = relationship(u'Stockrecipe')
-    nomenclature = relationship(u'Rbnomenclature')
+    nomenclature = relationship(u'rbNomenclature')
 
 
 class Stockrequisition(Info):
@@ -4344,9 +4333,9 @@ class StockrequisitionItem(Info):
     qnt = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
     satisfiedQnt = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
 
-    finance = relationship(u'Rbfinance')
+    finance = relationship(u'rbFinance')
     master = relationship(u'Stockrequisition')
-    nomenclature = relationship(u'Rbnomenclature')
+    nomenclature = relationship(u'rbNomenclature')
 
 
 class Stocktran(Info):
@@ -4368,16 +4357,16 @@ class Stocktran(Info):
     creNomenclature_id = Column(ForeignKey('rbNomenclature.id'), index=True)
     creFinance_id = Column(ForeignKey('rbFinance.id'), index=True)
 
-    creFinance = relationship(u'Rbfinance', primaryjoin='Stocktran.creFinance_id == Rbfinance.id')
-    creNomenclature = relationship(u'Rbnomenclature', primaryjoin='Stocktran.creNomenclature_id == Rbnomenclature.id')
+    creFinance = relationship(u'rbFinance', primaryjoin='Stocktran.creFinance_id == rbFinance.id')
+    creNomenclature = relationship(u'rbNomenclature', primaryjoin='Stocktran.creNomenclature_id == rbNomenclature.id')
     creOrgStructure = relationship(u'Orgstructure', primaryjoin='Stocktran.creOrgStructure_id == Orgstructure.id')
-    debFinance = relationship(u'Rbfinance', primaryjoin='Stocktran.debFinance_id == Rbfinance.id')
-    debNomenclature = relationship(u'Rbnomenclature', primaryjoin='Stocktran.debNomenclature_id == Rbnomenclature.id')
+    debFinance = relationship(u'rbFinance', primaryjoin='Stocktran.debFinance_id == rbFinance.id')
+    debNomenclature = relationship(u'rbNomenclature', primaryjoin='Stocktran.debNomenclature_id == rbNomenclature.id')
     debOrgStructure = relationship(u'Orgstructure', primaryjoin='Stocktran.debOrgStructure_id == Orgstructure.id')
     stockMotionItem = relationship(u'StockmotionItem')
 
 
-class Takentissuejournal(Info):
+class TakenTissueJournal(Info):
     __tablename__ = u'TakenTissueJournal'
     __table_args__ = (
         Index(u'period_barcode', u'period', u'barcode'),
@@ -4397,8 +4386,8 @@ class Takentissuejournal(Info):
 
     client = relationship(u'Client')
     execPerson = relationship(u'Person')
-    tissueType = relationship(u'Rbtissuetype')
-    unit = relationship(u'Rbunit')
+    tissueType = relationship(u'rbTissueType')
+    unit = relationship(u'rbUnit')
 
     @property
     def barcode_s(self):
@@ -4487,7 +4476,7 @@ class Tissue(Info):
     event_id = Column(ForeignKey('Event.id'), nullable=False, index=True)
 
     event = relationship(u'Event')
-    type = relationship(u'Rbtissuetype')
+    type = relationship(u'rbTissueType')
 
 
 class Uuid(Info):
@@ -4534,11 +4523,11 @@ class Visit(Info):
     service_id = Column(Integer, ForeignKey('rbService.id'), index=True)
     payStatus = Column(Integer, nullable=False)
 
-    service = relationship(u'Rbservice')
+    service = relationship(u'rbService')
     person = relationship(u'Person')
-    finance = relationship(u'Rbfinance')
-    scene = relationship(u'Rbscene')
-    type = relationship(u'Rbvisittype')
+    finance = relationship(u'rbFinance')
+    scene = relationship(u'rbScene')
+    type = relationship(u'rbVisitType')
     event = relationship(u'Event')
 
 
@@ -4552,7 +4541,7 @@ class ActionDocument(Info):
     document = Column(MEDIUMBLOB, nullable=False)
 
     action = relationship(u'Action')
-    template = relationship(u'Rbprinttemplate')
+    template = relationship(u'rbPrintTemplate')
 
 
 class BbtResponse(Info):
@@ -4770,7 +4759,7 @@ class Rb64streettype(Info):
     name = Column(String(50), nullable=False)
 
 
-class Rbaptable(Info):
+class rbAPTable(Info):
     __tablename__ = u'rbAPTable'
 
     id = Column(Integer, primary_key=True)
@@ -4780,7 +4769,7 @@ class Rbaptable(Info):
     masterField = Column(String(256), nullable=False)
 
 
-class Rbaptablefield(Info):
+class rbAPTablefield(Info):
     __tablename__ = u'rbAPTableField'
 
     id = Column(Integer, primary_key=True)
@@ -4790,10 +4779,10 @@ class Rbaptablefield(Info):
     fieldName = Column(String(256), nullable=False)
     referenceTable = Column(String(256))
 
-    master = relationship(u'Rbaptable', backref="fields")
+    master = relationship(u'rbAPTable', backref="fields")
 
 
-class Rbacademicdegree(RBInfo):
+class rbAcademicDegree(RBInfo):
     __tablename__ = u'rbAcademicDegree'
 
     id = Column(Integer, primary_key=True)
@@ -4804,7 +4793,7 @@ class Rbacademicdegree(RBInfo):
         return self.name
 
 
-class Rbacademictitle(RBInfo):
+class rbAcademicTitle(RBInfo):
     __tablename__ = u'rbAcademicTitle'
 
     id = Column(Integer, primary_key=True)
@@ -4815,7 +4804,7 @@ class Rbacademictitle(RBInfo):
         return self.name
 
 
-class Rbaccountexportformat(RBInfo):
+class rbAccountExportFormat(RBInfo):
     __tablename__ = u'rbAccountExportFormat'
 
     id = Column(Integer, primary_key=True)
@@ -4829,7 +4818,7 @@ class Rbaccountexportformat(RBInfo):
     message = Column(Text, nullable=False)
 
 
-class Rbaccountingsystem(RBInfo):
+class rbAccountingSystem(RBInfo):
     __tablename__ = u'rbAccountingSystem'
 
     id = Column(Integer, primary_key=True)
@@ -4839,7 +4828,7 @@ class Rbaccountingsystem(RBInfo):
     showInClientInfo = Column(Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbacheresult(RBInfo):
+class rbAcheResult(RBInfo):
     __tablename__ = u'rbAcheResult'
 
     id = Column(Integer, primary_key=True)
@@ -4847,10 +4836,10 @@ class Rbacheresult(RBInfo):
     code = Column(String(3, u'utf8_unicode_ci'), nullable=False)
     name = Column(String(64, u'utf8_unicode_ci'), nullable=False)
 
-    eventPurpose = relationship(u'Rbeventtypepurpose')
+    eventPurpose = relationship(u'rbEventTypePurpose')
 
 
-class Rbactionshedule(Info):
+class rbActionShedule(Info):
     __tablename__ = u'rbActionShedule'
 
     id = Column(Integer, primary_key=True)
@@ -4859,7 +4848,7 @@ class Rbactionshedule(Info):
     period = Column(Integer, nullable=False, server_default=u"'1'")
 
 
-class RbactionsheduleItem(Info):
+class rbActionSheduleItem(Info):
     __tablename__ = u'rbActionShedule_Item'
 
     id = Column(Integer, primary_key=True)
@@ -4869,7 +4858,7 @@ class RbactionsheduleItem(Info):
     time = Column(Time, nullable=False, server_default=u"'00:00:00'")
 
 
-class Rbactivity(Info):
+class rbActivity(Info):
     __tablename__ = u'rbActivity'
 
     id = Column(Integer, primary_key=True)
@@ -4878,7 +4867,7 @@ class Rbactivity(Info):
     regionalCode = Column(String(8), nullable=False, index=True)
 
 
-class Rbagreementtype(Info):
+class rbAgreementType(Info):
     __tablename__ = u'rbAgreementType'
 
     id = Column(Integer, primary_key=True)
@@ -4887,14 +4876,14 @@ class Rbagreementtype(Info):
     quotaStatusModifier = Column(Integer, server_default=u"'0'")
 
 
-class Rbanalysisstatus(Info):
+class rbAnalysisStatus(Info):
     __tablename__ = u'rbAnalysisStatus'
 
     id = Column(Integer, primary_key=True)
     statusName = Column(String(80), nullable=False, unique=True)
 
 
-class Rbanalyticalreport(Info):
+class rbAnalyticalReports(Info):
     __tablename__ = u'rbAnalyticalReports'
 
     id = Column(Integer, primary_key=True)
@@ -4910,7 +4899,7 @@ class rbAntibiotic(RBInfo):
     name = Column(String(256), nullable=False)
 
 
-class Rbattachtype(Info):
+class rbAttachType(Info):
     __tablename__ = u'rbAttachType'
 
     id = Column(Integer, primary_key=True)
@@ -4929,7 +4918,7 @@ class rbBacIndicator(RBInfo):
     name = Column(String(256), nullable=False)
 
 
-class Rbblankaction(Info):
+class rbBlankActions(Info):
     __tablename__ = u'rbBlankActions'
 
     id = Column(Integer, primary_key=True)
@@ -4943,7 +4932,7 @@ class Rbblankaction(Info):
     doctype = relationship(u'Actiontype')
 
 
-class Rbblanktempinvalid(Info):
+class rbBlankTempInvalids(Info):
     __tablename__ = u'rbBlankTempInvalids'
 
     id = Column(Integer, primary_key=True)
@@ -4954,7 +4943,7 @@ class Rbblanktempinvalid(Info):
     checkingNumber = Column(Integer, nullable=False)
     checkingAmount = Column(Integer, nullable=False)
 
-    doctype = relationship(u'Rbtempinvaliddocument')
+    doctype = relationship(u'rbTempInvalidDocument')
 
 
 class rbBloodType(RBInfo):
@@ -4965,7 +4954,7 @@ class rbBloodType(RBInfo):
     name = Column(String(64), nullable=False)
 
 
-class Rbcashoperation(RBInfo):
+class rbCashOperation(RBInfo):
     __tablename__ = u'rbCashOperation'
 
     id = Column(Integer, primary_key=True)
@@ -4973,7 +4962,7 @@ class Rbcashoperation(RBInfo):
     name = Column(Unicode(64), nullable=False)
 
 
-class Rbcomplain(Info):
+class rbComplain(Info):
     __tablename__ = u'rbComplain'
 
     id = Column(Integer, primary_key=True)
@@ -4982,7 +4971,7 @@ class Rbcomplain(Info):
     name = Column(String(120), nullable=False, index=True)
 
 
-class Rbcontacttype(RBInfo):
+class rbContactType(RBInfo):
     __tablename__ = u'rbContactType'
 
     id = Column(Integer, primary_key=True)
@@ -4990,7 +4979,7 @@ class Rbcontacttype(RBInfo):
     name = Column(Unicode(64), nullable=False, index=True)
 
 
-class Rbcoreactionproperty(Info):
+class rbCoreActionProperty(Info):
     __tablename__ = u'rbCoreActionProperty'
 
     id = Column(Integer, primary_key=True)
@@ -4999,7 +4988,7 @@ class Rbcoreactionproperty(Info):
     actionPropertyType_id = Column(Integer, nullable=False)
 
 
-class Rbcounter(Info):
+class rbCounter(Info):
     __tablename__ = u'rbCounter'
 
     id = Column(Integer, primary_key=True)
@@ -5024,7 +5013,7 @@ class rbDiagnosisType(RBInfo):
     flatCode = Column(String(64), nullable=False)
 
 
-class Rbdiet(Info):
+class rbDiet(Info):
     __tablename__ = u'rbDiet'
 
     id = Column(Integer, primary_key=True)
@@ -5068,7 +5057,7 @@ class rbDispanser(RBInfo):
     observed = Column(Integer, nullable=False)
 
 
-class Rbdocumenttype(RBInfo):
+class rbDocumentType(RBInfo):
     __tablename__ = u'rbDocumentType'
 
     id = Column(Integer, primary_key=True)
@@ -5082,13 +5071,13 @@ class Rbdocumenttype(RBInfo):
     socCode = Column(String(8), nullable=False, index=True)
     TFOMSCode = Column(Integer)
 
-    group = relationship(u'Rbdocumenttypegroup')
+    group = relationship(u'rbDocumentTypeGroup')
 
     def __init__(self):
         RBInfo.__init__(self)
 
 
-class Rbdocumenttypegroup(RBInfo):
+class rbDocumentTypeGroup(RBInfo):
     __tablename__ = u'rbDocumentTypeGroup'
 
     id = Column(Integer, primary_key=True)
@@ -5099,7 +5088,7 @@ class Rbdocumenttypegroup(RBInfo):
         RBInfo.__init__(self)
 
 
-class Rbemergencyaccident(Info):
+class rbEmergencyAccident(Info):
     __tablename__ = u'rbEmergencyAccident'
 
     id = Column(Integer, primary_key=True)
@@ -5108,7 +5097,7 @@ class Rbemergencyaccident(Info):
     codeRegional = Column(String(8), nullable=False, index=True)
 
 
-class Rbemergencycausecall(Info):
+class rbEmergencyCauseCall(Info):
     __tablename__ = u'rbEmergencyCauseCall'
 
     id = Column(Integer, primary_key=True)
@@ -5118,7 +5107,7 @@ class Rbemergencycausecall(Info):
     typeCause = Column(Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbemergencydeath(Info):
+class rbEmergencyDeath(Info):
     __tablename__ = u'rbEmergencyDeath'
 
     id = Column(Integer, primary_key=True)
@@ -5127,7 +5116,7 @@ class Rbemergencydeath(Info):
     codeRegional = Column(String(8), nullable=False, index=True)
 
 
-class Rbemergencydiseased(Info):
+class rbEmergencyDiseased(Info):
     __tablename__ = u'rbEmergencyDiseased'
 
     id = Column(Integer, primary_key=True)
@@ -5136,7 +5125,7 @@ class Rbemergencydiseased(Info):
     codeRegional = Column(String(8), nullable=False, index=True)
 
 
-class Rbemergencyebriety(Info):
+class rbEmergencyEbriety(Info):
     __tablename__ = u'rbEmergencyEbriety'
 
     id = Column(Integer, primary_key=True)
@@ -5145,7 +5134,7 @@ class Rbemergencyebriety(Info):
     codeRegional = Column(String(8), nullable=False, index=True)
 
 
-class Rbemergencymethodtransportation(Info):
+class rbEmergencyMethodTransportation(Info):
     __tablename__ = u'rbEmergencyMethodTransportation'
 
     id = Column(Integer, primary_key=True)
@@ -5154,7 +5143,7 @@ class Rbemergencymethodtransportation(Info):
     codeRegional = Column(String(8), nullable=False, index=True)
 
 
-class Rbemergencyplacecall(Info):
+class rbEmergencyPlaceCall(Info):
     __tablename__ = u'rbEmergencyPlaceCall'
 
     id = Column(Integer, primary_key=True)
@@ -5163,7 +5152,7 @@ class Rbemergencyplacecall(Info):
     codeRegional = Column(String(8), nullable=False, index=True)
 
 
-class Rbemergencyplacereceptioncall(Info):
+class rbEmergencyPlaceReceptionCall(Info):
     __tablename__ = u'rbEmergencyPlaceReceptionCall'
 
     id = Column(Integer, primary_key=True)
@@ -5172,7 +5161,7 @@ class Rbemergencyplacereceptioncall(Info):
     codeRegional = Column(String(8), nullable=False, index=True)
 
 
-class Rbemergencyreasonddelay(Info):
+class rbEmergencyReasondDelays(Info):
     __tablename__ = u'rbEmergencyReasondDelays'
 
     id = Column(Integer, primary_key=True)
@@ -5181,7 +5170,7 @@ class Rbemergencyreasonddelay(Info):
     codeRegional = Column(String(8), nullable=False, index=True)
 
 
-class Rbemergencyreceivedcall(Info):
+class rbEmergencyReceivedCall(Info):
     __tablename__ = u'rbEmergencyReceivedCall'
 
     id = Column(Integer, primary_key=True)
@@ -5190,7 +5179,7 @@ class Rbemergencyreceivedcall(Info):
     codeRegional = Column(String(8), nullable=False, index=True)
 
 
-class Rbemergencyresult(Info):
+class rbEmergencyResultt(Info):
     __tablename__ = u'rbEmergencyResult'
 
     id = Column(Integer, primary_key=True)
@@ -5199,7 +5188,7 @@ class Rbemergencyresult(Info):
     codeRegional = Column(String(8), nullable=False, index=True)
 
 
-class Rbemergencytransferredtransportation(Info):
+class rbEmergencyTransferredTransportation(Info):
     __tablename__ = u'rbEmergencyTransferredTransportation'
 
     id = Column(Integer, primary_key=True)
@@ -5208,7 +5197,7 @@ class Rbemergencytransferredtransportation(Info):
     codeRegional = Column(String(8), nullable=False, index=True)
 
 
-class Rbemergencytypeasset(RBInfo):
+class rbEmergencyTypeAsset(RBInfo):
     __tablename__ = u'rbEmergencyTypeAsset'
 
     id = Column(Integer, primary_key=True)
@@ -5217,7 +5206,7 @@ class Rbemergencytypeasset(RBInfo):
     codeRegional = Column(String(8), nullable=False, index=True)
 
 
-class Rbeventprofile(Info):
+class rbEventProfile(Info):
     __tablename__ = u'rbEventProfile'
 
     id = Column(Integer, primary_key=True)
@@ -5226,7 +5215,7 @@ class Rbeventprofile(Info):
     name = Column(String(64), nullable=False, index=True)
 
 
-class Rbeventtypepurpose(RBInfo):
+class rbEventTypePurpose(RBInfo):
     __tablename__ = u'rbEventTypePurpose'
 
     id = Column(Integer, primary_key=True)
@@ -5238,7 +5227,7 @@ class Rbeventtypepurpose(RBInfo):
         RBInfo.__init__(self)
 
 
-class Rbfinance(RBInfo):
+class rbFinance(RBInfo):
     __tablename__ = u'rbFinance'
 
     id = Column(Integer, primary_key=True)
@@ -5249,14 +5238,14 @@ class Rbfinance(RBInfo):
         RBInfo.__init__(self)
 
 
-class Rbfinance1c(Info):
+class rbFinance1C(Info):
     __tablename__ = u'rbFinance1C'
 
     id = Column(Integer, primary_key=True)
     code1C = Column(String(127), nullable=False)
     finance_id = Column(ForeignKey('rbFinance.id'), nullable=False, index=True)
 
-    finance = relationship(u'Rbfinance')
+    finance = relationship(u'rbFinance')
 
 
 class rbHealthGroup(Info):
@@ -5267,7 +5256,7 @@ class rbHealthGroup(Info):
     name = Column(String(64), nullable=False, index=True)
 
 
-class Rbhospitalbedprofile(RBInfo):
+class rbHospitalBedProfile(RBInfo):
     __tablename__ = u'rbHospitalBedProfile'
 
     id = Column(Integer, primary_key=True)
@@ -5279,18 +5268,18 @@ class Rbhospitalbedprofile(RBInfo):
         RBInfo.__init__(self)
 
 
-class RbhospitalbedprofileService(Info):
+class rbHospitalBedProfile_Service(Info):
     __tablename__ = u'rbHospitalBedProfile_Service'
 
     id = Column(Integer, primary_key=True)
     rbHospitalBedProfile_id = Column(ForeignKey('rbHospitalBedProfile.id'), nullable=False, index=True)
     rbService_id = Column(ForeignKey('rbService.id'), nullable=False, index=True)
 
-    rbHospitalBedProfile = relationship(u'Rbhospitalbedprofile')
-    rbService = relationship(u'Rbservice')
+    rbHospitalBedProfile = relationship(u'rbHospitalBedProfile')
+    rbService = relationship(u'rbService')
 
 
-class Rbhospitalbedshedule(RBInfo):
+class rbHospitalBedShedule(RBInfo):
     __tablename__ = u'rbHospitalBedShedule'
 
     id = Column(Integer, primary_key=True)
@@ -5298,7 +5287,7 @@ class Rbhospitalbedshedule(RBInfo):
     name = Column(Unicode(64), nullable=False, index=True)
 
 
-class Rbhospitalbedtype(RBInfo):
+class rbHospitalBedType(RBInfo):
     __tablename__ = u'rbHospitalBedType'
 
     id = Column(Integer, primary_key=True)
@@ -5306,7 +5295,7 @@ class Rbhospitalbedtype(RBInfo):
     name = Column(Unicode(64), nullable=False, index=True)
 
 
-class Rbhurtfactortype(Info):
+class rbHurtFactorType(Info):
     __tablename__ = u'rbHurtFactorType'
 
     id = Column(Integer, primary_key=True)
@@ -5314,7 +5303,7 @@ class Rbhurtfactortype(Info):
     name = Column(String(250), nullable=False, index=True)
 
 
-class Rbhurttype(RBInfo):
+class rbHurtType(RBInfo):
     __tablename__ = u'rbHurtType'
 
     id = Column(Integer, primary_key=True)
@@ -5322,7 +5311,7 @@ class Rbhurttype(RBInfo):
     name = Column(Unicode(256), nullable=False, index=True)
 
 
-class Rbimagemap(Info):
+class rbImageMap(Info):
     __tablename__ = u'rbImageMap'
 
     id = Column(Integer, primary_key=True)
@@ -5332,7 +5321,7 @@ class Rbimagemap(Info):
     markSize = Column(Integer)
 
 
-class Rbjobtype(RBInfo):
+class rbJobType(RBInfo):
     __tablename__ = u'rbJobType'
 
     id = Column(Integer, primary_key=True)
@@ -5347,7 +5336,7 @@ class Rbjobtype(RBInfo):
         RBInfo.__init__(self)
 
 
-class Rblaboratory(Info):
+class rbLaboratory(Info):
     __tablename__ = u'rbLaboratory'
 
     id = Column(Integer, primary_key=True)
@@ -5359,7 +5348,7 @@ class Rblaboratory(Info):
     labName = Column(String(128), nullable=False)
 
 
-class RblaboratoryTest(Info):
+class rbLaboratory_Test(Info):
     __tablename__ = u'rbLaboratory_Test'
     __table_args__ = (
         Index(u'code', u'book', u'code'),
@@ -5392,7 +5381,7 @@ class RbmkbsubclassItem(Info):
     name = Column(String(128), nullable=False)
 
 
-class Rbmealtime(Info):
+class rbMealTime(Info):
     __tablename__ = u'rbMealTime'
 
     id = Column(Integer, primary_key=True)
@@ -5402,7 +5391,7 @@ class Rbmealtime(Info):
     endTime = Column(Time, nullable=False)
 
 
-class Rbmedicalaidprofile(Info):
+class rbMedicalAidProfile(Info):
     __tablename__ = u'rbMedicalAidProfile'
 
     id = Column(Integer, primary_key=True)
@@ -5411,7 +5400,7 @@ class Rbmedicalaidprofile(Info):
     name = Column(String(64), nullable=False)
 
 
-class Rbmedicalaidtype(Info):
+class rbMedicalAidType(Info):
     __tablename__ = u'rbMedicalAidType'
 
     id = Column(Integer, primary_key=True)
@@ -5419,7 +5408,7 @@ class Rbmedicalaidtype(Info):
     name = Column(String(64), nullable=False)
 
 
-class Rbmedicalaidunit(Info):
+class rbMedicalAidUnit(Info):
     __tablename__ = u'rbMedicalAidUnit'
 
     id = Column(Integer, primary_key=True)
@@ -5429,7 +5418,7 @@ class Rbmedicalaidunit(Info):
     regionalCode = Column(String(1), nullable=False)
 
 
-class Rbmedicalkind(Info):
+class rbMedicalKind(Info):
     __tablename__ = u'rbMedicalKind'
 
     id = Column(Integer, primary_key=True)
@@ -5437,7 +5426,7 @@ class Rbmedicalkind(Info):
     name = Column(String(64, u'utf8_unicode_ci'), nullable=False)
 
 
-class Rbmenu(Info):
+class rbMenu(Info):
     __tablename__ = u'rbMenu'
 
     id = Column(Integer, primary_key=True)
@@ -5445,7 +5434,7 @@ class Rbmenu(Info):
     name = Column(String(64), nullable=False, index=True)
 
 
-class RbmenuContent(Info):
+class rbMenu_Content(Info):
     __tablename__ = u'rbMenu_Content'
 
     id = Column(Integer, primary_key=True)
@@ -5454,7 +5443,7 @@ class RbmenuContent(Info):
     diet_id = Column(Integer, nullable=False, index=True)
 
 
-class Rbmesspecification(RBInfo):
+class rbMesSpecification(RBInfo):
     __tablename__ = u'rbMesSpecification'
 
     id = Column(Integer, primary_key=True)
@@ -5464,7 +5453,7 @@ class Rbmesspecification(RBInfo):
     done = Column(Integer, nullable=False)
 
 
-class Rbmethodofadministration(Info):
+class rbMethodOfAdministration(Info):
     __tablename__ = u'rbMethodOfAdministration'
 
     id = Column(Integer, primary_key=True)
@@ -5480,7 +5469,7 @@ class rbMicroorganism(RBInfo):
     name = Column(String(256), nullable=False)
 
 
-class Rbnet(RBInfo):
+class rbNet(RBInfo):
     __tablename__ = u'rbNet'
 
     id = Column(Integer, primary_key=True)
@@ -5498,7 +5487,7 @@ class Rbnet(RBInfo):
         return formatSex(self.sexCode)
 
 
-class Rbnomenclature(Info):
+class rbNomenclature(Info):
     __tablename__ = u'rbNomenclature'
 
     id = Column(Integer, primary_key=True)
@@ -5507,10 +5496,10 @@ class Rbnomenclature(Info):
     regionalCode = Column(String(64), nullable=False)
     name = Column(String(128), nullable=False)
 
-    group = relationship(u'Rbnomenclature', remote_side=[id])
+    group = relationship(u'rbNomenclature', remote_side=[id])
 
 
-class Rbokfs(RBInfo):
+class rbOKFS(RBInfo):
     __tablename__ = u'rbOKFS'
 
     id = Column(Integer, primary_key=True)
@@ -5519,7 +5508,7 @@ class Rbokfs(RBInfo):
     ownership = Column(Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbokpf(RBInfo):
+class rbOKPF(RBInfo):
     __tablename__ = u'rbOKPF'
 
     id = Column(Integer, primary_key=True)
@@ -5527,7 +5516,7 @@ class Rbokpf(RBInfo):
     name = Column(Unicode(64), nullable=False, index=True)
 
 
-class Rbokved(Info):
+class rbOKVED(Info):
     __tablename__ = u'rbOKVED'
 
     id = Column(Integer, primary_key=True)
@@ -5540,7 +5529,7 @@ class Rbokved(Info):
     name = Column(String(250), nullable=False, index=True)
 
 
-class Rboperationtype(Info):
+class rbOperationType(Info):
     __tablename__ = u'rbOperationType'
 
     id = Column(Integer, primary_key=True)
@@ -5551,7 +5540,7 @@ class Rboperationtype(Info):
     name = Column(String(64), nullable=False, index=True)
 
 
-class Rbpacientmodel(RBInfo):
+class rbPacientModel(RBInfo):
     __tablename__ = u'rbPacientModel'
 
     id = Column(Integer, primary_key=True)
@@ -5559,7 +5548,7 @@ class Rbpacientmodel(RBInfo):
     name = Column(Text, nullable=False)
 
 
-class Rbpayrefusetype(RBInfo):
+class rbPayRefuseType(RBInfo):
     __tablename__ = u'rbPayRefuseType'
 
     id = Column(Integer, primary_key=True)
@@ -5569,7 +5558,7 @@ class Rbpayrefusetype(RBInfo):
     rerun = Column(Integer, nullable=False)
 
 
-class Rbpaytype(Info):
+class rbPayType(Info):
     __tablename__ = u'rbPayType'
 
     id = Column(Integer, primary_key=True)
@@ -5577,7 +5566,7 @@ class Rbpaytype(Info):
     name = Column(String(64, u'utf8_unicode_ci'), nullable=False)
 
 
-class Rbpolicytype(RBInfo):
+class rbPolicyType(RBInfo):
     __tablename__ = u'rbPolicyType'
 
     id = Column(Integer, primary_key=True)
@@ -5586,7 +5575,7 @@ class Rbpolicytype(RBInfo):
     TFOMSCode = Column(String(8))
 
 
-class Rbpost(RBInfo):
+class rbPost(RBInfo):
     __tablename__ = u'rbPost'
 
     id = Column(Integer, primary_key=True)
@@ -5598,7 +5587,7 @@ class Rbpost(RBInfo):
     flatCode = Column(String(65), nullable=False)
 
 
-class Rbprinttemplate(Info):
+class rbPrintTemplate(Info):
     __tablename__ = u'rbPrintTemplate'
 
     id = Column(Integer, primary_key=True)
@@ -5611,7 +5600,7 @@ class Rbprinttemplate(Info):
     render = Column(Integer, nullable=False, server_default=u"'0'")
     templateText = Column(String, nullable=False)
 
-    meta_data = relationship('Rbprinttemplatemeta', lazy=False, order_by='Rbprinttemplatemeta.id')
+    meta_data = relationship('rbPrintTemplateMeta', lazy=False, order_by='rbPrintTemplateMeta.id')
 
 
 class Rbquotastatu(Info):
@@ -5622,7 +5611,7 @@ class Rbquotastatu(Info):
     name = Column(String(50), nullable=False, index=True)
 
 
-class Rbreasonofabsence(RBInfo):
+class rbReasonOfAbsence(RBInfo):
     __tablename__ = u'rbReasonOfAbsence'
 
     id = Column(Integer, primary_key=True)
@@ -5630,7 +5619,7 @@ class Rbreasonofabsence(RBInfo):
     name = Column(Unicode(64), nullable=False, index=True)
 
 
-class Rbrelationtype(RBInfo):
+class rbRelationType(RBInfo):
     __tablename__ = u'rbRelationType'
 
     id = Column(Integer, primary_key=True)
@@ -5651,7 +5640,7 @@ class Rbrelationtype(RBInfo):
     regionalReverseCode = Column(String(64), nullable=False)
 
 
-class Rbrequesttype(RBInfo):
+class rbRequestType(RBInfo):
     __tablename__ = u'rbRequestType'
 
     id = Column(Integer, primary_key=True)
@@ -5660,7 +5649,7 @@ class Rbrequesttype(RBInfo):
     relevant = Column(Integer, nullable=False, server_default=u"'1'")
 
 
-class Rbresult(RBInfo):
+class rbResult(RBInfo):
     __tablename__ = u'rbResult'
 
     id = Column(Integer, primary_key=True)
@@ -5671,7 +5660,7 @@ class Rbresult(RBInfo):
     regionalCode = Column(String(8), nullable=False)
 
 
-class Rbscene(RBInfo):
+class rbScene(RBInfo):
     __tablename__ = u'rbScene'
 
     id = Column(Integer, primary_key=True)
@@ -5680,7 +5669,7 @@ class Rbscene(RBInfo):
     serviceModifier = Column(Unicode(128), nullable=False)
 
 
-class Rbservice(RBInfo):
+class rbService(RBInfo):
     __tablename__ = u'rbService'
     __table_args__ = (
         Index(u'infis', u'infis', u'eisLegacy'),
@@ -5704,11 +5693,11 @@ class Rbservice(RBInfo):
     UET = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
     departCode = Column(String(3))
 
-    medicalAidProfile = relationship(u'Rbmedicalaidprofile')
-    rbMedicalKind = relationship(u'Rbmedicalkind')
+    medicalAidProfile = relationship(u'rbMedicalAidProfile')
+    rbMedicalKind = relationship(u'rbMedicalKind')
 
 
-class Rbserviceclas(Info):
+class rbServiceClass(Info):
     __tablename__ = u'rbServiceClass'
     __table_args__ = (
         Index(u'section', u'section', u'code'),
@@ -5720,7 +5709,7 @@ class Rbserviceclas(Info):
     name = Column(String(200), nullable=False)
 
 
-class Rbservicefinance(Info):
+class rbServiceFinance(Info):
     __tablename__ = u'rbServiceFinance'
 
     id = Column(Integer, primary_key=True)
@@ -5728,7 +5717,7 @@ class Rbservicefinance(Info):
     name = Column(String(64, u'utf8_unicode_ci'), nullable=False)
 
 
-class Rbservicegroup(Info):
+class rbServiceGroup(Info):
     __tablename__ = u'rbServiceGroup'
     __table_args__ = (
         Index(u'group_id', u'group_id', u'service_id'),
@@ -5740,7 +5729,7 @@ class Rbservicegroup(Info):
     required = Column(Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbservicesection(Info):
+class rbServiceSection(Info):
     __tablename__ = u'rbServiceSection'
 
     id = Column(Integer, primary_key=True)
@@ -5748,7 +5737,7 @@ class Rbservicesection(Info):
     name = Column(String(100), nullable=False)
 
 
-class Rbservicetype(Info):
+class rbServiceType(Info):
     __tablename__ = u'rbServiceType'
     __table_args__ = (
         Index(u'section', u'section', u'code'),
@@ -5761,7 +5750,7 @@ class Rbservicetype(Info):
     description = Column(Text, nullable=False)
 
 
-class Rbserviceuet(Info):
+class rbServiceUET(Info):
     __tablename__ = u'rbServiceUET'
 
     id = Column(Integer, primary_key=True)
@@ -5769,10 +5758,10 @@ class Rbserviceuet(Info):
     age = Column(String(10, u'utf8_unicode_ci'), nullable=False)
     UET = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
 
-    rbService = relationship(u'Rbservice')
+    rbService = relationship(u'rbService')
 
 
-class RbserviceProfile(Info):
+class rbService_Profile(Info):
     __tablename__ = u'rbService_Profile'
     __table_args__ = (
         Index(u'id', u'id', u'idx'),
@@ -5791,12 +5780,12 @@ class RbserviceProfile(Info):
     mkbRegExp = Column(String(64), nullable=False, server_default=u"''")
     medicalAidProfile_id = Column(ForeignKey('rbMedicalAidProfile.id'), index=True)
 
-    master = relationship(u'Rbservice')
-    medicalAidProfile = relationship(u'Rbmedicalaidprofile')
-    speciality = relationship(u'Rbspeciality')
+    master = relationship(u'rbService')
+    medicalAidProfile = relationship(u'rbMedicalAidProfile')
+    speciality = relationship(u'rbSpeciality')
 
 
-class Rbsocstatusclass(Info):
+class rbSocStatusClass(Info):
     __tablename__ = u'rbSocStatusClass'
 
     id = Column(Integer, primary_key=True)
@@ -5804,7 +5793,7 @@ class Rbsocstatusclass(Info):
     code = Column(String(8), nullable=False, index=True)
     name = Column(String(64), nullable=False, index=True)
 
-    group = relationship(u'Rbsocstatusclass', remote_side=[id])
+    group = relationship(u'rbSocStatusClass', remote_side=[id])
 
     def __unicode__(self):
         return self.name
@@ -5824,7 +5813,7 @@ Rbsocstatusclasstypeassoc = Table('rbSocStatusClassTypeAssoc', metadata,
     )
 
 
-class Rbsocstatustype(Info):
+class rbSocStatusType(Info):
     __tablename__ = u'rbSocStatusType'
 
     id = Column(Integer, primary_key=True)
@@ -5834,10 +5823,10 @@ class Rbsocstatustype(Info):
     TFOMSCode = Column(Integer)
     regionalCode = Column(String(8), nullable=False)
 
-    classes = relationship(u'Rbsocstatusclass', secondary=Rbsocstatusclasstypeassoc)
+    classes = relationship(u'rbSocStatusClass', secondary=Rbsocstatusclasstypeassoc)
 
 
-class Rbspecialvariablespreference(Info):
+class rbSpecialVariablesPreferences(Info):
     __tablename__ = u'rbSpecialVariablesPreferences'
 
     id = Column(Integer, primary_key=True)
@@ -5854,7 +5843,7 @@ class Rbspecialvariablespreference(Info):
             return []
 
 
-class Rbspeciality(RBInfo):
+class rbSpeciality(RBInfo):
     __tablename__ = u'rbSpeciality'
 
     id = Column(Integer, primary_key=True)
@@ -5874,7 +5863,7 @@ class Rbspeciality(RBInfo):
     quotingEnabled = Column(Integer, server_default=u"'0'")
 
 
-class Rbstorage(Info):
+class rbStorage(Info):
     __tablename__ = u'rbStorage'
 
     id = Column(Integer, primary_key=True)
@@ -5885,7 +5874,7 @@ class Rbstorage(Info):
     orgStructure = relationship(u'Orgstructure')
 
 
-class Rbtariffcategory(RBInfo):
+class rbTariffCategory(RBInfo):
     __tablename__ = u'rbTariffCategory'
 
     id = Column(Integer, primary_key=True)
@@ -5893,7 +5882,7 @@ class Rbtariffcategory(RBInfo):
     name = Column(String(64), nullable=False, index=True)
 
 
-class Rbtarifftype(Info):
+class rbTariffType(Info):
     __tablename__ = u'rbTariffType'
 
     id = Column(Integer, primary_key=True)
@@ -5901,7 +5890,7 @@ class Rbtarifftype(Info):
     name = Column(String(64, u'utf8_unicode_ci'), nullable=False)
 
 
-class Rbtempinvalidbreak(Info):
+class rbTempInvalidBreak(Info):
     __tablename__ = u'rbTempInvalidBreak'
 
     id = Column(Integer, primary_key=True)
@@ -5910,7 +5899,7 @@ class Rbtempinvalidbreak(Info):
     name = Column(String(80), nullable=False, index=True)
 
 
-class Rbtempinvaliddocument(Info):
+class rbTempInvalidDocument(Info):
     __tablename__ = u'rbTempInvalidDocument'
 
     id = Column(Integer, primary_key=True)
@@ -5922,7 +5911,7 @@ class Rbtempinvaliddocument(Info):
     checkingAmount = Column(Enum(u'???', u'????????'), nullable=False)
 
 
-class Rbtempinvalidduplicatereason(Info):
+class rbTempInvalidDuplicateReason(Info):
     __tablename__ = u'rbTempInvalidDuplicateReason'
 
     id = Column(Integer, primary_key=True)
@@ -5930,7 +5919,7 @@ class Rbtempinvalidduplicatereason(Info):
     name = Column(String(64), nullable=False)
 
 
-class Rbtempinvalidreason(Info):
+class rbTempInvalidReason(Info):
     __tablename__ = u'rbTempInvalidReason'
 
     id = Column(Integer, primary_key=True)
@@ -5945,7 +5934,7 @@ class Rbtempinvalidreason(Info):
     regionalCode = Column(String(3), nullable=False)
 
 
-class Rbtempinvalidregime(Info):
+class rbTempInvalidRegime(Info):
     __tablename__ = u'rbTempInvalidRegime'
 
     id = Column(Integer, primary_key=True)
@@ -5955,7 +5944,7 @@ class Rbtempinvalidregime(Info):
     name = Column(String(64), nullable=False, index=True)
 
 
-class Rbtempinvalidresult(Info):
+class rbTempInvalidResult(Info):
     __tablename__ = u'rbTempInvalidResult'
 
     id = Column(Integer, primary_key=True)
@@ -5967,7 +5956,7 @@ class Rbtempinvalidresult(Info):
     status = Column(Integer, nullable=False)
 
 
-class Rbtest(Info):
+class rbTest(Info):
     __tablename__ = u'rbTest'
 
     id = Column(Integer, primary_key=True)
@@ -5976,7 +5965,7 @@ class Rbtest(Info):
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbtesttubetype(Info):
+class rbTestTubeType(Info):
     __tablename__ = u'rbTestTubeType'
 
     id = Column(Integer, primary_key=True)
@@ -5988,10 +5977,10 @@ class Rbtesttubetype(Info):
     image = Column(MEDIUMBLOB)
     color = Column(String(8))
 
-    unit = relationship(u'Rbunit')
+    unit = relationship(u'rbUnit')
 
 
-class Rbthesauru(Info):
+class rbThesaurus(Info):
     __tablename__ = u'rbThesaurus'
 
     id = Column(Integer, primary_key=True)
@@ -6001,7 +5990,7 @@ class Rbthesauru(Info):
     template = Column(String(255), nullable=False, server_default=u"''")
 
 
-class Rbtimequotingtype(Info):
+class rbTimeQuotingType(Info):
     __tablename__ = u'rbTimeQuotingType'
 
     id = Column(Integer, primary_key=True)
@@ -6009,7 +5998,7 @@ class Rbtimequotingtype(Info):
     name = Column(Text(collation=u'utf8_unicode_ci'), nullable=False)
 
 
-class Rbtissuetype(RBInfo):
+class rbTissueType(RBInfo):
     __tablename__ = u'rbTissueType'
 
     id = Column(Integer, primary_key=True)
@@ -6018,7 +6007,7 @@ class Rbtissuetype(RBInfo):
     group_id = Column(ForeignKey('rbTissueType.id'), index=True)
     sexCode = Column("sex", Integer, nullable=False, server_default=u"'0'")
 
-    group = relationship(u'Rbtissuetype', remote_side=[id])
+    group = relationship(u'rbTissueType', remote_side=[id])
 
     @property
     def sex(self):
@@ -6027,7 +6016,7 @@ class Rbtissuetype(RBInfo):
                 2: u'Ж'}[self.sexCode]
 
 
-class Rbtransferdatetype(Info):
+class rbTransferDateType(Info):
     __tablename__ = u'rbTransferDateType'
 
     id = Column(Integer, primary_key=True)
@@ -6045,7 +6034,8 @@ class rbTraumaType(RBInfo):
     def __init__(self):
         RBInfo.__init__(self)
 
-class Rbtreatment(RBInfo):
+
+class rbTreatment(RBInfo):
     __tablename__ = u'rbTreatment'
 
     id = Column(Integer, primary_key=True)
@@ -6053,7 +6043,7 @@ class Rbtreatment(RBInfo):
     name = Column(Text, nullable=False)
 
 
-class Rbtrfubloodcomponenttype(RBInfo):
+class rbTrfuBloodComponentType(RBInfo):
     __tablename__ = u'rbTrfuBloodComponentType'
 
     id = Column(Integer, primary_key=True)
@@ -6063,7 +6053,7 @@ class Rbtrfubloodcomponenttype(RBInfo):
     unused = Column(Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbtrfulaboratorymeasuretype(Info):
+class rbTrfuLaboratoryMeasureTypes(Info):
     __tablename__ = u'rbTrfuLaboratoryMeasureTypes'
 
     id = Column(Integer, primary_key=True)
@@ -6071,7 +6061,7 @@ class Rbtrfulaboratorymeasuretype(Info):
     name = Column(String(255))
 
 
-class Rbtrfuproceduretype(Info):
+class rbTrfuProcedureTypes(Info):
     __tablename__ = u'rbTrfuProcedureTypes'
 
     id = Column(Integer, primary_key=True)
@@ -6080,7 +6070,7 @@ class Rbtrfuproceduretype(Info):
     unused = Column(Integer, nullable=False, server_default=u"'0'")
 
 
-class Rbufms(Info):
+class rbUFMS(Info):
     __tablename__ = u'rbUFMS'
 
     id = Column(Integer, primary_key=True)
@@ -6088,7 +6078,7 @@ class Rbufms(Info):
     name = Column(String(256, u'utf8_bin'), nullable=False)
 
 
-class Rbunit(RBInfo):
+class rbUnit(RBInfo):
     __tablename__ = u'rbUnit'
 
     id = Column(Integer, primary_key=True)
@@ -6096,7 +6086,7 @@ class Rbunit(RBInfo):
     name = Column(Unicode(256), index=True)
 
 
-class Rbuserprofile(Info):
+class rbUserProfile(Info):
     __tablename__ = u'rbUserProfile'
 
     id = Column(Integer, primary_key=True)
@@ -6105,7 +6095,7 @@ class Rbuserprofile(Info):
     withDep = Column(Integer, nullable=False, server_default=u"'0'")
 
 
-class RbuserprofileRight(Info):
+class rbUserProfile_Right(Info):
     __tablename__ = u'rbUserProfile_Right'
 
     id = Column(Integer, primary_key=True)
@@ -6113,7 +6103,7 @@ class RbuserprofileRight(Info):
     userRight_id = Column(Integer, nullable=False, index=True)
 
 
-class Rbuserright(Info):
+class rbUserRight(Info):
     __tablename__ = u'rbUserRight'
 
     id = Column(Integer, primary_key=True)
@@ -6121,7 +6111,7 @@ class Rbuserright(Info):
     name = Column(String(128), nullable=False, index=True)
 
 
-class Rbvisittype(RBInfo):
+class rbVisitType(RBInfo):
     __tablename__ = u'rbVisitType'
 
     id = Column(Integer, primary_key=True)
@@ -6480,7 +6470,7 @@ class RbV012Ishod(Info):
     izname = Column(String(255))
 
 
-class Rdfirstname(Info):
+class rdFirstName(Info):
     __tablename__ = u'rdFirstName'
     __table_args__ = (
         Index(u'sex', u'sex', u'name'),
@@ -6491,7 +6481,7 @@ class Rdfirstname(Info):
     sex = Column(Integer, nullable=False)
 
 
-class Rdpolis(Info):
+class rdPOLIS_S(Info):
     __tablename__ = u'rdPOLIS_S'
 
     id = Column(Integer, primary_key=True)
@@ -6500,7 +6490,7 @@ class Rdpolis(Info):
     TYPEINS = Column(String(1), nullable=False)
 
 
-class Rdpatrname(Info):
+class rdPatrName(Info):
     __tablename__ = u'rdPatrName'
     __table_args__ = (
         Index(u'sex', u'sex', u'name'),
@@ -6511,7 +6501,7 @@ class Rdpatrname(Info):
     sex = Column(Integer, nullable=False)
 
 
-class Rlsactmatter(Info):
+class rlsActMatters(Info):
     __tablename__ = u'rlsActMatters'
     __table_args__ = (
         Index(u'name_localName', u'name', u'localName'),
@@ -6522,7 +6512,7 @@ class Rlsactmatter(Info):
     localName = Column(String(255))
 
 
-class Rlsbalanceofgood(Info):
+class rlsBalanceOfGoods(Info):
     __tablename__ = u'rlsBalanceOfGoods'
 
     id = Column(Integer, primary_key=True)
@@ -6533,25 +6523,25 @@ class Rlsbalanceofgood(Info):
     updateDateTime = Column(DateTime)
     storage_id = Column(ForeignKey('rbStorage.id'), index=True)
 
-    rlsNomen = relationship(u'Rlsnoman')
-    storage = relationship(u'Rbstorage')
+    rlsNomen = relationship(u'rlsNomen')
+    storage = relationship(u'rbStorage')
 
 
-class Rlsfilling(Info):
+class rlsFilling(Info):
     __tablename__ = u'rlsFilling'
 
     id = Column(Integer, primary_key=True)
     name = Column(String(128), unique=True)
 
 
-class Rlsform(Info):
+class rlsForm(Info):
     __tablename__ = u'rlsForm'
 
     id = Column(Integer, primary_key=True)
     name = Column(String(128), unique=True)
 
 
-class Rlsnoman(Info):
+class rlsNomen(Info):
     __tablename__ = u'rlsNomen'
 
     id = Column(Integer, primary_key=True)
@@ -6567,23 +6557,23 @@ class Rlsnoman(Info):
     regDate = Column(Date)
     annDate = Column(Date)
 
-    actMatters = relationship(u'Rlsactmatter')
-    dosageUnit = relationship(u'Rbunit', primaryjoin='Rlsnoman.dosageUnit_id == Rbunit.id')
-    filling = relationship(u'Rlsfilling')
-    form = relationship(u'Rlsform')
-    packing = relationship(u'Rlspacking')
-    tradeName = relationship(u'Rlstradename')
-    unit = relationship(u'Rbunit', primaryjoin='Rlsnoman.unit_id == Rbunit.id')
+    actMatters = relationship(u'rlsActMatters')
+    dosageUnit = relationship(u'rbUnit', primaryjoin='rlsNomen.dosageUnit_id == rbUnit.id')
+    filling = relationship(u'rlsFilling')
+    form = relationship(u'rlsForm')
+    packing = relationship(u'rlsPacking')
+    tradeName = relationship(u'rlsTradeName')
+    unit = relationship(u'rbUnit', primaryjoin='rlsNomen.unit_id == rbUnit.id')
 
 
-class Rlspacking(Info):
+class rlsPacking(Info):
     __tablename__ = u'rlsPacking'
 
     id = Column(Integer, primary_key=True)
     name = Column(String(128), unique=True)
 
 
-class Rlspharmgroup(Info):
+class rlsPharmGroup(Info):
     __tablename__ = u'rlsPharmGroup'
 
     id = Column(Integer, primary_key=True)
@@ -6595,14 +6585,14 @@ class Rlspharmgroup(Info):
     nameRaw = Column(String(128), index=True)
 
 
-class Rlspharmgrouptocode(Info):
+class rlsPharmGroupToCode(Info):
     __tablename__ = u'rlsPharmGroupToCode'
 
     rlsPharmGroup_id = Column(Integer, primary_key=True, nullable=False, server_default=u"'0'")
     code = Column(Integer, primary_key=True, nullable=False, index=True, server_default=u"'0'")
 
 
-class Rlstradename(Info):
+class rlsTradeName(Info):
     __tablename__ = u'rlsTradeName'
     __table_args__ = (
         Index(u'name_localName', u'name', u'localName'),
@@ -6613,7 +6603,7 @@ class Rlstradename(Info):
     localName = Column(String(255))
 
 
-class Trfufinalvolume(Info):
+class trfuFinalVolume(Info):
     __tablename__ = u'trfuFinalVolume'
 
     id = Column(Integer, primary_key=True)
@@ -6639,7 +6629,7 @@ class Trfufinalvolume(Info):
         return columns[name]
 
 
-class Trfulaboratorymeasure(Info):
+class trfuLaboratoryMeasure(Info):
     __tablename__ = u'trfuLaboratoryMeasure'
 
     id = Column(Integer, primary_key=True)
@@ -6652,7 +6642,7 @@ class Trfulaboratorymeasure(Info):
     afterOperation = Column(String(255))
 
     action = relationship(u'Action')
-    trfu_lab_measure = relationship(u'Rbtrfulaboratorymeasuretype')
+    trfu_lab_measure = relationship(u'rbTrfuLaboratoryMeasureTypes')
 
     def __getitem__(self, name):
         columns = {'trfu_lab_measure_id': self.trfu_lab_measure,
@@ -6664,7 +6654,7 @@ class Trfulaboratorymeasure(Info):
         return columns[name]
 
 
-class Trfuorderissueresult(Info):
+class trfuOrderIssueResult(Info):
     __tablename__ = u'trfuOrderIssueResult'
 
     id = Column(Integer, primary_key=True)
@@ -6680,7 +6670,7 @@ class Trfuorderissueresult(Info):
 
     action = relationship(u'Action', backref="trfuOrderIssueResult")
     blood_type = relationship(u'rbBloodType')
-    comp_type = relationship(u'Rbtrfubloodcomponenttype')
+    comp_type = relationship(u'rbTrfuBloodComponentType')
 
     def __getitem__(self, name):
         columns = {'trfu_blood_comp': self.trfu_blood_comp,
@@ -6727,8 +6717,8 @@ class v_Client_Quoting(Info):
     quotaType = relationship(u"QuotaType")
     organisation = relationship(u"Organisation")
     orgstructure = relationship(u"Orgstructure")
-    pacientModel = relationship(u"Rbpacientmodel")
-    treatment = relationship(u"Rbtreatment")
+    pacientModel = relationship(u"rbPacientModel")
+    treatment = relationship(u"rbTreatment")
 
 
 class v_Nomen(Info):
@@ -6759,7 +6749,7 @@ class v_Nomen(Info):
         return ', '.join(unicode(field) for field in (self.tradeName, self.form, self.dosageValue, self.filling))
 
 
-class Rbprinttemplatemeta(Info):
+class rbPrintTemplateMeta(Info):
     __tablename__ = 'rbPrintTemplateMeta'
     __table_args__ = (
         Index('template_id_name', 'template_id', 'name'),
@@ -6778,7 +6768,7 @@ class Rbprinttemplatemeta(Info):
     arguments = Column(String)
     defaultValue = Column(Text)
 
-    template = relationship(u'Rbprinttemplate')
+    template = relationship(u'rbPrintTemplate')
 
     def __json__(self):
         import json
