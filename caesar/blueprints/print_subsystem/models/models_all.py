@@ -5179,7 +5179,7 @@ class rbEmergencyReceivedCall(Info):
     codeRegional = Column(String(8), nullable=False, index=True)
 
 
-class rbEmergencyResultt(Info):
+class rbEmergencyResult(Info):
     __tablename__ = u'rbEmergencyResult'
 
     id = Column(Integer, primary_key=True)
@@ -5603,7 +5603,7 @@ class rbPrintTemplate(Info):
     meta_data = relationship('rbPrintTemplateMeta', lazy=False, order_by='rbPrintTemplateMeta.id')
 
 
-class Rbquotastatu(Info):
+class rbQuotaStatus(Info):
     __tablename__ = u'rbQuotaStatus'
 
     id = Column(Integer, primary_key=True)
