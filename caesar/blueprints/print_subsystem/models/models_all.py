@@ -1641,8 +1641,9 @@ class Client(Info):
             moment = datetime.date.today()
         return calcAgeTuple(self.birthDate, moment)
 
-    def ageTuple(self, moment=None):
-        return self.age_tuple(moment)
+    @property
+    def ageTuple(self):
+        return self.age_tuple()
 
     @property
     def age(self):
