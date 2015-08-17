@@ -5533,7 +5533,7 @@ class rbOKVED(Info):
     name = Column(String(250), nullable=False, index=True)
 
 
-class rbOperationType(Info):
+class rbOperationType(RBInfo):
     __tablename__ = u'rbOperationType'
 
     id = Column(Integer, primary_key=True)
@@ -5542,6 +5542,9 @@ class rbOperationType(Info):
     code = Column(String(8), nullable=False, index=True)
     ktso = Column(Integer, nullable=False)
     name = Column(String(64), nullable=False, index=True)
+
+    def __unicode__(self):
+        return self.code + ' ' + self.name
 
 
 class rbPacientModel(RBInfo):
