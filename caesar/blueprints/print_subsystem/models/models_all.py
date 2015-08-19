@@ -1,26 +1,31 @@
 # -*- coding: utf-8 -*-
 
 import calendar
-import jinja2
-
 from collections import defaultdict
-from config import VESTA_URL
 from flask import g
-from sqlalchemy import Column, Integer, String, Unicode, DateTime, ForeignKey, Date, Float, or_, Boolean, Text, \
-    SmallInteger, Time, Index, BigInteger, Enum, Table, BLOB, UnicodeText
+import jinja2
+from sqlalchemy import Column, Integer, String, Unicode, UnicodeText, DateTime, ForeignKey, Date, Float, Boolean, Text, \
+    SmallInteger, Time, Index, BigInteger, Enum, Table, BLOB
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.dialects.mysql.base import MEDIUMBLOB
+from werkzeug.utils import cached_property
 
 from nemesis.models.enums import AllergyPower
+from blueprints.print_subsystem.models.pspd_wrappers import DocumentInfoWrapper, AddressInfoWrapper, PolicyInfoWrapper, \
+    ContactInfoWrapper
 from ..config import MODULE_NAME
 from ..lib.html import convenience_HtmlRip, replace_first_paragraph
 from ..lib.num_to_text_converter import NumToTextConverter
 from models_utils import *
 from kladr_models import Kladr, Street
 from ..database import Base, metadata
-from sqlalchemy.dialects.mysql.base import MEDIUMBLOB
+from nemesis.lib.aux.client import AddressFilter, DocumentFilter, format_snils, unformat_snils
+from nemesis.lib.aux.data import ProxyField, WrapperField
 from nemesis.lib.const import (STATIONARY_EVENT_CODES, DIAGNOSTIC_EVENT_CODES, POLICLINIC_EVENT_CODES,
     PAID_EVENT_CODE, OMS_EVENT_CODE, DMS_EVENT_CODE, BUDGET_EVENT_CODE, DAY_HOSPITAL_CODE)
-
+from nemesis.lib.utils import first
+from nemesis.models.enums import Gender
+from nemesis.systemwide import pspd
 
 TABLE_PREFIX = MODULE_NAME
 
@@ -245,17 +250,15 @@ class Action(Info):
 
     @property
     def finance(self):
-        if self.contract_id:
-            return self.self_contract.finance
-        elif self.event:
-            return self.event.contract.finance
+        return self.contract.finance
 
     @property
     def contract(self):
         if self.contract_id:
             return self.self_contract
-        elif self.event:
+        elif self.event and self.event.contract:
             return self.event.contract
+        return EmptyObject()
 
     def get_property_by_code(self, code):
         for property in self.properties:
@@ -323,32 +326,28 @@ class Action(Info):
     def nomenclatureService(self):
         return self.actionType.nomenclatureService if self.actionType else None
 
-    @property
+    @cached_property
     def tariff(self):
         services = self.services
-        if not services:
+        if not self.services or not self.contract:
             return
-        if not hasattr(self, '_tariff'):
-            event_date = self.event.setDate_raw.date()
-            cur_date = datetime.date.today()
-            service_id_list = [ats.service_id for ats in services
-                               if ats.begDate <= event_date <= (ats.endDate or cur_date)]
-            contract = self.contract
-            query = g.printing_session.query(ContractTariff).filter(
-                ContractTariff.master_id == contract.id,
-                ContractTariff.service_id.in_(service_id_list),
-                ContractTariff.deleted == 0,
-                ContractTariff.eventType_id == self.event.eventType_id,
-                # or_(
-                #     ContractTariff.eventType_id == self.event.eventType_id,
-                #     ContractTariff.eventType_id.is_(None)
-                # ),
-                ContractTariff.begDate <= event_date,
-                ContractTariff.endDate >= event_date
-            )
-            tariff = query.first()
-            self._tariff = tariff
-        return self._tariff
+        event_date = self.event.setDate_raw.date()
+        cur_date = datetime.date.today()
+        service_id_list = [ats.service_id for ats in services
+                           if ats.begDate <= event_date <= (ats.endDate or cur_date)]
+        query = g.printing_session.query(ContractTariff).filter(
+            ContractTariff.master_id == self.contract.id,
+            ContractTariff.service_id.in_(service_id_list),
+            ContractTariff.deleted == 0,
+            ContractTariff.eventType_id == self.event.eventType_id,
+            # or_(
+            #     ContractTariff.eventType_id == self.event.eventType_id,
+            #     ContractTariff.eventType_id.is_(None)
+            # ),
+            ContractTariff.begDate <= event_date,
+            ContractTariff.endDate >= event_date
+        )
+        return query.first()
 
     @property
     def price(self):
@@ -1473,9 +1472,6 @@ class Calendarexception(Info):
 
 class Client(Info):
     __tablename__ = u'Client'
-    __table_args__ = (
-        Index(u'lastName', u'lastName', u'firstName', u'patrName', u'birthDate', u'id'),
-    )
 
     id = Column(Integer, primary_key=True)
     createDatetime = Column(DateTime, nullable=False)
@@ -1483,12 +1479,6 @@ class Client(Info):
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    lastName = Column(Unicode(30), nullable=False)
-    firstName = Column(Unicode(30), nullable=False)
-    patrName = Column(Unicode(30), nullable=False)
-    birthDate_raw = Column("birthDate", Date, nullable=False, index=True)
-    sexCode = Column("sex", Integer, nullable=False)
-    SNILS_short = Column("SNILS", String(11), nullable=False, index=True)
     bloodType_id = Column(ForeignKey('rbBloodType.id'), index=True)
     bloodDate = Column(Date)
     bloodNotes = Column(String, nullable=False)
@@ -1496,9 +1486,9 @@ class Client(Info):
     weight = Column(String(16), nullable=False)
     notes = Column(String, nullable=False)
     version = Column(Integer, nullable=False)
-    birthPlace = Column(Unicode(128), nullable=False, server_default=u"''")
     embryonalPeriodWeek = Column(String(16), nullable=False, server_default=u"''")
     uuid_id = Column(Integer, nullable=False, index=True, server_default=u"'0'")
+    pspd_key = Column(String(256))
 
     client_attachments = relationship(u'Clientattach', primaryjoin='and_(Clientattach.client_id==Client.id, Clientattach.deleted==0)',
                                       order_by="desc(Clientattach.id)")
@@ -1510,31 +1500,18 @@ class Client(Info):
     socStatuses = relationship(u'Clientsocstatus',
                                primaryjoin="and_(Clientsocstatus.deleted == 0,Clientsocstatus.client_id==Client.id,"
                                "or_(Clientsocstatus.endDate == None, Clientsocstatus.endDate>='{0}'))".format(datetime.date.today()))
-    documentsAll = relationship(u'Clientdocument', primaryjoin='and_(Clientdocument.clientId==Client.id,'
-                                                               'Clientdocument.deleted == 0)',
-                                order_by="desc(Clientdocument.documentId)")
     intolerances = relationship(u'Clientintolerancemedicament',
                                 primaryjoin='and_(Clientintolerancemedicament.client_id==Client.id,'
                                             'Clientintolerancemedicament.deleted == 0)')
     allergies = relationship(u'Clientallergy', primaryjoin='and_(Clientallergy.client_id==Client.id,'
                                                            'Clientallergy.deleted == 0)')
-    contacts = relationship(u'Clientcontact', primaryjoin='and_(Clientcontact.client_id==Client.id,'
-                                                          'Clientcontact.deleted == 0)')
     direct_relations = relationship(u'DirectClientRelation', foreign_keys='Clientrelation.client_id')
     reversed_relations = relationship(u'ReversedClientRelation', foreign_keys='Clientrelation.relative_id')
-    policies = relationship(u'Clientpolicy', primaryjoin='and_(Clientpolicy.clientId==Client.id,'
-                                                         'Clientpolicy.deleted == 0)', order_by="desc(Clientpolicy.id)")
     works = relationship(u'Clientwork', primaryjoin='and_(Clientwork.client_id==Client.id, Clientwork.deleted == 0)',
                          order_by="desc(Clientwork.id)")
-    reg_addresses = relationship(u'Clientaddress',
-                                 primaryjoin="and_(Client.id==Clientaddress.client_id, Clientaddress.type==0)",
-                                 order_by="desc(Clientaddress.id)")
-    loc_addresses = relationship(u'Clientaddress',
-                                 primaryjoin="and_(Client.id==Clientaddress.client_id, Clientaddress.type==1)",
-                                 order_by="desc(Clientaddress.id)")
     appointments = relationship(
         u'ScheduleClientTicket',
-        lazy='dynamic',  #order_by='desc(ScheduleTicket.begDateTime)',
+        lazy='dynamic',
         primaryjoin='and_('
                     'ScheduleClientTicket.deleted == 0, '
                     'ScheduleClientTicket.client_id == Client.id)',
@@ -1542,33 +1519,50 @@ class Client(Info):
     )
 
     @property
-    def birthDate(self):
-        return DateInfo(self.birthDate_raw)
+    def _patient(self):
+        if not hasattr(self, '_ext_pspd'):
+            identifier = self.pspd_key
+            self._ext_pspd = pspd.get(identifier)
+        return self._ext_pspd
+
+    birthDate_raw = ProxyField('_patient.birthDate')
+    birthDate = WrapperField('_patient.birthDate', DateInfo)
+    birthPlace = ProxyField('_patient.birthPlace')
+    firstName = ProxyField('_patient.firstName')
+    patrName = ProxyField('_patient.patrName')
+    lastName = ProxyField('_patient.lastName')
+    gender = ProxyField('_patient.gender')
+    sex = WrapperField('_patient.gender', Gender.from_code)
+    SNILS_short = ProxyField('_patient.SNILS')
+    SNILS = WrapperField('_patient.SNILS', format_snils, unformat_snils)
+
+    all_docs = ProxyField('_patient.document')
+    # contacts = ProxyField('_patient.telecom')
+    addresses = ProxyField('_patient.address')
+
+    _id_documents = DocumentFilter('_patient.document', 'id', wrap=DocumentInfoWrapper)
+    document = DocumentFilter('_patient.document', 'id', first=True, wrap=DocumentInfoWrapper)
+
+    voluntary_policies = DocumentFilter('_patient.document', 'vmi', wrap=PolicyInfoWrapper)
+    compulsory_policies = DocumentFilter('_patient.document', 'cmi', wrap=PolicyInfoWrapper)
+
+    voluntaryPolicy = DocumentFilter('_patient.document', 'vmi', first=True, wrap=PolicyInfoWrapper)
+    compulsoryPolicy = DocumentFilter('_patient.document', 'cmi', first=True, wrap=PolicyInfoWrapper)
+
+    _reg_addresses = AddressFilter('_patient.address', 'reg', wrap=AddressInfoWrapper)
+    _loc_addresses = AddressFilter('_patient.address', 'home', wrap=AddressInfoWrapper)
+    regAddress = AddressFilter('_patient.address', 'reg', first=True, wrap=AddressInfoWrapper)
+    locAddress = AddressFilter('_patient.address', 'home', first=True, wrap=AddressInfoWrapper)
+
+    documentsAll = all_docs
+
+    @property
+    def contacts(self):
+        return map(ContactInfoWrapper, self._patient.telecom)
 
     @property
     def nameText(self):
         return u' '.join((u'%s %s %s' % (self.lastName, self.firstName, self.patrName)).split())
-
-    @property
-    def sex(self):
-        """
-        Делаем из пола строку
-        sexCode - код пола (1 мужской, 2 женский)
-        """
-        if self.sexCode == 1:
-            return u'М'
-        elif self.sexCode == 2:
-            return u'Ж'
-        else:
-            return u''
-
-    @property
-    def SNILS(self):
-        if self.SNILS_short:
-            s = self.SNILS_short+' '*14
-            return s[0:3]+'-'+s[3:6]+'-'+s[6:9]+' '+s[9:11]
-        else:
-            return u''
 
     @property
     def permanentAttach(self):
@@ -1583,12 +1577,6 @@ class Client(Info):
                 return attach
 
     @property
-    def document(self):
-        for document in self.documentsAll:
-            if document.documentType and document.documentType.group.code == '1':
-                return document
-
-    @property
     def relations(self):
         return self.reversed_relations + self.direct_relations
 
@@ -1598,18 +1586,6 @@ class Client(Info):
                     if contact.contactType.code not in ('04', '05')]
         return ', '.join([(phone[0]+': '+phone[1]+' ('+phone[2]+')') if phone[2] else (phone[0]+': '+phone[1])
                           for phone in contacts])
-
-    @property
-    def compulsoryPolicy(self):
-        for policy in self.policies:
-            if not policy.policyType or u"ОМС" in policy.policyType.name:
-                return policy
-
-    @property
-    def voluntaryPolicy(self):
-        for policy in self.policies:
-            if policy.policyType and policy.policyType.name.startswith(u"ДМС"):
-                return policy
 
     @property
     def policy(self):
@@ -1629,7 +1605,7 @@ class Client(Info):
 
     @property
     def work(self):
-        return self.works[0] if self.works else Clientwork()
+        return first(self.works)
 
     def age_tuple(self, moment=None):
         """
@@ -1668,14 +1644,6 @@ class Client(Info):
             return formatMonthsWeeks(months, (date-fmonth_date).days/7)
         else:
             return formatDays(days)
-
-    @property
-    def regAddress(self):
-        return self.reg_addresses[0] if self.reg_addresses else None
-
-    @property
-    def locAddress(self):
-        return self.loc_addresses[0] if self.loc_addresses else None
 
     def __unicode__(self):
         return self.formatShortNameInt(self.lastName, self.firstName, self.patrName)
@@ -2775,7 +2743,7 @@ class Event(Info):
     setPerson = relationship(u'Person', foreign_keys='Event.setPerson_id')
     curator = relationship(u'Person', foreign_keys='Event.curator_id')
     assistant = relationship(u'Person', foreign_keys='Event.assistant_id')
-    contract = relationship(u'Contract')
+    self_contract = relationship(u'Contract')
     organisation = relationship(u'Organisation')
     mesSpecification = relationship(u'rbMesSpecification')
     rbAcheResult = relationship(u'rbAcheResult')
@@ -2798,30 +2766,22 @@ class Event(Info):
     )
 
     @property
-    def setDate(self):
-        return DateTimeInfo(self.setDate_raw)
+    def contract(self):
+        if self.self_contract:
+            return self.self_contract
+        return EmptyObject()
 
-    @property
-    def execDate(self):
-        return DateTimeInfo(self.execDate_raw)
-
-    @property
-    def prevEventDate(self):
-        return DateInfo(self.prevEventDate_raw)
-
-    @property
-    def nextEventDate(self):
-        return DateInfo(self.nextEventDate_raw)
+    setDate = WrapperField('setDate_raw', DateTimeInfo)
+    execDate = WrapperField('execDate_raw', DateTimeInfo)
+    prevEventDate = WrapperField('prevEventDate_raw', DateInfo)
+    nextEventDate = WrapperField('nextEventDate_raw', DateInfo)
+    finance = ProxyField('eventType.finance')
 
     @property
     def isPrimary(self):
         return self.isPrimaryCode == 1
 
-    @property
-    def finance(self):
-        return self.eventType.finance
-
-    @property
+    @cached_property
     def orgStructure(self):
         if self.eventType.requestType.code == 'policlinic' and self.orgStructure_id:
             return g.printing_session.query(Orgstructure).get(self.orgStructure_id)
@@ -2831,19 +2791,15 @@ class Event(Info):
             return movings[-1][('orgStructStay',)].value if movings else None
         return None
 
-    @property
+    @cached_property
     def hospLength(self):
-        if not hasattr(self, '_hosp_length'):
-            from ..lib.data import get_hosp_length
-            self._hosp_length = get_hosp_length(self)
-        return self._hosp_length
+        from ..lib.data import get_hosp_length
+        return get_hosp_length(self)
 
-    @property
+    @cached_property
     def hospitalBed(self):
-        if not hasattr(self, '_hospital_bed'):
-            from ..lib.data import get_patient_hospital_bed
-            self._hospital_bed = get_patient_hospital_bed(self)
-        return self._hospital_bed
+        from ..lib.data import get_patient_hospital_bed
+        return get_patient_hospital_bed(self)
 
     @property
     def is_closed(self):
@@ -2903,7 +2859,6 @@ class Event(Info):
             for person in persons:
                 if person.post and person.post.flatCode == u'departmentManager':
                     return person
-        return None
 
     @property
     def date(self):

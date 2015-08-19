@@ -237,3 +237,23 @@ def formatDate(time):
 
 def formatTime(time):
     return unicode(time.strftime('%H:%M')) if time else ''
+
+
+class EmptyObject(object):
+    def __nonzero__(self):
+        return False
+
+    def __getattr__(self, item):
+        return EmptyObject()
+
+    def __getitem__(self, item):
+        return EmptyObject()
+
+    def __unicode__(self):
+        return u''
+
+    def __call__(self, *args, **kwargs):
+        return EmptyObject()
+
+    def __int__(self):
+        return 0
