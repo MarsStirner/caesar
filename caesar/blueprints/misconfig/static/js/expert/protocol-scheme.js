@@ -61,7 +61,7 @@ WebMis20
         });
     };
     $scope.editMeasures = function (index) {
-        $window.location.href = '/misconfig/expert/protocol/protocols/scheme_measures/#?scheme_id={0}'.format(
+        $window.location.href = '/misconfig/expert/protocol/protocols/scheme-measures/#?scheme_id={0}'.format(
             $scope.protocol.schemes[index].id
         );
     };
