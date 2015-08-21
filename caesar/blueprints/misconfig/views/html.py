@@ -74,3 +74,8 @@ def org_curation_html():
 @module.route('/perinatal-risk-rate-mkb/')
 def perinatal_risk_rate_mkb_html():
     return render_template('misconfig/perinatal-risk-rate-mkb.html')
+
+
+@module.route('/pregnancy-pathology-mkb/')
+def pregnancy_pathology_mkb_html():
+    return render_template('misconfig/pregnancy_pathology_mkb.html')
