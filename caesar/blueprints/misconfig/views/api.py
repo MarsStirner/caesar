@@ -745,3 +745,50 @@ def api_v1_rb_perinatal_risk_rate_get_new(prr_id=None):
     return {
         'item': mng.represent(item)
     }
+
+
+@module.route('/api/v1/rb_pregnancy_pathology/', methods=['GET'])
+@module.route('/api/v1/rb_pregnancy_pathology/<int:item_id>/', methods=['GET'])
+@api_method
+def api_v1_rb_pregnancy_pathology_get(item_id=None):
+    mng = get_manager('rbPregnancyPathologyWithMKBs')
+    if item_id:
+        item = mng.get_by_id(item_id)
+        return {
+            'item': mng.represent(item)
+        }
+    return {
+        'items': map(mng.represent, mng.get_list(
+            order={
+                'id': 'asc'
+            }
+        ))
+    }
+
+
+@module.route('/api/v1/rb_pregnancy_pathology/', methods=['POST'])
+@module.route('/api/v1/rb_pregnancy_pathology/<int:item_id>/', methods=['POST'])
+@api_method
+def api_v1_rb_pregnancy_pathology_post(item_id=None):
+    mng = get_manager('rbPregnancyPathologyWithMKBs')
+    data = request.get_json()
+
+    if item_id:
+        item = mng.update(item_id, data)
+    else:
+        item = mng.create(data)
+    mng.store(item)
+    return mng.represent(item)
+
+
+@module.route('/api/v1/rb_pregnancy_pathology/')
+@module.route('/api/v1/rb_pregnancy_pathology/<int:pp_id>/mkbs/new/')
+@api_method
+def api_v1_rb_pregnancy_pathology_get_new(pp_id=None):
+    if not pp_id:
+        raise ApiException(404, u'`pregnancy_pathology_id` required')
+    mng = get_manager('rbPregnancyPathologyMkb')
+    item = mng.create(parent_id=pp_id)
+    return {
+        'item': mng.represent(item)
+    }

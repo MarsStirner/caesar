@@ -3,10 +3,11 @@ from nemesis.models.exists import (rbPacientModel, rbTreatment, rbTreatmentType,
 from nemesis.models.expert_protocol import rbMeasureType, rbMeasureScheduleType, Measure
 from nemesis.models.actions import ActionType
 from nemesis.models.person import rbPost, rbOrgCurationLevel, rbSpeciality
-from nemesis.models.risar import rbPerinatalRiskRate
+from nemesis.models.risar import rbPerinatalRiskRate, rbPregnancyPathology
 from nemesis.lib.settings import Settings
 
-from .refbook import SimpleRefBookModelManager, RbTreatmentModelManager, RbPerinatalRRModelManager, RbPRRMKBModelManager
+from .refbook import (SimpleRefBookModelManager, RbTreatmentModelManager, RbPerinatalRRModelManager,
+    RbPRRMKBModelManager, RbPregnancyPathologyModelManager, RbPregnancyPathologyMKBModelManager)
 from .organisation import (OrganisationModelManager, OrganisationBCLModelManager, Organisation_OBCLModelManager,
     OrganisationCurationModelManager)
 from .expert_protocol import (MeasureModelManager, ExpertProtocolModelManager, ExpertSchemeModelManager,
@@ -25,17 +26,18 @@ all_rbs = {
     'rbPerinatalRiskRate': rbPerinatalRiskRate,
     'rbPost': rbPost,
     'rbSpeciality': rbSpeciality,
-    'rbOrgCurationLevel': rbOrgCurationLevel
+    'rbOrgCurationLevel': rbOrgCurationLevel,
+    'rbPregnancyPathology': rbPregnancyPathology
 }
 
 basic_rbs = [
     'rbPacientModel', 'rbTreatment', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType',
-    'rbPerinatalRiskRate', 'rbOrgCurationLevel'
+    'rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology'
 ]
 
 simple_rbs = [
     'rbPacientModel', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType', 'rbPerinatalRiskRate',
-    'rbOrgCurationLevel',
+    'rbOrgCurationLevel', 'rbPregnancyPathology',
     # next are used only for backend data manipulation, they are not presented on frontend ui
     'rbPost', 'rbSpeciality'
 ]
@@ -43,7 +45,7 @@ simple_rbs = [
 rb_groups = {
     'vmp': (u'ВМП', ['rbPacientModel', 'rbTreatment', 'rbTreatmentType']),
     'expert_protocol': (u'Протоколы лечения', ['rbMeasureType', 'rbMeasureScheduleType']),
-    'risar': (u'РИСАР', ['rbPerinatalRiskRate', 'rbOrgCurationLevel']),
+    'risar': (u'РИСАР', ['rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology']),
     'other': (u'Остальные', ['rbFinance'])
 }
 
@@ -110,3 +112,7 @@ def get_manager(name, **params):
         return RbPerinatalRRModelManager()
     elif name == 'rbPerinatalRiskRateMkb':
         return RbPRRMKBModelManager()
+    elif name == 'rbPregnancyPathologyWithMKBs':
+        return RbPregnancyPathologyModelManager()
+    elif name == 'rbPregnancyPathologyMkb':
+        return RbPregnancyPathologyMKBModelManager()

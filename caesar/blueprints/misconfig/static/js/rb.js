@@ -105,6 +105,16 @@ WebMis20
     }, rbOrgCurationLevel);
     return rbOrgCurationLevel;
 }])
+.factory('rbPregnancyPathology', ['SimpleRb', function (SimpleRb) {
+    var rbPregnancyPathology = function (data) {
+        SimpleRb.call(this, data);
+    };
+    rbPregnancyPathology.inheritsFrom(SimpleRb);
+    rbPregnancyPathology.initialize({
+        base_url: '{0}rbPregnancyPathology/'.format(rbPregnancyPathology.getBaseUrl())
+    }, rbPregnancyPathology);
+    return rbPregnancyPathology;
+}])
 .controller('RBConfigCtrl', ['$scope', '$controller', '$location', 'RbList',
         function ($scope, $controller, $location, RbList) {
     $controller('MisConfigBaseCtrl', {$scope: $scope});
