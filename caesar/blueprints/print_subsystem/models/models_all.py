@@ -1647,7 +1647,7 @@ class Client(Info):
 
     @property
     def age(self):
-        bd = self.birthDate
+        bd = self.birthDate_raw
         date = datetime.date.today()
         if not self.age_tuple():
             return u'ещё не родился'
@@ -2917,8 +2917,8 @@ class Event(Info):
             if action.account and action.price != 0:
                 services[action.actionType_id]['services'].append(action)
                 services[action.actionType_id]['amount'] += action.amount
-                services[action.actionType_id]['sum'] += action.price
-                total_sum += action.price
+                services[action.actionType_id]['sum'] += (action.price * action.amount)
+                total_sum += (action.price * action.amount)
         return {
             'services': services,
             'total_sum': total_sum
