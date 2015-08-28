@@ -1505,7 +1505,7 @@ class Client(Info):
     blood_history = relationship(
         u'Bloodhistory',
         backref=backref('client'),
-        order_by='desc(Bloodhistory.id)'
+        order_by='desc(Bloodhistory.bloodDate)'
     )
     socStatuses = relationship(u'Clientsocstatus',
                                primaryjoin="and_(Clientsocstatus.deleted == 0,Clientsocstatus.client_id==Client.id,"
@@ -1544,6 +1544,10 @@ class Client(Info):
     @property
     def birthDate(self):
         return DateInfo(self.birthDate_raw)
+
+    @property
+    def bloodType(self):
+        return self.blood_history[0].bloodType if self.blood_history else None
 
     @property
     def nameText(self):
