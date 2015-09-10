@@ -29,18 +29,11 @@
         <hr>
         <label for="mkb_list" class="col-sm-2 control-label">Дигнозы МКБ</label>
         <div class="col-sm-10">
-            <ui-select multiple id="mkb_list" name="mkb_list" theme="select2"
-                   ng-model="proxy_mkb.list" ref-book="MKB" close-on-select="false">
-                <ui-select-match placeholder="МКБ"><span title="[[$item.name]]" ng-bind="$item.code"></span></ui-select-match>
-                <ui-select-choices repeat="mkb in $refBook.objects | filter: $select.search | limitTo: 100 | filter:filterMkbChoices">
-                    <div ng-bind-html="mkb.code | highlight: $select.search"></div>
-                    <small style="font-style: italic" ng-bind-html="mkb.name"></small>
-                </ui-select-choices>
-            </ui-select>
+            <wm-mkb-multiple id="mkb_list" name="mkb_list" placeholder="Укажите диагнозы"
+                ng-model="scheme.mkbs">
+            </wm-mkb-multiple>
         </div>
     </div>
-
-{#    <br><pre>[[ scheme | json ]]</pre><pre>[[ proxy_mkb | json ]]</pre>#}
 </form>
 </div>
 <div class="modal-footer">

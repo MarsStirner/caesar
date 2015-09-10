@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
-from nemesis.models.exists import (rbPacientModel, rbTreatment, rbTreatmentType, rbFinance, MKB)
-from nemesis.models.expert_protocol import rbMeasureType, rbMeasureScheduleType, Measure
+from nemesis.models.exists import (rbPacientModel, rbTreatment, rbTreatmentType, rbFinance)
+from nemesis.models.expert_protocol import (rbMeasureType, rbMeasureScheduleType, rbMeasureScheduleApplyType, Measure)
 from nemesis.models.actions import ActionType
 from nemesis.models.person import rbPost, rbOrgCurationLevel, rbSpeciality
 from nemesis.models.risar import rbPerinatalRiskRate, rbPregnancyPathology
+from nemesis.models.refbooks import rbUnits
 from nemesis.lib.settings import Settings
 
 from .refbook import (SimpleRefBookModelManager, RbTreatmentModelManager, RbPerinatalRRModelManager,
-    RbPRRMKBModelManager, RbPregnancyPathologyModelManager, RbPregnancyPathologyMKBModelManager)
+    RbPRRMKBModelManager, RbPregnancyPathologyModelManager, RbPregnancyPathologyMKBModelManager, MKBModelManager)
 from .organisation import (OrganisationModelManager, OrganisationBCLModelManager, Organisation_OBCLModelManager,
     OrganisationCurationModelManager)
 from .expert_protocol import (MeasureModelManager, ExpertProtocolModelManager, ExpertSchemeModelManager,
-      ExpertSchemeMKBModelManager, ExpertSchemeMeasureModelManager, MeasureScheduleModelManager)
+    ExpertSchemeMeasureModelManager, MeasureScheduleModelManager)
 from .person import PersonModelManager, PersonCurationModelManager
 
 
@@ -22,29 +23,31 @@ all_rbs = {
     'rbFinance': rbFinance,
     'rbMeasureType': rbMeasureType,
     'rbMeasureScheduleType': rbMeasureScheduleType,
+    'rbMeasureScheduleApplyType': rbMeasureScheduleApplyType,
     'Measure': Measure,
     'rbPerinatalRiskRate': rbPerinatalRiskRate,
     'rbPost': rbPost,
     'rbSpeciality': rbSpeciality,
     'rbOrgCurationLevel': rbOrgCurationLevel,
-    'rbPregnancyPathology': rbPregnancyPathology
+    'rbPregnancyPathology': rbPregnancyPathology,
+    'rbUnits': rbUnits
 }
 
 basic_rbs = [
     'rbPacientModel', 'rbTreatment', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType',
-    'rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology'
+    'rbMeasureScheduleApplyType', 'rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology', 'rbUnits'
 ]
 
 simple_rbs = [
-    'rbPacientModel', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType', 'rbPerinatalRiskRate',
-    'rbOrgCurationLevel', 'rbPregnancyPathology',
+    'rbPacientModel', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType',
+    'rbMeasureScheduleApplyType', 'rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology',
     # next are used only for backend data manipulation, they are not presented on frontend ui
-    'rbPost', 'rbSpeciality'
+    'rbPost', 'rbSpeciality', 'rbUnits'
 ]
 
 rb_groups = {
     'vmp': (u'ВМП', ['rbPacientModel', 'rbTreatment', 'rbTreatmentType']),
-    'expert_protocol': (u'Протоколы лечения', ['rbMeasureType', 'rbMeasureScheduleType']),
+    'expert_protocol': (u'Протоколы лечения', ['rbMeasureType', 'rbMeasureScheduleType', 'rbMeasureScheduleApplyType']),
     'risar': (u'РИСАР', ['rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology']),
     'other': (u'Остальные', ['rbFinance'])
 }
@@ -85,11 +88,9 @@ def get_manager(name, **params):
     elif name == 'Measure':
         return MeasureModelManager()
     elif name == 'ExpertProtocol':
-        return ExpertProtocolModelManager()
+        return ExpertProtocolModelManager(**params)
     elif name == 'ExpertScheme':
         return ExpertSchemeModelManager()
-    elif name == 'ExpertSchemeMKB':
-        return ExpertSchemeMKBModelManager()
     elif name == 'ExpertSchemeMeasure':
         return ExpertSchemeMeasureModelManager()
     elif name == 'MeasureSchedule':
@@ -97,7 +98,7 @@ def get_manager(name, **params):
     elif name == 'ActionType':
         return SimpleRefBookModelManager(ActionType)
     elif name == 'MKB':
-        return SimpleRefBookModelManager(MKB)
+        return MKBModelManager()
     elif name == 'OrganisationBirthCareLevel':
         return OrganisationBCLModelManager(**params)
     elif name == 'Organisation_OrganisationHCL':
