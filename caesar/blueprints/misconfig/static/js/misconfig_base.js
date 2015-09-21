@@ -162,12 +162,15 @@ WebMis20
     $scope.EntityClass = null;
     $scope.item_list = [];
     $scope.create_new = function () {
-        $scope.EntityClass.instantiate('new').
+        $scope.EntityClass.instantiate(undefined, {'new': true}).
             then(function (item) {
-                getSimpleEditModal(item).result.then(function (item) {
-                    $scope.item_list.push(item);
-                });
+                $scope._editNew(item);
             });
+    };
+    $scope._editNew = function (item) {
+        getSimpleEditModal(item).result.then(function (item) {
+            $scope.item_list.push(item);
+        });
     };
     $scope.edit = function (index) {
         var item = $scope.item_list[index].clone();

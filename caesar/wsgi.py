@@ -72,13 +72,23 @@ def caesar_urls():
     return {
         'url': {
             'misconfig': {
+                # expert protocols
                 'html_expert_protocol_protocols': url_for('misconfig.expert_protocol_protocol_html'),
                 'html_expert_protocol_scheme_measures': url_for('misconfig.expert_protocol_scheme_measures_html'),
                 'api_expert_protocol_base': url_for('misconfig.api_v1_expert_protocol_get'),
                 'api_expert_protocol_list_base': url_for('misconfig.api_v1_expert_protocol_list_get'),
                 'api_expert_scheme_base': url_for('misconfig.api_v1_expert_scheme_get'),
                 'api_expert_scheme_measure_base': url_for('misconfig.api_v1_expert_scheme_measure_get'),
-                'api_expert_scheme_measure_list_base': url_for('misconfig.api_v1_expert_scheme_measure_list_get')
+                'api_expert_scheme_measure_list_base': url_for('misconfig.api_v1_expert_scheme_measure_list_get'),
+                # org
+                'api_org_base': url_for('misconfig.api_v1_org_get'),
+                'api_org_list_base': url_for('misconfig.api_v1_org_list_get'),
+                'api_org_birth_care_level_base': url_for('misconfig.api_v1_org_birth_care_level_get'),
+                'api_org_birth_care_level_list_base': url_for('misconfig.api_v1_org_birth_care_level_list_get'),
+                # person
+                'api_person_base': url_for('misconfig.api_v1_person_get'),
+                'api_person_list_base': url_for('misconfig.api_v1_person_list_get'),
+                'api_person_curation_level_list_get': url_for('misconfig.api_v1_person_curation_level_list_get')
 
             }
         },

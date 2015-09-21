@@ -9,8 +9,7 @@ from nemesis.lib.settings import Settings
 
 from .refbook import (SimpleRefBookModelManager, RbTreatmentModelManager, RbPerinatalRRModelManager,
     RbPRRMKBModelManager, RbPregnancyPathologyModelManager, RbPregnancyPathologyMKBModelManager, MKBModelManager)
-from .organisation import (OrganisationModelManager, OrganisationBCLModelManager, Organisation_OBCLModelManager,
-    OrganisationCurationModelManager)
+from .organisation import (OrganisationModelManager, OrganisationBCLModelManager)
 from .expert_protocol import (MeasureModelManager, ExpertProtocolModelManager, ExpertSchemeModelManager,
     ExpertSchemeMeasureModelManager, MeasureScheduleModelManager)
 from .person import PersonModelManager, PersonCurationModelManager
@@ -101,14 +100,10 @@ def get_manager(name, **params):
         return MKBModelManager()
     elif name == 'OrganisationBirthCareLevel':
         return OrganisationBCLModelManager(**params)
-    elif name == 'Organisation_OrganisationHCL':
-        return Organisation_OBCLModelManager()
     elif name == 'Person':
         return PersonModelManager(**params)
     elif name == 'PersonCuration':
         return PersonCurationModelManager()
-    elif name == 'OrganisationCuration':
-        return OrganisationCurationModelManager()
     elif name == 'rbPerinatalRiskRateWithMKBs':
         return RbPerinatalRRModelManager()
     elif name == 'rbPerinatalRiskRateMkb':

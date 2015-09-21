@@ -25,8 +25,8 @@
                     <div class="col-md-10">
                         <div class="panel panel-default">
                         <ul class="list-group">
-                            <li ng-repeat="org_cur in item.org.org_curations" class="list-group-item">
-                                [[ org_cur.person_curation.person.full_name ]], [[ org_cur.person_curation.org_curation_level.name ]]
+                            <li ng-repeat="org_cur in item.org.org_curators" class="list-group-item">
+                                [[ org_cur.person.full_name ]], [[ org_cur.org_curation_level.name ]]
                                 <span class="label label-danger pull-right" ng-show="inEditState(key)"
                                     ng-click="removeOrgCuration(key, $index)">
                                     <i class="fa fa-remove"></i>

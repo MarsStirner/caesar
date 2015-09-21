@@ -13,7 +13,7 @@ from blueprints.misconfig.app import module
 @api_method
 def api_v1_expert_protocol_get(item_id=None):
     get_new = safe_bool(request.args.get('new', False))
-    with_schemes = request.args.get('with_schemes', False)
+    with_schemes = safe_bool(request.args.get('with_schemes', False))
     mng = get_manager('ExpertProtocol', with_schemes=with_schemes)
     if get_new:
         item = mng.create()

@@ -28,17 +28,14 @@ WebMis20
     };
     $scope.addPersonCuration = function (key) {
         var person = $scope.model[key].person;
-        person.getNewPersonCuration().then(function (person_curation) {
-            person_curation.org_curation_level = $scope.model[key].newCuration;
-            person.addPersonCuration(person_curation);
-            $scope.model[key].newCuration = null;
-        });
+        person.curation_levels.push($scope.model[key].newCuration);
+        $scope.model[key].newCuration = null;
     };
     $scope.removePersonCuration = function (key, idx) {
-        $scope.model[key].person.person_curations.splice(idx, 1);
+        $scope.model[key].person.curation_levels.splice(idx, 1);
     };
     $scope.checkCurationDubl = function (key) {
-        var selected = $scope.model[key].person.person_curations.map(function (pc) { return pc.org_curation_level.id; });
+        var selected = $scope.model[key].person.curation_levels.map(function (cl) { return cl.id; });
         $scope.model[key].curationDubl = selected.has($scope.model[key].newCuration.id);
     };
     $scope.alertCurationDublVisible = function (key) {

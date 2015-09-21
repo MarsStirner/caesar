@@ -14,7 +14,7 @@ WebMis20
     };
     $scope.finishEditing = function (key) {
         $scope.model[key].org.save(undefined, undefined, {
-            with_curations: true
+            with_curators: true
         }).then(function (org) {
             $scope.model[key].org = org;
             $scope.cancelEditing(key);
@@ -28,17 +28,14 @@ WebMis20
     };
     $scope.addOrgCuration = function (key) {
         var org = $scope.model[key].org;
-        org.getNewOrgCuration().then(function (org_curation) {
-            org_curation.person_curation = $scope.model[key].newCuration;
-            org.addOrgCuration(org_curation);
-            $scope.model[key].newCuration = null;
-        });
+        org.org_curators.push($scope.model[key].newCuration);
+        $scope.model[key].newCuration = null;
     };
     $scope.removeOrgCuration = function (key, idx) {
-        $scope.model[key].org.org_curations.splice(idx, 1);
+        $scope.model[key].org.org_curators.splice(idx, 1);
     };
     $scope.checkCurationDubl = function (key) {
-        var selected = $scope.model[key].org.org_curations.map(function (oc) { return oc.person_curation.id; });
+        var selected = $scope.model[key].org.org_curators.map(function (pc) { return pc.id; });
         $scope.model[key].curationDubl = selected.has($scope.model[key].newCuration.id);
     };
     $scope.alertCurationDublVisible = function (key) {
@@ -51,11 +48,10 @@ WebMis20
             $scope.person_curation_list = pers_curs;
         });
     Organisation.instantiateAll({
-        with_curations: true
+        with_curators: true,
+        stationary: true
     }).then(function (orgs) {
         $scope.model = {};
-        // TODO: filter on server
-        orgs = orgs.filter(function (o) { return o.is_stationary; });
         angular.forEach(orgs, function (org, key) {
             $scope.model[key] = {
                 org: org,

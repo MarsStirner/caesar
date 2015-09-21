@@ -9,6 +9,7 @@ WebMis20
         templateUrl: '/caesar/misconfig/org/org-edit-modal.html'
     });
     $scope.EntityClass = Organisation;
+
     Organisation.instantiateAll().then(function (orgs) {
         $scope.item_list = orgs;
     });

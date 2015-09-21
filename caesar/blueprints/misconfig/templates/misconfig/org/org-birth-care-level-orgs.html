@@ -32,8 +32,8 @@
                             Список ЛПУ
                         </div>
                         <ul class="list-group">
-                            <li ng-repeat="org_obcl in item.obcl.org_obcls" class="list-group-item">
-                                [[ org_obcl.organisation.short_name ]]
+                            <li ng-repeat="org in item.obcl.orgs" class="list-group-item">
+                                [[ org.short_name ]]
                                 <span class="label label-danger pull-right" ng-show="inEditState(key)"
                                     ng-click="removeOrgOBCL(key, $index)">
                                     <i class="fa fa-remove"></i>
