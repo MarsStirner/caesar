@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, FCType, represent_model
 from nemesis.lib.utils import safe_int, safe_unicode
-from nemesis.models.exists import rbTreatment
+from nemesis.models.exists import rbTreatment, rbResult
 from nemesis.models.risar import (rbPerinatalRiskRate, rbPerinatalRiskRateMkb, rbPregnancyPathology,
     rbPregnancyPathologyMkbAssoc)
 from nemesis.systemwide import db
@@ -140,3 +140,14 @@ class RbPregnancyPathologyMKBModelManager(BaseModelManager):
         item = super(RbPregnancyPathologyMKBModelManager, self).create(data, parent_id, parent_obj)
         item.pathology_id = data.get('pathology_id') if data is not None else parent_id
         return item
+
+
+class RbResultModelManager(SimpleRefBookModelManager):
+    def __init__(self):
+        self._rbetp_mng = self.get_manager('rbEventTypePurpose')
+        super(RbResultModelManager, self).__init__(rbResult, [
+            FieldConverter(
+                FCType.relation,
+                'eventPurpose', lambda val, par: self.handle_onetomany_nonedit(self._rbetp_mng, val, par),
+                'event_purpose')
+        ])

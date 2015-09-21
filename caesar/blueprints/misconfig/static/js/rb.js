@@ -115,6 +115,56 @@ WebMis20
     }, rbPregnancyPathology);
     return rbPregnancyPathology;
 }])
+.factory('rbPost', ['SimpleRb', function (SimpleRb) {
+    var rbPost = function (data) {
+        SimpleRb.call(this, data);
+    };
+    rbPost.inheritsFrom(SimpleRb);
+    rbPost.initialize({
+        base_url: '{0}rbPost/'.format(rbPost.getBaseUrl())
+    }, rbPost);
+    return rbPost;
+}])
+.factory('rbSpeciality', ['SimpleRb', function (SimpleRb) {
+    var rbSpeciality = function (data) {
+        SimpleRb.call(this, data);
+    };
+    rbSpeciality.inheritsFrom(SimpleRb);
+    rbSpeciality.initialize({
+        base_url: '{0}rbSpeciality/'.format(rbSpeciality.getBaseUrl())
+    }, rbSpeciality);
+    return rbSpeciality;
+}])
+.factory('rbRequestType', ['SimpleRb', function (SimpleRb) {
+    var rbRequestType = function (data) {
+        SimpleRb.call(this, data);
+    };
+    rbRequestType.inheritsFrom(SimpleRb);
+    rbRequestType.initialize({
+        base_url: '{0}rbRequestType/'.format(rbRequestType.getBaseUrl())
+    }, rbRequestType);
+    return rbRequestType;
+}])
+.factory('rbResult', ['SimpleRb', function (SimpleRb) {
+    var rbResult = function (data) {
+        SimpleRb.call(this, data);
+    };
+    rbResult.inheritsFrom(SimpleRb);
+    rbResult.initialize({
+        base_url: '{0}rbResult/'.format(rbResult.getBaseUrl())
+    }, rbResult);
+    return rbResult;
+}])
+.factory('rbEventTypePurpose', ['SimpleRb', function (SimpleRb) {
+    var rbEventTypePurpose = function (data) {
+        SimpleRb.call(this, data);
+    };
+    rbEventTypePurpose.inheritsFrom(SimpleRb);
+    rbEventTypePurpose.initialize({
+        base_url: '{0}rbEventTypePurpose/'.format(rbEventTypePurpose.getBaseUrl())
+    }, rbEventTypePurpose);
+    return rbEventTypePurpose;
+}])
 .controller('RBConfigCtrl', ['$scope', '$controller', '$location', 'RbList',
         function ($scope, $controller, $location, RbList) {
     $controller('MisConfigBaseCtrl', {$scope: $scope});

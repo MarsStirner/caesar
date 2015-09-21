@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from nemesis.models.exists import (rbPacientModel, rbTreatment, rbTreatmentType, rbFinance, MKB)
+from nemesis.models.exists import (rbPacientModel, rbTreatment, rbTreatmentType, rbFinance, rbResult, MKB)
+from nemesis.models.exists import rbRequestType, rbEventTypePurpose
 from nemesis.models.expert_protocol import rbMeasureType, rbMeasureScheduleType, Measure
 from nemesis.models.actions import ActionType
 from nemesis.models.person import rbPost, rbOrgCurationLevel, rbSpeciality
@@ -7,7 +8,8 @@ from nemesis.models.risar import rbPerinatalRiskRate, rbPregnancyPathology
 from nemesis.lib.settings import Settings
 
 from .refbook import (SimpleRefBookModelManager, RbTreatmentModelManager, RbPerinatalRRModelManager,
-    RbPRRMKBModelManager, RbPregnancyPathologyModelManager, RbPregnancyPathologyMKBModelManager)
+    RbPRRMKBModelManager, RbPregnancyPathologyModelManager, RbPregnancyPathologyMKBModelManager,
+    RbResultModelManager)
 from .organisation import (OrganisationModelManager, OrganisationBCLModelManager, Organisation_OBCLModelManager,
     OrganisationCurationModelManager)
 from .expert_protocol import (MeasureModelManager, ExpertProtocolModelManager, ExpertSchemeModelManager,
@@ -20,6 +22,8 @@ all_rbs = {
     'rbTreatment': rbTreatment,
     'rbTreatmentType': rbTreatmentType,
     'rbFinance': rbFinance,
+    'rbRequestType': rbRequestType,
+    'rbResult': rbResult,
     'rbMeasureType': rbMeasureType,
     'rbMeasureScheduleType': rbMeasureScheduleType,
     'Measure': Measure,
@@ -39,14 +43,15 @@ simple_rbs = [
     'rbPacientModel', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType', 'rbPerinatalRiskRate',
     'rbOrgCurationLevel', 'rbPregnancyPathology',
     # next are used only for backend data manipulation, they are not presented on frontend ui
-    'rbPost', 'rbSpeciality'
+    'rbPost', 'rbSpeciality', 'rbRequestType'
 ]
 
 rb_groups = {
     'vmp': (u'ВМП', ['rbPacientModel', 'rbTreatment', 'rbTreatmentType']),
     'expert_protocol': (u'Протоколы лечения', ['rbMeasureType', 'rbMeasureScheduleType']),
     'risar': (u'РИСАР', ['rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology']),
-    'other': (u'Остальные', ['rbFinance'])
+    'other': (u'Остальные', ['rbFinance', 'rbRequestType', 'rbResult']),
+    'med_staff': (u'Мед. персонал', ['rbPost', 'rbSpeciality'])
 }
 
 
@@ -116,3 +121,5 @@ def get_manager(name, **params):
         return RbPregnancyPathologyModelManager()
     elif name == 'rbPregnancyPathologyMkb':
         return RbPregnancyPathologyMKBModelManager()
+    elif name == 'rbResult':
+        return RbResultModelManager()
