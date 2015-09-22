@@ -150,7 +150,7 @@ class MKBModelManager(BaseModelManager):
             FieldConverter(FCType.basic, 'DiagName', safe_unicode, 'name'),
             FieldConverter(FCType.basic, 'deleted', safe_int, 'deleted')
         ]
-        super(MKBModelManager, self).__init__(MKB, fields)        return item
+        super(MKBModelManager, self).__init__(MKB, fields)
 
 
 class RbResultModelManager(SimpleRefBookModelManager):
