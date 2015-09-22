@@ -1,24 +1,22 @@
 'use strict';
 
 WebMis20
-.controller('ExpertProtocolListConfigCtrl', ['$scope', '$controller', '$window', 'ExpertProtocol',
-        function ($scope, $controller, $window, ExpertProtocol) {
+.controller('ExpertProtocolListConfigCtrl', ['$scope', '$controller', '$window', 'WMConfig', 'ExpertProtocol',
+        function ($scope, $controller, $window, WMConfig, ExpertProtocol) {
     $controller('MisConfigBaseCtrl', {$scope: $scope});
 
     $scope.create_new = function () {
-        $window.location.href = '/misconfig/expert/protocol/protocols/protocol/#?protocol_id=new';
+        $window.location.href = WMConfig.url.misconfig.html_expert_protocol_protocols + '#?protocol_id=new';
     };
     $scope.edit = function (index) {
-        $window.location.href = '/misconfig/expert/protocol/protocols/protocol/#?protocol_id={0}'.format(
-            $scope.item_list[index].id
-        );
+        $window.location.href = WMConfig.url.misconfig.html_expert_protocol_protocols + '#?protocol_id=' + $scope.item_list[index].id;
     };
     ExpertProtocol.instantiateAll().then(function (protocols) {
         $scope.item_list = protocols;
     });
 }])
-.controller('ExpertProtocolConfigCtrl', ['$scope', '$controller', '$window', 'ExpertProtocol',
-        function ($scope, $controller, $window, ExpertProtocol) {
+.controller('ExpertProtocolConfigCtrl', ['$scope', '$controller', '$window', 'WMConfig', 'ExpertProtocol',
+        function ($scope, $controller, $window, WMConfig, ExpertProtocol) {
     $controller('MisConfigBaseCtrl', {$scope: $scope});
     var _schemeModalParams = {
         controller: 'ExpertSchemeConfigModalCtrl',
@@ -33,17 +31,15 @@ WebMis20
         return $scope.getEditModal(_schemeModalParams);
     };
 
-    $scope.formatMkbList = function (scheme_mkbs) {
-        return scheme_mkbs.map(function (mkb_scheme) {
-            return mkb_scheme.mkb.code;
+    $scope.formatMkbList = function (mkbs) {
+        return mkbs.map(function (mkb) {
+            return mkb.code;
         }).join(', ');
     };
     $scope.saveProtocol = function () {
         $scope.protocol.save().
             then(function (protocol) {
-                $window.location.href = '/misconfig/expert/protocol/protocols/protocol/#?protocol_id={0}'.format(
-                    protocol.id
-                );
+                $window.location.href = WMConfig.url.misconfig.html_expert_protocol_protocols + '#?protocol_id=' + protocol.id;
             });
     };
     $scope.createNewScheme = function () {
@@ -60,13 +56,17 @@ WebMis20
             $scope.protocol.schemes.splice(index, 1, scheme);
         });
     };
+    $scope.removeScheme = function (index) {
+        $scope._remove($scope.protocol.schemes[index]);
+    };
+    $scope.restoreScheme = function (index) {
+        $scope._restore($scope.protocol.schemes[index]);
+    };
     $scope.editMeasures = function (index) {
-        $window.location.href = '/misconfig/expert/protocol/protocols/scheme-measures/#?scheme_id={0}'.format(
-            $scope.protocol.schemes[index].id
-        );
+        $window.location.href =  WMConfig.url.misconfig.html_expert_protocol_scheme_measures + '#?scheme_id=' + $scope.protocol.schemes[index].id;
     };
 
-    ExpertProtocol.instantiate($scope.getUrlParam('protocol_id')).
+    ExpertProtocol.instantiate($scope.getUrlParam('protocol_id'), { with_schemes: true }).
         then(function (protocol) {
             $scope.protocol = protocol;
         });
@@ -74,29 +74,7 @@ WebMis20
 .controller('ExpertSchemeConfigModalCtrl', ['$scope', '$modalInstance', 'scheme',
         function ($scope, $modalInstance, scheme) {
     $scope.scheme = scheme;
-    $scope.proxy_mkb = {
-        list: scheme.scheme_mkbs.map(function (mkb_scheme) { return mkb_scheme.mkb; })
-    };
 
-    $scope.$watchCollection('proxy_mkb.list', function (new_values) {
-        var new_len = new_values.length;
-        new_values.forEach(function (value, index) {
-            if ($scope.scheme.scheme_mkbs.length <= index) {
-                $scope.scheme.getNewMkb().
-                    then(function (scheme_mkb) {
-                        scheme_mkb.mkb = value;
-                        $scope.scheme.addMkb(scheme_mkb);
-                    });
-            } else {
-                $scope.scheme.scheme_mkbs[index].mkb = value;
-            }
-        });
-        $scope.scheme.scheme_mkbs.splice(new_len);
-    });
-    $scope.filterMkbChoices = function (mkb) {
-        var used_codes = $scope.scheme.scheme_mkbs.map(function (scheme_mkb) { return scheme_mkb.mkb.code });
-        return !used_codes.has(mkb.code);
-    };
     $scope.close = function () {
         $scope.scheme.save().
             then(function (scheme) {

@@ -78,6 +78,16 @@ WebMis20
                 return obj.prototype._base_url;
             };
         }
+        if (params.list_url) {
+            obj.prototype._list_url = params.list_url;
+            obj.getListUrl = function () {
+                return obj.prototype._list_url;
+            };
+        } else if (params.base_url) {
+            obj.getListUrl = function () {
+                return obj.prototype._base_url;
+            };
+        }
         if (params.fields) {
             obj.prototype._fields = params.fields;
             obj.getFields = function () {
@@ -86,11 +96,11 @@ WebMis20
         }
     };
     BasicModelConstructor.initialize({base_url: '', fields: []}, BasicModelConstructor);
-    BasicModelConstructor.instantiate = function (item_id, parent_id, url, args) {
+    BasicModelConstructor.instantiate = function (item_id, args, url) {
         var klass = this;
         if (!url) {
             url = klass.getBaseUrl();
-            if (item_id !== undefined) url = '{0}{1}/{2|/}'.formatNonEmpty(url, item_id, parent_id);
+            if (item_id !== undefined) url = '{0}{1}/'.formatNonEmpty(url, item_id);
         }
         return ApiCalls.wrapper('GET', url, args)
             .then(function (data) {
@@ -99,7 +109,7 @@ WebMis20
     };
     BasicModelConstructor.instantiateAll = function (args) {
         var klass = this;
-        var url = klass.getBaseUrl();
+        var url = klass.getListUrl();
         return ApiCalls.wrapper('GET', url, args)
             .then(function (data) {
                 return data.items.map(function (item) {
@@ -165,17 +175,23 @@ WebMis20
             $scope.item_list.splice(index, 1, item)
         });
     };
-    $scope.remove = function (index) {
-        var item = $scope.item_list[index];
+    $scope._remove = function (item) {
         MessageBox.question('Удаление записи', 'Действительно удалить?').then(function (result) {
             if (result) {
                 item.del();
             }
         });
     };
+    $scope.remove = function (index) {
+        var item = $scope.item_list[index];
+        $scope._remove(item);
+    };
+    $scope._restore = function (item) {
+        item.undel();
+    };
     $scope.restore = function (index) {
         var item = $scope.item_list[index];
-        item.undel();
+        $scope._restore(item);
     };
     $scope.canEdit = function (item) {
         return !item.deleted;

@@ -1,34 +1,12 @@
 'use strict';
 
 WebMis20
-.controller('SchemeMeasureConfigCtrl', ['$scope', '$controller', '$modal', 'ExpertScheme', 'ExpertSchemeMeasure',
-        'Measure', 'MeasureSchedule',
-        function ($scope, $controller, $modal, ExpertScheme, ExpertSchemeMeasure, Measure, MeasureSchedule) {
+.controller('SchemeMeasureConfigCtrl', [
+        '$scope', '$controller', '$modal', 'ExpertProtocol', 'ExpertScheme', 'ExpertSchemeMeasureSchedule',
+        function ($scope, $controller, $modal, ExpertProtocol, ExpertScheme, ExpertSchemeMeasureSchedule) {
     $controller('MisConfigBaseCtrl', {$scope: $scope});
     var schemeMeasureModalParams = {
-        controller: function ($scope, $modalInstance, scheme_measure) {
-            $scope.scheme_measure = scheme_measure;
-
-            Measure.instantiateAll().then(function (items) {
-                $scope.measure_list = items;
-            });
-
-            $scope.addSchedule = function () {
-                MeasureSchedule.instantiate('new', $scope.scheme_measure.id).
-                    then(function (measure_schedule) {
-                        $scope.scheme_measure.schedules.push(measure_schedule);
-                    });
-            };
-            $scope.removeSchedule = function (index) {
-                $scope.scheme_measure.schedules.splice(index, 1);
-            };
-            $scope.close = function () {
-                $scope.scheme_measure.save().
-                    then(function (scheme_measure) {
-                        $scope.$close(scheme_measure);
-                    });
-            };
-        },
+        controller: 'ExpertSchemeMeasureScheduleConfigModalCtrl',
         size: 'lg',
         templateUrl: '/caesar/misconfig/expert/protocol/scheme-measure-edit-modal.html',
         resolve: {}
@@ -41,140 +19,137 @@ WebMis20
     };
 
     $scope.formatSchedule = function (scheme_measure) {
-        return '{0}c - {1}c, кол-во {2}'.format(
-            scheme_measure.schedule.offset_start,
-            scheme_measure.schedule.offset_end,
-            scheme_measure.schedule.repeat_count
-        );
+        return '';
     };
     $scope.createNewSchemeMeasure = function () {
-        ExpertSchemeMeasure.instantiate('new', $scope.scheme.id).
-            then(function (scheme_measure) {
-                get_scheme_edit_modal(scheme_measure).result.then(function (scheme_measure) {
-                    $scope.scheme.addSchemeMeasure(scheme_measure);
-                });
+        ExpertSchemeMeasureSchedule.instantiate(undefined, {
+            'new': true,
+            scheme_id: $scope.scheme.id
+        }).then(function (scheme_measure) {
+            get_scheme_edit_modal(scheme_measure).result.then(function (scheme_measure) {
+                $scope.scheme_measures.push(scheme_measure);
             });
-    };
-    $scope.editSchemeMeasure = function (index) {
-        var scheme_measure = $scope.scheme.scheme_measures[index].clone();
-        get_scheme_edit_modal(scheme_measure).result.then(function () {
-            $scope.scheme.scheme_measures.splice(index, 1, scheme_measure);
         });
     };
+    $scope.editSchemeMeasure = function (index) {
+        var scheme_measure = $scope.scheme_measures[index].clone();
+        get_scheme_edit_modal(scheme_measure).result.then(function () {
+            $scope.scheme_measures.splice(index, 1, scheme_measure);
+        });
+    };
+    $scope.removeSchemeMeasure = function (index) {
+        $scope._remove($scope.scheme_measures[index]);
+    };
+    $scope.restoreSchemeMeasure = function (index) {
+        $scope._restore($scope.scheme_measures[index]);
+    };
 
+    $scope.scheme_measures = [];
     ExpertScheme.instantiate($scope.getUrlParam('scheme_id')).
         then(function (scheme) {
             $scope.scheme = scheme;
-            ExpertSchemeMeasure.instantiateByScheme($scope.getUrlParam('scheme_id')).
-                then(function (scheme_measures) {
-                    $scope.scheme.scheme_measures = scheme_measures;
+            ExpertProtocol.instantiate($scope.scheme.protocol_id).
+                then(function (protocol) {
+                    $scope.protocol = protocol;
                 });
+            ExpertSchemeMeasureSchedule.instantiateAll({
+                scheme_id: $scope.getUrlParam('scheme_id')
+            }).then(function (scheme_measures) {
+                $scope.scheme_measures = scheme_measures;
+            });
         });
 }])
-.directive('wmMeasureScheduleConf', function () {
-    return {
-        restrict: 'E',
-        scope: {
-            ident: '@',
-            schedule: '='
-        },
-        template:
-'<div class="form-group">\
-    <label for="schedule_type">Тип расписания</label>\
-    <select id="schedule_type" name="schedule_type" class="form-control"\
-            ng-model="schedule.schedule_type" ref-book="rbMeasureScheduleType"\
-            ng-options="item as item.name for item in $refBook.objects track by item.id">\
-    </select>\
-</div>\
-<div class="row">\
-<div class="col-md-5">\
-    <div class="form-group">\
-        <label for="offset_start">Начало смещения</label>\
-        <wm-timestamp id="offset_start" name="offset_start" ident="[[ident]]_start"\
-            ng-model="schedule.offset_start"></wm-timestamp>\
-    </div>\
-</div>\
-<div class="col-md-offset-2 col-md-5">\
-    <div class="form-group">\
-        <label for="offset_end">Конец смещения</label>\
-        <wm-timestamp id="offset_end" name="offset_end" ident="[[ident]]_end"\
-            ng-model="schedule.offset_end"></wm-timestamp>\
-    </div>\
-</div>\
-</div>\
-<div class="form-group">\
-    <label for="repeat_count">Количество повторений</label>\
-    <input type="text" id="repeat_count" name="repeat_count" class="form-control"\
-           ng-model="schedule.repeat_count">\
-</div>',
-        link: function (scope, element, attrs) {
+.controller('ExpertSchemeMeasureScheduleConfigModalCtrl', ['$scope', '$modalInstance', 'Measure', 'RefBookService',
+        'MeasureSchedule', 'scheme_measure',
+        function ($scope, $modalInstance, Measure, RefBookService, MeasureSchedule, scheme_measure) {
+    $scope.scheme_measure = scheme_measure;
 
-        }
-    }
-})
-.directive('wmTimestamp', function () {
-    return {
-        restrict: 'EA',
-        replace: true,
-        scope: {
-            ident: '@',
-            ngModel: '='
+    Measure.instantiateAll().then(function (items) {
+        $scope.measure_list = items;
+    });
+
+    $scope.MeasureScheduleType = RefBookService.get('MeasureScheduleType');
+    $scope.rbMeasureScheduleApplyType = RefBookService.get('MeasureScheduleApplyType');
+    $scope.rbMeasureScheduleApplyType.loading.then(function () {
+        var cur_sat_id = safe_traverse($scope.scheme_measure, ['schedule', 'apply_type', 'id']),
+            selected = $scope.rbMeasureScheduleApplyType.objects.filter(function (sat) {
+                return sat.id === cur_sat_id;
+            });
+        $scope.scheme_measure.schedule.apply_type = selected.length ? selected[0] : null;
+    });
+
+    $scope.isSchedTypeChecked = function (sched_type) {
+        return $scope.scheme_measure.schedule.schedule_types.some(function (st) {
+            return st.id === sched_type.id;
+        });
+    };
+    $scope.stControlForPregRange = function (sched_type) { return sched_type.code === 'within_pregnancy_range'; };
+    $scope.stControlForAddMkb = function (sched_type) { return sched_type.code === 'in_presence_diag'; };
+    $scope.stControlForAddNote = function (sched_type) { return sched_type.code === 'upon_med_indication'; };
+    $scope.schedTypeControlsVisible = function (sched_type) { return $scope.isSchedTypeChecked(sched_type); };
+
+    $scope.isSchedApplyTypeSelected = function (sched_apply_type) {
+        return safe_traverse($scope.scheme_measure, ['schedule', 'apply_type', 'id']) === sched_apply_type.id;
+    };
+    $scope.satControlForMaxRange = function (sched_apply_type) { return sched_apply_type.code === 'range_up_to'; };
+    $scope.stControlForBounds = function (sched_apply_type) { return sched_apply_type.code === 'bounds'; };
+    $scope.schedApplyTypeControlsVisible = function (sched_apply_type) { return $scope.isSchedApplyTypeSelected(sched_apply_type); };
+
+    var stControlsDefaults = {
+        within_pregnancy_range: {
+            bounds_low_event_range: null,
+            bounds_low_event_range_unit: null,
+            bounds_high_event_range: null,
+            bounds_high_event_range_unit: null
         },
-        template:
-'<div class="input-group">\
-    <input type="text" ng-model="ngModel" wm-timestamp-formatter class="form-control">\
-    <span class="input-group-addon">\
-        <label class="radio-inline">\
-            <input type="radio" name="tf_m_[[ident]]" id="tf_m" ng-model="time_format.type" ng-value="\'m\'"> мин.\
-        </label>\
-        <label class="radio-inline">\
-            <input type="radio" name="tf_d_[[ident]]" id="tf_d" ng-model="time_format.type" ng-value="\'d\'"> дн.\
-        </label>\
-        <label class="radio-inline">\
-            <input type="radio" name="tf_w_[[ident]]" id="tf_w" ng-model="time_format.type" ng-value="\'w\'"> нед.\
-        </label>\
-    </span>\
-</div>',
-        link: function (scope, element, attrs) {
-            scope.time_format = {
-                type: 'd'
-            };
+        in_presence_diag: {
+            additional_mkbs: []
+        },
+        upon_med_indication: {
+            additional_text: null
         }
-    }
-})
-.directive('wmTimestampFormatter', function() {
-    return {
-        restrict: 'A',
-        require: 'ngModel',
-        link: function (scope, element, attrs, ngModelCtrl) {
-            var formatViewValue = function (viewValue, format_type) {
-                if (format_type === 'm') {
-                    viewValue = viewValue / 60;
-                } else if (format_type === 'd') {
-                    viewValue = viewValue / 86400;
-                } else if(format_type === 'w') {
-                    viewValue = viewValue / 604800;
-                }
-                return viewValue;
-            };
-            scope.$watch('time_format.type', function (newVal) {
-                ngModelCtrl.$setViewValue(formatViewValue(ngModelCtrl.$modelValue, newVal));
-                ngModelCtrl.$render();
+    };
+    $scope.toggleSchedType = function (sched_type) {
+        var idx = _.indexOfObj($scope.scheme_measure.schedule.schedule_types, function (st) {
+            return st.id === sched_type.id;
+        });
+        if (idx > -1) {
+            $scope.scheme_measure.schedule.schedule_types.splice(idx, 1);
+            angular.forEach(stControlsDefaults[sched_type.code], function (value, attr) {
+                $scope.scheme_measure.schedule[attr] = value;
             });
-            ngModelCtrl.$formatters.push(function (viewValue) {
-                formatViewValue(viewValue, scope.time_format.type);
-            });
-            ngModelCtrl.$parsers.unshift(function (value) {
-                if (scope.time_format.type === 'm') {
-                    value = value * 60;
-                } else if (scope.time_format.type === 'd') {
-                    value = value * 86400;
-                } else if(scope.time_format.type === 'w') {
-                    value = value * 604800;
-                }
-                return value;
+        } else {
+            $scope.scheme_measure.schedule.schedule_types.push(sched_type);
+        }
+    };
+
+    var satControlsDefaults = {
+        range_up_to: {
+            bounds_high_apply_range: null,
+            bounds_high_apply_range_unit: null
+        },
+        bounds: {
+            bounds_low_apply_range: null,
+            bounds_low_apply_range_unit: null,
+            bounds_high_apply_range: null,
+            bounds_high_apply_range_unit: null,
+            apply_period: null,
+            apply_period_unit: null
+        }
+    };
+    $scope.$watch('scheme_measure.schedule.apply_type', function (newValue, oldValue) {
+        if (oldValue && !angular.equals(newValue, oldValue)) {
+            angular.forEach(satControlsDefaults[oldValue.code], function (value, attr) {
+                $scope.scheme_measure.schedule[attr] = value;
             });
         }
-    }
-})
+    });
+
+    $scope.close = function () {
+        $scope.scheme_measure.save().
+            then(function (scheme_measure) {
+                $scope.$close(scheme_measure);
+            });
+    };
+}])
 ;

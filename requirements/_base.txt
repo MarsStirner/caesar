@@ -6,6 +6,7 @@ wtforms==1.0.5
 Flask-WTF==0.9.3
 Flask-Admin
 pytz
+Flask-Babel
 Flask-BabelEx
 Flask-Login
 Flask-Principal
@@ -20,4 +21,4 @@ beaker
 Flask-Beaker
 
 -e git+https://github.com/hitsl/pysimplelogs.git#egg=pysimplelogs
--e git+https://github.com/hitsl/nemesis.git#egg=nemesis
+-e git+https://github.com/hitsl/nemesis.git@release-1.1#egg=nemesis
