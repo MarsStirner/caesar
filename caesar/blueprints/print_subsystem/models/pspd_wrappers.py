@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import g
+from ..lib.query import Query
 
 from blueprints.print_subsystem.models.models_utils import EmptyObject
 
@@ -55,7 +55,7 @@ class PolicyInfoWrapper:
     @property
     def insurer(self):
         from .models_all import Organisation
-        return g.printing_session.query(Organisation).filter(Organisation.id == self._original.origin).first()
+        return Query(Organisation).filter(Organisation.id == self._original.origin).first()
 
     def __unicode__(self):
         return (' '.join([
@@ -130,7 +130,7 @@ class ContactInfoWrapper:
     def name(self):
         from .models_all import rbContactType
         code = self._original.system
-        ct = g.printing_session.query(rbContactType.code == code).first()
+        ct = Query(rbContactType.code == code).first()
         return ct.name if ct else ''
 
     def __unicode__(self):

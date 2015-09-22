@@ -3,6 +3,7 @@
 import calendar
 from collections import defaultdict
 from flask import g
+from ..lib.query import Query
 import jinja2
 from sqlalchemy import Column, Integer, String, Unicode, UnicodeText, DateTime, ForeignKey, Date, Float, Boolean, Text, \
     SmallInteger, Time, Index, BigInteger, Enum, Table, BLOB
@@ -335,7 +336,7 @@ class Action(Info):
         cur_date = datetime.date.today()
         service_id_list = [ats.service_id for ats in services
                            if ats.begDate <= event_date <= (ats.endDate or cur_date)]
-        query = g.printing_session.query(ContractTariff).filter(
+        query = Query(ContractTariff).filter(
             ContractTariff.master_id == self.contract.id,
             ContractTariff.service_id.in_(service_id_list),
             ContractTariff.deleted == 0,
@@ -594,7 +595,7 @@ class ActionProperty_FDRecord(ActionProperty__ValueType):
 
     @property
     def value(self):
-        return g.printing_session.query(Fdrecord).filter(Fdrecord.id == self.value_).first().get_value()
+        return Query(Fdrecord).filter(Fdrecord.id == self.value_).first().get_value()
 
 
 class ActionProperty_HospitalBed(ActionProperty__ValueType):
@@ -683,7 +684,7 @@ class ActionProperty_AnalysisStatus(ActionProperty_Integer_Base):
 
     @property
     def value(self):
-        return g.printing_session.query(rbAnalysisStatus).get(self.value_) if self.value_ else None
+        return Query(rbAnalysisStatus).get(self.value_) if self.value_ else None
 
     @value.setter
     def value(self, val):
@@ -695,7 +696,7 @@ class ActionProperty_OperationType(ActionProperty_Integer_Base):
 
     @property
     def value(self):
-        return g.printing_session.query(rbOperationType).get(self.value_) if self.value_ else None
+        return Query(rbOperationType).get(self.value_) if self.value_ else None
 
     @value.setter
     def value(self, val):
@@ -819,12 +820,12 @@ class ActionProperty_Table(ActionProperty_Integer_Base):
         table_code = self.property_object.type.valueDomain
         trfu_tables = {"trfuOrderIssueResult": trfuOrderIssueResult, "trfuLaboratoryMeasure": trfuLaboratoryMeasure,
                        "trfuFinalVolume": trfuFinalVolume}
-        table = g.printing_session.query(rbAPTable).filter(rbAPTable.code == table_code).first()
+        table = Query(rbAPTable).filter(rbAPTable.code == table_code).first()
         field_names = [field.name for field in table.fields if field.fieldName != 'stickerUrl']
         table_filed_names = [field.fieldName for field in table.fields if field.fieldName != 'stickerUrl']
         value_table_name = table.tableName
         master_field = table.masterField
-        values = g.printing_session.query(trfu_tables[value_table_name]).filter("{0}.{1} = {2}".format(
+        values = Query(trfu_tables[value_table_name]).filter("{0}.{1} = {2}".format(
             value_table_name,
             master_field,
             self.value_)
@@ -862,7 +863,7 @@ class ActionProperty_RLS(ActionProperty_Integer_Base):
 
     @property
     def value(self):
-        return g.printing_session.query(v_Nomen).get(self.value_).first() if self.value_ else None
+        return Query(v_Nomen).get(self.value_).first() if self.value_ else None
     property_object = relationship('ActionProperty', backref='_value_RLS')
 
 
@@ -871,10 +872,10 @@ class ActionProperty_ReferenceRb(ActionProperty_Integer_Base):
     @property
     def value(self):
         if not hasattr(self, 'table_name'):
-            domain = g.printing_session.query(ActionProperty).get(self.id).type.valueDomain
+            domain = Query(ActionProperty).get(self.id).type.valueDomain
             self.table_name = domain.split(';')[0]
         model = get_model_by_name(self.table_name)
-        return g.printing_session.query(model).get(self.value_)
+        return Query(model).get(self.value_)
 
     property_object = relationship('ActionProperty', backref='_value_ReferenceRb')
 
@@ -889,7 +890,7 @@ class ActionProperty_ExtReferenceRb(ActionProperty__ValueType):
     @property
     def value(self):
         if not hasattr(self, 'table_name'):
-            domain = g.printing_session.query(ActionProperty).get(self.id).type.valueDomain
+            domain = Query(ActionProperty).get(self.id).type.valueDomain
             self.table_name = domain.split(';')[0]
         try:
             response = requests.get(u'{0}v1/{1}/code/{2}'.format(VESTA_URL, self.table_name, self.value_))
@@ -1794,7 +1795,7 @@ class Clientattach(Info):
             return self.getClientDocument()
 
     def getClientDocument(self):
-        documents = g.printing_session.query(Clientdocument).filter(Clientdocument.clientId == self.client_id).\
+        documents = Query(Clientdocument).filter(Clientdocument.clientId == self.client_id).\
             filter(Clientdocument.deleted == 0).all()
         documents = [document for document in documents if document.documentType and document.documentType.group.code == "1"]
         return documents[-1]
@@ -2196,7 +2197,7 @@ class Clientsocstatus(Info):
             return self.getClientDocument()
 
     def getClientDocument(self):
-        documents = g.printing_session.query(Clientdocument).filter(Clientdocument.clientId == self.client_id).\
+        documents = Query(Clientdocument).filter(Clientdocument.clientId == self.client_id).\
             filter(Clientdocument.deleted == 0).all()
         documents = [document for document in documents if document.documentType and
                      document.documentType.group.code == "1"]
@@ -2784,7 +2785,7 @@ class Event(Info):
     @cached_property
     def orgStructure(self):
         if self.eventType.requestType.code == 'policlinic' and self.orgStructure_id:
-            return g.printing_session.query(Orgstructure).get(self.orgStructure_id)
+            return Query(Orgstructure).get(self.orgStructure_id)
         elif self.eventType.requestType.code in ('hospital', 'clinic', 'stationary'):
             movings = [action for action in self.actions if (action.endDate.datetime is None and
                                                              action.actionType.flatCode == 'moving')]
@@ -2854,7 +2855,7 @@ class Event(Info):
 
     @property
     def departmentManager(self):
-        persons = g.printing_session.query(Person).filter(Person.orgStructure_id == self.orgStructure.id).all() if self.orgStructure else []
+        persons = Query(Person).filter(Person.orgStructure_id == self.orgStructure.id).all() if self.orgStructure else []
         if persons:
             for person in persons:
                 if person.post and person.post.flatCode == u'departmentManager':
@@ -3371,7 +3372,7 @@ class Mkb(Info):
     def descr(self):
         mainCode = self.DiagID[:5]
         subclass = self.DiagID[5:]
-        record = g.printing_session.query(Mkb).filter(Mkb.DiagID == mainCode).first()
+        record = Query(Mkb).filter(Mkb.DiagID == mainCode).first()
         result = self.DiagID
         if record:
             result = record.DiagName

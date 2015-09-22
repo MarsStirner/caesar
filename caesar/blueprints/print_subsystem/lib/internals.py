@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 import datetime
-from jinja2 import FileSystemLoader
-from jinja2.environment import Environment
-from nemesis.app import app
 
-from context import CTemplateContext
-from html import escape, escapenl, HTMLRipper, date_toString, time_toString, addDays
+from jinja2 import FileSystemLoader, FunctionLoader, ChoiceLoader
+from jinja2.environment import Environment
 from flask import url_for
+import jinja2.ext
+
+from .query import Query
+from .specialvars import StoredSql, SpecialVariable
+from ..models.models_all import rbPrintTemplate
+from nemesis.app import app
+from .context import CTemplateHelpers, ModelGetterProxy
+from .html import escape, escapenl, HTMLRipper, date_toString, time_toString, addDays
 
 __author__ = 'mmalkov'
 
@@ -20,33 +25,43 @@ class RenderTemplateException(Exception):
     class Type:
         syntax = 0
         other = 1
+
     def __init__(self, message, data=None):
         super(RenderTemplateException, self).__init__(message)
         self.data = data
 
 
+def get_template_by_id(template_id):
+    template_data = Query(rbPrintTemplate).get(template_id)
+    if template_data:
+        if template_data.render != Render.jinja2:
+            return u"<HTML><HEAD></HEAD><BODY>Шаблон имеет устаревший формат. Пожалуйста, переведите его в Jinja2</BODY></HTML>"
+        if not template_data.templateText:
+            return u"<HTML><HEAD></HEAD><BODY>Шаблон пуст</BODY></HTML>"
+        macros = "{% import '_macros.html' as macros %}"
+        return macros + template_data.templateText
+
+
 def make_jinja_environment():
-    from .filters import do_datetime_format, do_datetime_combine, do_datetime_add_days, do_sum_columns, \
-        do_table_column, do_table_uniform, do_transpose_table
+    from . import filters
     env = Environment(
-        loader=FileSystemLoader('blueprints/print_subsystem/templates/print_subsystem'),
+        loader=ChoiceLoader([
+            FileSystemLoader('blueprints/print_subsystem/templates/print_subsystem'),
+            FunctionLoader(get_template_by_id)
+        ]),
         finalize=finalizer,
+        extensions=(
+            jinja2.ext.with_,
+            jinja2.ext.do,
+            jinja2.ext.loopcontrols,
+        )
     )
-    env.filters.update({
-        'datetime_format': do_datetime_format,
-        'datetime_combine': do_datetime_combine,
-        'datetime_add_days': do_datetime_add_days,
-        'transpose_table': do_transpose_table,
-        'sum_columns': do_sum_columns,
-        'table_column': do_table_column,
-        'table_uniform': do_table_uniform,
-    })
-    return env
-
-
-def renderTemplate(template, data, render=1):
-    # Формируем execContext
-    global_vars = {
+    env.filters.update(
+        (name[3:], getattr(filters, name))
+        for name in dir(filters)
+        if name.startswith('do_')
+    )
+    env.globals.update({
         'escape': escape,
         'escapenl': escapenl,
         'HTMLRipper': HTMLRipper,
@@ -59,36 +74,18 @@ def renderTemplate(template, data, render=1):
         'setLeftMargin': setLeftMargin,
         'setTopMargin': setTopMargin,
         'setRightMargin': setRightMargin,
-        'setBottomMargin': setBottomMargin
-    }
-
-    execContext = CTemplateContext(global_vars, data)
-
-    if render == Render.jinja2:
-        try:
-            context = {}
-            context.update(execContext.builtin)
-            context.update(execContext.globals)
-            context.update(execContext.data)
-            context.update({"now": execContext.now,
-                            "date_toString": date_toString,
-                            "time_toString": time_toString,
-                            "addDays": addDays,
-                            "images": url_for(".static", filename="i/", _external=True),
-                            "trfu_service": app.config['TRFU_URL'],
-                            })
-            env = make_jinja_environment()
-            macros = "{% import '_macros.html' as macros %}"
-            result = env.from_string(macros+template, globals=global_vars).render(context)
-        except Exception:
-            print "ERROR: template.render(data)"
-            raise
-    else:
-        result = u"<HTML><HEAD></HEAD><BODY>Не удалось выполнить шаблон</BODY></HTML>"
-    # canvases = execContext.getCanvases()
-    # for k in canvases:
-    #     print k, canvases[k]
-    return result
+        'setBottomMargin': setBottomMargin,
+        'helpers': CTemplateHelpers,
+        "date_toString": date_toString,
+        "time_toString": time_toString,
+        "addDays": addDays,
+        "images": url_for(".static", filename="i/", _external=True),
+        "trfu_service": app.config['TRFU_URL'],
+        'SpecialVariable': SpecialVariable,
+        'StoredSql': StoredSql,
+        'Model': ModelGetterProxy(),
+    })
+    return env
 
 
 def finalizer(obj):

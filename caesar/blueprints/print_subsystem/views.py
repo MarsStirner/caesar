@@ -3,15 +3,15 @@
 import traceback
 import logging
 
-from flask import render_template, abort, request, url_for, send_file, g
+from flask import render_template, abort, request, url_for, send_file
+from .lib.query import Query
 from jinja2 import TemplateNotFound
 
-from app import module
+from .app import module
 from nemesis.lib.utils import jsonify, crossdomain, public_endpoint
-from blueprints.print_subsystem.lib.internals import RenderTemplateException
-from blueprints.print_subsystem.models.models_all import rbPrintTemplate
-from lib.data import Print_Template
-
+from .lib.internals import RenderTemplateException
+from .models.models_all import rbPrintTemplate
+from .lib.rendering import Print_Template
 
 PER_PAGE = 20
 xml_encodings = ['windows-1251', 'utf-8']
@@ -123,7 +123,7 @@ def api_templates(context=None):
     # А в Гиппократе всё работает. Там те же две БД.
     if not context:
         return jsonify(None)
-    templates = g.printing_session.query(rbPrintTemplate).filter(rbPrintTemplate.context == context)
+    templates = Query(rbPrintTemplate).filter(rbPrintTemplate.context == context)
     return jsonify([{
         'id': t.id,
         'code': t.code,

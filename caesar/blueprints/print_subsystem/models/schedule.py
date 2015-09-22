@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 import datetime
-from flask import g
+from ..lib.query import Query
 from sqlalchemy import Column, Unicode, ForeignKey, Date, Time, DateTime, SmallInteger, Boolean, UnicodeText
 from sqlalchemy import Integer
 from sqlalchemy.orm import relationship
 from ..database import Base
-
-from models_all import Person, Client, rbReasonOfAbsence, Organisation, Orgstructure
 
 
 class rbReceptionType(Base):
@@ -188,7 +186,7 @@ class ScheduleClientTicket(Base):
         if not self.infisFrom:
             return
         from models_all import Organisation
-        org = g.printing_session.query(Organisation).filter(Organisation.infisCode == self.infisFrom).first()
+        org = Query(Organisation).filter(Organisation.infisCode == self.infisFrom).first()
         if not org:
             return self.infisFrom
         return org.title
