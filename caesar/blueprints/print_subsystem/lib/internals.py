@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import datetime
 
-from jinja2 import FileSystemLoader, FunctionLoader, ChoiceLoader
+from jinja2 import FileSystemLoader, FunctionLoader, PrefixLoader
 from jinja2.environment import Environment
 from flask import url_for
 import jinja2.ext
 
 from .query import Query
-from .specialvars import StoredSql, SpecialVariable, SP
+from .specialvars import StoredSql, SpecialVariable, SP, InlineSql
 from ..models.models_all import rbPrintTemplate
 from nemesis.app import app
 from .context import CTemplateHelpers, ModelGetterProxy
@@ -42,17 +42,17 @@ def get_template_by_id(template_id):
             return u"<HTML><HEAD></HEAD><BODY>Шаблон имеет устаревший формат. Пожалуйста, переведите его в Jinja2</BODY></HTML>"
         if not template_data.templateText:
             return u"<HTML><HEAD></HEAD><BODY>Шаблон пуст</BODY></HTML>"
-        macros = "{% import '_macros.html' as macros %}"
+        macros = "{% import 'fs/_macros.html' as macros %}"
         return macros + template_data.templateText
 
 
 def make_jinja_environment():
     from . import filters
     env = Environment(
-        loader=ChoiceLoader([
-            FileSystemLoader('blueprints/print_subsystem/templates/print_subsystem'),
-            FunctionLoader(get_template_by_id)
-        ]),
+        loader=PrefixLoader({
+            'fs': FileSystemLoader('blueprints/print_subsystem/templates/print_subsystem'),
+            'db': FunctionLoader(get_template_by_id),
+        }),
         finalize=finalizer,
         extensions=(
             jinja2.ext.with_,
@@ -88,6 +88,7 @@ def make_jinja_environment():
         'SpecialVariable': SpecialVariable,
         'SP': SP(),
         'StoredSql': StoredSql,
+        'InlineSql': InlineSql,
         'Model': ModelGetterProxy(),
     })
     return env

@@ -15,8 +15,8 @@ class ExecutableSql(object):
     _cache = {}
     _timeout = 60
 
-    def __init__(self, name):
-        self.name = name
+    def __init__(self):
+        self.name = self.__class__.__name__
         self.sql_text = ''
         self.arg_names = []
 
@@ -89,7 +89,8 @@ class ExecutableSql(object):
 
 class StoredSql(ExecutableSql):
     def __init__(self, name):
-        ExecutableSql.__init__(self, name)
+        ExecutableSql.__init__(self)
+        self.name = name
         sp_variable = Query(rbSpecialVariablesPreferences).filter(rbSpecialVariablesPreferences.name == name).first()
         if not sp_variable:
             raise RuntimeError(u"Специальная переменная %s не определена" % name)
@@ -98,9 +99,8 @@ class StoredSql(ExecutableSql):
 
 
 class InlineSql(ExecutableSql):
-    def __init__(self, name, args, text):
-        ExecutableSql.__init__(self, name)
-        self.arg_names = args
+    def __init__(self, text):
+        ExecutableSql.__init__(self)
         self.sql_text = text
 
 

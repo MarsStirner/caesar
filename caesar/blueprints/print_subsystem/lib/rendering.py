@@ -32,14 +32,14 @@ class Print_Template(object):
         template_id = doc['id']
 
         try:
-            return self.jinja_env.get_template(str(template_id)).render(self.get_context(context_type, doc))
+            return self.jinja_env.get_template('db/%s' % template_id).render(self.get_context(context_type, doc))
         except TemplateNotFound, e:
             tb = traceback.format_exc()
             if isinstance(tb, str):
                 tb = tb.decode('utf-8')
             raise RenderTemplateException(u'Шаблон с id=%s не найден' % template_id, {
                 'type': RenderTemplateException.Type.other,
-                'template_name': '<unknown>',
+                'template_name': template_id,
                 'trace': tb,
             })
         except TemplateSyntaxError, e:
