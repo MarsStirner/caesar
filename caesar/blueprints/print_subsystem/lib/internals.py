@@ -7,7 +7,7 @@ from flask import url_for
 import jinja2.ext
 
 from .query import Query
-from .specialvars import StoredSql, SpecialVariable
+from .specialvars import StoredSql, SpecialVariable, SP
 from ..models.models_all import rbPrintTemplate
 from nemesis.app import app
 from .context import CTemplateHelpers, ModelGetterProxy
@@ -32,6 +32,10 @@ class RenderTemplateException(Exception):
 
 
 def get_template_by_id(template_id):
+    try:
+        template_id = int(template_id)
+    except (ValueError, TypeError):
+        return
     template_data = Query(rbPrintTemplate).get(template_id)
     if template_data:
         if template_data.render != Render.jinja2:
@@ -82,6 +86,7 @@ def make_jinja_environment():
         "images": url_for(".static", filename="i/", _external=True),
         "trfu_service": app.config['TRFU_URL'],
         'SpecialVariable': SpecialVariable,
+        'SP': SP(),
         'StoredSql': StoredSql,
         'Model': ModelGetterProxy(),
     })

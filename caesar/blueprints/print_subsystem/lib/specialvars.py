@@ -104,5 +104,19 @@ class InlineSql(ExecutableSql):
         self.sql_text = text
 
 
+class SP(object):
+    def __init__(self):
+        self._cache = {}
+
+    def __getattr__(self, item):
+        cache = self.__dict__['_cache']
+        if item in cache:
+            if cache[item] is None:
+                raise AttributeError(item)
+            return cache[item]
+        cache[item] = data = StoredSql(item)
+        return data
+
+
 def SpecialVariable(name, *args, **kwargs):
     return StoredSql.get(name)(*args, **kwargs)
