@@ -1,4 +1,3 @@
-__author__ = 'plakrisenko'
 # -*- encoding: utf-8 -*-
 from datetime import datetime
 from flask import render_template, abort, request, redirect, url_for
@@ -9,6 +8,8 @@ from flask.ext.wtf import Form
 from ..app import module
 from ..lib.data import AnaesthesiaAmount
 from nemesis.lib.utils import public_endpoint
+
+__author__ = 'plakrisenko'
 
 
 @module.route('/anaesthesia_amount/', methods=['GET', 'POST'])

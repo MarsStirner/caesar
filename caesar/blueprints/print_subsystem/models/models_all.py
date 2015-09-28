@@ -1505,7 +1505,7 @@ class Client(Info):
     blood_history = relationship(
         u'Bloodhistory',
         backref=backref('client'),
-        order_by='desc(Bloodhistory.id)'
+        order_by='desc(Bloodhistory.bloodDate)'
     )
     socStatuses = relationship(u'Clientsocstatus',
                                primaryjoin="and_(Clientsocstatus.deleted == 0,Clientsocstatus.client_id==Client.id,"
@@ -1544,6 +1544,10 @@ class Client(Info):
     @property
     def birthDate(self):
         return DateInfo(self.birthDate_raw)
+
+    @property
+    def bloodType(self):
+        return self.blood_history[0].bloodType if self.blood_history else None
 
     @property
     def nameText(self):
@@ -1647,7 +1651,7 @@ class Client(Info):
 
     @property
     def age(self):
-        bd = self.birthDate
+        bd = self.birthDate_raw
         date = datetime.date.today()
         if not self.age_tuple():
             return u'ещё не родился'
@@ -2917,8 +2921,8 @@ class Event(Info):
             if action.account and action.price != 0:
                 services[action.actionType_id]['services'].append(action)
                 services[action.actionType_id]['amount'] += action.amount
-                services[action.actionType_id]['sum'] += action.price
-                total_sum += action.price
+                services[action.actionType_id]['sum'] += (action.price * action.amount)
+                total_sum += (action.price * action.amount)
         return {
             'services': services,
             'total_sum': total_sum
