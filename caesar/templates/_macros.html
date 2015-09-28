@@ -79,7 +79,7 @@
 
 {% macro pagination(address, page, num_pages, show_pages=10) -%}
     {% set page_start = (page - 1) // show_pages * show_pages + 1 %}
-    <ul>
+    <ul class="pagination">
     {%- if page_start > 1 -%}
         <li><a href="{{ url_for(address, page=page_start - 1) }}">&laquo;</a></li>
     {%- else -%}
