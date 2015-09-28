@@ -34,7 +34,8 @@ all_rbs = {
     'rbSpeciality': rbSpeciality,
     'rbOrgCurationLevel': rbOrgCurationLevel,
     'rbPregnancyPathology': rbPregnancyPathology,
-    'rbUnits': rbUnits
+    'rbUnits': rbUnits,
+    'rbEventTypePurpose': rbEventTypePurpose
 }
 
 basic_rbs = [
@@ -46,14 +47,14 @@ simple_rbs = [
     'rbPacientModel', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType',
     'rbMeasureScheduleApplyType', 'rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology',
     # next are used only for backend data manipulation, they are not presented on frontend ui
-    'rbPost', 'rbSpeciality', 'rbUnits', 'rbRequestType'
+    'rbPost', 'rbSpeciality', 'rbUnits', 'rbRequestType', 'rbEventTypePurpose'
 ]
 
 rb_groups = {
     'vmp': (u'ВМП', ['rbPacientModel', 'rbTreatment', 'rbTreatmentType']),
     'expert_protocol': (u'Протоколы лечения', ['rbMeasureType', 'rbMeasureScheduleType', 'rbMeasureScheduleApplyType']),
     'risar': (u'РИСАР', ['rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology']),
-    'other': (u'Остальные', ['rbFinance', 'rbRequestType', 'rbResult']),
+    'other': (u'Остальные', ['rbFinance', 'rbRequestType', 'rbResult', 'rbEventTypePurpose']),
     'med_staff': (u'Мед. персонал', ['rbPost', 'rbSpeciality'])
 }
 
