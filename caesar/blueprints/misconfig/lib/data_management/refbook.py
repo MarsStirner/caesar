@@ -29,8 +29,9 @@ class RbTreatmentModelManager(SimpleRefBookModelManager):
         super(RbTreatmentModelManager, self).__init__(rbTreatment, [
             FieldConverter(
                 FCType.relation,
-                'treatmentType', lambda val, par: self.handle_onetomany_nonedit(self._rbtt_mng, val, par),
-                'treatment_type')
+                'treatmentType', (self.handle_onetomany_nonedit, ),
+                'treatment_type',
+                model_manager=self._rbtt_mng)
         ])
 
 
@@ -159,6 +160,7 @@ class RbResultModelManager(SimpleRefBookModelManager):
         super(RbResultModelManager, self).__init__(rbResult, [
             FieldConverter(
                 FCType.relation,
-                'eventPurpose', lambda val, par: self.handle_onetomany_nonedit(self._rbetp_mng, val, par),
-                'event_purpose')
+                'eventPurpose', (self.handle_onetomany_nonedit, ),
+                'event_purpose',
+                model_manager=self._rbetp_mng)
         ])

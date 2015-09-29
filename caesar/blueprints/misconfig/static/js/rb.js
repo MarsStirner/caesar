@@ -151,7 +151,8 @@ WebMis20
     };
     rbResult.inheritsFrom(SimpleRb);
     rbResult.initialize({
-        base_url: '{0}rbResult/'.format(rbResult.getBaseUrl())
+        base_url: '{0}rbResult/'.format(rbResult.getBaseUrl()),
+        fields: rbResult.getFields().concat('event_purpose')
     }, rbResult);
     return rbResult;
 }])
