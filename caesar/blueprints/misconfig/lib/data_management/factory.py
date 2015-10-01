@@ -12,7 +12,7 @@ from .refbook import (SimpleRefBookModelManager, RbTreatmentModelManager, RbPeri
     RbPRRMKBModelManager, RbPregnancyPathologyModelManager, RbPregnancyPathologyMKBModelManager, MKBModelManager, 
     RbResultModelManager)
 from .organisation import (OrganisationModelManager, OrganisationBCLModelManager, Organisation_OBCLModelManager,
-    OrganisationCurationModelManager)
+    OrganisationCurationModelManager, OrgStructureModelManager)
 from .expert_protocol import (MeasureModelManager, ExpertProtocolModelManager, ExpertSchemeModelManager,
     ExpertSchemeMeasureModelManager, MeasureScheduleModelManager)
 from .person import PersonModelManager, PersonCurationModelManager
@@ -91,6 +91,8 @@ def get_manager(name, **params):
         return RbTreatmentModelManager()
     elif name == 'Organisation':
         return OrganisationModelManager(**params)
+    elif name == 'OrgStructure':
+        return OrgStructureModelManager(**params)
     elif name == 'Measure':
         return MeasureModelManager()
     elif name == 'ExpertProtocol':

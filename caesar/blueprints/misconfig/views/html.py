@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from flask import render_template
 from ..app import module
+from nemesis.systemwide import db
+from nemesis.models.person import Person
 
 __author__ = 'viruzzz-kun'
 
@@ -79,3 +81,8 @@ def perinatal_risk_rate_mkb_html():
 @module.route('/pregnancy-pathology-mkb/')
 def pregnancy_pathology_mkb_html():
     return render_template('misconfig/pregnancy_pathology_mkb.html')
+
+
+@module.route('/person/')
+def person_html():
+    return render_template('misconfig/person/person-list.html')

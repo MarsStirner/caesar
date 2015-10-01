@@ -2,6 +2,7 @@
 from .base import BaseModelManager, FieldConverter, FCType, represent_model
 from nemesis.models.organisation import (Organisation, OrganisationBirthCareLevel,
     Organisation_OrganisationBCLAssoc, OrganisationCurationAssoc)
+from nemesis.models.exists import OrgStructure
 from nemesis.lib.utils import (get_new_uuid, safe_int, safe_unicode, safe_traverse, safe_bool,
        get_max_item_attribute_value, safe_hex_color, format_hex_color)
 from nemesis.systemwide import db
@@ -186,3 +187,15 @@ class OrganisationCurationModelManager(BaseModelManager):
         item = super(OrganisationCurationModelManager, self).create(data, parent_id, parent_obj)
         item.org_id = data.get('org_id') if data is not None else parent_id
         return item
+
+
+class OrgStructureModelManager(BaseModelManager):
+    def __init__(self):
+        fields = [
+            FieldConverter(FCType.basic, 'id', safe_int, 'id'),
+            FieldConverter(FCType.basic, 'organisation_id', safe_int, 'organisation_id'),
+            FieldConverter(FCType.basic, 'code', safe_unicode, 'code'),
+            FieldConverter(FCType.basic, 'name', safe_unicode, 'name'),
+            FieldConverter(FCType.basic, 'deleted', safe_int, 'deleted'),
+        ]
+        super(OrgStructureModelManager, self).__init__(OrgStructure, fields)

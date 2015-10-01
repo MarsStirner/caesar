@@ -13,6 +13,7 @@
             <a href="{{ url_for('.rb_html') }}" class="list-group-item">Базовые справочники</a>
             <a href="{{ url_for('.htmc_html') }}" class="list-group-item">Квоты ВМП</a>
             <a href="{{ url_for('.org_html') }}" class="list-group-item">Организации и ЛПУ</a>
+            <a href="{{ url_for('.person_html') }}" class="list-group-item">Сотрудники ЛПУ</a>
             {% if mis_settings.getBool('RISAR.Enabled', False) %}
             <a href="{{ url_for('.org_birth_care_level_html') }}" class="list-group-item">Уровни оказания перинатальной помощи</a>
             <a href="{{ url_for('.person_curation_level_html') }}" class="list-group-item">Связь сотрудника с уровнями курирования</a>
@@ -20,7 +21,6 @@
             <a href="{{ url_for('.perinatal_risk_rate_mkb_html') }}" class="list-group-item">Связь МКБ со степенями перинатального риска</a>
             <a href="{{ url_for('.pregnancy_pathology_mkb_html') }}" class="list-group-item">Связь МКБ с патологиями беременности</a>
             {% endif %}
-            <div class="list-group-item">...</div>
         </div>
     </div>
 

@@ -1,0 +1,65 @@
+    <form class="tmargin20">
+        <div class="row">
+            <div class="form-group col-sm-3">
+                <label for="last_name" class="control-label">Фамилия</label>
+                <input id="last_name" type="text" class="form-control" placeholder="Фамилия" ng-model="model.last_name">
+            </div>
+            <div class="form-group col-sm-3">
+                <label for="first_name" class="control-label">Имя</label>
+                <input id="first_name" type="text" class="form-control" placeholder="Имя" ng-model="model.first_name">
+            </div>
+            <div class="form-group col-sm-3">
+                <label for="patr_name" class="control-label">Отчество</label>
+                <input id="patr_name" type="text" class="form-control" placeholder="Отчество" ng-model="model.patr_name">
+            </div>
+            <div class="form-group col-md-offset-1 col-md-2">
+                <label for="gender" class="control-label">Пол</label>
+                <select class="form-control" id="gender" name="gender"
+                        ng-model="model.sex"
+                        ng-options="item.id as item.name for item in rbGender.objects">
+                    <option value="">Не выбрано</option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-3">
+                <label for="birthdate" class="control-label">Дата рождения</label>
+                <wm-date id="birthdate" name="birthdate" ng-model="model.birth_date" max-date="currentDate"></wm-date>
+            </div>
+            <div class="form-group col-md-3">
+                <label for="snils" class="control-label">СНИЛС</label>
+                <input type="text" class="form-control" id="snils" name="snils" ui-mask="999-999-999 99"
+                       ng-model="model.snils" placeholder="___-___-___ __"
+                       ng-pattern="/\d{3}-\d{3}-\d{3} \d\d/" snils-validator
+                       popover="Введён невалидный СНИЛС" popover-placement="right" popover-trigger="show_popover" />
+            </div>
+            <div class="form-group col-sm-3">
+                <label for="inn" class="control-label">ИНН</label>
+                <input id="inn" type="text" class="form-control" placeholder="ИНН" ng-model="model.inn">
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-4">
+                <label for="organisation" class="control-label">Организация</label>
+                <rb-select ng-model="model.organisation" ref-book="Organisation" custom-name="formatOrgName"
+                    id="organisation" placeholder="Организация"></rb-select>
+            </div>
+            <div class="form-group col-md-4">
+                <label for="org_structure" class="control-label">Подразделение</label>
+                <rb-select ng-model="model.org_structure" ref-book="OrgStructure"
+                    id="org_structure" placeholder="Подразделение"></rb-select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-4">
+                <label for="speciality" class="control-label">Специальность</label>
+                <rb-select ng-model="model.speciality" ref-book="rbSpeciality"
+                    id="speciality" placeholder="Специальность"></rb-select>
+            </div>
+            <div class="form-group col-md-4">
+                <label for="post" class="control-label">Должность</label>
+                <rb-select ng-model="model.post" ref-book="rbPost"
+                    id="post" placeholder="Должность"></rb-select>
+            </div>
+        </div>
+    </form>

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from .base import BaseModelManager, FieldConverter, FCType, represent_model
 from nemesis.models.person import Person, PersonCurationAssoc
-from nemesis.lib.utils import (get_new_uuid, safe_int, safe_unicode, safe_traverse, safe_bool,)
+from nemesis.lib.utils import (get_new_uuid, safe_int, safe_unicode, safe_traverse, safe_bool, safe_date)
 from nemesis.systemwide import db
 
 
@@ -16,23 +16,32 @@ class PersonModelManager(BaseModelManager):
             FieldConverter(FCType.basic, 'lastName', safe_unicode, 'last_name'),
             FieldConverter(FCType.basic, 'firstName', safe_unicode, 'first_name'),
             FieldConverter(FCType.basic, 'patrName', safe_unicode, 'patr_name'),
+            FieldConverter(FCType.basic, 'SNILS', safe_unicode, 'snils'),
+            FieldConverter(FCType.basic, 'INN', safe_unicode, 'inn'),
+            FieldConverter(FCType.basic, 'sex', safe_int, 'sex'),
+            FieldConverter(FCType.basic, 'birthDate', safe_date, 'birth_date'),
             FieldConverter(FCType.basic_repr, 'nameText', None, 'name_text'),
+            FieldConverter(FCType.basic, 'deleted', safe_int, 'deleted'),
             FieldConverter(
                 FCType.relation,
-                'post', lambda val, par: self.handle_onetomany_nonedit(self._post_mng, val, par),
-                'post'),
+                'post', (self.handle_onetomany_nonedit, ),
+                'post',
+                model_manager=self._post_mng),
             FieldConverter(
                 FCType.relation,
-                'speciality', lambda val, par: self.handle_onetomany_nonedit(self._spec_mng, val, par),
-                'speciality'),
+                'speciality', (self.handle_onetomany_nonedit, ),
+                'speciality',
+                model_manager=self._spec_mng),
             FieldConverter(
                 FCType.relation,
-                'organisation', lambda val, par: self.handle_onetomany_nonedit(self._org_mng, val, par),
-                'organisation', lambda val: represent_model(val, self._org_mng)),
+                'organisation', (self.handle_onetomany_nonedit, ),
+                'organisation',
+                model_manager=self._org_mng),
             FieldConverter(
-                FCType.relation_repr,
-                'org_structure', None,
-                'org_structure'),
+                FCType.relation,
+                'org_structure', (self.handle_onetomany_nonedit, ),
+                'org_structure',
+                model_manager=self._os_mng),
         ]
         if with_curations:
             self._curation_mng = self.get_manager('PersonCuration')
