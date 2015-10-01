@@ -63,8 +63,11 @@ class ModelGetterProxy(object):
         bases = (module.Info, module.RBInfo)
         for item_name in dir(module):
             item = getattr(module, item_name)
-            if issubclass(item, bases) and not hasattr(item, '__abstract__'):
-                setattr(obj, item_name, ModelGetter(item))
+            try:
+                if issubclass(item, bases) and not hasattr(item, '__abstract__'):
+                    setattr(obj, item_name, ModelGetter(item))
+            except TypeError:
+                pass
         return obj
 
 
