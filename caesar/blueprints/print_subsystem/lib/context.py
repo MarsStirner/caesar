@@ -30,6 +30,17 @@ class CTemplateHelpers(object):
             result[row[column]].append(row)
         return result
 
+    @staticmethod
+    def table_cool_group(table, group_by, key, value, other):
+        result = {}
+        for row in table:
+            if row[group_by] not in result:
+                obj = result[row[group_by]] = dict((name, row[column]) for name, column in other.iteritems())
+            else:
+                obj = result[row[group_by]]
+            obj[row[key]] = row[value]
+        return [obj for _, obj in sorted(result.items(), key=lambda x: x[0])]
+
 
 class ModelGetter(object):
     def __init__(self, model):
@@ -47,11 +58,13 @@ class ModelGetter(object):
 
 class ModelGetterProxy(object):
     def __new__(cls, *args, **kwargs):
+        obj = object.__new__(cls)
         from ..models import models_all as module
         bases = (module.Info, module.RBInfo)
         for item_name in dir(module):
             item = getattr(module, item_name)
             if isinstance(item, bases) and not hasattr(item, '__abstract__'):
-                setattr(cls, item_name, ModelGetter(item))
+                setattr(obj, item_name, ModelGetter(item))
+        return obj
 
 
