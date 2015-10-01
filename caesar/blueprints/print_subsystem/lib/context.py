@@ -57,14 +57,12 @@ class ModelGetter(object):
 
 
 class ModelGetterProxy(object):
-    def __new__(cls, *args, **kwargs):
-        obj = object.__new__(cls)
+    def __getattr__(self, item):
         from ..models import models_all as module
-        bases = (module.Info, module.RBInfo)
-        for item_name in dir(module):
-            item = getattr(module, item_name)
-            if hasattr(item, '__tablename__') and not hasattr(item, '__abstract__'):
-                setattr(obj, item_name, ModelGetter(item))
-        return obj
+        item_object = getattr(module, item)
+        if item_object is None:
+            raise AttributeError('No Proxy for %s' % item)
+        getter = self.__dict__[item] = ModelGetter(item_object)
+        return getter
 
 
