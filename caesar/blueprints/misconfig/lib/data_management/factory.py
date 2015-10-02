@@ -3,7 +3,7 @@ from nemesis.models.exists import (rbPacientModel, rbTreatment, rbTreatmentType,
 from nemesis.models.expert_protocol import (rbMeasureType, rbMeasureScheduleType, rbMeasureScheduleApplyType, Measure)
 from nemesis.models.exists import rbRequestType, rbEventTypePurpose, rbResult
 from nemesis.models.actions import ActionType
-from nemesis.models.person import rbPost, rbOrgCurationLevel, rbSpeciality
+from nemesis.models.person import rbPost, rbOrgCurationLevel, rbSpeciality, rbUserProfile
 from nemesis.models.risar import rbPerinatalRiskRate, rbPregnancyPathology
 from nemesis.models.refbooks import rbUnits
 from nemesis.lib.settings import Settings
@@ -35,7 +35,8 @@ all_rbs = {
     'rbOrgCurationLevel': rbOrgCurationLevel,
     'rbPregnancyPathology': rbPregnancyPathology,
     'rbUnits': rbUnits,
-    'rbEventTypePurpose': rbEventTypePurpose
+    'rbEventTypePurpose': rbEventTypePurpose,
+    'rbUserProfile': rbUserProfile
 }
 
 basic_rbs = [
@@ -47,7 +48,7 @@ simple_rbs = [
     'rbPacientModel', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType',
     'rbMeasureScheduleApplyType', 'rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology',
     # next are used only for backend data manipulation, they are not presented on frontend ui
-    'rbPost', 'rbSpeciality', 'rbUnits', 'rbRequestType', 'rbEventTypePurpose'
+    'rbPost', 'rbSpeciality', 'rbUnits', 'rbRequestType', 'rbEventTypePurpose', 'rbUserProfile'
 ]
 
 rb_groups = {
