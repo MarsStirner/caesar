@@ -66,8 +66,7 @@ class BaseModelManager(object):
         order = kwargs.get('order')
         if order:
             query = query.order_by(*order)
-        return query.limit(10).all()
-        # return query.all()
+        return query.all()
 
     def fill(self, item, data, parent_obj=None):
         for field in self._fields:
