@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+from blueprints.print_subsystem.lib.context import CTemplateHelpers
 
 __author__ = 'viruzzz-kun'
 
@@ -22,18 +23,37 @@ def do_datetime_add_days(dt, add):
     return dt + datetime.timedelta(days=add)
 
 
-def do_transpose_table(table):
-    return [[row[column_number] for row in table] for column_number in xrange(len(table[0]))] if table else [[]]
+def do_filter(table, conditions):
+    def match(row):
+        for key, cond in conditions.iteritems():
+            value = row[key]
+            if isinstance(cond, dict):
+                for op, test in cond.iteritems():
+                    if (op in ('eq', '=', '==') and value != test or
+                        op in ('!eq', '!=') and value == test or
+                        op == '<' and value >= test or
+                        op == '<=' and value > test or
+                        op == '>' and value <= test or
+                        op == '>=' and value < test or
+                        op == 'in' and value not in test or
+                        op == '!in' and value in test
+                    ):
+                        return False
+            elif value != cond:
+                return False
+        return True
 
+    return [
+        row
+        for row in table
+        if match(row)
+    ]
 
-def do_sum_columns(table):
-    return [sum(row[column_number] for row in table) for column_number in xrange(len(table[0]))] if table else [[]]
+__template_helpers = CTemplateHelpers()
 
-
-def do_table_uniform(list_list, null=None):
-    max_len = max(len(row) for row in list_list)
-    return [(row + [null] * (max_len - len(row))) for row in list_list]
-
-
-def do_table_column(table, column=0):
-    return [row[column] for row in table] if table and table[0] else []
+do_transpose_table = __template_helpers.transpose_table
+do_sum_columns = __template_helpers.sum_columns
+do_table_uniform = __template_helpers.table_uniform
+do_table_column = __template_helpers.table_column
+do_table_group = __template_helpers.table_group
+do_table_cool_group = __template_helpers.table_cool_group
