@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+from jinja2 import contextfilter
 from blueprints.print_subsystem.lib.context import CTemplateHelpers
 
 __author__ = 'viruzzz-kun'
@@ -21,6 +22,15 @@ def do_datetime_combine(date_time_tuple):
 
 def do_datetime_add_days(dt, add):
     return dt + datetime.timedelta(days=add)
+
+
+@contextfilter
+def do_dictmap(context, sequence, flt, *args, **kwargs):
+    env = context.environment
+    return dict(
+        (key, env.call_filter(flt, value, args, kwargs, context=context))
+        for key, value in sequence.iteritems()
+    )
 
 
 def do_filter(table, conditions):

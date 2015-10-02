@@ -64,7 +64,7 @@ class ModelGetter(object):
     def get_many(self, ids):
         return dict(
             (item.id, item)
-            for item in Query(self.__model).filter(self.__model.id.in_(ids))
+            for item in Query(self.__model).filter(self.__model.id.in_(set(ids)))
         )
 
 
