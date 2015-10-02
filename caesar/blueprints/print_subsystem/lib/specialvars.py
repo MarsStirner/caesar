@@ -18,7 +18,6 @@ class ExecutableSql(object):
     def __init__(self):
         self.name = self.__class__.__name__
         self.sql_text = ''
-        self.arg_names = []
 
     def _check_valid_sql(self):
         # Проверка валидности sql-запроса
@@ -27,18 +26,9 @@ class ExecutableSql(object):
                 u"При работе со специальными переменными вы можете использовать только SELECT-запросы! "
                 u"Проверьте тексты запросов.")
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, **kwargs):
         self._check_valid_sql()
-        # Инициализация словаря аргументов
-        len_args = len(args)
-        arguments = {}
-        for arg_index, arg_name in enumerate(self.arg_names):
-            if arg_index < len_args:
-                arguments[arg_name] = args[arg_index]
-            elif arg_name in kwargs:
-                arguments[arg_name] = kwargs[arg_name]
-            else:
-                raise RuntimeError(u'Argument "%s" of special variable "%s" is not initialized in call' % (arg_name, self.name))
+        arguments = kwargs
 
         # Эта самая страшная функция. Она должна разварачивать каждую переменную SQL-запроса в её значение
         # Самая жопа в том, что это должно быть БЕЗОПАСНО.
@@ -96,6 +86,20 @@ class StoredSql(ExecutableSql):
             raise RuntimeError(u"Специальная переменная %s не определена" % name)
         self.sql_text = sp_variable.query_text
         self.arg_names = sp_variable.arguments
+
+    def __call__(self, *args, **kwargs):
+        # Инициализация словаря аргументов
+        len_args = len(args)
+        arguments = {}
+        for arg_index, arg_name in enumerate(self.arg_names):
+            if arg_index < len_args:
+                arguments[arg_name] = args[arg_index]
+            elif arg_name in kwargs:
+                arguments[arg_name] = kwargs[arg_name]
+            else:
+                raise RuntimeError(u'Argument "%s" of special variable "%s" is not initialized in call' % (arg_name, self.name))
+
+        return super(StoredSql, self).__call__(**arguments)
 
 
 class InlineSql(ExecutableSql):

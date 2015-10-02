@@ -41,6 +41,18 @@ class CTemplateHelpers(object):
             obj[row[key]] = row[value]
         return [obj for _, obj in sorted(result.items(), key=lambda x: x[0])]
 
+    @staticmethod
+    def table_compose_simple(*tables):
+        result = {}
+        for table, key in tables:
+            for id, value in table:
+                if id not in result:
+                    row = result[id] = {}
+                else:
+                    row = result[id]
+                row[key] = value
+        return [obj for _, obj in sorted(result.items(), key=lambda x: x[0])]
+
 
 class ModelGetter(object):
     def __init__(self, model):
