@@ -35,7 +35,7 @@ def do_dictmap(context, sequence, flt, *args, **kwargs):
 
 def do_simple_index(sequence, attribute):
     return dict(
-        (item.get(attribute), item)
+        (item.get(attribute) if isinstance(item, dict) else item[attribute], item)
         for item in sequence
     )
 
