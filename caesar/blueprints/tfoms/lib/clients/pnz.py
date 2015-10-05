@@ -1,20 +1,15 @@
 # -*- coding: utf-8 -*-
-import os
-from datetime import date, timedelta
 import calendar
-
-from urlparse import urlparse
-
-from thrift.transport import TTransport, TSocket
 from thrift.protocol import TBinaryProtocol
 
-from thrift_service.TFOMSService import Client
-from thrift_service.ttypes import InvalidOrganizationInfisException
-from thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException, TClientPolicy
-from thrift_service.ttypes import Payment, AccountItemWithMark
+from .base import BaseTFOMSClient
+
+from ...lib.thrift_service.pnz.TFOMSService import Client, AccountItemWithMark
+from ...lib.thrift_service.pnz.ttypes import InvalidOrganizationInfisException, InvalidArgumentException, \
+    NotFoundException, SQLException, TException, TClientPolicy
 
 
-class TFOMSClient(object):
+class TFOMSClient(BaseTFOMSClient):
     """Класс клиента для взаимодействия с ядром по Thrift-протоколу"""
 
     class Struct:
@@ -22,76 +17,10 @@ class TFOMSClient(object):
             self.__dict__.update(kwargs)
 
     def __init__(self, url):
-        self.url = url
-        url_parsed = urlparse(self.url)
-        host = url_parsed.hostname
-        port = url_parsed.port
+        super(TFOMSClient, self).__init__(url)
 
-        socket = TSocket.TSocket(host, port)
-        self.transport = TTransport.TBufferedTransport(socket)
         protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
         self.client = Client(protocol)
-        self.transport.open()
-
-        self.date_tags = ['DR',
-                          'DATE_1',
-                          'DATE_2',
-                          'DATE_IN',
-                          'DATE_OUT',
-                          'D_R',
-                          'DAT_PR',
-                          'DAT_VV',
-                          'DAT_BLVN',
-                          'DAT_ELVN',
-                          'date',
-                          'begDate',
-                          'endDate',
-                          'exposeDate',
-                          'serviceDate', ]
-
-    def __del__(self):
-        self.transport.close()
-
-    def __convert_date(self, timestamp):
-        if os.name == 'nt':
-            # Hack for Win (http://stackoverflow.com/questions/10588027/converting-timestamps-larger-than-maxint-into-datetime-objects)
-            return date.fromtimestamp(0) + timedelta(seconds=timestamp / 1000)
-        return date.fromtimestamp(timestamp / 1000)
-
-    def __convert_dates(self, data):
-        #TODO: унифицировать для обеих выборок, учесть вложенность
-        if isinstance(data, list):
-            for item in data:
-                if isinstance(item, list):
-                    for element in item:
-                        for attr, value in element.__dict__.iteritems():
-                            if attr in self.date_tags and isinstance(value, (int, long)) and value:
-                                setattr(element, attr, self.__convert_date(value))
-                            elif isinstance(value, basestring):
-                                setattr(element, attr, value.strip().decode('utf8'))
-                else:
-                    for attr, value in item.__dict__.iteritems():
-                        if attr in self.date_tags and isinstance(value, (int, long)) and value:
-                            setattr(item, attr, self.__convert_date(value))
-                        elif isinstance(value, basestring):
-                            setattr(item, attr, value.strip().decode('utf8'))
-        elif isinstance(data, object):
-            for attr, value in data.__dict__.iteritems():
-                    if attr in self.date_tags and isinstance(value, (int, long)) and value:
-                        setattr(data, attr, self.__convert_date(value))
-                    elif isinstance(value, basestring):
-                        setattr(data, attr, value.strip().decode('utf8'))
-        return data
-
-    def __unicode_result(self, data):
-        #TODO: унифицировать для обеих выборок, учесть вложенность
-        for element in data:
-            for attr, value in element.__dict__.iteritems():
-                if isinstance(value, basestring):
-                    setattr(element, attr, value.strip().decode('utf8'))
-                elif attr in self.date_tags and isinstance(value, (int, long)) and value:
-                    setattr(element, attr, self.__convert_date(value))
-        return data
 
     def get_xml_registry(self,
                          contract_id,

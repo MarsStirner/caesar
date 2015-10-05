@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-from ..lib.service_client import TFOMSClient as Client
+from caesar.blueprints.tfoms.lib.clients.factory import ClientFactory
 from ..app import _config
 
 
@@ -11,7 +11,7 @@ class Departments(object):
 
     def __get_client(self):
         if self.client is None:
-            self.client = Client(_config('core_service_url'))
+            self.client = ClientFactory.create(_config('region_code'), _config('core_service_url'))
 
     def __get_from_core(self):
         self.__get_client()

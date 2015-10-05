@@ -1,30 +1,26 @@
 # -*- encoding: utf-8 -*-
-import re
 import os
 from datetime import datetime
 
 from flask import render_template, abort, request, redirect, jsonify, send_from_directory, url_for, json, current_app
 from flask import flash, session
-from wtforms import TextField, BooleanField, IntegerField, SelectField
+from wtforms import TextField, IntegerField, SelectField
 from flask_wtf import Form
 from wtforms.validators import Required
-from flask.ext.sqlalchemy import Pagination
 
-from jinja2 import TemplateNotFound, Environment, PackageLoader
+from jinja2 import TemplateNotFound
+
 from app import module, _config
-
-from lib.thrift_service.ttypes import InvalidArgumentException, NotFoundException, SQLException, TException
-
+from .lib.thrift_service.pnz.ttypes import InvalidArgumentException, NotFoundException, \
+    TException
 from .forms import CreateTemplateForm
 from .lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
-from .lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR, UploadWorker, Reports, datetimeformat
-from .lib.data import Contracts
+from .lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR, UploadWorker, Reports, datetimeformat, Contracts
 from .lib.departments import Departments
 from .models import Template, TagsTree, StandartTree, TemplateType, DownloadType, ConfigVariables
 from .utils import save_template_tag_tree, save_new_template_tree
 from nemesis.systemwide import db
 from nemesis.utils import admin_permission
-
 
 PER_PAGE = 20
 xml_encodings = ['windows-1251', 'utf-8']
@@ -32,6 +28,9 @@ mo_levels = [('', u'- выберите уровень -'),
              ('01', u'01-Первый уровень'),
              ('02', u'02-Второй уровень'),
              ('03', u'03-Третий уровень')]
+region_codes = [('', u'- выберите регион -'),
+                ('pnz', u'Пенза'),
+                ('spb', u'Санкт-Петербург')]
 
 
 @module.route('/')
@@ -274,6 +273,14 @@ def settings():
                         SelectField(variable.code,
                                     description=variable.name,
                                     choices=mo_levels,
+                                    default=variable.value,
+                                    validators=[Required()]))
+            elif variable.value_type == "enum" and variable.code == 'region_code':
+                setattr(ConfigVariablesForm,
+                        variable.code,
+                        SelectField(variable.code,
+                                    description=variable.name,
+                                    choices=region_codes,
                                     default=variable.value,
                                     validators=[Required()]))
 

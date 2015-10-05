@@ -8,7 +8,8 @@ backups_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'alembic',
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
-from application.app import app, db
+from nemesis.app import app
+from nemesis.systemwide import db
 
 
 def backup(model):
