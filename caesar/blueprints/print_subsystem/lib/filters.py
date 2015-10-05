@@ -43,7 +43,7 @@ def do_simple_index(sequence, attribute):
 def do_filter(table, conditions):
     def match(row):
         for key, cond in conditions.iteritems():
-            value = row.get(key)
+            value = row[key]
             if isinstance(cond, dict):
                 for op, test in cond.iteritems():
                     if (op in ('eq', '=', '==') and value != test or
