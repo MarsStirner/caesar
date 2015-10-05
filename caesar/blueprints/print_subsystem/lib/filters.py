@@ -43,20 +43,26 @@ def do_simple_index(sequence, attribute):
 def do_filter(table, conditions):
     def match(row):
         for key, cond in conditions.iteritems():
-            value = row[key]
-            if isinstance(cond, dict):
-                for op, test in cond.iteritems():
-                    if (op in ('eq', '=', '==') and value != test or
-                        op in ('!eq', '!=') and value == test or
-                        op == '<' and value >= test or
-                        op == '<=' and value > test or
-                        op == '>' and value <= test or
-                        op == '>=' and value < test or
-                        op == 'in' and value not in test or
-                        op == '!in' and value in test
-                    ):
-                        return False
-            elif value != cond:
+            try:
+                value = row[key]
+            except KeyError:
+                return False
+            try:
+                if isinstance(cond, dict):
+                    for op, test in cond.iteritems():
+                        if (op in ('eq', '=', '==') and value != test or
+                            op in ('!eq', '!=') and value == test or
+                            op == '<' and value >= test or
+                            op == '<=' and value > test or
+                            op == '>' and value <= test or
+                            op == '>=' and value < test or
+                            op == 'in' and value not in test or
+                            op == '!in' and value in test
+                        ):
+                            return False
+                elif value != cond:
+                    return False
+            except TypeError:
                 return False
         return True
 
