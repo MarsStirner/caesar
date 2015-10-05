@@ -33,10 +33,17 @@ def do_dictmap(context, sequence, flt, *args, **kwargs):
     )
 
 
+def do_simple_index(sequence, attribute):
+    return dict(
+        (item.get(attribute), item)
+        for item in sequence
+    )
+
+
 def do_filter(table, conditions):
     def match(row):
         for key, cond in conditions.iteritems():
-            value = row[key]
+            value = row.get(key)
             if isinstance(cond, dict):
                 for op, test in cond.iteritems():
                     if (op in ('eq', '=', '==') and value != test or
