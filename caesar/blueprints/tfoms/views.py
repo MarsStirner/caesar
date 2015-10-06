@@ -15,12 +15,13 @@ from .lib.thrift_service.pnz.ttypes import InvalidArgumentException, NotFoundExc
     TException
 from .forms import CreateTemplateForm
 from .lib.tags_tree import TagTreeNode, TagTree, StandartTagTree
-from .lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR, UploadWorker, Reports, datetimeformat, Contracts
-from .lib.departments import Departments
+from .lib.data import DownloadWorker, DOWNLOADS_DIR, UPLOADS_DIR, UploadWorker, Reports, datetimeformat
 from .models import Template, TagsTree, StandartTree, TemplateType, DownloadType, ConfigVariables
 from .utils import save_template_tag_tree, save_new_template_tree
 from nemesis.systemwide import db
 from nemesis.utils import admin_permission
+from .view_helpers import *
+
 
 PER_PAGE = 20
 xml_encodings = ['windows-1251', 'utf-8']
@@ -43,45 +44,7 @@ def index():
 
 @module.route('/download_result/', methods=['POST'])
 def download_result():
-    result = list()
-    errors = list()
-    session['templates'] = template_ids = [int(_id) for _id in request.form.getlist('templates[]')]
-    department_ids = [int(_id) for _id in request.form.getlist('departments[]') if int(_id)]
-    session['departments'] = [int(_id) for _id in request.form.getlist('departments[]')]
-    session['start'] = start = datetime.strptime(request.form['start'], '%d.%m.%Y')
-    session['end'] = end = datetime.strptime(request.form['end'], '%d.%m.%Y')
-    session['contract_id'] = contract_id = int(request.form.get('contract_id'))
-    primary = bool(int(request.form.get('primary')))
-    session['primary'] = request.form.get('primary')
-    #TODO: как-то покрасивее сделать?
-    worker = DownloadWorker()
-    try:
-        result = worker.do_download(template_ids=template_ids,
-                                    infis_code=_config('lpu_infis_code'),
-                                    contract_id=contract_id,
-                                    start=start,
-                                    end=end,
-                                    primary=primary,
-                                    departments=department_ids)
-    except ValueError, e:
-        errors.append(u'Данных для выгрузки в заданный период не найдено (%s)' % e.message)
-    except InvalidArgumentException, e:
-        errors.append(u'Переданы некорректные данные ({0}:{1})'.format(e.code, e.message))
-    except NotFoundException, e:
-        errors.append(u'Данных для выгрузки в заданный период не найдено ({0}:{1})'.format(e.code, e.message))
-    except TException, e:
-        errors.append(u'Во время выборки данных возникла внутренняя ошибка ядра (%s)' % e)
-    if errors:
-        for error in errors:
-            flash(error)
-        return redirect(request.referrer)
-    form_data = dict(templates=session.pop('templates', None),
-                     departments=session.pop('departments', None),
-                     start=session.pop('start', None),
-                     end=session.pop('end', None),
-                     contract_id=session.pop('contract_id', None),
-                     primary=session.pop('primary', None))
-    return render_template('{0}/download/result.html'.format(module.name), files=result, errors=errors)
+    return download_result_view()
 
 
 @module.route('/secondary/<int:bill_id>/')
@@ -120,26 +83,7 @@ def download(template_type='xml'):
                      .filter(Template.is_active == True,
                              Template.type.has(TemplateType.download_type.has(DownloadType.code == template_type)))
                      .all())
-        contracts = Contracts().get_contracts(_config('lpu_infis_code'))
-        obj = Departments(_config('lpu_infis_code'))
-        departments = obj.get_departments()
-
-        form_data = dict(templates=session.pop('templates', None),
-                         departments=session.pop('departments', None),
-                         start=session.pop('start', None),
-                         end=session.pop('end', None),
-                         contract_id=session.pop('contract_id', None),
-                         primary=session.pop('primary', None))
-
-        if not _config('mo_level'):
-            flash(u'В <a href="{0}" class="text-error"><u>настройках</u></a> не задан уровень МО'.format(url_for('.settings')))
-
-        return render_template('{0}/download/index.html'.format(module.name),
-                               templates=templates,
-                               contracts=contracts,
-                               departments=departments,
-                               mo_level=_config('mo_level'),
-                               form_data=form_data)
+        return download_view(templates)
     except TemplateNotFound:
         abort(404)
 

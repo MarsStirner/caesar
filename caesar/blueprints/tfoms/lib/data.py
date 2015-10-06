@@ -77,6 +77,10 @@ class DBF_Hospital(object):
 
 class DownloadWorker(object):
 
+    def __new__(cls, *args, **kwargs):
+        from ..lib.worker.factory import UploadWorkerFactory
+        return UploadWorkerFactory.create(_config('region_code'), *args, **kwargs)
+
     def __get_download_type(self, template_ids):
         template = db.session.query(Template).filter(Template.id.in_(template_ids)).first()
         return getattr(getattr(template.type, 'download_type', None), 'code', None)
@@ -124,7 +128,7 @@ class DownloadWorker(object):
     def __get_file_object(self, template_type, end, tags):
         return File.provider(data_type=template_type[1], end=end, file_type=template_type[0], tags=tags)
 
-    def do_download(self, template_ids, infis_code, contract_id, start, end, primary, departments=list()):
+    def do_download(self, template_ids, start, end, **kwargs):  #infis_code, contract_id, primary, departments=list()):
         tags, tree, files = dict(), dict(), dict()
         template, download_type = None, None
         templates = self.__get_templates(template_ids)
@@ -138,14 +142,7 @@ class DownloadWorker(object):
         if template:
             download_type = getattr(getattr(template.type, 'download_type', None), 'code', None)
 
-        data = self.get_data(download_type=download_type,
-                             infis_code=infis_code,
-                             contract_id=int(contract_id),
-                             start=start,
-                             end=end,
-                             primary=primary,
-                             tags=tags,
-                             departments=departments)
+        data = self.get_data(download_type=download_type, start=start, end=end, **kwargs)
 
         if not getattr(data, 'registry', None):
             exception = exceptions.ValueError()
