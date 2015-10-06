@@ -1,20 +1,14 @@
 {%  macro make_module_menu(menu_struct) -%}
-    <div class="application_menu">
-        <div class="navbar navbar-default">
-{#                <div class="collapse navbar-collapse">#}
-            <ul class="nav navbar-nav">
-                {% for menu_item in menu_struct -%}
-                    {% if 'url' in menu_item %}
-                        {{ _make_menu_item(menu_item) }}
-                    {% elif 'subitems' in menu_item %}
-                        {# FIXME id numeration #}
-                        {{ _make_dropdown_menu_item(menu_item, loop.index) }}
-                    {% endif %}
-                {%- endfor %}
-            </ul>
-{#                </div>#}
-        </div>
-    </div>
+    <ul class="nav nav-sidebar">
+        {% for menu_item in menu_struct -%}
+            {% if 'url' in menu_item %}
+                {{ _make_menu_item(menu_item) }}
+            {% elif 'subitems' in menu_item %}
+                {# FIXME id numeration #}
+                {{ _make_dropdown_menu_item(menu_item, loop.index) }}
+            {% endif %}
+        {%- endfor %}
+    </ul>
 {%- endmacro %}
 
 {% macro _make_menu_item(menu_item) -%}
