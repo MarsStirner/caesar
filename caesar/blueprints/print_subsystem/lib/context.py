@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import collections
+from jinja2.filters import contextfilter
 from .query import Query
 
 __author__ = 'mmalkov'
@@ -52,6 +53,51 @@ class CTemplateHelpers(object):
                     row = result[id]
                 row[key] = value
         return [obj for _, obj in sorted(result.items(), key=lambda x: x[0])]
+
+    @staticmethod
+    @contextfilter
+    def dictmap(context, sequence, flt, *args, **kwargs):
+        env = context.environment
+        return dict(
+            (key, env.call_filter(flt, value, args, kwargs, context=context))
+            for key, value in sequence.iteritems()
+        )
+
+    @staticmethod
+    def simple_index(sequence, attribute):
+        return dict(
+            (item.get(attribute) if isinstance(item, dict) else item[attribute], item)
+            for item in sequence
+        )
+
+    @staticmethod
+    def filter(table, conditions):
+        def match(row):
+            for key, cond in conditions.iteritems():
+                try:
+                    value = row[key]
+                except KeyError:
+                    return False
+                try:
+                    if isinstance(cond, dict):
+                        for op, test in cond.iteritems():
+                            if (op in ('eq', '=', '==') and value != test or
+                                op in ('!eq', '!=') and value == test or
+                                op == '<' and value >= test or
+                                op == '<=' and value > test or
+                                op == '>' and value <= test or
+                                op == '>=' and value < test or
+                                op == 'in' and value not in test or
+                                op == '!in' and value in test
+                            ):
+                                return False
+                    elif value != cond:
+                        return False
+                except TypeError:
+                    return False
+            return True
+
+        return filter(match, table)
 
 
 class ModelGetter(object):
