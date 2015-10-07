@@ -135,4 +135,7 @@ class InlinePython(object):
         exec (text, object.__getattribute__(self, '_environment').globals, object.__getattribute__(self, '_locals'))
 
     def __getattr__(self, item):
-        return object.__getattribute__(self, '_locals')[item]
+        obj = object.__getattribute__(self, '_locals')[item]
+        if callable(obj):
+            return lambda _, *args, **kwargs: obj(*args, **kwargs)
+        return obj
