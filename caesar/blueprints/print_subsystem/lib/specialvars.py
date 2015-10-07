@@ -139,5 +139,5 @@ class InlinePython(object):
         lcls = object.__getattribute__(self, '_locals')
         obj = lcls[item]
         if callable(obj):
-            return functools.partial(obj, lcls)
+            return lambda *args, **kwargs: obj(lcls, *args, **kwargs)
         return obj
