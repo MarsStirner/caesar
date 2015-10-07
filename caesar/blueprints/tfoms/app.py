@@ -37,3 +37,4 @@ def menu_struct():
 
 
 from .views import *
+from admin.app import admin
