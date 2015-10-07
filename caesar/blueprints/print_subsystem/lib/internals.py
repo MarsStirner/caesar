@@ -7,7 +7,7 @@ from flask import url_for
 import jinja2.ext
 
 from .query import Query
-from .specialvars import StoredSql, SpecialVariable, SP, InlineSql
+from .specialvars import StoredSql, SpecialVariable, SP, InlineSql, InlinePython
 from ..models.models_all import rbPrintTemplate
 from nemesis.app import app
 from .context import CTemplateHelpers, ModelGetterProxy
@@ -18,7 +18,7 @@ __author__ = 'mmalkov'
 
 class Render:
     standard = 0
-    jinja2   = 1
+    jinja2 = 1
 
 
 class RenderTemplateException(Exception):
@@ -89,6 +89,7 @@ def make_jinja_environment():
         'SP': SP(),
         'StoredSql': StoredSql,
         'InlineSql': InlineSql,
+        'InlinePython': InlinePython(env),
         'Model': ModelGetterProxy(),
     })
     return env

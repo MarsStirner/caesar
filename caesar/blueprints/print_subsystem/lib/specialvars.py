@@ -124,3 +124,15 @@ class SP(object):
 
 def SpecialVariable(name, *args, **kwargs):
     return StoredSql.get(name)(*args, **kwargs)
+
+
+class InlinePython(object):
+    def __init__(self, environment):
+        self._environment = environment
+        self._locals = {}
+
+    def __call__(self, text):
+        exec (text, object.__getattribute__(self, '_environment').globals, object.__getattribute__(self, '_locals'))
+
+    def __getattr__(self, item):
+        return object.__getattribute__(self, '_locals')[item]
