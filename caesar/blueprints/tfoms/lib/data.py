@@ -77,10 +77,6 @@ class DBF_Hospital(object):
 
 class DownloadWorker(object):
 
-    def __new__(cls, *args, **kwargs):
-        from ..lib.worker.factory import UploadWorkerFactory
-        return UploadWorkerFactory.create(_config('region_code'), *args, **kwargs)
-
     def __get_download_type(self, template_ids):
         template = db.session.query(Template).filter(Template.id.in_(template_ids)).first()
         return getattr(getattr(template.type, 'download_type', None), 'code', None)
@@ -144,7 +140,9 @@ class DownloadWorker(object):
 
         data = self.get_data(download_type=download_type, start=start, end=end, **kwargs)
 
-        if not getattr(data, 'registry', None):
+        if (not getattr(data, 'registry', None) and
+                not getattr(data, 'patientRegistry', None) and
+                not getattr(data, 'serviceRegistry', None)):
             exception = exceptions.ValueError()
             exception.message = u'За указанный период услуг не найдено'
             raise exception
@@ -213,17 +211,17 @@ class XML(object):
         self.dir_name = None
 
         if self.data_type == 'patients':
-            self.template = 'tfoms/xml/patients.xml'
+            self.template = 'tfoms/xml/{0}/patients.xml'.format(_config('region_code'))
         elif self.data_type == 'services':
-            self.template = 'tfoms/xml/services.xml'
+            self.template = 'tfoms/xml/{0}/services.xml'.format(_config('region_code'))
         else:
             raise exceptions.NameError
 
     def generate_filename(self, data):
         if self.data_type == 'patients':
-            self.file_name = data.patientRegistryFILENAME
+            self.file_name = getattr(data, 'patientRegistryFILENAME', 'patients')
         elif self.data_type == 'services':
-            self.file_name = data.serviceRegistryFILENAME
+            self.file_name = getattr(data, 'serviceRegistryFILENAME', 'services')
         else:
             raise exceptions.NameError
 
@@ -243,7 +241,7 @@ class XML(object):
         return template.render(encoding=_config('xml_encoding'), head=self.head, tags_tree=tags_tree, data=data)
 
     def __create_download_dir(self, account):
-        self.dir_name = str(account.id)
+        self.dir_name = str(getattr(account, 'id', 'files'))
         path = os.path.join(DOWNLOADS_DIR, self.dir_name)
         try:
             os.makedirs(path)
@@ -256,7 +254,7 @@ class XML(object):
     def save_file(self, tags_tree, data):
         self.generate_filename(data)
         content = self.generate_file(tags_tree, data)
-        self.__create_download_dir(data.account)
+        self.__create_download_dir(getattr(data, 'account', None))
         f = open(os.path.join(DOWNLOADS_DIR, self.dir_name, '%s.xml' % self.file_name), 'w')
         f.write(content.encode(_config('xml_encoding')))
         f.close()

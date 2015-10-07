@@ -5,7 +5,7 @@ from thrift.protocol import TBinaryProtocol
 from .base import BaseTFOMSClient
 
 from ...lib.thrift_service.spb.TFOMSService import Client
-from ...lib.thrift_service.spb.ttypes import TException
+from ...lib.thrift_service.spb.ttypes import TException, InvalidDateIntervalException
 
 
 class TFOMSClient(BaseTFOMSClient):
@@ -23,10 +23,11 @@ class TFOMSClient(BaseTFOMSClient):
 
     def get_xml_registry(self, start, end):
         """Получает список пациентов и услуг для XML-выгрузки данном ЛПУ в указанный промежуток времени"""
-        result = None
         try:
             result = self.client.getRegistry(begInterval=calendar.timegm(start.timetuple()) * 1000,
                                              endInterval=calendar.timegm(end.timetuple()) * 1000)
+        except InvalidDateIntervalException as e:
+            raise e
         except TException, e:
             raise e
         return result

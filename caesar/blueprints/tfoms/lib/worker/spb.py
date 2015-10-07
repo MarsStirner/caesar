@@ -25,25 +25,14 @@ class XML_Registry(object):
         self.end = end
 
     def get_data(self):
-        data = self.client.get_registry(contract_id=self.contract_id,
-                                        infis_code=self.infis_code,
-                                        old_infis_code=_config('old_lpu_infis_code'),
-                                        start=self.start,
-                                        end=self.end,
-                                        smo_number=_config('smo_number'),
-                                        primary=self.primary,
-                                        departments=self.departments,
-                                        mo_level=_config('mo_level'),
-                                        patient_optional=self.__patient_optional_tags(),
-                                        person_optional=self.__person_optional_tags(),
-                                        event_optional=self.__event_optional_tags())
-        return data
+        return self.client.get_xml_registry(start=self.start, end=self.end)
 
 
 class Services(object):
 
     def __init__(self, start, end, infis_code, tags):
-        self.client = ClientFactory.create('pnz', _config('core_service_url'))
+        raise NotImplementedError
+        self.client = ClientFactory.create('spb', _config('core_service_url'))
         self.start = start
         self.end = end
         self.infis_code = infis_code
@@ -86,7 +75,8 @@ class Services(object):
 class Contracts(object):
 
     def get_contracts(self, infis_code):
-        client = ClientFactory.create('pnz', _config('core_service_url'))
+        raise NotImplementedError
+        client = ClientFactory.create('spb', _config('core_service_url'))
         return client.get_contracts(infis_code)
 
 
@@ -95,7 +85,8 @@ class UploadWorker(object):
     policy_fields = dict(SPOLIS='serial', NPOLIS='number', VPOLIS='policyTypeCode', SMO='insurerInfisCode')
 
     def __init__(self):
-        self.client = ClientFactory.create('pnz', _config('core_service_url'))
+        raise NotImplementedError
+        self.client = ClientFactory.create('spb', _config('core_service_url'))
 
     def do_upload(self, file_path):
         data = self.__parse(file_path)
