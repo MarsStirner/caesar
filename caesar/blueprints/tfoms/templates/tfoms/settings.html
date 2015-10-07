@@ -6,9 +6,7 @@
 <link href="{{ url_for('.static', filename='css/style.css') }}" media="screen" rel="stylesheet">
 {% endblock %}
 
-{% block content %}
-
-    {% include 'tfoms/_nav_menu.html' %}
+{% block main %}
         <legend>Настройки</legend>
     {% with messages = get_flashed_messages() %}
           {% if messages %}
@@ -19,15 +17,15 @@
             </div>
           {% endif %}
         {% endwith %}
-        <form class="form-horizontal" method="post">
+        <form class="col-md-5" method="post" action="{{ url_for('.settings') }}">
             {{ form.hidden_tag() }}
 
             {% for field in form %}
                 {% if field.type != "CSRFTokenField" %}
-                    <div class="control-group">
+                    <div class="form-group">
                         <label class="control-label">{{ field.description|safe }}</label>
                         <div class="controls">
-                            {{ field(value=field.value, placeholder="Введите "+field.description, required="required", title="Необходимо заполнить это поле!") }}
+                            {{ field(value=field.value, placeholder="Введите "+field.description, required="required", title="Необходимо заполнить это поле!", class="form-control") }}
                         </div>
                     </div>
                 {% endif %}
@@ -35,7 +33,7 @@
 
             <div class="control-group">
                 <div class="controls">
-                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <button type="submit" class="btn btn-primary btn-lg">Сохранить</button>
                 </div>
             </div>
         </form>

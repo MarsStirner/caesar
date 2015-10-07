@@ -4,14 +4,14 @@
 
 {% block modules_css %}
     <link href="{{ url_for('.static', filename='css/style.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='jquery-ui/css/cupertino/jquery-ui-1.10.2.custom.min.css') }}"
+    <link href="{{ url_for('.static', filename='js/jquery-ui/jquery-ui.min.css') }}"
+    <link href="{{ url_for('.static', filename='js/jquery-ui/jquery-ui.structure.min.css') }}"
+    <link href="{{ url_for('.static', filename='js/jquery-ui/jquery-ui.theme.min.css') }}"
           rel="stylesheet">
 {% endblock %}
 
 {% block content %}
-    <div class="container">
-        {{ macro_module_menu.make_module_menu(menu_struct) }}
-
+    <div>
         {% set msg = '' %}
         {% if form_data %}
             {% set msg = '(отфильтрован по параметрам)' %}
@@ -104,7 +104,7 @@
                 {% for item in data %}
                     {% set class='' %}
                     {% if item.level in ['crirical', 'error'] %}
-                        {% set class='error' %}
+                        {% set class='danger' %}
                     {% elif item.level in ['warning'] %}
                         {% set class='warning' %}
                     {% elif item.level in ['notice', 'info'] %}
@@ -149,8 +149,8 @@
 
 {% block modules_js %}
     {{ super() }}
-    <script src="{{ url_for('static', filename='jquery-ui/js/jquery-ui-1.10.2.custom.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='jquery-ui/js/i18n/jquery.ui.datepicker-ru.js') }}"></script>
+    <script src="{{ url_for('.static', filename='js/jquery-ui/jquery-ui.min.js') }}"></script>
+    <script src="{{ url_for('.static', filename='js/jquery-ui/i18n/datepicker-ru.js') }}"></script>
     <script src="{{ url_for('.static', filename='js/script.js') }}"></script>
     <script type="text/javascript">
         $(function () {

@@ -6,11 +6,13 @@ import unittest
 import logging
 import time
 
-from lib.service_client import TFOMSClient
-from lib.data import DownloadWorker
-from .app import _config
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+
+from caesar.blueprints.tfoms.lib.clients.factory import ClientFactory
+from lib.data import DownloadWorker
+from .app import _config
+
 #from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException, NoAlertPresentException
 import selenium.webdriver.support.ui as ui
@@ -32,7 +34,7 @@ class TestPatients(unittest.TestCase):
 
     def setUp(self):
         with app.app_context():
-            self.client = TFOMSClient(_config('core_service_url'))
+            self.client = ClientFactory.create(_config('region_code'), _config('core_service_url'))
             self.lpu_infis_code = _config('lpu_infis_code')
             self.app = app
             self.template_id = (db.session.query(Template)
@@ -64,7 +66,7 @@ class TestServices(unittest.TestCase):
 
     def setUp(self):
         with app.app_context():
-            self.client = TFOMSClient(_config('core_service_url'))
+            self.client = ClientFactory.create(_config('region_code'), _config('core_service_url'))
             self.lpu_infis_code = _config('lpu_infis_code')
             self.app = app
             self.template_id = (db.session.query(Template)
@@ -105,7 +107,7 @@ class TestDBF(unittest.TestCase):
 
     def setUp(self):
         with app.app_context():
-            self.client = TFOMSClient(_config('core_service_url'))
+            self.client = ClientFactory.create(_config('region_code'), _config('core_service_url'))
             self.lpu_infis_code = _config('lpu_infis_code')
             self.app = app
             self.template_id = (db.session.query(Template)

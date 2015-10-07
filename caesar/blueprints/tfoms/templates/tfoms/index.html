@@ -6,11 +6,7 @@
     <link href="{{ url_for('.static', filename='css/style.css') }}" media="screen" rel="stylesheet">
 {% endblock %}
 
-{% block content %}
-    <div class="container">
-        {{ macro_module_menu.make_module_menu(menu_struct) }}
-    </div>
-
+{% block main %}
     <div class="jumbotron">
         <h1>Подсистема выгрузки в ТФОМС</h1>
 
@@ -40,7 +36,7 @@
     <hr>
     <br/>
 
-    <div class="container">
+    <div class="container-fluid">
         <div class="row">
             <div class="col-md-4">
                 <h2>Выгрузка в ТФОМС</h2>
