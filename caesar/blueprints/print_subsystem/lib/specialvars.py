@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import functools
 import re
 import datetime
 from flask import g
@@ -135,4 +136,8 @@ class InlinePython(object):
         exec (text, object.__getattribute__(self, '_environment').globals, object.__getattribute__(self, '_locals'))
 
     def __getattr__(self, item):
-        return object.__getattribute__(self, '_locals')[item]
+        lcls = object.__getattribute__(self, '_locals')
+        obj = lcls[item]
+        if callable(obj):
+            return functools.partial(obj, lcls)
+        return obj
