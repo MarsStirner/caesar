@@ -133,7 +133,7 @@ class InlinePython(object):
         self._locals = environment.globals
 
     def __call__(self, text):
-        exec (text, object.__getattribute__(self, '_locals'))
+        exec (text, self._environment.globals, self._locals)
 
     def __getattr__(self, item):
-        return object.__getattribute__(self, '_locals')[item]
+        return self._locals[item]
