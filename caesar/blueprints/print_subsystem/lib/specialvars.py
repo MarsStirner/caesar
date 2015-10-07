@@ -130,14 +130,10 @@ def SpecialVariable(name, *args, **kwargs):
 class InlinePython(object):
     def __init__(self, environment):
         self._environment = environment
-        self._locals = {}
+        self._locals = environment.globals
 
     def __call__(self, text):
-        exec (text, object.__getattribute__(self, '_environment').globals, object.__getattribute__(self, '_locals'))
+        exec (text, object.__getattribute__(self, '_locals'))
 
     def __getattr__(self, item):
-        lcls = object.__getattribute__(self, '_locals')
-        obj = lcls[item]
-        if callable(obj):
-            return lambda *args, **kwargs: obj(lcls, *args, **kwargs)
-        return obj
+        return object.__getattribute__(self, '_locals')[item]
