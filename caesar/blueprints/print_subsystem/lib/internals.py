@@ -106,8 +106,8 @@ def finalizer(obj):
     return obj
 
 
-def re_search_groups(val, pattern):
-    m = re.search(val, pattern, flags=re.U)
+def re_search_groups(pattern, val):
+    m = re.search(pattern, val, flags=re.U)
     return m.groups() if m else None
 
 
