@@ -16,7 +16,7 @@
     {% if 'restrict_access' not in menu_item
           or ('restrict_access' in menu_item and current_user.current_role == 'admin') %}
         <li{{ mark_active(menu_item.get('url')) }}>
-            <a href="{{ url_for(menu_item.get('url')) }}">{{ menu_item.get('name') }}</a>
+            <a href="{{ url_for(menu_item.get('url')) }}"{% if menu_item.get('target') %} target="{{ menu_item.target }}"{% endif %}>{{ menu_item.get('name') }}</a>
         </li>
     {% endif %}
 {%- endmacro %}

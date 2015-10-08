@@ -29,9 +29,12 @@ def menu_struct():
           'subitems': [{'name': u'Шаблоны',
                         'url': '.add_new_template'},
                        {'name': u'Настройки модуля',
-                        'url': '.settings'}],
+                        'url': '.settings'},
+                       {'name': u'Управление тегами',
+                        'url': 'admin.index',
+                        'target': '_blank'}],
           'restrict_access': True,
-         }
+          }
          ]
     return dict(menu_struct=m)
 
