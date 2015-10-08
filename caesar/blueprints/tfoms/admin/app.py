@@ -4,12 +4,12 @@ from flask.ext.admin import Admin
 from flask.ext.babelex import Babel
 import views
 from flask.ext.admin.contrib.sqlamodel import ModelView
-from ..app import app
+from ..app import app, module
 from ..models import *
 
 import config
 
-admin = Admin(app, name=u'Управление Тегами', url='/tfoms/admin')
+admin = Admin(app, name=u'Управление Тегами', url='/{0}/tags'.format(module.name))
 
 # Initialize babel
 babel = Babel(app)
