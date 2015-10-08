@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-from caesar.blueprints.tfoms.lib.clients.factory import ClientFactory
+from ..lib.clients.factory import ClientFactory
 from ..app import _config
 
 
