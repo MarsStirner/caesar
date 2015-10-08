@@ -2835,6 +2835,10 @@ class Event(Info):
             return movings[-1][('orgStructStay',)].value if movings else None
         return None
 
+    def getPatientLocation(self, dt=None):
+        from ..lib.data import get_patient_location
+        return get_patient_location(self, dt)
+
     @property
     def hospLength(self):
         if not hasattr(self, '_hosp_length'):
