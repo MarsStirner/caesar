@@ -12,6 +12,7 @@
         <div class="list-group">
             <a href="{{ url_for('.rb_html') }}" class="list-group-item">Базовые справочники</a>
             <a href="{{ url_for('.htmc_html') }}" class="list-group-item">Квоты ВМП</a>
+            <a href="{{ url_for('.price_list') }}" class="list-group-item">Прайс листы</a>
             <a href="{{ url_for('.org_html') }}" class="list-group-item">Организации и ЛПУ</a>
             <a href="{{ url_for('.person_html') }}" class="list-group-item">Сотрудники ЛПУ</a>
             {% if mis_settings.getBool('RISAR.Enabled', False) %}

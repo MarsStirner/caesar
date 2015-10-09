@@ -17,7 +17,7 @@ WebMis20
 .controller('PersonConfigCtrl', ['$scope', '$controller', 'Person',
         function ($scope, $controller, Person) {
     $controller('MisConfigBaseCtrl', {$scope: $scope});
-
+    $scope.EntityClass = Person;
     $scope.setSimpleModalConfig({
         controller: 'PersonConfigModalCtrl',
         size: 'lg',
