@@ -104,8 +104,9 @@ class CTemplateHelpers(object):
 
 
 class ModelGetter(object):
-    def __init__(self, model):
+    def __init__(self, model, name):
         self.__model = model
+        self.__name = name
 
     def get(self, _id):
         return Query(self.__model).get(_id)
@@ -116,11 +117,10 @@ class ModelGetter(object):
             (item.id, item)
             for item in Query(self.__model).filter(self.__model.id.in_(ids))
         )
-        if self.__model.__class__.__name__ == 'Client':
+        if self.__name == 'Client':
             # pre cache PSPD results
             pspd.get([item.pspd_key for item in result.itervalues()])
         return result
-
 
 
 class ModelGetterProxy(object):
@@ -129,7 +129,7 @@ class ModelGetterProxy(object):
         item_object = getattr(module, item)
         if item_object is None:
             raise AttributeError('No Proxy for %s' % item)
-        getter = self.__dict__[item] = ModelGetter(item_object)
+        getter = self.__dict__[item] = ModelGetter(item_object, item)
         return getter
 
 
