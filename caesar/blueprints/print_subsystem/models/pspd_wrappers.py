@@ -79,11 +79,10 @@ class AddressInfoWrapper:
 
     @property
     def city(self):
-
         if self._original.city:
             return self._original.city
         elif self._original.city_code:
-            return Vesta.get_kladr_locality(self._original.city_code).get('fullname', u'-код региона не найден в кладр-')
+            return getattr(Vesta.get_kladr_locality(self._original.city_code), 'fullname', u'-код региона не найден в кладр-')
         return u''
 
     town = city
@@ -116,8 +115,12 @@ class AddressInfoWrapper:
         return 0 if self._original.locality_type == 'village' else 1
 
     @property
+    def kladr_locality(self):
+        return Vesta.get_kladr_locality(self._original.city_code) if self._original.city_code else None
+
+    @property
     def is_village(self):
-        city = self.city
+        city = self.kladr_locality
         if isinstance(city, KladrLocality):
             is_village = city.is_village
             if is_village is not None:
