@@ -91,6 +91,8 @@ class CTemplateHelpers(object):
                                 op == '!in' and value in test
                             ):
                                 return False
+                    elif callable(cond):
+                        return cond(value)
                     elif value != cond:
                         return False
                 except TypeError:

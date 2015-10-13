@@ -5,6 +5,7 @@ from blueprints.print_subsystem.models.models_utils import EmptyObject
 
 from nemesis.lib.aux.data import ProxyField
 from nemesis.lib.vesta import Vesta
+from nemesis.models.kladr_models import KladrLocality
 
 __author__ = 'viruzzz-kun'
 
@@ -113,6 +114,15 @@ class AddressInfoWrapper:
     @property
     def localityType(self):
         return 0 if self._original.locality_type == 'village' else 1
+
+    @property
+    def is_village(self):
+        city = self.city
+        if isinstance(city, KladrLocality):
+            is_village = city.is_village
+            if is_village is not None:
+                return is_village
+        return self.localityType == 0
 
     def __unicode__(self):
         return self.text
