@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import collections
 from jinja2.filters import contextfilter
+from nemesis.systemwide import pspd
 from .query import Query
 
 __author__ = 'mmalkov'
@@ -110,10 +111,16 @@ class ModelGetter(object):
         return Query(self.__model).get(_id)
 
     def get_many(self, ids):
-        return dict(
+        ids = set(ids)
+        result = dict(
             (item.id, item)
-            for item in Query(self.__model).filter(self.__model.id.in_(set(ids)))
+            for item in Query(self.__model).filter(self.__model.id.in_(ids))
         )
+        if self.__model.__class__.__name__ == 'Client':
+            # pre cache PSPD results
+            pspd.get([item.pspd_key for item in result.itervalues()])
+        return result
+
 
 
 class ModelGetterProxy(object):
