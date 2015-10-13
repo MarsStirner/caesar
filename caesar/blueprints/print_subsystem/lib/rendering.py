@@ -50,7 +50,7 @@ class Print_Template(object):
                 'lineno': e.lineno
             })
         except Exception, e:
-            print unicode(traceback.format_exc(), 'utf-8')
+            traceback.print_exc()
             logging.critical('erroneous template id = %s', template_id, exc_info=True)
             tb = traceback.format_exc()
             if isinstance(tb, str):
