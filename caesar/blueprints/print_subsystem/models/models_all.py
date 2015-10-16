@@ -1612,10 +1612,10 @@ class Client(Info):
         """
         @type moment: datetime.datetime
         """
-        if not self.birthDate:
-            return None
-        if not moment:
-            moment = datetime.date.today()
+        # if not self.birthDate:
+        #     return None
+        # if not moment:
+        #     moment = datetime.date.today()
         return calcAgeTuple(self.birthDate, moment)
 
     @property
@@ -1624,27 +1624,29 @@ class Client(Info):
 
     @property
     def age(self):
-        bd = self.birthDate
-        date = datetime.date.today()
-        if not self.age_tuple():
-            return u'ещё не родился'
-        (days, weeks, months, years) = self.age_tuple()
-        if years > 7:
-            return formatYears(years)
-        elif years > 1:
-            return formatYearsMonths(years, months-12*years)
-        elif months > 1:
-            # TODO: отрефакторить магию, здесь неясен смысл divmod(bd.month + months, 12)
-            #  в декабре это вызывало проблемы с определением возраста пациента младше года
-            add_year, new_month = divmod(bd.month + months, 12)
-            if new_month:
-                new_day = min(bd.day, calendar.monthrange(bd.year+add_year, new_month)[1])
-                fmonth_date = datetime.date(bd.year+add_year, new_month, new_day)
-            else:
-                fmonth_date = bd
-            return formatMonthsWeeks(months, (date-fmonth_date).days/7)
-        else:
-            return formatDays(days)
+        # AgeTuple class will coerce to unicode
+        return self.age_tuple()
+        # bd = self.birthDate
+        # date = datetime.date.today()
+        # if not self.age_tuple():
+        #     return u'ещё не родился'
+        # (days, weeks, months, years) = self.age_tuple()
+        # if years > 7:
+        #     return formatYears(years)
+        # elif years > 1:
+        #     return formatYearsMonths(years, months-12*years)
+        # elif months > 1:
+        #     # TODO: отрефакторить магию, здесь неясен смысл divmod(bd.month + months, 12)
+        #     #  в декабре это вызывало проблемы с определением возраста пациента младше года
+        #     add_year, new_month = divmod(bd.month + months, 12)
+        #     if new_month:
+        #         new_day = min(bd.day, calendar.monthrange(bd.year+add_year, new_month)[1])
+        #         fmonth_date = datetime.date(bd.year+add_year, new_month, new_day)
+        #     else:
+        #         fmonth_date = bd
+        #     return formatMonthsWeeks(months, (date-fmonth_date).days/7)
+        # else:
+        #     return formatDays(days)
 
     def __unicode__(self):
         return self.formatShortNameInt(self.lastName, self.firstName, self.patrName)

@@ -91,16 +91,70 @@ def calcAgeInYears(birthDay, today):
     return result
 
 
+class AgeTuple(object):
+    _invalid = False
+
+    _days = 0
+    _weeks = 0
+    _months = 0
+    _years = 0
+
+    def __init__(self, birthDay, today=None):
+        if today is None:
+            today = datetime.date.today()
+        if birthDay is None:
+            self._invalid = True
+            return
+        self._days = d = calcAgeInDays(birthDay, today)
+        if d >= 0:
+            self._weeks = d / 7
+            self._months = calcAgeInMonths(birthDay, today)
+            self._years = calcAgeInYears(birthDay, today)
+
+    def __nonzero__(self):
+        return not self._invalid and self._days >= 0
+
+    def __getitem__(self, item):
+        return (self._days, self._weeks, self._months, self._years)[item]
+
+    def __len__(self):
+        return 4
+
+    def __int__(self):
+        return self._days
+
+    def __unicode__(self):
+        if self._invalid:
+            return u'Еще не родился'
+        elif self._years > 7:
+            return formatYears(self._years)
+        elif self._years > 1:
+            return formatYearsMonths(self._years, self._months)
+        elif self._months > 1:
+            return formatMonthsWeeks(self._months, self._weeks)
+        else:
+            return formatDays(self._days)
+
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
+    def __repr__(self):
+        if self._invalid:
+            return '<AgeTuple None>'
+        return '<AgeTuple (%i, %i, %i, %i)>' % (self._days, self._weeks, self._months, self._years)
+
+
 def calcAgeTuple(birthDay, today):
-    d = calcAgeInDays(birthDay, today)
-    if d >= 0:
-        return (
-            d,
-            d / 7,
-            calcAgeInMonths(birthDay, today),
-            calcAgeInYears(birthDay, today)
-        )
-    return None
+    return AgeTuple(birthDay, today)
+    # d = calcAgeInDays(birthDay, today)
+    # if d >= 0:
+    #     return (
+    #         d,
+    #         d / 7,
+    #         calcAgeInMonths(birthDay, today),
+    #         calcAgeInYears(birthDay, today)
+    #     )
+    # return None
 
 
 def formatYears(years):
