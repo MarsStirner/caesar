@@ -19,7 +19,7 @@ def trim(s):
 
 
 def formatShortNameInt(lastName, firstName, patrName):
-    return u'%s %s' % (lastName, map(lambda name: name[:1] + '.', filter(None, [firstName, patrName])))
+    return u' '.join([lastName] + map(lambda name: name[:1] + '.', filter(None, [firstName, patrName])))
 
 
 def formatNameInt(lastName, firstName, patrName):
