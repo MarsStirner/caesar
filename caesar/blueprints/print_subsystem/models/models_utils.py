@@ -19,11 +19,11 @@ def trim(s):
 
 
 def formatShortNameInt(lastName, firstName, patrName):
-    return trim(lastName + ' ' + ((firstName[:1]+'.') if firstName else '') + ((patrName[:1]+'.') if patrName else ''))
+    return u'%s %s' % (lastName, map(lambda name: name[:1] + '.', filter(None, [firstName, patrName])))
 
 
 def formatNameInt(lastName, firstName, patrName):
-    return trim(lastName+' '+firstName+' '+patrName)
+    return u' '.join(filter(None, [lastName, firstName, patrName]))
 
 
 def code128C(barcode):
