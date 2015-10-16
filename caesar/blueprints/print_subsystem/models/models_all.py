@@ -1649,7 +1649,7 @@ class Client(Info):
         #     return formatDays(days)
 
     def __unicode__(self):
-        return self.formatShortNameInt(self.lastName, self.firstName, self.patrName)
+        return formatShortNameInt(self.lastName, self.firstName, self.patrName)
 
 
 class Patientstohs(Info):
