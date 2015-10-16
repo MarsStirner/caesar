@@ -2,7 +2,7 @@
 from blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, FCType, represent_model
 from nemesis.lib.utils import safe_int, safe_unicode
 from nemesis.models.exists import rbTreatment, MKB
-from nemesis.models.risar import (rbPerinatalRiskRate, rbPerinatalRiskRateMkb, rbPregnancyPathology,
+from nemesis.models.risar import (rbPerinatalRiskRate, rbPerinatalRiskRateMkbAssoc, rbPregnancyPathology,
     rbPregnancyPathologyMkbAssoc)
 from nemesis.systemwide import db
 

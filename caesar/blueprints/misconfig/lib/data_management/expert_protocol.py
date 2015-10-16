@@ -155,56 +155,49 @@ class MeasureScheduleModelManager(BaseModelManager):
         self._mkb_mng = self.get_manager('MKB')
         fields = [
             FieldConverter(FCType.basic, 'id', safe_int, 'id'),
-            FieldConverter(FCType.basic, 'boundsLowEventRange', safe_int, 'bounds_low_event_range'),
-            FieldConverter(
-                FCType.relation,
-                'bounds_low_event_range_unit', (self.handle_onetomany_nonedit, ),
-                'bounds_low_event_range_unit',
-                model_manager=self._units_mng
-            ),
-            FieldConverter(FCType.basic, 'boundsHighEventRange', safe_int, 'bounds_high_event_range'),
-            FieldConverter(
-                FCType.relation,
-                'bounds_high_event_range_unit', (self.handle_onetomany_nonedit, ),
-                'bounds_high_event_range_unit',
-                model_manager=self._units_mng
-            ),
-            FieldConverter(FCType.basic, 'additionalText', safe_unicode, 'additional_text'),
             FieldConverter(
                 FCType.relation,
                 'apply_type', (self.handle_onetomany_nonedit, ),
                 'apply_type',
                 model_manager=self._apply_type_mng
             ),
-            FieldConverter(FCType.basic, 'boundsLowApplyRange', safe_int, 'bounds_low_apply_range'),
+            FieldConverter(FCType.basic, 'applyBoundRangeLow', safe_int, 'apply_bound_range_low'),
             FieldConverter(
                 FCType.relation,
-                'bounds_low_apply_range_unit', (self.handle_onetomany_nonedit, ),
-                'bounds_low_apply_range_unit',
+                'apply_bound_range_low_unit', (self.handle_onetomany_nonedit, ),
+                'apply_bound_range_low_unit',
                 model_manager=self._units_mng
             ),
-            FieldConverter(FCType.basic, 'boundsHighApplyRange', safe_int, 'bounds_high_apply_range'),
+            FieldConverter(FCType.basic, 'applyBoundRangeLowMax', safe_int, 'apply_bound_range_low_max'),
             FieldConverter(
                 FCType.relation,
-                'bounds_high_apply_range_unit', (self.handle_onetomany_nonedit, ),
-                'bounds_high_apply_range_unit',
+                'apply_bound_range_low_max_unit', (self.handle_onetomany_nonedit, ),
+                'apply_bound_range_low_max_unit',
                 model_manager=self._units_mng
             ),
-            FieldConverter(FCType.basic, 'count', safe_int, 'count'),
-            FieldConverter(FCType.basic, 'applyPeriod', safe_int, 'apply_period'),
+            FieldConverter(FCType.basic, 'applyBoundRangeHigh', safe_int, 'apply_bound_range_high'),
             FieldConverter(
                 FCType.relation,
-                'apply_period_unit', (self.handle_onetomany_nonedit, ),
-                'apply_period_unit',
+                'apply_bound_range_high_unit', (self.handle_onetomany_nonedit, ),
+                'apply_bound_range_high_unit',
+                model_manager=self._units_mng
+            ),
+            FieldConverter(FCType.basic, 'period', safe_int, 'period'),
+            FieldConverter(
+                FCType.relation,
+                'period_unit', (self.handle_onetomany_nonedit, ),
+                'period_unit',
                 model_manager=self._units_mng
             ),
             FieldConverter(FCType.basic, 'frequency', safe_int, 'frequency'),
+            FieldConverter(FCType.basic, 'count', safe_int, 'count'),
             FieldConverter(
                 FCType.relation,
                 'schedule_types', (self.handle_manytomany, ),
                 'schedule_types', (self.represent_model, ),
                 self._sched_type_mng
             ),
+            FieldConverter(FCType.basic, 'additionalText', safe_unicode, 'additional_text'),
             FieldConverter(
                 FCType.relation,
                 'additional_mkbs', (self.handle_manytomany, ),

@@ -75,10 +75,11 @@ WebMis20
     };
     MeasureSchedule.inheritsFrom(BasicModel);
     MeasureSchedule.initialize({
-        fields: ['id', 'bounds_low_event_range', 'bounds_low_event_range_unit', 'bounds_high_event_range',
-            'bounds_high_event_range_unit', 'additional_text', 'apply_type', 'bounds_low_apply_range',
-            'bounds_low_apply_range_unit', 'bounds_high_apply_range', 'bounds_high_apply_range_unit', 'count',
-            'apply_period', 'apply_period_unit', 'frequency', 'schedule_types', 'additional_mkbs']
+        fields: ['id', 'apply_type', 'apply_bound_range_low', 'apply_bound_range_low_unit',
+            'apply_bound_range_low_max', 'apply_bound_range_low_max_unit',
+            'apply_bound_range_high', 'apply_bound_range_high_unit',
+            'period', 'period_unit', 'frequency', 'count',
+            'schedule_types', 'additional_text', 'additional_mkbs']
     }, MeasureSchedule);
     return MeasureSchedule;
 }])
