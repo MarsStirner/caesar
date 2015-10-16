@@ -102,6 +102,8 @@ class AgeTuple(object):
     def __init__(self, birthDay, today=None):
         if today is None:
             today = datetime.date.today()
+        self._birthDate = birthDay
+        self._today = today
         if birthDay is None:
             self._invalid = True
             return
@@ -124,14 +126,26 @@ class AgeTuple(object):
         return self._days
 
     def __unicode__(self):
+        import calendar
         if self._invalid:
             return u'Еще не родился'
-        elif self._years > 7:
+        elif self._years >= 7:
             return formatYears(self._years)
-        elif self._years > 1:
-            return formatYearsMonths(self._years, self._months)
-        elif self._months > 1:
-            return formatMonthsWeeks(self._months, self._weeks)
+        elif self._years >= 1:
+            return formatYearsMonths(self._years, self._months - self._years * 12)
+        elif self._months >= 1:
+            # TODO: отрефакторить магию, здесь неясен смысл divmod(bd.month + months, 12)
+            add_year, new_month = divmod(self._birthDate.month + self._months, 12)
+            if new_month:
+                # new_month принимает значения от 0 до 11, а надо от 1 до 12, поэтому дальше будем прибавлять 1
+                new_day = min(
+                    self._birthDate.day,
+                    calendar.monthrange(self._birthDate.year + add_year, new_month + 1)[1]
+                )
+                fmonth_date = datetime.date(self._birthDate.year + add_year, new_month + 1, new_day)
+            else:
+                fmonth_date = self._birthDate
+            return formatMonthsWeeks(self._months, (self._today - fmonth_date).days / 7)
         else:
             return formatDays(self._days)
 
