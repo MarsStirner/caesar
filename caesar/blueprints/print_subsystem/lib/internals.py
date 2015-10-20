@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
+import re
+
 from jinja2 import FileSystemLoader
 from jinja2.environment import Environment
 from nemesis.app import app
@@ -59,7 +61,8 @@ def renderTemplate(template, data, render=1):
         'setLeftMargin': setLeftMargin,
         'setTopMargin': setTopMargin,
         'setRightMargin': setRightMargin,
-        'setBottomMargin': setBottomMargin
+        'setBottomMargin': setBottomMargin,
+        're_search_groups': re_search_groups
     }
 
     execContext = CTemplateContext(global_vars, data)
@@ -101,6 +104,11 @@ def finalizer(obj):
     elif isinstance(obj, datetime.time):
         return obj.strftime('%H:%M')
     return obj
+
+
+def re_search_groups(pattern, val):
+    m = re.search(pattern, val, flags=re.U)
+    return m.groups() if m else None
 
 
 def setPageSize(page_size):

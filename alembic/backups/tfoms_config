@@ -8,7 +8,7 @@ p3
 c__builtin__
 tuple
 p4
-(I1
+(L1L
 Vsmo_number
 p5
 V\u041d\u043e\u043c\u0435\u0440 \u0421\u041c\u041e
@@ -41,16 +41,16 @@ g7
 sg16
 g8
 sg12
-I1
+L1L
 sbag2
 (g3
 g4
-(I2
+(L2L
 Vcore_service_url
 p18
 V\u0410\u0434\u0440\u0435\u0441 \u0441\u0435\u0440\u0432\u0438\u0441\u0430 \u0422\u0424\u041e\u041c\u0421 \u0432 \u044f\u0434\u0440\u0435
 p19
-Vhttp://192.168.1.100:7912
+Vhttp://10.1.2.11:7912
 p20
 Vtext
 p21
@@ -67,11 +67,11 @@ g20
 sg16
 g21
 sg12
-I2
+L2L
 sbag2
 (g3
 g4
-(I3
+(L3L
 Vpayer_code
 p24
 V\u041a\u043e\u0434 \u043f\u043b\u0430\u0442\u0435\u043b\u044c\u0449\u0438\u043a\u0430
@@ -93,11 +93,11 @@ g26
 sg16
 g27
 sg12
-I3
+L3L
 sbag2
 (g3
 g4
-(I4
+(L4L
 Vxml_encoding
 p30
 V\u041a\u043e\u0434\u0438\u0440\u043e\u0432\u043a\u0430 XML-\u0444\u0430\u0439\u043b\u043e\u0432
@@ -119,11 +119,11 @@ g32
 sg16
 g33
 sg12
-I4
+L4L
 sbag2
 (g3
 g4
-(I5
+(L5L
 Vmo_level
 p36
 V\u0423\u0440\u043e\u0432\u0435\u043d\u044c \u041c\u041e
@@ -145,5 +145,31 @@ g38
 sg16
 g39
 sg12
-I5
+L5L
+sbag2
+(g3
+g4
+(L6L
+Vregion_code
+p42
+V\u0420\u0435\u0433\u0438\u043e\u043d
+p43
+Vpnz
+p44
+Venum
+p45
+ttRp46
+(dp47
+g11
+g17
+sg13
+g42
+sg14
+g43
+sg15
+g44
+sg16
+g45
+sg12
+L6L
 sba.

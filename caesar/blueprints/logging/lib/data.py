@@ -1,6 +1,5 @@
 # -*- encoding: utf8 -*-
 from pysimplelogs.pysimplelogs import Simplelog, get_levels_list
-from ..app import _config
 from config import SIMPLELOGS_URL
 
 

@@ -5,7 +5,7 @@ from flask.ext.admin.contrib.sqlamodel import ModelView
 from flask.ext.admin.base import expose, BaseView
 from wtforms.fields import SelectField, BooleanField
 
-from blueprints.tfoms.models import *
+from ...tfoms.models import *
 
 
 class TemplateTypeView(ModelView):

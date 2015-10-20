@@ -4,7 +4,13 @@ import sys
 from sqlalchemy import exc
 from sqlalchemy.ext.serializer import loads
 from sqlalchemy import func
-from application.app import app, db
+from nemesis.app import app
+from nemesis.systemwide import db
+import config
+import caesar.blueprints.tfoms.models
+
+app.config.from_object(config)
+db.init_app(app)
 
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))

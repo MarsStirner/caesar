@@ -4,16 +4,12 @@ from flask.ext.admin import Admin
 from flask.ext.babelex import Babel
 import views
 from flask.ext.admin.contrib.sqlamodel import ModelView
-from blueprints.tfoms.models import *
+from ..app import app, module
+from ..models import *
 
 import config
 
-app = Flask(__name__)
-app.config.from_object(config)
-
-db.init_app(app)
-
-admin = Admin(app, name=u'Управление Тегами')
+admin = Admin(app, name=u'Управление Тегами', url='/{0}/tags'.format(module.name))
 
 # Initialize babel
 babel = Babel(app)
@@ -36,7 +32,3 @@ admin.add_view(ModelView(Tag, db.session, name=u'Тэги'))
 admin.add_view(views.StandartTreeView(db.session, name=u'StandartTree'))
 admin.add_view(views.TagsTreeView(db.session, name=u'TagsTree'))
 
-
-@app.route('/')
-def index():
-    return '<a href="/admin/">Click me to get to Admin!</a>'

@@ -8,7 +8,13 @@ backups_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'alembic',
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
-from application.app import app, db
+from nemesis.app import app
+import config
+from nemesis.systemwide import db
+import caesar.blueprints.tfoms.models
+
+app.config.from_object(config)
+db.init_app(app)
 
 
 def backup(model):

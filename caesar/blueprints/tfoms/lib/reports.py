@@ -1,12 +1,12 @@
 # -*- encoding: utf-8 -*-
-from ..lib.service_client import TFOMSClient as Client
+from ..lib.clients.factory import ClientFactory
 from ..app import _config
 
 
 class Reports(object):
 
     def __init__(self):
-        self.client = Client(_config('core_service_url'))
+        self.client = ClientFactory.create(_config('region_code'), _config('core_service_url'))
 
     def get_bills(self, infis_code):
         return self.client.get_bills(infis_code)

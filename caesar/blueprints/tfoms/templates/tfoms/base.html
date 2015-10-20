@@ -1,5 +1,16 @@
 {% extends 'caesar_base.html' %}
 
+{% block content %}
+<div class="row">
+<div class="col-sm-3 col-md-2 sidebar show">
+    {{ macro_module_menu.make_module_menu(menu_struct) }}
+</div>
+<div class="col-sm-9 col-md-10 col-sm-offset-3 col-md-offset-2">
+{% block main %}{% endblock %}
+</div>
+</div>
+{% endblock %}
+
 {% block modules_js %}
 {{ super() }}
 {%- if request.endpoint -%}

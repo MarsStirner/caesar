@@ -4,13 +4,9 @@
 
 {% block modules_css %}
 <link href="{{ url_for('.static', filename='css/style.css') }}" rel="stylesheet">
-<link href="{{ url_for('static', filename='jquery-ui/css/cupertino/jquery-ui-1.10.2.custom.min.css') }}" rel="stylesheet">
-{#<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/flick/jquery-ui.css" />#}
 {% endblock %}
 
-{% block content %}
-
-    {% include 'tfoms/_nav_menu.html' %}
+{% block main %}
 
     <legend>Сформированные реестры для выгрузки в ТФОМС</legend>
     {% if errors %}
