@@ -60,13 +60,11 @@ WebMis20
             return new this.constructor(this._pickData());
         },
         _pickData: function () {
-            var self = this,
+            var copy = _.deepCopy(this),
                 field_list = this._fields.map(function (f) {
                     return _.isObject(f) ? f.name : f;
                 });
-            return _.pick(self, function (value, key) {
-                return field_list.has(key);
-            });
+            return _.pick(copy, field_list);
         }
 
     };

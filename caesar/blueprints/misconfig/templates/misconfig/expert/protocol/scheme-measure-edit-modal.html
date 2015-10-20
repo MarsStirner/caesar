@@ -2,7 +2,7 @@
     <button type="button" class="close" ng-click="$dismiss()">&times;</button>
     <h4 class="modal-title">Схема мероприятий</h4>
 </div>
-<div class="modal-body">
+<div class="modal-body modal-scrollable">
 <tabset>
 <tab heading="Мероприятие">
     <ng-form name="measureForm" class="form-horizontal tmargin20">
@@ -47,10 +47,10 @@
     </ng-form>
 </tab>
 <tab heading="Расписание">
-    <div class="row marginal tmargin20">
+    <legend class="tmargin20">Условия формирования мероприятий</legend>
+    <div class="row marginal lmargin20 rmargin10">
     <div class="col-md-12">
-        <legend>Случаи формирования мероприятия</legend>
-        <div ng-repeat="sched_type in MeasureScheduleType.objects" class="row marginal">
+        <div ng-repeat="sched_type in MeasureScheduleType.objects" class="row">
             <div class="col-md-4 checkbox">
                 <label for="sched_type_[[$index]]">
                     <input type="checkbox" id="sched_type_[[$index]]" ng-checked="isSchedTypeChecked(sched_type)"
@@ -58,36 +58,12 @@
                 </label>
             </div>
             <div class="col-md-8">
-                <div ng-if="stControlForPregRange(sched_type)" ng-show="schedTypeControlsVisible(sched_type)">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="input-group">
-                                <span class="input-group-addon">с</span>
-                                <input type="text" class="form-control" valid-number ng-model="scheme_measure.schedule.bounds_low_event_range">
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <rb-select ref-book="rbUnitsGroup/time" ng-model="scheme_measure.schedule.bounds_low_event_range_unit">\
-                            </rb-select>
-                        </div>
-                        <div class="col-md-offset-1 col-md-3">
-                            <div class="input-group">
-                                <span class="input-group-addon">по</span>
-                                <input type="text" class="form-control" valid-number ng-model="scheme_measure.schedule.bounds_high_event_range">
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <rb-select ref-book="rbUnitsGroup/time" ng-model="scheme_measure.schedule.bounds_high_event_range_unit">\
-                            </rb-select>
-                        </div>
-                    </div>
-                </div>
-                <div ng-if="stControlForAddMkb(sched_type)" ng-show="schedTypeControlsVisible(sched_type)">
+                <div ng-if="stControlForAddMkb(sched_type)">
                     <wm-mkb-multiple id="additional_mkb_list" name="additional_mkb_list" placeholder="Укажите дополнительные диагнозы"
                         ng-model="scheme_measure.schedule.additional_mkbs">
                     </wm-mkb-multiple>
                 </div>
-                <div ng-if="stControlForAddNote(sched_type)" ng-show="schedTypeControlsVisible(sched_type)">
+                <div ng-if="stControlForAddNote(sched_type)">
                     <textarea ng-model="scheme_measure.schedule.additional_text" class="form-control"
                         rows="3" placeholder="Укажите дополнительные условия, примечания"></textarea>
                 </div>
@@ -96,9 +72,9 @@
     </div>
     </div>
 
-    <div class="row">
+    <legend class="tmargin20">Способы формирования мероприятий</legend>
+    <div class="row lmargin20 rmargin10">
     <div class="col-md-12">
-        <legend>Временные ограничения выполнения мероприятия</legend>
         <div ng-repeat="sched_apply_type in rbMeasureScheduleApplyType.objects" class="row marginal">
             <div class="col-md-4 radio">
                 <label for="apply_type_[[$index]]">
@@ -107,40 +83,58 @@
                 </label>
             </div>
             <div class="col-md-8">
-                <div ng-if="satControlForMaxRange(sched_apply_type)" ng-show="schedApplyTypeControlsVisible(sched_apply_type)">
+                <div ng-if="satControlForCountFromObjDate(sched_apply_type)" ng-show="schedApplyTypeControlsVisible(sched_apply_type)">
                     <div class="row">
                         <div class="col-md-3">
                             <div class="input-group">
-                                <span class="input-group-addon">по</span>
-                                <input type="text" class="form-control" valid-number ng-model="scheme_measure.schedule.bounds_high_apply_range">
+                                <span class="input-group-addon">период</span>
+                                <input type="text" class="form-control" ng-model="scheme_measure.schedule.period"
+                                       valid-number>
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <rb-select ref-book="rbUnitsGroup/time" ng-model="scheme_measure.schedule.bounds_high_apply_range_unit">\
+                            <rb-select ref-book="rbUnitsGroup/time" ng-model="scheme_measure.schedule.period_unit">\
                             </rb-select>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-addon">частота</span>
+                                <input type="text" class="form-control" ng-model="scheme_measure.schedule.frequency"
+                                       valid-number>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-addon">количество</span>
+                                <input type="text" class="form-control" ng-model="scheme_measure.schedule.count"
+                                       valid-number>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div ng-if="stControlForBounds(sched_apply_type)" ng-show="schedApplyTypeControlsVisible(sched_apply_type)">
+                {# --- #}
+                <div ng-if="stControlForRangeFromRefDate(sched_apply_type)" ng-show="schedApplyTypeControlsVisible(sched_apply_type)">
                     <div class="row marginal">
                         <div class="col-md-3">
                             <div class="input-group">
                                 <span class="input-group-addon">от</span>
-                                <input type="text" class="form-control" valid-number ng-model="scheme_measure.schedule.bounds_low_apply_range">
+                                <input type="text" class="form-control" ng-model="scheme_measure.schedule.apply_bound_range_low"
+                                       valid-number>
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <rb-select ref-book="rbUnitsGroup/time" ng-model="scheme_measure.schedule.bounds_low_apply_range_unit">\
+                            <rb-select ref-book="rbUnitsGroup/time" ng-model="scheme_measure.schedule.apply_bound_range_low_unit">\
                             </rb-select>
                         </div>
                         <div class="col-md-3">
                             <div class="input-group">
                                 <span class="input-group-addon">до</span>
-                                <input type="text" class="form-control" valid-number ng-model="scheme_measure.schedule.bounds_high_apply_range">
+                                <input type="text" class="form-control" ng-model="scheme_measure.schedule.apply_bound_range_high"
+                                       valid-number>
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <rb-select ref-book="rbUnitsGroup/time" ng-model="scheme_measure.schedule.bounds_high_apply_range_unit">\
+                            <rb-select ref-book="rbUnitsGroup/time" ng-model="scheme_measure.schedule.apply_bound_range_high_unit">\
                             </rb-select>
                         </div>
                     </div>
@@ -148,15 +142,78 @@
                         <div class="col-md-3">
                             <div class="input-group">
                                 <span class="input-group-addon">период</span>
-                                <input type="text" class="form-control" valid-number ng-model="scheme_measure.schedule.apply_period">
+                                <input type="text" class="form-control" ng-model="scheme_measure.schedule.period"
+                                       valid-number>
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <rb-select ref-book="rbUnitsGroup/time" ng-model="scheme_measure.schedule.apply_period_unit">\
+                            <rb-select ref-book="rbUnitsGroup/time" ng-model="scheme_measure.schedule.period_unit">\
                             </rb-select>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-addon">частота</span>
+                                <input type="text" class="form-control" ng-model="scheme_measure.schedule.frequency"
+                                       valid-number>
+                            </div>
                         </div>
                     </div>
                 </div>
+                {# --- #}
+                <div ng-if="stControlForCountFromConditionalDate(sched_apply_type)" ng-show="schedApplyTypeControlsVisible(sched_apply_type)">
+                    <div class="row marginal">
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-addon">от</span>
+                                <input type="text" class="form-control" ng-model="scheme_measure.schedule.apply_bound_range_low"
+                                       valid-number>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <rb-select ref-book="rbUnitsGroup/time" ng-model="scheme_measure.schedule.apply_bound_range_low_unit">\
+                            </rb-select>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-addon">до</span>
+                                <input type="text" class="form-control" ng-model="scheme_measure.schedule.apply_bound_range_low_max"
+                                       valid-number>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <rb-select ref-book="rbUnitsGroup/time" ng-model="scheme_measure.schedule.apply_bound_range_low_max_unit">\
+                            </rb-select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-addon">период</span>
+                                <input type="text" class="form-control" ng-model="scheme_measure.schedule.period"
+                                       valid-number>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <rb-select ref-book="rbUnitsGroup/time" ng-model="scheme_measure.schedule.period_unit">\
+                            </rb-select>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-addon">частота</span>
+                                <input type="text" class="form-control" ng-model="scheme_measure.schedule.frequency"
+                                       valid-number>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-addon">количество</span>
+                                <input type="text" class="form-control" ng-model="scheme_measure.schedule.count"
+                                       valid-number>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {# --- #}
             </div>
         </div>
     </div>

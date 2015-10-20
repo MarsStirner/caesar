@@ -9,6 +9,7 @@ WebMis20
         controller: 'ExpertSchemeMeasureScheduleConfigModalCtrl',
         size: 'lg',
         templateUrl: '/caesar/misconfig/expert/protocol/scheme-measure-edit-modal.html',
+        windowClass: 'modal-scrollable',
         resolve: {}
     };
     var get_scheme_edit_modal = function (scheme_measure) {
@@ -77,31 +78,32 @@ WebMis20
             });
         $scope.scheme_measure.schedule.apply_type = selected.length ? selected[0] : null;
     });
+    if (!scheme_measure.id) {
+        $scope.MeasureScheduleType.loading.then(function () {
+            var av = _.find($scope.MeasureScheduleType.objects, function (item) { return item.code === 'after_visit' });
+            if (av) {
+                $scope.scheme_measure.schedule.schedule_types.push(av);
+            }
+        });
+    }
 
     $scope.isSchedTypeChecked = function (sched_type) {
         return $scope.scheme_measure.schedule.schedule_types.some(function (st) {
             return st.id === sched_type.id;
         });
     };
-    $scope.stControlForPregRange = function (sched_type) { return sched_type.code === 'within_pregnancy_range'; };
     $scope.stControlForAddMkb = function (sched_type) { return sched_type.code === 'in_presence_diag'; };
-    $scope.stControlForAddNote = function (sched_type) { return sched_type.code === 'upon_med_indication'; };
-    $scope.schedTypeControlsVisible = function (sched_type) { return $scope.isSchedTypeChecked(sched_type); };
+    $scope.stControlForAddNote = function (sched_type) { return sched_type.code === 'text'; };
 
     $scope.isSchedApplyTypeSelected = function (sched_apply_type) {
         return safe_traverse($scope.scheme_measure, ['schedule', 'apply_type', 'id']) === sched_apply_type.id;
     };
-    $scope.satControlForMaxRange = function (sched_apply_type) { return sched_apply_type.code === 'range_up_to'; };
-    $scope.stControlForBounds = function (sched_apply_type) { return sched_apply_type.code === 'bounds'; };
+    $scope.satControlForCountFromObjDate = function (sched_apply_type) { return sched_apply_type.code === 'rel_obj_date_count'; };
+    $scope.stControlForRangeFromRefDate = function (sched_apply_type) { return sched_apply_type.code === 'rel_ref_date_range'; };
+    $scope.stControlForCountFromConditionalDate = function (sched_apply_type) { return sched_apply_type.code === 'rel_conditional_count'; };
     $scope.schedApplyTypeControlsVisible = function (sched_apply_type) { return $scope.isSchedApplyTypeSelected(sched_apply_type); };
 
     var stControlsDefaults = {
-        within_pregnancy_range: {
-            bounds_low_event_range: null,
-            bounds_low_event_range_unit: null,
-            bounds_high_event_range: null,
-            bounds_high_event_range_unit: null
-        },
         in_presence_diag: {
             additional_mkbs: []
         },
@@ -124,22 +126,20 @@ WebMis20
     };
 
     var satControlsDefaults = {
-        range_up_to: {
-            bounds_high_apply_range: null,
-            bounds_high_apply_range_unit: null
-        },
-        bounds: {
-            bounds_low_apply_range: null,
-            bounds_low_apply_range_unit: null,
-            bounds_high_apply_range: null,
-            bounds_high_apply_range_unit: null,
-            apply_period: null,
-            apply_period_unit: null
-        }
+            period: null,
+            period_unit: null,
+            frequency: null,
+            count: null,
+            apply_bound_range_low: null,
+            apply_bound_range_low_unit: null,
+            apply_bound_range_low_max: null,
+            apply_bound_range_low_max_unit: null,
+            apply_bound_range_high: null,
+            apply_bound_range_high_unit: null
     };
     $scope.$watch('scheme_measure.schedule.apply_type', function (newValue, oldValue) {
         if (oldValue && !angular.equals(newValue, oldValue)) {
-            angular.forEach(satControlsDefaults[oldValue.code], function (value, attr) {
+            angular.forEach(satControlsDefaults, function (value, attr) {
                 $scope.scheme_measure.schedule[attr] = value;
             });
         }
