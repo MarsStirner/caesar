@@ -99,7 +99,7 @@ WebMis20
         return safe_traverse($scope.scheme_measure, ['schedule', 'apply_type', 'id']) === sched_apply_type.id;
     };
     $scope.satControlForCountFromObjDate = function (sched_apply_type) { return sched_apply_type.code === 'rel_obj_date_count'; };
-    $scope.stControlForRangeFromRefDate = function (sched_apply_type) { return sched_apply_type.code === 'rel_ref_date_range'; };
+    $scope.stControlForRangeFromRefDate = function (sched_apply_type) { return sched_apply_type.code === 'rel_ref_date_bound_range'; };
     $scope.stControlForCountFromConditionalDate = function (sched_apply_type) { return sched_apply_type.code === 'rel_conditional_count'; };
     $scope.schedApplyTypeControlsVisible = function (sched_apply_type) { return $scope.isSchedApplyTypeSelected(sched_apply_type); };
 
