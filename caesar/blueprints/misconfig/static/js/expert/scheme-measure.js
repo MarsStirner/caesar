@@ -80,7 +80,7 @@ WebMis20
     });
     if (!scheme_measure.id) {
         $scope.MeasureScheduleType.loading.then(function () {
-            var av = _.find($scope.MeasureScheduleType.objects, function (item) { return item.code === 'after_visit' });
+            var av = _.find($scope.MeasureScheduleType.objects, function (item) { return item.code === 'after_each_visit' });
             if (av) {
                 $scope.scheme_measure.schedule.schedule_types.push(av);
             }
