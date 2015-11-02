@@ -7,8 +7,8 @@ WebMis20
     };
     Measure.inheritsFrom(SimpleRb);
     Measure.initialize({
-        fields: ['id', 'measure_type', 'code', 'name', 'deleted', 'uuid', 'action_type',
-            'template_action', 'data_model'],
+        fields: ['id', 'measure_type', 'code', 'name', 'deleted', 'uuid', 'appointment_at',
+            'result_at', 'template_action', 'data_model'],
         base_url: '{0}Measure/'.format(Measure.getBaseUrl())
     }, Measure);
     return Measure;

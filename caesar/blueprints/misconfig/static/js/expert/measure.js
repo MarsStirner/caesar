@@ -16,12 +16,6 @@ WebMis20
 .controller('MeasureConfigModalCtrl', ['$scope', '$modalInstance', 'model',
     function ($scope, $modalInstance, model) {
         $scope.model = model;
-        $scope.measure_data_is_at = function () {
-            return model.data_model === 'action_type'
-        };
-        $scope.measure_data_is_template_action = function () {
-            return model.data_model === 'template_action'
-        };
         $scope.close = function () {
             $scope.model.save().
                 then(function (model) {

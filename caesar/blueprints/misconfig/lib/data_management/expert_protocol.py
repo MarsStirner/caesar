@@ -25,8 +25,14 @@ class MeasureModelManager(BaseModelManager):
             FieldConverter(FCType.basic_repr, 'uuid', None, 'uuid'),
             FieldConverter(
                 FCType.relation,
-                'action_type', (self.handle_onetomany_nonedit, ),
-                'action_type',
+                'appointment_at', (self.handle_onetomany_nonedit, ),
+                'appointment_at',
+                model_manager=self._at_mng
+            ),
+            FieldConverter(
+                FCType.relation,
+                'result_at', (self.handle_onetomany_nonedit, ),
+                'result_at',
                 model_manager=self._at_mng
             ),
             FieldConverter(FCType.relation_repr, 'template_action', None, 'template_action')
@@ -37,16 +43,6 @@ class MeasureModelManager(BaseModelManager):
         item = super(MeasureModelManager, self).create(data, parent_id, parent_obj)
         item.uuid = uuid.uuid4()
         return item
-
-    def represent(self, item):
-        result = super(MeasureModelManager, self).represent(item)
-        data_model = None
-        if item.action_type:
-            data_model = 'action_type'
-        elif item.template_action:
-            data_model = 'template_action'
-        result['data_model'] = data_model
-        return result
 
 
 class ExpertProtocolModelManager(BaseModelManager):
