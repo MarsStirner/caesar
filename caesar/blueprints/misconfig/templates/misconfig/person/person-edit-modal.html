@@ -1,0 +1,21 @@
+<div class="modal-header">
+    <button type="button" class="close" ng-click="$dismiss()">&times;</button>
+    <h4 class="modal-title">Сотрудник</h4>
+</div>
+<div class="modal-body">
+<tabset>
+<tab heading="Общая информация">
+{% include 'misconfig/person/_person-edit-modal-general.html' %}
+</tab>
+<tab heading="Аккаунт и Роли">
+{% include 'misconfig/person/_person-edit-modal-roles.html' %}
+</tab>
+{#<tab heading="Квалификация">#}
+{#{% include 'misconfig/person/_person-edit-modal-education.html' %}#}
+{#</tab>#}
+</tabset>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-success" ng-click="close()">Сохранить</button>
+    <button type="button" class="btn btn-danger" ng-click="$dismiss()">Закрыть</button>
+</div>

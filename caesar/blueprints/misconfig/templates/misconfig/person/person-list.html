@@ -1,0 +1,52 @@
+{% extends 'misconfig/base.html' %}
+
+{% block content %}
+<div class="container-fluid" ng-controller="PersonConfigCtrl" ng-cloak>
+    <alert-notify></alert-notify>
+    <button title="Добавить сотрудника" ng-click="create_new()" class="btn btn-success  pull-right" type="button"><i class="fa fa-plus"> Добавить сотрудника</i></button>
+    <ul class="breadcrumb">
+        <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
+        <li>Список сотрудников ЛПУ</li>
+    </ul>
+    <div class="row">
+    <div class="col-md-12">
+        <table class="table table-condensed">
+            <thead>
+                <tr>
+                <th width="1%">#</th>
+                <th>Сотрудник</th>
+                <th>Специальность</th>
+                <th>Должность</th>
+                <th>Удалён</th>
+                <th></th>
+                </tr>
+                <caption><input type="text" ng-model="search" class="form-control" placeholder="Поиск сотрудника по ФИО, должности, специальности"></caption>
+            </thead>
+            <tbody>
+                <tr ng-repeat="(key, item) in item_list | filter:search" ng-class="{'bg-danger': item.deleted}">
+                    <td bind-once>[[ item.id ]]</td>
+                    <td bind-once>[[ item.name_text ]]</td>
+                    <td bind-once>[[ item.speciality.name ]]</td>
+                    <td bind-once>[[ item.post.name ]]</td>
+                    <td>[[ item.deleted ]]</td>
+                    <td class="nowrap" width="1%">
+                        <button type="button" class="btn btn-primary" ng-if="canEdit(item)" ng-click="edit($index)" title="Редактировать">
+                            <i class="fa fa-pencil"></i></button>
+                        <button type="button" class="btn btn-danger" ng-if="canDelete(item)" ng-click="remove($index)" title="Удалить">
+                            <i class="fa fa-trash"></i></button>
+                        <button type="button" class="btn btn-info" ng-if="canUndelete(item)" ng-click="restore($index)" title="Восстановить">
+                            <i class="fa fa-undo"></i></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modules_js %}
+{{ super() }}
+<script src="{{ url_for('.static', filename='js/person/persons.js', v=version) }}"></script>
+<script type="text/ng-template" id="/caesar/misconfig/person/person-edit-modal.html">{% include "misconfig/person/person-edit-modal.html" %}</script>
+{% endblock %}

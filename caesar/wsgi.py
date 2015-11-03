@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
+
 import os
-from nemesis.app import app, bootstrap_app
 import config
+
+from flask import url_for
+
+from nemesis.app import app, bootstrap_app
+from nemesis.lib.frontend import frontend_config
 from version import version as app_version
 
 __author__ = 'viruzzz-kun'
@@ -55,6 +60,28 @@ def app_enum():
     return {
         'app_version': app_version,
         'version': app_version
+    }
+
+
+@frontend_config
+def caesar_urls():
+    """
+    URL'ы caesar
+    :return:
+    """
+    return {
+        'url': {
+            'misconfig': {
+                'html_expert_protocol_protocols': url_for('misconfig.expert_protocol_protocol_html'),
+                'html_expert_protocol_scheme_measures': url_for('misconfig.expert_protocol_scheme_measures_html'),
+                'api_expert_protocol_base': url_for('misconfig.api_v1_expert_protocol_get'),
+                'api_expert_protocol_list_base': url_for('misconfig.api_v1_expert_protocol_list_get'),
+                'api_expert_scheme_base': url_for('misconfig.api_v1_expert_scheme_get'),
+                'api_expert_scheme_measure_base': url_for('misconfig.api_v1_expert_scheme_measure_get'),
+                'api_expert_scheme_measure_list_base': url_for('misconfig.api_v1_expert_scheme_measure_list_get')
+
+            }
+        },
     }
 
 

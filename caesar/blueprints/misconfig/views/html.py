@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
-from flask import render_template
+from flask import render_template, abort
 from ..app import module
+from nemesis.systemwide import db
+from nemesis.models.person import Person
+from nemesis.models.exists import PriceList
 
 __author__ = 'viruzzz-kun'
 
@@ -79,3 +82,19 @@ def perinatal_risk_rate_mkb_html():
 @module.route('/pregnancy-pathology-mkb/')
 def pregnancy_pathology_mkb_html():
     return render_template('misconfig/pregnancy_pathology_mkb.html')
+
+
+@module.route('/person/')
+def person_html():
+    return render_template('misconfig/person/person-list.html')
+
+
+@module.route('/price_list/')
+@module.route('/price_list/<int:_id>/')
+def price_list(_id=None):
+    if _id is not None:
+        price = db.session.query(PriceList).get(_id)
+        if not price:
+            abort(404)
+        return render_template('misconfig/price/tariff.html', price=price)
+    return render_template('misconfig/price/list.html')

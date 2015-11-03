@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 import uuid
 
-from blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, FCType, represent_model
+from blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, FCType
 from nemesis.lib.utils import safe_int, safe_unicode
-from nemesis.models.expert_protocol import (Measure, ExpertProtocol, ExpertScheme, ExpertSchemeMKB,
-    ExpertSchemeMeasureAssoc, MeasureSchedule)
-from nemesis.systemwide import db
+from nemesis.models.expert_protocol import (Measure, ExpertProtocol, ExpertScheme, ExpertSchemeMeasureAssoc,
+    MeasureSchedule)
 
 
 class MeasureModelManager(BaseModelManager):
@@ -16,8 +15,9 @@ class MeasureModelManager(BaseModelManager):
             FieldConverter(FCType.basic, 'id', safe_int, 'id'),
             FieldConverter(
                 FCType.relation,
-                'measure_type', lambda val, par: self.handle_onetomany_nonedit(self._mt_mng, val, par),
-                'measure_type'
+                'measure_type', (self.handle_onetomany_nonedit, ),
+                'measure_type',
+                model_manager=self._mt_mng
             ),
             FieldConverter(FCType.basic, 'code', safe_unicode, 'code'),
             FieldConverter(FCType.basic, 'name', safe_unicode, 'name'),
@@ -25,8 +25,9 @@ class MeasureModelManager(BaseModelManager):
             FieldConverter(FCType.basic_repr, 'uuid', None, 'uuid'),
             FieldConverter(
                 FCType.relation,
-                'action_type', lambda val, par: self.handle_onetomany_nonedit(self._at_mng, val, par),
-                'action_type'
+                'action_type', (self.handle_onetomany_nonedit, ),
+                'action_type',
+                model_manager=self._at_mng
             ),
             FieldConverter(FCType.relation_repr, 'template_action', None, 'template_action')
         ]
@@ -49,34 +50,40 @@ class MeasureModelManager(BaseModelManager):
 
 
 class ExpertProtocolModelManager(BaseModelManager):
-    def __init__(self):
-        self._scheme_mng = ExpertSchemeModelManager()
+    def __init__(self, with_schemes=False):
         fields = [
             FieldConverter(FCType.basic, 'id', safe_int, 'id'),
             FieldConverter(FCType.basic, 'code', safe_unicode, 'code'),
             FieldConverter(FCType.basic, 'name', safe_unicode, 'name'),
-            FieldConverter(
+            FieldConverter(FCType.basic, 'deleted', safe_int, 'deleted'),
+        ]
+        if with_schemes:
+            self._scheme_mng = ExpertSchemeModelManager()
+            fields.append(FieldConverter(
                 FCType.relation_repr,
                 'schemes', None,
-                'schemes', lambda val: represent_model(val, self._scheme_mng)
-            ),
-        ]
+                'schemes', (self.represent_model, ),
+                self._scheme_mng
+            ))
         super(ExpertProtocolModelManager, self).__init__(ExpertProtocol, fields)
 
 
 class ExpertSchemeModelManager(BaseModelManager):
     def __init__(self):
-        self._mkb_mng = ExpertSchemeMKBModelManager()
+        self._mkb_mng = self.get_manager('MKB')
         fields = [
             FieldConverter(FCType.basic, 'id', safe_int, 'id'),
             FieldConverter(FCType.basic, 'code', safe_unicode, 'code'),
             FieldConverter(FCType.basic, 'name', safe_unicode, 'name'),
             FieldConverter(FCType.basic, 'number', safe_unicode, 'number'),
+            FieldConverter(FCType.basic, 'deleted', safe_int, 'deleted'),
             FieldConverter(FCType.basic_repr, 'protocol_id', None, 'protocol_id'),
             FieldConverter(
                 FCType.relation,
-                'scheme_mkbs', self.handle_mkbs,
-                'scheme_mkbs', lambda val: represent_model(val, self._mkb_mng)),
+                'mkbs', (self.handle_manytomany, ),
+                'mkbs', (self.represent_model, ),
+                self._mkb_mng
+            )
         ]
         super(ExpertSchemeModelManager, self).__init__(ExpertScheme, fields)
 
@@ -85,42 +92,10 @@ class ExpertSchemeModelManager(BaseModelManager):
         item.protocol_id = data.get('protocol_id') if data is not None else parent_id
         return item
 
-    def handle_mkbs(self, mkb_list, parent_obj):
-        if mkb_list is None:
-            return []
-        result = []
-        for item_data in mkb_list:
-            item_id = item_data['id']
-            if item_id:
-                item = self._mkb_mng.update(item_id, item_data, parent_obj)
-            else:
-                item = self._mkb_mng.create(item_data, None, parent_obj)
-            result.append(item)
-
-        # deletion
-        for scheme_mkb in parent_obj.scheme_mkbs:
-            if scheme_mkb not in result:
-                db.session.delete(scheme_mkb)
-        return result
-
-
-class ExpertSchemeMKBModelManager(BaseModelManager):
-    def __init__(self):
-        self._mkb_mng = self.get_manager('MKB')
-        fields = [
-            FieldConverter(FCType.basic, 'id', safe_int, 'id'),
-            FieldConverter(FCType.basic, 'scheme_id', safe_int, 'scheme_id'),
-            FieldConverter(
-                FCType.relation,
-                'mkb', lambda val, par: self.handle_onetomany_nonedit(self._mkb_mng, val),
-                'mkb'),
-            FieldConverter(FCType.parent, 'scheme', None),
-        ]
-        super(ExpertSchemeMKBModelManager, self).__init__(ExpertSchemeMKB, fields)
-
-    def create(self, data=None, parent_id=None, parent_obj=None):
-        item = super(ExpertSchemeMKBModelManager, self).create(data, parent_id, parent_obj)
-        item.scheme_id = data.get('scheme_id') if data is not None else parent_id
+    def delete(self, item_id):
+        item = super(ExpertSchemeModelManager, self).delete(item_id)
+        for sm in item.scheme_measures:
+            sm.deleted = 1
         return item
 
 
@@ -131,14 +106,19 @@ class ExpertSchemeMeasureModelManager(BaseModelManager):
         fields = [
             FieldConverter(FCType.basic, 'id', safe_int, 'id'),
             FieldConverter(FCType.relation_repr, 'scheme_id', None, 'scheme_id'),
+            FieldConverter(FCType.basic, 'deleted', safe_int, 'deleted'),
             FieldConverter(
                 FCType.relation,
-                'measure', lambda val, par: self.handle_onetomany_nonedit(self._measure_mng, val, par),
-                'measure', lambda val: represent_model(val, self._measure_mng)),
+                'measure', (self.handle_onetomany_nonedit, ),
+                'measure', (self.represent_model, ),
+                self._measure_mng
+            ),
             FieldConverter(
                 FCType.relation,
                 'schedule', self.handle_schedule,
-                'schedule', lambda val: represent_model(val, self._schedule_mng)),
+                'schedule', (self.represent_model, ),
+                self._schedule_mng
+            ),
         ]
         super(ExpertSchemeMeasureModelManager, self).__init__(ExpertSchemeMeasureAssoc, fields)
 
@@ -151,6 +131,8 @@ class ExpertSchemeMeasureModelManager(BaseModelManager):
     def create(self, data=None, parent_id=None, parent_obj=None):
         item = super(ExpertSchemeMeasureModelManager, self).create(data, parent_id, parent_obj)
         item.scheme_id = data.get('scheme_id') if data is not None else parent_id
+        if not data:
+            item.schedule = self._schedule_mng.create()
         return item
 
     def handle_schedule(self, schedule, parent_obj):
@@ -168,14 +150,66 @@ class MeasureScheduleModelManager(BaseModelManager):
     def __init__(self):
         self._measure_mng = MeasureModelManager()
         self._sched_type_mng = self.get_manager('rbMeasureScheduleType')
+        self._units_mng = self.get_manager('rbUnits')
+        self._apply_type_mng = self.get_manager('rbMeasureScheduleApplyType')
+        self._mkb_mng = self.get_manager('MKB')
         fields = [
             FieldConverter(FCType.basic, 'id', safe_int, 'id'),
+            FieldConverter(FCType.basic, 'boundsLowEventRange', safe_int, 'bounds_low_event_range'),
             FieldConverter(
                 FCType.relation,
-                'schedule_type', lambda val, par: self.handle_onetomany_nonedit(self._sched_type_mng, val, par),
-                'schedule_type'),
-            FieldConverter(FCType.basic, 'offsetStart', safe_int, 'offset_start'),
-            FieldConverter(FCType.basic, 'offsetEnd', safe_int, 'offset_end'),
-            FieldConverter(FCType.basic, 'repeatCount', safe_int, 'repeat_count'),
+                'bounds_low_event_range_unit', (self.handle_onetomany_nonedit, ),
+                'bounds_low_event_range_unit',
+                model_manager=self._units_mng
+            ),
+            FieldConverter(FCType.basic, 'boundsHighEventRange', safe_int, 'bounds_high_event_range'),
+            FieldConverter(
+                FCType.relation,
+                'bounds_high_event_range_unit', (self.handle_onetomany_nonedit, ),
+                'bounds_high_event_range_unit',
+                model_manager=self._units_mng
+            ),
+            FieldConverter(FCType.basic, 'additionalText', safe_unicode, 'additional_text'),
+            FieldConverter(
+                FCType.relation,
+                'apply_type', (self.handle_onetomany_nonedit, ),
+                'apply_type',
+                model_manager=self._apply_type_mng
+            ),
+            FieldConverter(FCType.basic, 'boundsLowApplyRange', safe_int, 'bounds_low_apply_range'),
+            FieldConverter(
+                FCType.relation,
+                'bounds_low_apply_range_unit', (self.handle_onetomany_nonedit, ),
+                'bounds_low_apply_range_unit',
+                model_manager=self._units_mng
+            ),
+            FieldConverter(FCType.basic, 'boundsHighApplyRange', safe_int, 'bounds_high_apply_range'),
+            FieldConverter(
+                FCType.relation,
+                'bounds_high_apply_range_unit', (self.handle_onetomany_nonedit, ),
+                'bounds_high_apply_range_unit',
+                model_manager=self._units_mng
+            ),
+            FieldConverter(FCType.basic, 'count', safe_int, 'count'),
+            FieldConverter(FCType.basic, 'applyPeriod', safe_int, 'apply_period'),
+            FieldConverter(
+                FCType.relation,
+                'apply_period_unit', (self.handle_onetomany_nonedit, ),
+                'apply_period_unit',
+                model_manager=self._units_mng
+            ),
+            FieldConverter(FCType.basic, 'frequency', safe_int, 'frequency'),
+            FieldConverter(
+                FCType.relation,
+                'schedule_types', (self.handle_manytomany, ),
+                'schedule_types', (self.represent_model, ),
+                self._sched_type_mng
+            ),
+            FieldConverter(
+                FCType.relation,
+                'additional_mkbs', (self.handle_manytomany, ),
+                'additional_mkbs', (self.represent_model, ),
+                self._mkb_mng
+            ),
         ]
         super(MeasureScheduleModelManager, self).__init__(MeasureSchedule, fields)

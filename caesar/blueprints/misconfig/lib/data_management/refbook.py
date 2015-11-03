@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, FCType, represent_model
 from nemesis.lib.utils import safe_int, safe_unicode
-from nemesis.models.exists import rbTreatment
+from nemesis.models.exists import rbTreatment, MKB, rbResult
 from nemesis.models.risar import (rbPerinatalRiskRate, rbPerinatalRiskRateMkb, rbPregnancyPathology,
     rbPregnancyPathologyMkbAssoc)
 from nemesis.systemwide import db
@@ -29,8 +29,9 @@ class RbTreatmentModelManager(SimpleRefBookModelManager):
         super(RbTreatmentModelManager, self).__init__(rbTreatment, [
             FieldConverter(
                 FCType.relation,
-                'treatmentType', lambda val, par: self.handle_onetomany_nonedit(self._rbtt_mng, val, par),
-                'treatment_type')
+                'treatmentType', (self.handle_onetomany_nonedit, ),
+                'treatment_type',
+                model_manager=self._rbtt_mng)
         ])
 
 
@@ -140,3 +141,26 @@ class RbPregnancyPathologyMKBModelManager(BaseModelManager):
         item = super(RbPregnancyPathologyMKBModelManager, self).create(data, parent_id, parent_obj)
         item.pathology_id = data.get('pathology_id') if data is not None else parent_id
         return item
+
+
+class MKBModelManager(BaseModelManager):
+    def __init__(self,):
+        fields = [
+            FieldConverter(FCType.basic, 'id', safe_int, 'id'),
+            FieldConverter(FCType.basic, 'DiagID', safe_unicode, 'code'),
+            FieldConverter(FCType.basic, 'DiagName', safe_unicode, 'name'),
+            FieldConverter(FCType.basic, 'deleted', safe_int, 'deleted')
+        ]
+        super(MKBModelManager, self).__init__(MKB, fields)
+
+
+class RbResultModelManager(SimpleRefBookModelManager):
+    def __init__(self):
+        self._rbetp_mng = self.get_manager('rbEventTypePurpose')
+        super(RbResultModelManager, self).__init__(rbResult, [
+            FieldConverter(
+                FCType.relation,
+                'eventPurpose', (self.handle_onetomany_nonedit, ),
+                'event_purpose',
+                model_manager=self._rbetp_mng)
+        ])

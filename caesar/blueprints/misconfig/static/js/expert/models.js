@@ -13,98 +13,72 @@ WebMis20
     }, Measure);
     return Measure;
 }])
-.factory('ExpertProtocol', ['BasicModel', 'ExpertScheme', function (BasicModel, ExpertScheme) {
+.factory('ExpertProtocol', ['WMConfig', 'BasicModel', 'ExpertScheme', function (WMConfig, BasicModel, ExpertScheme) {
     var ExpertProtocol = function (data) {
         BasicModel.call(this, data);
     };
     ExpertProtocol.inheritsFrom(BasicModel);
     ExpertProtocol.initialize({
-        fields: ['id', 'code', 'name', {
+        fields: ['id', 'code', 'name', 'deleted', {
             name: 'schemes',
+            optional: true,
             klass: ExpertScheme
         }],
-        base_url: '/misconfig/api/v1/expert/protocol/'
+        base_url: WMConfig.url.misconfig.api_expert_protocol_base,
+        list_url: WMConfig.url.misconfig.api_expert_protocol_list_base
     }, ExpertProtocol);
     ExpertProtocol.prototype.getNewScheme = function () {
-        return ExpertScheme.instantiate('new', this.id);
+        return ExpertScheme.instantiate(undefined, {
+            'new': true,
+            protocol_id: this.id
+        });
     };
     ExpertProtocol.prototype.addScheme = function (scheme) {
         this.schemes.push(scheme);
     };
     return ExpertProtocol;
 }])
-.factory('ExpertScheme', ['BasicModel', 'ExpertSchemeMKB', 'ExpertSchemeMeasure',
-        function (BasicModel, ExpertSchemeMKB) {
+.factory('ExpertScheme', ['WMConfig', 'BasicModel',
+        function (WMConfig, BasicModel) {
     var ExpertScheme = function (data) {
         BasicModel.call(this, data);
-        this.scheme_measures = [];
     };
     ExpertScheme.inheritsFrom(BasicModel);
     ExpertScheme.initialize({
-        fields: ['id', 'code', 'name', 'number', 'protocol_id', {
-            name: 'scheme_mkbs',
-            klass: ExpertSchemeMKB
-        }],
-        base_url: '/misconfig/api/v1/expert/protocol/scheme/'
+        fields: ['id', 'code', 'name', 'number', 'deleted', 'protocol_id', 'mkbs'],
+        base_url: WMConfig.url.misconfig.api_expert_scheme_base
     }, ExpertScheme);
-    ExpertScheme.prototype.getNewMkb = function () {
-        return ExpertSchemeMKB.instantiate('new', this.id);
-    };
-    ExpertScheme.prototype.addMkb = function (scheme_mkb) {
-        this.scheme_mkbs.push(scheme_mkb);
-    };
-    ExpertScheme.prototype.addSchemeMeasure = function (sm) {
-        this.scheme_measures.push(sm);
-    };
     return ExpertScheme;
 }])
-.factory('ExpertSchemeMKB', ['BasicModel', function (BasicModel) {
-    var ExpertSchemeMKB = function (data) {
+.factory('ExpertSchemeMeasureSchedule', ['WMConfig', 'ApiCalls', 'BasicModel', 'Measure', 'MeasureSchedule',
+        function (WMConfig, ApiCalls, BasicModel, Measure, MeasureSchedule) {
+    var ExpertSchemeMeasureSchedule = function (data) {
         BasicModel.call(this, data);
     };
-    ExpertSchemeMKB.inheritsFrom(BasicModel);
-    ExpertSchemeMKB.initialize({
-        fields: ['id', 'scheme_id', 'mkb'],
-        base_url: '/misconfig/api/v1/expert/protocol/scheme_mkb/'
-    }, ExpertSchemeMKB);
-    return ExpertSchemeMKB;
-}])
-.factory('ExpertSchemeMeasure', ['ApiCalls', 'BasicModel', 'Measure', 'MeasureSchedule',
-        function (ApiCalls, BasicModel, Measure, MeasureSchedule) {
-    var ExpertSchemeMeasure = function (data) {
-        BasicModel.call(this, data);
-    };
-    ExpertSchemeMeasure.inheritsFrom(BasicModel);
-    ExpertSchemeMeasure.initialize({
+    ExpertSchemeMeasureSchedule.inheritsFrom(BasicModel);
+    ExpertSchemeMeasureSchedule.initialize({
         fields: ['id', 'scheme_id', {
             name: 'measure',
             klass: Measure
         }, {
             name: 'schedule',
             klass: MeasureSchedule
-        }],
-        base_url: '/misconfig/api/v1/expert/protocol/scheme_measure/'
-    }, ExpertSchemeMeasure);
-    ExpertSchemeMeasure.instantiateByScheme = function (scheme_id) {
-        var klass = this;
-        var url = '/misconfig/api/v1/expert/protocol/scheme_measure/by_scheme/{0}/'.format(scheme_id);
-        return ApiCalls.wrapper('GET', url)
-            .then(function (data) {
-                return data.items.map(function (item) {
-                    return new klass(item);
-                });
-            });
-    };
-    return ExpertSchemeMeasure;
+        }, 'deleted'],
+        base_url: WMConfig.url.misconfig.api_expert_scheme_measure_base,
+        list_url: WMConfig.url.misconfig.api_expert_scheme_measure_list_base
+    }, ExpertSchemeMeasureSchedule);
+    return ExpertSchemeMeasureSchedule;
 }])
-.factory('MeasureSchedule', ['BasicModel', 'Measure', function (BasicModel) {
+.factory('MeasureSchedule', ['WMConfig', 'BasicModel', function (WMConfig, BasicModel) {
     var MeasureSchedule = function (data) {
         BasicModel.call(this, data);
     };
     MeasureSchedule.inheritsFrom(BasicModel);
     MeasureSchedule.initialize({
-        fields: ['id', 'schedule_type', 'offset_start', 'offset_end', 'repeat_count'],
-        base_url: '/misconfig/api/v1/expert/protocol/measure_schedule/'
+        fields: ['id', 'bounds_low_event_range', 'bounds_low_event_range_unit', 'bounds_high_event_range',
+            'bounds_high_event_range_unit', 'additional_text', 'apply_type', 'bounds_low_apply_range',
+            'bounds_low_apply_range_unit', 'bounds_high_apply_range', 'bounds_high_apply_range_unit', 'count',
+            'apply_period', 'apply_period_unit', 'frequency', 'schedule_types', 'additional_mkbs']
     }, MeasureSchedule);
     return MeasureSchedule;
 }])

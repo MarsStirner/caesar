@@ -55,10 +55,14 @@
             <td>[[ scheme.code ]]</td>
             <td>[[ scheme.name ]]</td>
             <td>[[ scheme.number ]]</td>
-            <td ng-bind="formatMkbList(scheme.scheme_mkbs)"></td>
+            <td ng-bind="formatMkbList(scheme.mkbs)"></td>
             <td class="nowrap" width="1%">
-                <button type="button" class="btn btn-primary" ng-click="editScheme($index)" title="Редактировать данные схемы и список МКБ">
+                <button type="button" class="btn btn-primary" ng-if="canEdit(scheme)" ng-click="editScheme($index)" title="Редактировать данные схемы и список МКБ">
                     <i class="fa fa-pencil"></i></button>
+                <button type="button" class="btn btn-danger" ng-if="canDelete(scheme)" ng-click="removeScheme($index)" title="Удалить">
+                    <i class="fa fa-trash"></i></button>
+                <button type="button" class="btn btn-info" ng-if="canUndelete(scheme)" ng-click="restoreScheme($index)" title="Восстановить">
+                    <i class="fa fa-undo"></i></button>
                 <button type="button" class="btn btn-primary" ng-click="editMeasures($index)" title="Редактировать мероприятия и расписания">
                     <i class="fa fa-list"></i></button>
             </td>
