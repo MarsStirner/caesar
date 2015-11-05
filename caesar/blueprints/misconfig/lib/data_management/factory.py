@@ -13,6 +13,7 @@ from .organisation import (OrganisationModelManager, OrganisationBCLModelManager
 from .expert_protocol import (MeasureModelManager, ExpertProtocolModelManager, ExpertSchemeModelManager,
     ExpertSchemeMeasureModelManager, MeasureScheduleModelManager)
 from .person import PersonModelManager, PersonCurationModelManager
+from .print_template import RbPrintTemplateModelManager
 
 
 all_rbs = {
@@ -112,3 +113,5 @@ def get_manager(name, **params):
         return RbPregnancyPathologyModelManager()
     elif name == 'rbPregnancyPathologyMkb':
         return RbPregnancyPathologyMKBModelManager()
+    elif name == 'rbPrintTemplate':
+        return RbPrintTemplateModelManager()

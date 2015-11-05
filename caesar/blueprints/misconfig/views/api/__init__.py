@@ -9,3 +9,5 @@ from org_birth_care import *
 
 from person import *
 from person_curation import *
+
+from print_template import *

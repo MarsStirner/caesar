@@ -88,8 +88,10 @@ def caesar_urls():
                 # person
                 'api_person_base': url_for('misconfig.api_v1_person_get'),
                 'api_person_list_base': url_for('misconfig.api_v1_person_list_get'),
-                'api_person_curation_level_list_get': url_for('misconfig.api_v1_person_curation_level_list_get')
-
+                'api_person_curation_level_list_get': url_for('misconfig.api_v1_person_curation_level_list_get'),
+                # print_template
+                'api_print_template_base': url_for('misconfig.api_v1_print_template_get'),
+                'api_print_template_list_base': url_for('misconfig.api_v1_print_template_list_get'),
             }
         },
     }
