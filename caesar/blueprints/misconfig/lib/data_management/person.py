@@ -64,6 +64,23 @@ class PersonModelManager(BaseModelManager):
     def create(self, data=None, parent_id=None, parent_obj=None):
         item = super(PersonModelManager, self).create(data)
         # TODO: add required fields
+        item.code = ''
+        item.federalCode = ''
+        item.regionalCode = ''
+        item.office = ''
+        item.office2 = ''
+        item.ambPlan = 0
+        item.ambPlan2 = 0
+        item.ambNorm = 0
+        item.homPlan = 0
+        item.homPlan2 = 0
+        item.homNorm = 0
+        item.expPlan = 0
+        item.expNorm = 0
+        item.password = ''
+        item.retired = 0
+        item.birthPlace = ''
+        item.typeTimeLinePerson = 0
         item.uuid = get_new_uuid()
         return item
 
