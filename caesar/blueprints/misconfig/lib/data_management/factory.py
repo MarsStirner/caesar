@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-from nemesis.models.exists import (rbPacientModel, rbTreatment, rbTreatmentType, rbFinance, rbServiceFinance)
+from nemesis.models.exists import (rbPacientModel, rbTreatment, rbTreatmentType, rbFinance)
 from nemesis.models.expert_protocol import (rbMeasureType, rbMeasureScheduleType, rbMeasureScheduleApplyType, Measure)
-from nemesis.models.exists import rbRequestType, rbEventTypePurpose, rbResult, PriceList, ContractTariff, rbService
+from nemesis.models.exists import rbRequestType, rbEventTypePurpose, rbResult
 from nemesis.models.actions import ActionType
-from nemesis.models.event import EventType
 from nemesis.models.person import rbPost, rbOrgCurationLevel, rbSpeciality, rbUserProfile
 from nemesis.models.risar import rbPerinatalRiskRate, rbPregnancyPathology
 from nemesis.models.refbooks import rbUnits
@@ -17,7 +16,6 @@ from .organisation import (OrganisationModelManager, OrganisationBCLModelManager
 from .expert_protocol import (MeasureModelManager, ExpertProtocolModelManager, ExpertSchemeModelManager,
     ExpertSchemeMeasureModelManager, MeasureScheduleModelManager)
 from .person import PersonModelManager, PersonCurationModelManager
-from .price import PriceModelManager, TariffModelManager
 
 
 all_rbs = {
@@ -25,9 +23,6 @@ all_rbs = {
     'rbTreatment': rbTreatment,
     'rbTreatmentType': rbTreatmentType,
     'rbFinance': rbFinance,
-    'EventType': EventType,
-    'rbServiceFinance': rbServiceFinance,
-    'rbService': rbService,
     'rbRequestType': rbRequestType,
     'rbResult': rbResult,
     'rbMeasureType': rbMeasureType,
@@ -53,8 +48,7 @@ simple_rbs = [
     'rbPacientModel', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType',
     'rbMeasureScheduleApplyType', 'rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology',
     # next are used only for backend data manipulation, they are not presented on frontend ui
-    'rbPost', 'rbSpeciality', 'rbUnits', 'rbRequestType', 'rbEventTypePurpose', 'rbUserProfile', 'EventType',
-    'rbServiceFinance', 'rbService'
+    'rbPost', 'rbSpeciality', 'rbUnits', 'rbRequestType', 'rbEventTypePurpose', 'rbUserProfile'
 ]
 
 rb_groups = {
@@ -134,7 +128,3 @@ def get_manager(name, **params):
         return RbPregnancyPathologyMKBModelManager()
     elif name == 'rbResult':
         return RbResultModelManager()
-    elif name == 'Price':
-        return PriceModelManager()
-    elif name == 'Tariff':
-        return TariffModelManager()
