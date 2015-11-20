@@ -80,7 +80,7 @@ class RbPRRMKBModelManager(BaseModelManager):
                 'mkb'
             )
         ]
-        super(RbPRRMKBModelManager, self).__init__(rbPerinatalRiskRateMkb, fields)
+        super(RbPRRMKBModelManager, self).__init__(rbPerinatalRiskRateMkbAssoc, fields)
 
     def create(self, data=None, parent_id=None, parent_obj=None):
         item = super(RbPRRMKBModelManager, self).create(data, parent_id, parent_obj)
