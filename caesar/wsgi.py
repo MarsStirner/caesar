@@ -18,6 +18,8 @@ bootstrap_app(os.path.join(os.path.dirname(__file__), 'templates'))
 @app.context_processor
 def general_menu():
     from nemesis.lib.user import UserProfileManager
+    from nemesis.lib.settings import Settings
+    mis_settings = Settings()
     menu_items = [dict(
         link='index',
         title=u'Главная страница',
@@ -40,14 +42,16 @@ def general_menu():
         title=u'Отчёты',
         visible=UserProfileManager.has_ui_admin(),
     ), dict(
-        link='risar_config.index',
-        title=u'РИСАР',
-        visible=True,
-    ), dict(
         link='print_subsystem.index',
         title=u'Печать',
         visible=UserProfileManager.has_ui_admin(),
     )]
+    if mis_settings.getBool('RISAR.Enabled', False):
+        menu_items.append(dict(
+            link='risar_config.index',
+            title=u'РИСАР',
+            visible=True,
+        ))
     return dict(main_menu=menu_items)
 
 
@@ -88,6 +92,12 @@ def caesar_urls():
                 # print_template
                 'api_print_template_base': url_for('misconfig.api_v1_print_template_get'),
                 'api_print_template_list_base': url_for('misconfig.api_v1_print_template_list_get'),
+                # pricelist
+                'html_price_list': url_for('misconfig.price_list_html'),
+                'api_pricelist_base': url_for('misconfig.api_v1_pricelist_get'),
+                'api_pricelist_list_base': url_for('misconfig.api_v1_pricelist_list_get'),
+                'api_pricelist_item_base': url_for('misconfig.api_v1_pricelist_item_get', pricelist_id=-99999).replace('-99999', '{0}'),
+                'api_pricelist_item_list_base': url_for('misconfig.api_v1_pricelist_item_list_get', pricelist_id=-99999).replace('-99999', '{0}'),
             }
         },
     }

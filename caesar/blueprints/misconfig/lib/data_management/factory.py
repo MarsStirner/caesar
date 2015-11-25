@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from nemesis.models.exists import (rbPacientModel, rbTreatment, rbTreatmentType, rbFinance, rbServiceFinance)
+from nemesis.models.exists import (rbPacientModel, rbTreatment, rbTreatmentType, rbFinance)
 from nemesis.models.expert_protocol import (rbMeasureType, rbMeasureScheduleType, rbMeasureScheduleApplyType, Measure)
-from nemesis.models.exists import rbRequestType, rbEventTypePurpose, rbResult, PriceList, ContractTariff, rbService
+from nemesis.models.exists import rbRequestType, rbEventTypePurpose, rbResult, rbService
 from nemesis.models.actions import ActionType
 from nemesis.models.event import EventType
 from nemesis.models.person import rbPost, rbOrgCurationLevel, rbSpeciality, rbUserProfile
@@ -17,7 +17,7 @@ from .expert_protocol import (MeasureModelManager, ExpertProtocolModelManager, E
     ExpertSchemeMeasureModelManager, MeasureScheduleModelManager)
 from .person import PersonModelManager, PersonCurationModelManager
 from .print_template import RbPrintTemplateModelManager
-from .price import PriceModelManager, TariffModelManager
+from .pricelist import PriceListModelManager, PriceListItemModelManager
 
 
 all_rbs = {
@@ -26,7 +26,6 @@ all_rbs = {
     'rbTreatmentType': rbTreatmentType,
     'rbFinance': rbFinance,
     'EventType': EventType,
-    'rbServiceFinance': rbServiceFinance,
     'rbService': rbService,
     'rbRequestType': rbRequestType,
     'rbResult': rbResult,
@@ -54,7 +53,7 @@ simple_rbs = [
     'rbMeasureScheduleApplyType', 'rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology',
     # next are used only for backend data manipulation, they are not presented on frontend ui
     'rbPost', 'rbSpeciality', 'rbUnits', 'rbRequestType', 'rbEventTypePurpose', 'rbUserProfile', 'EventType',
-    'rbServiceFinance', 'rbService'
+    'rbService'
 ]
 
 rb_groups = {
@@ -130,9 +129,9 @@ def get_manager(name, **params):
         return RbPregnancyPathologyMKBModelManager()
     elif name == 'rbResult':
         return RbResultModelManager()
-    elif name == 'Price':
-        return PriceModelManager()
-    elif name == 'Tariff':
-        return TariffModelManager()
+    elif name == 'PriceList':
+        return PriceListModelManager()
+    elif name == 'PriceListItem':
+        return PriceListItemModelManager()
     elif name == 'rbPrintTemplate':
         return RbPrintTemplateModelManager()

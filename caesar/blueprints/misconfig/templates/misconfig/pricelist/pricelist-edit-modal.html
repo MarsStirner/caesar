@@ -1,0 +1,48 @@
+<div class="modal-header" xmlns="http://www.w3.org/1999/html">
+    <button type="button" class="close" ng-click="$dismiss()">&times;</button>
+    <h4 class="modal-title">Прайс-лист</h4>
+</div>
+<div class="modal-body">
+<form class="form-horizontal">
+    <div class="form-group">
+        <label for="code" class="col-sm-3 control-label">Код</label>
+        <div class="col-sm-9">
+            <input ng-model="model.code" type="text" class="form-control" id="code" placeholder="Код">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="name" class="col-sm-3 control-label">Наименование</label>
+        <div class="col-sm-9">
+            <input ng-model="model.name" type="text" class="form-control" id="name" placeholder="Наименование">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="beg_date" class="col-sm-3 control-label">Дата начала действия</label>
+        <div class="col-sm-9">
+            <wm-date id="beg_date" name="beg_date" ng-model="model.beg_date"></wm-date>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="end_date" class="col-sm-3 control-label">Дата окончания действия</label>
+        <div class="col-sm-9">
+            <wm-date id="end_date" name="end_date" ng-model="model.end_date"></wm-date>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="finance" class="col-sm-3 control-label">Тип финансирования</label>
+        <div class="col-sm-9">
+            <rb-select ng-model="model.finance" ref-book="rbFinance"
+                id="finance" placeholder="Тип финансирования"></rb-select>
+        </div>
+    </div>
+
+</form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-success" ng-click="close()">Подтвердить</button>
+    <button type="button" class="btn btn-danger" ng-click="$dismiss()">Отмена</button>
+</div>
