@@ -34,26 +34,18 @@
         </div>
     </div>
     <hr>
-    <div class="row">
-    <div class="col-md-12">
-        <h4>Представление данных для мероприятия &mdash;
-            <div class="btn-group">
-                <label class="btn btn-default" ng-model="model.data_model" btn-radio="'action_type'">В виде типа действия</label>
-                <label class="btn btn-default" ng-model="model.data_model" btn-radio="'template_action'">В виде шаблона действия</label>
-            </div>
-        </h4>
-    </div>
-    </div>
-    <div class="form-group" ng-if="measure_data_is_at()">
-        <label for="at" class="col-sm-2 control-label">Тип действия</label>
+    <div class="form-group">
+        <label for="at" class="col-sm-2 control-label">Данные направления</label>
         <div class="col-sm-10">
-            <rb-select ng-model="model.action_type" id="at" ref-book="ActionType" theme="bootstrap" allow-clear="true"
+            <rb-select ng-model="model.appointment_at" id="at" ref-book="ActionType" theme="bootstrap" allow-clear="true"
                 placeholder="Тип действия"></rb-select>
         </div>
     </div>
-    <div class="row" ng-if="measure_data_is_template_action()">
-        <div class="col-md-12">
-            <p>Шаблон действия такой-то <button type="button" class="btn btn-primary">Подробнее &Gt;</button></p>
+    <div class="form-group">
+        <label for="at" class="col-sm-2 control-label">Данные результата</label>
+        <div class="col-sm-10">
+            <rb-select ng-model="model.result_at" id="at" ref-book="ActionType" theme="bootstrap" allow-clear="true"
+                placeholder="Тип действия"></rb-select>
         </div>
     </div>
 </form>

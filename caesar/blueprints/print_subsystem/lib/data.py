@@ -12,6 +12,7 @@ from ..models.models_all import (Orgstructure, Person, Organisation, v_Client_Qu
     Client, Mkb, EventPayment, ActionProperty, ActionProperty_OrgStructure, Actionpropertytype, Actiontype,
     ActionProperty_HospitalBed, OrgstructureHospitalbed, ActionProperty_Integer)
 from ..models.schedule import ScheduleClientTicket
+from ..models.expert_protocol import EventMeasure
 from nemesis.lib.const import (STATIONARY_ORG_STRUCT_STAY_CODE, STATIONARY_HOSP_BED_CODE, STATIONARY_MOVING_CODE,
     STATIONARY_HOSP_LENGTH_CODE, STATIONARY_ORG_STRUCT_TRANSFER_CODE, STATIONARY_LEAVED_CODE)
 from nemesis.models.enums import ActionStatus
@@ -400,6 +401,14 @@ class Print_Template(object):
             event = g.printing_session.query(Event).get(event_id)
         return {
             'event': event
+        }
+
+    def context_event_measure(self, data):
+        em = None
+        if 'event_measure_id' in data:
+            em = g.printing_session.query(EventMeasure).get(data['event_measure_id'])
+        return {
+            'em': em
         }
 
     def context_schedule(self, data):

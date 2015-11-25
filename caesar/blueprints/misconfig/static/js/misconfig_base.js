@@ -60,13 +60,11 @@ WebMis20
             return new this.constructor(this._pickData());
         },
         _pickData: function () {
-            var self = this,
+            var copy = _.deepCopy(this),
                 field_list = this._fields.map(function (f) {
                     return _.isObject(f) ? f.name : f;
                 });
-            return _.pick(self, function (value, key) {
-                return field_list.has(key);
-            });
+            return _.pick(copy, field_list);
         }
 
     };
@@ -162,12 +160,15 @@ WebMis20
     $scope.EntityClass = null;
     $scope.item_list = [];
     $scope.create_new = function () {
-        $scope.EntityClass.instantiate('new').
+        $scope.EntityClass.instantiate(undefined, {'new': true}).
             then(function (item) {
-                getSimpleEditModal(item).result.then(function (item) {
-                    $scope.item_list.push(item);
-                });
+                $scope._editNew(item);
             });
+    };
+    $scope._editNew = function (item) {
+        getSimpleEditModal(item).result.then(function (item) {
+            $scope.item_list.push(item);
+        });
     };
     $scope.edit = function (index) {
         var item = $scope.item_list[index].clone();

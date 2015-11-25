@@ -2,7 +2,8 @@
 
 from flask import request
 
-from nemesis.lib.apiutils import api_method
+from nemesis.lib.apiutils import api_method, ApiException
+from nemesis.lib.utils import safe_bool
 from blueprints.misconfig.lib.data_management.factory import get_manager
 from blueprints.misconfig.app import module
 
@@ -11,33 +12,34 @@ from blueprints.misconfig.app import module
 @module.route('/api/v1/person/<int:item_id>/', methods=['GET'])
 @api_method
 def api_v1_person_get(item_id=None):
-    with_curations = request.args.get('with_curations', False)
+    get_new = safe_bool(request.args.get('new', False))
+    with_curations = safe_bool(request.args.get('with_curations', False))
     mng = get_manager('Person', with_curations=with_curations)
-    if item_id:
+    if get_new:
+        item = mng.create()
+    elif item_id:
         item = mng.get_by_id(item_id)
-        return {
-            'item': mng.represent(item)
-        }
-    return {
-        'items': map(mng.represent, mng.get_list())
-    }
-
-
-@module.route('/api/v1/person/new/', methods=['GET'])
-@api_method
-def api_v1_person_get_new():
-    mng = get_manager('Person')
-    item = mng.create()
+    else:
+        raise ApiException(404, u'`item_id` required')
     return {
         'item': mng.represent(item)
     }
 
 
+@module.route('/api/v1/person/list/', methods=['GET'])
+@api_method
+def api_v1_person_list_get():
+    with_curations = safe_bool(request.args.get('with_curations', False))
+    mng = get_manager('Person', with_curations=with_curations)
+    return {
+        'items': map(mng.represent, mng.get_list())
+    }
+
 @module.route('/api/v1/person/', methods=['POST'])
 @module.route('/api/v1/person/<int:item_id>/', methods=['POST'])
 @api_method
 def api_v1_person_post(item_id=None):
-    with_curations = request.args.get('with_curations', False)
+    with_curations = safe_bool(request.args.get('with_curations', False))
     mng = get_manager('Person', with_curations=with_curations)
     data = request.get_json()
 

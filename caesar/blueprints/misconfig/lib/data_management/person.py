@@ -53,11 +53,12 @@ class PersonModelManager(BaseModelManager):
             ),
         ]
         if with_curations:
-            self._curation_mng = self.get_manager('PersonCuration')
+            self._curation_mng = self.get_manager('rbOrgCurationLevel')
             fields.append(FieldConverter(
                 FCType.relation,
-                'person_curations', self.handle_person_curations,
-                'person_curations', lambda val: represent_model(val, self._curation_mng)
+                'curation_levels', (self.handle_manytomany, ),
+                'curation_levels', (self.represent_model, ),
+                self._curation_mng
             ))
         super(PersonModelManager, self).__init__(Person, fields)
 
@@ -75,24 +76,6 @@ class PersonModelManager(BaseModelManager):
             item.password = m.hexdigest()
         return item
 
-    def handle_person_curations(self, curation_list, parent_obj):
-        if curation_list is None:
-            return []
-        result = []
-        for item_data in curation_list:
-            item_id = item_data['id']
-            if item_id:
-                item = self._curation_mng.update(item_id, item_data, parent_obj)
-            else:
-                item = self._curation_mng.create(item_data, None, parent_obj)
-            result.append(item)
-
-        # deletion
-        for pers_cur in parent_obj.person_curations:
-            if pers_cur not in result:
-                db.session.delete(pers_cur)
-        return result
-
 
 class PersonCurationModelManager(BaseModelManager):
     def __init__(self):
@@ -103,8 +86,9 @@ class PersonCurationModelManager(BaseModelManager):
             FieldConverter(FCType.basic, 'orgCurationLevel_id', safe_int, 'org_curation_level_id'),
             FieldConverter(
                 FCType.relation,
-                'org_curation_level', lambda val, par: self.handle_onetomany_nonedit(self._ocl_mng, val, par),
-                'org_curation_level', lambda val: represent_model(val, self._ocl_mng)
+                'org_curation_level', (self.handle_onetomany_nonedit, ),
+                'org_curation_level', (self.represent_model, ),
+                model_manager=self._ocl_mng
             ),
             FieldConverter(
                 FCType.relation_repr,

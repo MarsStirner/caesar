@@ -10,13 +10,13 @@ from nemesis.models.refbooks import rbUnits
 from nemesis.lib.settings import Settings
 
 from .refbook import (SimpleRefBookModelManager, RbTreatmentModelManager, RbPerinatalRRModelManager,
-    RbPRRMKBModelManager, RbPregnancyPathologyModelManager, RbPregnancyPathologyMKBModelManager, MKBModelManager, 
+    RbPRRMKBModelManager, RbPregnancyPathologyModelManager, RbPregnancyPathologyMKBModelManager, MKBModelManager,
     RbResultModelManager)
-from .organisation import (OrganisationModelManager, OrganisationBCLModelManager, Organisation_OBCLModelManager,
-    OrganisationCurationModelManager, OrgStructureModelManager)
+from .organisation import (OrganisationModelManager, OrganisationBCLModelManager, OrgStructureModelManager)
 from .expert_protocol import (MeasureModelManager, ExpertProtocolModelManager, ExpertSchemeModelManager,
     ExpertSchemeMeasureModelManager, MeasureScheduleModelManager)
 from .person import PersonModelManager, PersonCurationModelManager
+from .print_template import RbPrintTemplateModelManager
 from .price import PriceModelManager, TariffModelManager
 
 
@@ -116,14 +116,10 @@ def get_manager(name, **params):
         return MKBModelManager()
     elif name == 'OrganisationBirthCareLevel':
         return OrganisationBCLModelManager(**params)
-    elif name == 'Organisation_OrganisationHCL':
-        return Organisation_OBCLModelManager()
     elif name == 'Person':
         return PersonModelManager(**params)
     elif name == 'PersonCuration':
         return PersonCurationModelManager()
-    elif name == 'OrganisationCuration':
-        return OrganisationCurationModelManager()
     elif name == 'rbPerinatalRiskRateWithMKBs':
         return RbPerinatalRRModelManager()
     elif name == 'rbPerinatalRiskRateMkb':
@@ -138,3 +134,5 @@ def get_manager(name, **params):
         return PriceModelManager()
     elif name == 'Tariff':
         return TariffModelManager()
+    elif name == 'rbPrintTemplate':
+        return RbPrintTemplateModelManager()

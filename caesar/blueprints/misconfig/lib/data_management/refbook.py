@@ -2,7 +2,7 @@
 from blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, FCType, represent_model
 from nemesis.lib.utils import safe_int, safe_unicode
 from nemesis.models.exists import rbTreatment, MKB, rbResult
-from nemesis.models.risar import (rbPerinatalRiskRate, rbPerinatalRiskRateMkb, rbPregnancyPathology,
+from nemesis.models.risar import (rbPerinatalRiskRate, rbPerinatalRiskRateMkbAssoc, rbPregnancyPathology,
     rbPregnancyPathologyMkbAssoc)
 from nemesis.systemwide import db
 
@@ -81,7 +81,7 @@ class RbPRRMKBModelManager(BaseModelManager):
                 'mkb'
             )
         ]
-        super(RbPRRMKBModelManager, self).__init__(rbPerinatalRiskRateMkb, fields)
+        super(RbPRRMKBModelManager, self).__init__(rbPerinatalRiskRateMkbAssoc, fields)
 
     def create(self, data=None, parent_id=None, parent_obj=None):
         item = super(RbPRRMKBModelManager, self).create(data, parent_id, parent_obj)

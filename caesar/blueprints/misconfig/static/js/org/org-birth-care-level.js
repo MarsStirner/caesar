@@ -44,16 +44,14 @@ WebMis20
     };
     $scope.addOrgOBCL = function (key) {
         var obcl = $scope.model[key].obcl;
-        obcl.getNewOrgOBCL($scope.model[key].newOrg.id).then(function (org_obcl) {
-            obcl.addOrgOBCL(org_obcl);
-            $scope.model[key].newOrg = null;
-        });
+        obcl.orgs.push($scope.model[key].newOrg);
+        $scope.model[key].newOrg = null;
     };
     $scope.removeOrgOBCL = function (key, idx) {
-        $scope.model[key].obcl.org_obcls.splice(idx, 1);
+        $scope.model[key].obcl.orgs.splice(idx, 1);
     };
     $scope.checkOrgDubl = function (key) {
-        var selectedOrgIds = $scope.model[key].obcl.org_obcls.map(function (o) { return o.org_id; });
+        var selectedOrgIds = $scope.model[key].obcl.orgs.map(function (o) { return o.id; });
         $scope.model[key].orgDubl = selectedOrgIds.has($scope.model[key].newOrg.id);
     };
     $scope.alertOrgDublVisible = function (key) {

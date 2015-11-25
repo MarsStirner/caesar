@@ -66,10 +66,18 @@ WebMis20
         $window.location.href =  WMConfig.url.misconfig.html_expert_protocol_scheme_measures + '#?scheme_id=' + $scope.protocol.schemes[index].id;
     };
 
-    ExpertProtocol.instantiate($scope.getUrlParam('protocol_id'), { with_schemes: true }).
-        then(function (protocol) {
-            $scope.protocol = protocol;
-        });
+    var protocol_id = $scope.getUrlParam('protocol_id');
+    if (protocol_id === 'new') {
+        ExpertProtocol.instantiate(undefined, { 'new': true, with_schemes: true }).
+            then(function (protocol) {
+                $scope.protocol = protocol;
+            });
+    } else {
+        ExpertProtocol.instantiate(protocol_id, { with_schemes: true }).
+            then(function (protocol) {
+                $scope.protocol = protocol;
+            });
+    }
 }])
 .controller('ExpertSchemeConfigModalCtrl', ['$scope', '$modalInstance', 'scheme',
         function ($scope, $modalInstance, scheme) {

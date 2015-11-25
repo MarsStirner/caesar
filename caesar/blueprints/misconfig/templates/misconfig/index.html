@@ -15,6 +15,7 @@
             <a href="{{ url_for('.price_list') }}" class="list-group-item">Прайс листы</a>
             <a href="{{ url_for('.org_html') }}" class="list-group-item">Организации и ЛПУ</a>
             <a href="{{ url_for('.person_html') }}" class="list-group-item">Сотрудники ЛПУ</a>
+            <a href="{{ url_for('.print_template_html') }}" class="list-group-item">Шаблоны печати</a>
             {% if mis_settings.getBool('RISAR.Enabled', False) %}
             <a href="{{ url_for('.org_birth_care_level_html') }}" class="list-group-item">Уровни оказания перинатальной помощи</a>
             <a href="{{ url_for('.person_curation_level_html') }}" class="list-group-item">Связь сотрудника с уровнями курирования</a>

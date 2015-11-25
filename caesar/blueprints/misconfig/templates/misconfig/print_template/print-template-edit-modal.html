@@ -1,0 +1,44 @@
+<div class="modal-header">
+    <button type="button" class="close" ng-click="$dismiss()">&times;</button>
+    <h4 class="modal-title">Шаблон печати</h4>
+</div>
+<div class="modal-body modal-scrollable">
+    <form>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="code" class="control-label">Код</label>
+                    <input ng-model="model.code" type="text" class="form-control" id="code" placeholder="Код">
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="context" class="control-label">Контекст</label>
+                    <input type="text" ng-model="model.context" class="form-control" id="context" placeholder="Контекст">
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="name" class="control-label">Наименование</label>
+                    <input type="text" ng-model="model.name" class="form-control" id="name" placeholder="Наименование">
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label for="template_text" class="control-label">Текст шаблона</label>
+                <textarea style="min-height: 450px" ng-model="model.template_text" class="form-control"
+                    id="template_text"></textarea>
+            </div>
+        </div>
+        </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-success" ng-click="close()">Подтвердить</button>
+    <button type="button" class="btn btn-danger" ng-click="$dismiss()">Отмена</button>
+</div>
