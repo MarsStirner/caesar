@@ -47,6 +47,7 @@
 
 {% block modules_js %}
 {{ super() }}
+<script src="{{ url_for('.static', filename='js/person/models.js', v=version) }}"></script>
 <script src="{{ url_for('.static', filename='js/person/persons.js', v=version) }}"></script>
 <script type="text/ng-template" id="/caesar/misconfig/person/person-edit-modal.html">{% include "misconfig/person/person-edit-modal.html" %}</script>
 {% endblock %}

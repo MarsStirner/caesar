@@ -66,6 +66,26 @@ class PersonModelManager(BaseModelManager):
         item = super(PersonModelManager, self).create(data)
         # TODO: add required fields
         item.uuid = get_new_uuid()
+        if item.SNILS is None:
+            item.SNILS = ''
+        item.INN = ''
+        item.code = ''
+        item.federalCode = ''
+        item.regionalCode = ''
+        item.office = ''
+        item.office2 = ''
+        item.ambPlan = 0
+        item.ambPlan2 = 0
+        item.ambNorm = 0
+        item.homPlan = 0
+        item.homPlan2 = 0
+        item.homNorm = 0
+        item.expPlan = 0
+        item.expNorm = 0
+        item.password = ''
+        item.retired = 0
+        item.birthPlace = ''
+        item.typeTimeLinePerson = 0
         return item
 
     def update(self, item_id, data, parent_obj=None):

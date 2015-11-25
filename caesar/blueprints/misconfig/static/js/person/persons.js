@@ -1,19 +1,6 @@
 'use strict';
 
 WebMis20
-.factory('Person', ['BasicModel', function (BasicModel) {
-    var Person = function (data) {
-        BasicModel.call(this, data);
-    };
-    Person.inheritsFrom(BasicModel);
-    Person.initialize({
-        fields: ['id', 'last_name', 'first_name', 'patr_name', 'name_text', 'post', 'speciality',
-            'organisation', 'org_structure', 'deleted', 'inn', 'snils', 'birth_date', 'sex', 'user_profiles', 'login', 'new_password'
-        ],
-        base_url: '/misconfig/api/v1/person/'
-    }, Person);
-    return Person;
-}])
 .controller('PersonConfigCtrl', ['$scope', '$controller', 'Person',
         function ($scope, $controller, Person) {
     $controller('MisConfigBaseCtrl', {$scope: $scope});

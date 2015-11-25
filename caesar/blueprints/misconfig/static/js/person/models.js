@@ -8,7 +8,9 @@ WebMis20
     Person.inheritsFrom(BasicModel);
     Person.initialize({
         fields: ['id', 'last_name', 'first_name', 'patr_name', 'name_text', 'post', 'speciality',
-            'organisation', 'org_structure', 'curation_levels'
+            'organisation', 'org_structure', 'deleted', 'inn', 'snils', 'birth_date', 'sex',
+            'user_profiles', 'login', 'new_password',
+            'curation_levels'
         ],
         base_url:  WMConfig.url.misconfig.api_person_base,
         list_url: WMConfig.url.misconfig.api_person_list_base
