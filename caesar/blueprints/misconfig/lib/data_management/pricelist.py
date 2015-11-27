@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+
+from sqlalchemy.orm import joinedload
+
 from .base import BaseModelManager, FieldConverter, FCType
 from nemesis.models.accounting import PriceList, PriceListItem
 from nemesis.lib.utils import (safe_int, safe_unicode, safe_double, safe_date)
@@ -58,4 +61,5 @@ class PriceListItemModelManager(BaseModelManager):
         where = []
         if 'pricelist_id' in kwargs:
             where.append(self._model.priceList_id.__eq__(kwargs['pricelist_id']))
-        return super(PriceListItemModelManager, self).get_list(where=where)
+        options = [joinedload(PriceListItem.service)]
+        return super(PriceListItemModelManager, self).get_list(where=where, options=options)
