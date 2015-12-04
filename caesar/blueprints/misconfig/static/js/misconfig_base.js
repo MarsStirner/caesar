@@ -34,7 +34,7 @@ WebMis20
         save: function (url, data, args) {
             var self = this;
             var data = data || this._pickData(),
-                url = url || '{0}{|1|/}'.formatNonEmpty(this._base_url, self.id || undefined);
+                url = url || '{0}{|1|/}'.formatNonEmpty(self.constructor.getBaseUrl(data), self.id || undefined);
             return ApiCalls.wrapper('POST', url, args, data)
                 .then(function (result) {
                     return self.fill(result);
@@ -42,7 +42,8 @@ WebMis20
         },
         del: function (url) {
             var self = this,
-                url = url || '{0}{|1|/}'.formatNonEmpty(this._base_url, self.id);
+                data = this._pickData(),
+                url = url || '{0}{|1|/}'.formatNonEmpty(self.constructor.getBaseUrl(data), self.id);
             return ApiCalls.wrapper('DELETE', url)
                 .then(function (result) {
                     return self.fill(result);
@@ -50,7 +51,8 @@ WebMis20
         },
         undel: function (url) {
             var self = this,
-                url = url || '{0}{|1|/undelete/}'.formatNonEmpty(this._base_url, self.id);
+                data = this._pickData(),
+                url = url || '{0}{|1|/undelete/}'.formatNonEmpty(self.constructor.getBaseUrl(data), self.id);
             return ApiCalls.wrapper('POST', url)
                 .then(function (result) {
                     return self.fill(result);
@@ -97,7 +99,7 @@ WebMis20
     BasicModelConstructor.instantiate = function (item_id, args, url) {
         var klass = this;
         if (!url) {
-            url = klass.getBaseUrl();
+            url = klass.getBaseUrl(args);
             if (item_id !== undefined) url = '{0}{1}/'.formatNonEmpty(url, item_id);
         }
         return ApiCalls.wrapper('GET', url, args)
@@ -107,7 +109,7 @@ WebMis20
     };
     BasicModelConstructor.instantiateAll = function (args) {
         var klass = this;
-        var url = klass.getListUrl();
+        var url = klass.getListUrl(args);
         return ApiCalls.wrapper('GET', url, args)
             .then(function (data) {
                 return data.items.map(function (item) {

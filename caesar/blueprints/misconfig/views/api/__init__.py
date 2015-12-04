@@ -12,4 +12,4 @@ from person_curation import *
 
 from print_template import *
 
-from price import *
+from pricelist import *

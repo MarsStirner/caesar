@@ -1,0 +1,58 @@
+<div class="modal-header" xmlns="http://www.w3.org/1999/html">
+    <button type="button" class="close" ng-click="$dismiss()">&times;</button>
+    <h4 class="modal-title">Позиция прайса</h4>
+</div>
+<div class="modal-body">
+<form class="form-horizontal">
+    <div class="form-group">
+        <label for="service" class="col-sm-3 control-label">Услуга</label>
+        <div class="col-sm-9">
+            <rb-select ng-model="model.service" ref-book="rbService" id="service" placeholder="Услуга"
+                ng-change="onServiceChanged()"></rb-select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="service_code" class="col-sm-3 control-label">Код услуги</label>
+        <div class="col-sm-9">
+            <input type="text" ng-model="model.service_code" class="form-control" id="service_code"
+                placeholder="Код услуги в прайсе">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="service_name" class="col-sm-3 control-label">Наименование услуги</label>
+        <div class="col-sm-9">
+            <input type="text" ng-model="model.service_name" class="form-control" id="service_name"
+                placeholder="Наименование услуги в прайсе">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="beg_date" class="col-sm-3 control-label">Дата начала действия</label>
+        <div class="col-sm-9">
+            <wm-date id="beg_date" name="beg_date" ng-model="model.beg_date"></wm-date>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="end_date" class="col-sm-3 control-label">Дата окончания действия</label>
+        <div class="col-sm-9">
+            <wm-date id="end_date" name="end_date" ng-model="model.end_date"></wm-date>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="price" class="col-sm-3 control-label">Стоимость</label>
+        <div class="col-sm-9">
+            <input type="text" ng-model="model.price" class="form-control" id="price"
+                placeholder="Стоимость">
+        </div>
+    </div>
+
+</form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-success" ng-click="close()">Подтвердить</button>
+    <button type="button" class="btn btn-danger" ng-click="$dismiss()">Отмена</button>
+</div>

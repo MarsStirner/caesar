@@ -66,6 +66,11 @@ class BaseModelManager(object):
         order = kwargs.get('order')
         if order:
             query = query.order_by(*order)
+        options = kwargs.get('options')
+        if options:
+            query = query.options(
+                *options
+            )
         return query.all()
 
     def fill(self, item, data, parent_obj=None):
@@ -150,7 +155,6 @@ class BaseModelManager(object):
             item = field.manager.get_by_id(item_id)
             result.append(item)
         return result
-
 
     def handle_manytomany_assoc_obj(self, field, item_list, parent_obj):
         if item_list is None:
