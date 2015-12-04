@@ -123,7 +123,10 @@ def api_templates(context=None):
     # А в Гиппократе всё работает. Там те же две БД.
     if not context:
         return jsonify(None)
-    templates = g.printing_session.query(rbPrintTemplate).filter(rbPrintTemplate.context == context)
+    templates = g.printing_session.query(rbPrintTemplate).filter(
+        rbPrintTemplate.context == context,
+        rbPrintTemplate.deleted == 0
+    )
     return jsonify([{
         'id': t.id,
         'code': t.code,

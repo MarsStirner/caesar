@@ -323,43 +323,43 @@ class Action(Info):
     def nomenclatureService(self):
         return self.actionType.nomenclatureService if self.actionType else None
 
-    @property
-    def tariff(self):
-        services = self.services
-        if not services:
-            return
-        if not hasattr(self, '_tariff'):
-            event_date = self.event.setDate_raw.date()
-            cur_date = datetime.date.today()
-            service_id_list = [ats.service_id for ats in services
-                               if ats.begDate <= event_date <= (ats.endDate or cur_date)]
-            contract = self.contract
-            query = g.printing_session.query(ContractTariff).filter(
-                ContractTariff.master_id == contract.id,
-                ContractTariff.service_id.in_(service_id_list),
-                ContractTariff.deleted == 0,
-                ContractTariff.eventType_id == self.event.eventType_id,
-                # or_(
-                #     ContractTariff.eventType_id == self.event.eventType_id,
-                #     ContractTariff.eventType_id.is_(None)
-                # ),
-                ContractTariff.begDate <= event_date,
-                ContractTariff.endDate >= event_date
-            )
-            tariff = query.first()
-            self._tariff = tariff
-        return self._tariff
+    # @property
+    # def tariff(self):
+    #     services = self.services
+    #     if not services:
+    #         return
+    #     if not hasattr(self, '_tariff'):
+    #         event_date = self.event.setDate_raw.date()
+    #         cur_date = datetime.date.today()
+    #         service_id_list = [ats.service_id for ats in services
+    #                            if ats.begDate <= event_date <= (ats.endDate or cur_date)]
+    #         contract = self.contract
+    #         query = g.printing_session.query(ContractTariff).filter(
+    #             ContractTariff.master_id == contract.id,
+    #             ContractTariff.service_id.in_(service_id_list),
+    #             ContractTariff.deleted == 0,
+    #             ContractTariff.eventType_id == self.event.eventType_id,
+    #             # or_(
+    #             #     ContractTariff.eventType_id == self.event.eventType_id,
+    #             #     ContractTariff.eventType_id.is_(None)
+    #             # ),
+    #             ContractTariff.begDate <= event_date,
+    #             ContractTariff.endDate >= event_date
+    #         )
+    #         tariff = query.first()
+    #         self._tariff = tariff
+    #     return self._tariff
 
-    @property
-    def price(self):
-        tariff = self.tariff
-        if tariff:
-            return tariff.price
-        return 0.0
+    # @property
+    # def price(self):
+    #     tariff = self.tariff
+    #     if tariff:
+    #         return tariff.price
+    #     return 0.0
 
-    @property
-    def sum_total(self):
-        return self.price * self.amount
+    # @property
+    # def sum_total(self):
+    #     return self.price * self.amount
 
     # @property
     # def isHtml(self):
@@ -2388,144 +2388,6 @@ class ClientQuotingdiscussion(Info):
     master = relationship(u'Client')
 
 
-class Contract(Info):
-    __tablename__ = u'Contract'
-
-    id = Column(Integer, primary_key=True)
-    createDatetime = Column(DateTime, nullable=False)
-    createPerson_id = Column(Integer, index=True)
-    modifyDatetime = Column(DateTime, nullable=False)
-    modifyPerson_id = Column(Integer, index=True)
-    deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    number = Column(String(64), nullable=False)
-    date_raw = Column("date", Date, nullable=False)
-    recipient_id = Column(Integer, ForeignKey('Organisation.id'), nullable=False, index=True)
-    recipientAccount_id = Column(Integer, ForeignKey('Organisation_Account.id'), index=True)
-    recipientKBK = Column(String(30), nullable=False)
-    payer_id = Column(Integer, ForeignKey('Organisation.id'), index=True)
-    payerAccount_id = Column(Integer, ForeignKey('Organisation_Account.id'), index=True)
-    payerKBK = Column(String(30), nullable=False)
-    begDate_raw = Column("begDate", Date, nullable=False)
-    endDate_raw = Column("endDate", Date, nullable=False)
-    finance_id = Column(Integer, ForeignKey('rbFinance.id'), nullable=False, index=True)
-    grouping = Column(String(64), nullable=False)
-    resolution = Column(String(64), nullable=False)
-    format_id = Column(Integer, index=True)
-    exposeUnfinishedEventVisits = Column(Integer, nullable=False, server_default=u"'0'")
-    exposeUnfinishedEventActions = Column(Integer, nullable=False, server_default=u"'0'")
-    visitExposition = Column(Integer, nullable=False, server_default=u"'0'")
-    actionExposition = Column(Integer, nullable=False, server_default=u"'0'")
-    exposeDiscipline = Column(Integer, nullable=False, server_default=u"'0'")
-    priceList_id = Column(Integer)
-    coefficient = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
-    coefficientEx = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
-
-    recipient = relationship(u'Organisation', foreign_keys='Contract.recipient_id')
-    payer = relationship(u'Organisation', foreign_keys='Contract.payer_id')
-    finance = relationship(u'rbFinance')
-    recipientAccount = relationship(u'OrganisationAccount', foreign_keys='Contract.recipientAccount_id')
-    payerAccount = relationship(u'OrganisationAccount', foreign_keys='Contract.payerAccount_id')
-
-    @property
-    def date(self):
-        return DateInfo(self.date_raw)
-
-    @property
-    def begDate(self):
-        return DateInfo(self.begDate_raw)
-
-    @property
-    def endDate(self):
-        return DateInfo(self.endDate_raw)
-
-    def convertToText(self, num):
-        converter = NumToTextConverter(num)
-        return converter.convert()
-
-    def __unicode__(self):
-        return self.number + ' ' + self.date
-
-
-class ContractContingent(Info):
-    __tablename__ = u'Contract_Contingent'
-
-    id = Column(Integer, primary_key=True)
-    deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    master_id = Column(Integer, nullable=False, index=True)
-    client_id = Column(Integer, index=True)
-    attachType_id = Column(Integer, index=True)
-    org_id = Column(Integer, index=True)
-    socStatusType_id = Column(Integer, index=True)
-    insurer_id = Column(Integer, index=True)
-    policyType_id = Column(Integer, index=True)
-    sex = Column(Integer, nullable=False)
-    age = Column(String(9), nullable=False)
-    age_bu = Column(Integer)
-    age_bc = Column(SmallInteger)
-    age_eu = Column(Integer)
-    age_ec = Column(SmallInteger)
-
-
-class ContractContragent(Info):
-    __tablename__ = u'Contract_Contragent'
-
-    id = Column(Integer, primary_key=True)
-    deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    master_id = Column(Integer, nullable=False, index=True)
-    insurer_id = Column(Integer, nullable=False, index=True)
-    payer_id = Column(Integer, nullable=False, index=True)
-    payerAccount_id = Column(Integer, nullable=False, index=True)
-    payerKBK = Column(String(30), nullable=False)
-    begDate = Column(Date, nullable=False)
-    endDate = Column(Date, nullable=False)
-
-
-class ContractSpecification(Info):
-    __tablename__ = u'Contract_Specification'
-
-    id = Column(Integer, primary_key=True)
-    deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    master_id = Column(Integer, nullable=False, index=True)
-    eventType_id = Column(Integer, nullable=False, index=True)
-
-
-class ContractTariff(Info):
-    __tablename__ = u'Contract_Tariff'
-
-    id = Column(Integer, primary_key=True)
-    deleted = Column(Integer, nullable=False, server_default=u"'0'")
-    master_id = Column(Integer, nullable=False, index=True)
-    eventType_id = Column(Integer, index=True)
-    tariffType = Column(Integer, nullable=False)
-    service_id = Column(Integer, index=True)
-    code = Column(String(64))
-    name = Column(String(256))
-    tariffCategory_id = Column(Integer, index=True)
-    begDate = Column(Date, nullable=False)
-    endDate = Column(Date, nullable=False)
-    sex = Column(Integer, nullable=False)
-    age = Column(String(9), nullable=False)
-    age_bu = Column(Integer)
-    age_bc = Column(SmallInteger)
-    age_eu = Column(Integer)
-    age_ec = Column(SmallInteger)
-    unit_id = Column(Integer, index=True)
-    amount = Column(Float, nullable=False)
-    uet = Column(Float, nullable=False, server_default=u"'0'")
-    price = Column(Float, nullable=False, server_default=u"'0'")
-    limitationExceedMode = Column(Integer, nullable=False, server_default=u"'0'")
-    limitation = Column(Float, nullable=False, server_default=u"'0'")
-    priceEx = Column(Float, nullable=False, server_default=u"'0'")
-    MKB = Column(String(8), nullable=False)
-    rbServiceFinance_id = Column(ForeignKey('rbServiceFinance.id'), index=True)
-    createDatetime = Column(DateTime, nullable=False)
-    createPerson_id = Column(Integer)
-    modifyDatetime = Column(DateTime, nullable=False)
-    modifyPerson_id = Column(Integer)
-
-    rbServiceFinance = relationship(u'rbServiceFinance')
-
-
 class Couponstransferquote(Info):
     __tablename__ = u'CouponsTransferQuotes'
 
@@ -2770,7 +2632,6 @@ class Event(Info):
     orgStructure_id = Column(Integer, ForeignKey('Person.orgStructure_id'))
     uuid_id = Column(Integer, nullable=False, index=True, server_default=u"'0'")
     lpu_transfer = Column(String(100))
-    localContract_id = Column(Integer, ForeignKey('Event_LocalContract.id'))
 
     actions = relationship(u'Action', primaryjoin='and_(Action.event_id==Event.id,'
                                                      'Action.deleted == 0)')
@@ -2785,8 +2646,6 @@ class Event(Info):
     rbAcheResult = relationship(u'rbAcheResult')
     result = relationship(u'rbResult')
     typeAsset = relationship(u'rbEmergencyTypeAsset')
-    localContract = relationship(u'EventLocalcontract',
-                                    backref=backref('event'))
     client = relationship(u'Client')
     visits = relationship(u'Visit')
     diagnostics = relationship(
@@ -2917,20 +2776,6 @@ class Event(Info):
     def date(self):
         date = self.execDate if self.execDate is not None else datetime.date.today()
         return date
-
-    def get_grouped_services_and_sum(self):
-        services = defaultdict(lambda: dict(services=[], amount=0, sum=0))
-        total_sum = 0
-        for action in self.actions:
-            if action.account and action.price != 0:
-                services[action.actionType_id]['services'].append(action)
-                services[action.actionType_id]['amount'] += action.amount
-                services[action.actionType_id]['sum'] += (action.price * action.amount)
-                total_sum += (action.price * action.amount)
-        return {
-            'services': services,
-            'total_sum': total_sum
-        }
 
     def __unicode__(self):
         return unicode(self.eventType)
@@ -3083,98 +2928,6 @@ class EventFeed(Info):
     date = Column(DateTime, nullable=False)
     mealTime_id = Column(Integer, index=True)
     diet_id = Column(Integer, index=True)
-
-
-class EventLocalcontract(Info):
-    __tablename__ = u'Event_LocalContract'
-    __table_args__ = (
-        Index(u'lastName', u'lastName', u'firstName', u'patrName', u'birthDate', u'id'),
-    )
-
-    id = Column(Integer, primary_key=True)
-    createDatetime = Column(DateTime, nullable=False)
-    createPerson_id = Column(Integer, index=True)
-    modifyDatetime = Column(DateTime, nullable=False)
-    modifyPerson_id = Column(Integer, index=True)
-    deleted = Column(Integer, nullable=False)
-    master_id = Column(Integer, nullable=False, index=True)
-    coordDate = Column(DateTime)
-    coordAgent = Column(String(128), nullable=False, server_default=u"''")
-    coordInspector = Column(String(128), nullable=False, server_default=u"''")
-    coordText = Column(String, nullable=False)
-    dateContract = Column(Date, nullable=False)
-    numberContract = Column(Unicode(64), nullable=False)
-    sumLimit = Column(Float(asdecimal=True), nullable=False)
-    lastName = Column(Unicode(30), nullable=False)
-    firstName = Column(Unicode(30), nullable=False)
-    patrName = Column(Unicode(30), nullable=False)
-    birthDate = Column(Date, nullable=False, index=True)
-    documentType_id = Column(Integer, ForeignKey('rbDocumentType.id'), index=True)
-    serialLeft = Column(Unicode(8), nullable=False)
-    serialRight = Column(Unicode(8), nullable=False)
-    number = Column(String(16), nullable=False)
-    regAddress = Column(Unicode(64), nullable=False)
-    org_id = Column(Integer, ForeignKey('Organisation.id'), index=True)
-
-    org = relationship(u'Organisation')
-    documentType = relationship(u'rbDocumentType')
-
-    def __unicode__(self):
-        parts = []
-        if self.coordDate:
-            parts.append(u'согласовано ' + self.coordDate)
-        if self.coordText:
-            parts.append(self.coordText)
-        if self.number:
-            parts.append(u'№ ' + self.number)
-        if self.date:
-            parts.append(u'от ' + self.date)
-        if self.org:
-            parts.append(unicode(self.org))
-        else:
-            parts.append(self.lastName)
-            parts.append(self.firstName)
-            parts.append(self.patrName)
-        return ' '.join(parts)
-
-    @property
-    def document(self):
-        document = Clientdocument()
-        document.documentType = self.documentType
-        if self.serialLeft and self.serialRight:
-            document.serial = self.serialLeft + u' ' + self.serialRight
-        else:
-            document.serial = self.serialLeft or self.serialRight or ''
-        document.number = self.number
-        return document
-
-    @property
-    def address(self):
-        return self.regAddress
-
-
-class EventPayment(Info):
-    __tablename__ = u'Event_Payment'
-
-    id = Column(Integer, primary_key=True)
-    createDatetime = Column(DateTime, nullable=False)
-    createPerson_id = Column(Integer, ForeignKey('Person.id'), index=True)
-    modifyDatetime = Column(DateTime, nullable=False)
-    modifyPerson_id = Column(Integer, index=True)
-    deleted = Column(Integer, nullable=False)
-    master_id = Column(Integer, ForeignKey('Event.id'), nullable=False, index=True)
-    date = Column(Date, nullable=False)
-    cashOperation_id = Column(ForeignKey('rbCashOperation.id'), index=True)
-    sum = Column(Float(), nullable=False)
-    typePayment = Column(Integer, nullable=False)
-    settlementAccount = Column(String(64))
-    bank_id = Column(Integer, index=True)
-    numberCreditCard = Column(String(64))
-    cashBox = Column(String(32), nullable=False)
-
-    createPerson = relationship('Person')
-    cashOperation = relationship(u'rbCashOperation')
-    event = relationship('Event')
 
 
 class EventPerson(Info):
@@ -5573,14 +5326,6 @@ class rbPayRefuseType(RBInfo):
     rerun = Column(Integer, nullable=False)
 
 
-class rbPayType(Info):
-    __tablename__ = u'rbPayType'
-
-    id = Column(Integer, primary_key=True)
-    code = Column(String(2, u'utf8_unicode_ci'), nullable=False)
-    name = Column(String(64, u'utf8_unicode_ci'), nullable=False)
-
-
 class rbPolicyType(RBInfo):
     __tablename__ = u'rbPolicyType'
 
@@ -5614,6 +5359,7 @@ class rbPrintTemplate(Info):
     dpdAgreement = Column(Integer, nullable=False, server_default=u"'0'")
     render = Column(Integer, nullable=False, server_default=u"'0'")
     templateText = Column(String, nullable=False)
+    deleted = Column(Integer, nullable=False, server_default=u"'0'")
 
     meta_data = relationship('rbPrintTemplateMeta', lazy=False, order_by='rbPrintTemplateMeta.id')
 

@@ -1,1 +1,1 @@
-__all__ = ['kladr_models']
+__all__ = ['kladr_models', 'accounting']
