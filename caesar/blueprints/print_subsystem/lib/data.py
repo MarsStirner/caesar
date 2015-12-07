@@ -19,6 +19,7 @@ from nemesis.models.enums import ActionStatus
 from gui import applyTemplate
 from specialvars import SpecialVariable
 from nemesis.lib.data_ctrl.accounting.invoice import InvoiceController
+from blueprints.print_subsystem.lib.num_to_text_converter import NumToTextConverter
 
 
 def current_patient_orgStructure(event_id):
@@ -429,8 +430,11 @@ class Print_Template(object):
         InvoiceController.set_session(g.printing_session)
         ctrl = InvoiceController()
         invoice = ctrl.get_invoice(invoice_id)
+        event_id = safe_int(data['event_id'])
+        event = g.printing_session.query(Event).get(event_id)
+        conv = NumToTextConverter()
         return {
             'invoice': invoice,
-            'client': {},
-            'event': {}
+            'event': event,
+            'converter': conv
         }

@@ -3,7 +3,7 @@
 
 class NumToTextConverter(object):
     
-    def __init__(self, value):
+    def __init__(self, value=None):
         self.inputVal = value
         
         self.kop = False # показывает, что сейчас идет обработка копеек
@@ -12,7 +12,9 @@ class NumToTextConverter(object):
         self.intPartDigits = None
         self.fractPartDigits = None
         
-    def convert(self):
+    def convert(self, value=None):
+        if value is not None:
+            self.inputVal = value
         if not self.intPartText:
             intPart, fractPart = self.parseNumber()
             self.intPartText = self.formText(intPart)
