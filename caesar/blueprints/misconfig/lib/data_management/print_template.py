@@ -25,6 +25,6 @@ class RbPrintTemplateModelManager(BaseModelManager):
 
     def get_list(self, **kwargs):
         where = [
-            self._model.render.__eq__(1)
+            # self._model.render.__eq__(1)
         ]
         return super(RbPrintTemplateModelManager, self).get_list(where=where)

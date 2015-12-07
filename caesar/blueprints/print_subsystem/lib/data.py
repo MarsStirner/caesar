@@ -9,7 +9,7 @@ from blueprints.print_subsystem.lib.utils import get_action
 from nemesis.lib.utils import string_to_datetime, safe_date, safe_int
 from nemesis.lib.jsonify import ScheduleVisualizer
 from ..models.models_all import (Orgstructure, Person, Organisation, v_Client_Quoting, Event, Action, Account,
-    Client, Mkb, EventPayment, ActionProperty, ActionProperty_OrgStructure, Actionpropertytype, Actiontype,
+    Client, Mkb, ActionProperty, ActionProperty_OrgStructure, Actionpropertytype, Actiontype,
     ActionProperty_HospitalBed, OrgstructureHospitalbed, ActionProperty_Integer)
 from ..models.schedule import ScheduleClientTicket
 from ..models.expert_protocol import EventMeasure
@@ -18,6 +18,8 @@ from nemesis.lib.const import (STATIONARY_ORG_STRUCT_STAY_CODE, STATIONARY_HOSP_
 from nemesis.models.enums import ActionStatus
 from gui import applyTemplate
 from specialvars import SpecialVariable
+from nemesis.lib.data_ctrl.accounting.invoice import InvoiceController
+from blueprints.print_subsystem.lib.num_to_text_converter import NumToTextConverter
 
 
 def current_patient_orgStructure(event_id):
@@ -271,8 +273,6 @@ class Print_Template(object):
             'quoting': quoting,
             'patient_orgStructure': patient_os,
         }
-        if 'payment_id' in data:
-            template_context['payment'] = g.printing_session.query(EventPayment).get(data['payment_id'])
         return template_context
 
     def context_action(self, data):
@@ -305,30 +305,30 @@ class Print_Template(object):
             'account': accountInfo
         }
 
-    def context_cashbook_list(self, data):
-        operations = metrics = None
-
-        def get_metrics():
-            m = g.printing_session.query(EventPayment).with_entities(
-                func.count(),
-                func.sum(func.IF(EventPayment.sum > 0, EventPayment.sum, 0)),
-                - func.sum(func.IF(EventPayment.sum < 0, EventPayment.sum, 0))
-            ).filter(EventPayment.id.in_(data['payments_id_list'])).first()
-            return {
-                'total': m[0],
-                'income': m[1],
-                'expense': abs(m[2])
-            }
-
-        if 'payments_id_list' in data:
-            operations = g.printing_session.query(EventPayment).filter(
-                EventPayment.id.in_(data['payments_id_list'])
-            ).order_by(EventPayment.date, EventPayment.id).all()
-            metrics = get_metrics()
-        return {
-            'operations': operations,
-            'metrics': metrics
-        }
+    # def context_cashbook_list(self, data):
+    #     operations = metrics = None
+    #
+    #     def get_metrics():
+    #         m = g.printing_session.query(EventPayment).with_entities(
+    #             func.count(),
+    #             func.sum(func.IF(EventPayment.sum > 0, EventPayment.sum, 0)),
+    #             - func.sum(func.IF(EventPayment.sum < 0, EventPayment.sum, 0))
+    #         ).filter(EventPayment.id.in_(data['payments_id_list'])).first()
+    #         return {
+    #             'total': m[0],
+    #             'income': m[1],
+    #             'expense': abs(m[2])
+    #         }
+    #
+    #     if 'payments_id_list' in data:
+    #         operations = g.printing_session.query(EventPayment).filter(
+    #             EventPayment.id.in_(data['payments_id_list'])
+    #         ).order_by(EventPayment.date, EventPayment.id).all()
+    #         metrics = get_metrics()
+    #     return {
+    #         'operations': operations,
+    #         'metrics': metrics
+    #     }
 
     def context_person(self, data):
         # PersonDialogcf
@@ -423,4 +423,18 @@ class Print_Template(object):
             'person': sviz.make_person(person),
             'start_date': start_date,
             'end_date': end_date
+        }
+
+    def context_invoice(self, data):
+        invoice_id = safe_int(data['invoice_id'])
+        InvoiceController.set_session(g.printing_session)
+        ctrl = InvoiceController()
+        invoice = ctrl.get_invoice(invoice_id)
+        event_id = safe_int(data['event_id'])
+        event = g.printing_session.query(Event).get(event_id)
+        conv = NumToTextConverter()
+        return {
+            'invoice': invoice,
+            'event': event,
+            'converter': conv
         }
