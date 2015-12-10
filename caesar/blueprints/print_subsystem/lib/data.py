@@ -6,7 +6,7 @@ from sqlalchemy import func, and_
 from blueprints.print_subsystem.models.schedule import Schedule
 from blueprints.print_subsystem.lib.utils import get_action
 
-from nemesis.lib.utils import string_to_datetime, safe_date, safe_int
+from nemesis.lib.utils import string_to_datetime, safe_date, safe_int, format_money
 from nemesis.lib.jsonify import ScheduleVisualizer
 from ..models.models_all import (Orgstructure, Person, Organisation, v_Client_Quoting, Event, Action, Account,
     Client, Mkb, ActionProperty, ActionProperty_OrgStructure, Actionpropertytype, Actiontype,
@@ -19,6 +19,8 @@ from nemesis.models.enums import ActionStatus
 from gui import applyTemplate
 from specialvars import SpecialVariable
 from nemesis.lib.data_ctrl.accounting.invoice import InvoiceController
+from nemesis.lib.data_ctrl.accounting.utils import (calc_invoice_sum_wo_discounts, check_invoice_closed,
+    check_invoice_can_add_discounts)
 from blueprints.print_subsystem.lib.num_to_text_converter import NumToTextConverter
 
 
@@ -428,13 +430,20 @@ class Print_Template(object):
     def context_invoice(self, data):
         invoice_id = safe_int(data['invoice_id'])
         InvoiceController.set_session(g.printing_session)
-        ctrl = InvoiceController()
-        invoice = ctrl.get_invoice(invoice_id)
+        invoice_ctrl = InvoiceController()
+        invoice = invoice_ctrl.get_invoice(invoice_id)
         event_id = safe_int(data['event_id'])
         event = g.printing_session.query(Event).get(event_id)
         conv = NumToTextConverter()
         return {
             'invoice': invoice,
             'event': event,
-            'converter': conv
+            'utils': {
+                'converter': conv,
+                'format_money': format_money,
+                'calc_invoice_sum_wo_discounts': calc_invoice_sum_wo_discounts,
+                'check_invoice_closed': check_invoice_closed,
+                'get_invoice_payment_info': invoice_ctrl.get_invoice_payment_info,
+                'check_invoice_can_add_discounts': check_invoice_can_add_discounts
+            }
         }

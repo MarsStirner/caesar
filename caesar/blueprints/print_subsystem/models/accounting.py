@@ -169,9 +169,39 @@ class Service(Base):
     action_id = Column(Integer, ForeignKey('Action.id'))
     amount = Column(Float, nullable=False)
     deleted = Column(SmallInteger, nullable=False, server_default=u"'0'")
+    discount_id = Column(Integer, ForeignKey('ServiceDiscount.id'))
 
     price_list_item = relationship('PriceListItem')
     action = relationship('Action')
+    discount = relationship('ServiceDiscount')
+
+    def __init__(self):
+        self.sum_ = self._get_recalc_sum()
+
+    @orm.reconstructor
+    def init_on_load(self):
+        self.sum_ = self._get_recalc_sum()
+
+    def _get_recalc_sum(self):
+        from nemesis.lib.data_ctrl.accounting.utils import calc_service_sum
+        return calc_service_sum(self) if self.priceListItem_id is not None else 0
+
+
+class ServiceDiscount(Base):
+    __tablename__ = u'ServiceDiscount'
+
+    id = Column(Integer, primary_key=True)
+    createDatetime = Column(DateTime, nullable=False)
+    createPerson_id = Column(Integer, index=True)
+    modifyDatetime = Column(DateTime, nullable=False)
+    modifyPerson_id = Column(Integer, index=True)
+    code = Column(Unicode(32))
+    name = Column(Unicode(1024), nullable=False)
+    valuePct = Column(Float)
+    valueFixed = Column(Numeric(15, 2))
+    begDate = Column(Date, nullable=False)
+    endDate = Column(Date)
+    deleted = Column(SmallInteger, nullable=False, server_default=u"'0'")
 
 
 class Invoice(Base):
@@ -202,7 +232,7 @@ class Invoice(Base):
         self.total_sum = self._get_recalc_total_sum()
 
     def _get_recalc_total_sum(self):
-        from blueprints.accounting.lib.utils import calc_invoice_total_sum
+        from nemesis.lib.data_ctrl.accounting.utils import calc_invoice_total_sum
         return calc_invoice_total_sum(self)
 
 
@@ -212,13 +242,14 @@ class InvoiceItem(Base):
     id = Column(Integer, primary_key=True)
     invoice_id = Column(Integer, ForeignKey('Invoice.id'), nullable=False)
     concreteService_id = Column(Integer, ForeignKey('Service.id'))
-    # discount_id = Column(Integer, ForeignKey('ServiceDiscount.id'))
+    discount_id = Column(Integer, ForeignKey('ServiceDiscount.id'))
     price = Column(Numeric(15, 2), nullable=False)
     amount = Column(Float, nullable=False)
     sum = Column(Numeric(15, 2), nullable=False)
     deleted = Column(SmallInteger, nullable=False, server_default=u"'0'")
 
     service = relationship(u'Service')
+    discount = relationship('ServiceDiscount')
 
 
 class FinanceTransaction(Base):
@@ -227,6 +258,7 @@ class FinanceTransaction(Base):
     id = Column(Integer, primary_key=True)
     trxDatetime = Column(DateTime, nullable=False, default=datetime.datetime.now)
     trxType_id = Column(Integer, ForeignKey('rbFinanceTransactionType.id'), nullable=False)
+    financeOperationType_id = Column(Integer, ForeignKey('rbFinanceOperationType.id'), nullable=False)
     contragent_id = Column(Integer, ForeignKey('Contract_Contragent.id'), nullable=False)
     invoice_id = Column(Integer, ForeignKey('Invoice.id'))
     payType_id = Column(Integer, ForeignKey('rbPayType.id'))
@@ -235,11 +267,30 @@ class FinanceTransaction(Base):
     contragent = relationship('Contract_Contragent')
     invoice = relationship('Invoice')
     trx_type = relationship('rbFinanceTransactionType')
+    operation_type = relationship('rbFinanceOperationType')
     pay_type = relationship('rbPayType')
 
 
 class rbFinanceTransactionType(Base):
     __tablename__ = 'rbFinanceTransactionType'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    code = Column(Unicode(16), nullable=False)
+    name = Column(Unicode(64), nullable=False)
+
+    def __json__(self):
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name': self.name,
+        }
+
+    def __int__(self):
+        return self.id
+
+
+class rbFinanceOperationType(Base):
+    __tablename__ = 'rbFinanceOperationType'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     code = Column(Unicode(16), nullable=False)
