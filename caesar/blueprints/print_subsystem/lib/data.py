@@ -19,6 +19,7 @@ from nemesis.models.enums import ActionStatus
 from gui import applyTemplate
 from specialvars import SpecialVariable
 from nemesis.lib.data_ctrl.accounting.invoice import InvoiceController
+from nemesis.lib.data_ctrl.accounting.service import ServiceController
 from nemesis.lib.data_ctrl.accounting.utils import (calc_invoice_sum_wo_discounts, check_invoice_closed,
     check_invoice_can_add_discounts)
 from blueprints.print_subsystem.lib.num_to_text_converter import NumToTextConverter
@@ -287,6 +288,9 @@ class Print_Template(object):
             filter_by(clientId=event.client.id).filter_by(deleted=0).first()
         if not quoting:
             quoting = v_Client_Quoting()
+        service_ctrl = ServiceController()
+        ServiceController.set_session(g.printing_session)
+        service = service_ctrl.get_action_service(action)
         return {
             'event': event,
             'action': action,
@@ -294,6 +298,12 @@ class Print_Template(object):
             'currentActionIndex': 0,
             'quoting': quoting,
             'patient_orgStructure': current_patient_orgStructure(event.id),
+            'service': service,
+            'utils': {
+                'format_money': format_money,
+                'get_invoice': service_ctrl.get_service_invoice,
+                'get_service_payment_info': service_ctrl.get_service_payment_info
+            }
         }
 
     def context_account(self, data):
