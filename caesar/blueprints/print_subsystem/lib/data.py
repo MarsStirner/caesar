@@ -258,6 +258,7 @@ class Print_Template(object):
         quoting = None
         client = None
         patient_os = None
+        invoice_list = []
         if 'event_id' in data:
             event_id = data['event_id']
             event = g.printing_session.query(Event).get(event_id)
@@ -270,12 +271,20 @@ class Print_Template(object):
                 quoting = v_Client_Quoting()
             patient_os = current_patient_orgStructure(event.id)
 
+            invoice_ctrl = InvoiceController()
+            invoice_list = invoice_ctrl.get_listed_data({
+                'event_id': event_id
+            })
+            invoice_id_list = [inv.id for inv in invoice_list]
+            invoice_list = g.printing_session.query(Invoice).filter(Invoice.id.in_(invoice_id_list)).all()
+
         template_context = {
             'event': event,
             'client': client,
             'tempInvalid': None,
             'quoting': quoting,
             'patient_orgStructure': patient_os,
+            'invoice_list': invoice_list
         }
         return template_context
 
