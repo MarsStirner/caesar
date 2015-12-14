@@ -23,6 +23,7 @@ from nemesis.lib.data_ctrl.accounting.service import ServiceController
 from nemesis.lib.data_ctrl.accounting.utils import (calc_invoice_sum_wo_discounts, check_invoice_closed,
     check_invoice_can_add_discounts)
 from blueprints.print_subsystem.lib.num_to_text_converter import NumToTextConverter
+from ..models.accounting import Service, Invoice
 
 
 def current_patient_orgStructure(event_id):
@@ -291,6 +292,7 @@ class Print_Template(object):
         service_ctrl = ServiceController()
         ServiceController.set_session(g.printing_session)
         service = service_ctrl.get_action_service(action)
+        service = g.printing_session.query(Service).filter(Service.id == service.id).first()
         return {
             'event': event,
             'action': action,
@@ -441,7 +443,7 @@ class Print_Template(object):
         invoice_id = safe_int(data['invoice_id'])
         InvoiceController.set_session(g.printing_session)
         invoice_ctrl = InvoiceController()
-        invoice = invoice_ctrl.get_invoice(invoice_id)
+        invoice = g.printing_session.query(Invoice).filter(Invoice.id == invoice_id).first()
         event_id = safe_int(data['event_id'])
         event = g.printing_session.query(Event).get(event_id)
         conv = NumToTextConverter()
