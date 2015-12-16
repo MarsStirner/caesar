@@ -281,7 +281,7 @@ class Print_Template(object):
         event = action.event
         event.client.date = event.execDate.date if event.execDate.date else self.today
         quoting = g.printing_session.query(v_Client_Quoting).filter_by(event_id=event.id).\
-            filter_by(clientId=event.client.id).filter_by(deleted=0).order_by(v_Client_Quoting.id.desc()).first()
+            filter_by(clientId=event.client.id).filter_by(deleted=0).order_by(v_Client_Quoting.quotaId.desc()).first()
         if not quoting:
             quoting = v_Client_Quoting()
         return {
