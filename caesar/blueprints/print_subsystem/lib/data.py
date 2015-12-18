@@ -24,6 +24,7 @@ from nemesis.lib.data_ctrl.accounting.utils import (calc_invoice_sum_wo_discount
     check_invoice_can_add_discounts)
 from blueprints.print_subsystem.lib.num_to_text_converter import NumToTextConverter
 from ..models.accounting import Service, Invoice
+from .model_provider import PrintingModelProvider
 
 
 def current_patient_orgStructure(event_id):
@@ -271,12 +272,11 @@ class Print_Template(object):
                 quoting = v_Client_Quoting()
             patient_os = current_patient_orgStructure(event.id)
 
+            InvoiceController.get_selecter().set_model_provider(PrintingModelProvider.set_session(g.printing_session))
             invoice_ctrl = InvoiceController()
             invoice_list = invoice_ctrl.get_listed_data({
                 'event_id': event_id
             })
-            invoice_id_list = [inv.id for inv in invoice_list]
-            invoice_list = g.printing_session.query(Invoice).filter(Invoice.id.in_(invoice_id_list)).all()
 
         template_context = {
             'event': event,
@@ -298,11 +298,10 @@ class Print_Template(object):
             filter_by(clientId=event.client.id).filter_by(deleted=0).first()
         if not quoting:
             quoting = v_Client_Quoting()
+        ServiceController.get_selecter().set_model_provider(PrintingModelProvider.set_session(g.printing_session))
         service_ctrl = ServiceController()
-        ServiceController.set_session(g.printing_session)
         service = service_ctrl.get_action_service(action)
-        if service is not None:
-            service = g.printing_session.query(Service).filter(Service.id == service.id).first()
+        invoice_ctrl = InvoiceController()
         return {
             'event': event,
             'action': action,
@@ -313,7 +312,7 @@ class Print_Template(object):
             'service': service,
             'utils': {
                 'format_money': format_money,
-                'get_invoice': service_ctrl.get_service_invoice,
+                'get_invoice': invoice_ctrl.get_service_invoice,
                 'get_service_payment_info': service_ctrl.get_service_payment_info
             }
         }
@@ -451,9 +450,9 @@ class Print_Template(object):
 
     def context_invoice(self, data):
         invoice_id = safe_int(data['invoice_id'])
-        InvoiceController.set_session(g.printing_session)
+        InvoiceController.get_selecter().set_model_provider(PrintingModelProvider.set_session(g.printing_session))
         invoice_ctrl = InvoiceController()
-        invoice = g.printing_session.query(Invoice).filter(Invoice.id == invoice_id).first()
+        invoice = invoice_ctrl.get_invoice(invoice_id)
         event_id = safe_int(data['event_id'])
         event = g.printing_session.query(Event).get(event_id)
         conv = NumToTextConverter()
