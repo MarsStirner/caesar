@@ -301,7 +301,8 @@ class Print_Template(object):
         service_ctrl = ServiceController()
         ServiceController.set_session(g.printing_session)
         service = service_ctrl.get_action_service(action)
-        service = g.printing_session.query(Service).filter(Service.id == service.id).first()
+        if service is not None:
+            service = g.printing_session.query(Service).filter(Service.id == service.id).first()
         return {
             'event': event,
             'action': action,
