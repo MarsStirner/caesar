@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+import os
 
 import traceback
 import logging
@@ -110,7 +111,7 @@ def print_templates_post():
 @module.route('/fonts/<filename>')
 @crossdomain('*', methods=['GET'])
 def fonts(filename=None):
-    return send_file('../blueprints/print_subsystem/static/%s' % filename)
+    return send_file(os.path.join(os.path.dirname(__file__), 'static', filename))
 
 
 @module.route('/templates/')

@@ -5134,10 +5134,13 @@ class rbLaboratory_Test(Info):
     )
 
     id = Column(Integer, primary_key=True)
-    master_id = Column(Integer, nullable=False, index=True)
-    test_id = Column(Integer, nullable=False, index=True)
+    master_id = Column(ForeignKey('rbLaboratory.id'), nullable=False, index=True)
+    test_id = Column(ForeignKey('rbTest.id'), nullable=False, index=True)
     book = Column(String(64), nullable=False)
     code = Column(String(64), nullable=False)
+
+    test = relationship(u'rbTest', backref="lab_test")
+    laboratory = relationship(u'rbLaboratory')
 
 
 class Rbmkbsubclas(Info):
