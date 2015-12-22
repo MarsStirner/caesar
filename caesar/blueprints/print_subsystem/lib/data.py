@@ -6,7 +6,7 @@ from sqlalchemy import func, and_
 from blueprints.print_subsystem.models.schedule import Schedule
 from blueprints.print_subsystem.lib.utils import get_action
 
-from nemesis.lib.utils import string_to_datetime, safe_date, safe_int
+from nemesis.lib.utils import string_to_datetime, safe_date, safe_int, format_money
 from nemesis.lib.jsonify import ScheduleVisualizer
 from ..models.models_all import (Orgstructure, Person, Organisation, v_Client_Quoting, Event, Action, Account,
     Client, Mkb, ActionProperty, ActionProperty_OrgStructure, Actionpropertytype, Actiontype,
@@ -19,7 +19,12 @@ from nemesis.models.enums import ActionStatus
 from gui import applyTemplate
 from specialvars import SpecialVariable
 from nemesis.lib.data_ctrl.accounting.invoice import InvoiceController
+from nemesis.lib.data_ctrl.accounting.service import ServiceController
+from nemesis.lib.data_ctrl.accounting.utils import (calc_invoice_sum_wo_discounts, check_invoice_closed,
+    check_invoice_can_add_discounts)
 from blueprints.print_subsystem.lib.num_to_text_converter import NumToTextConverter
+from ..models.accounting import Service, Invoice
+from .model_provider import PrintingModelProvider
 
 
 def current_patient_orgStructure(event_id):
@@ -254,6 +259,7 @@ class Print_Template(object):
         quoting = None
         client = None
         patient_os = None
+        invoice_list = []
         if 'event_id' in data:
             event_id = data['event_id']
             event = g.printing_session.query(Event).get(event_id)
@@ -266,12 +272,19 @@ class Print_Template(object):
                 quoting = v_Client_Quoting()
             patient_os = current_patient_orgStructure(event.id)
 
+            InvoiceController.get_selecter().set_model_provider(PrintingModelProvider.set_session(g.printing_session))
+            invoice_ctrl = InvoiceController()
+            invoice_list = invoice_ctrl.get_listed_data({
+                'event_id': event_id
+            })
+
         template_context = {
             'event': event,
             'client': client,
             'tempInvalid': None,
             'quoting': quoting,
             'patient_orgStructure': patient_os,
+            'invoice_list': invoice_list
         }
         return template_context
 
@@ -285,6 +298,10 @@ class Print_Template(object):
             filter_by(clientId=event.client.id).filter_by(deleted=0).first()
         if not quoting:
             quoting = v_Client_Quoting()
+        ServiceController.get_selecter().set_model_provider(PrintingModelProvider.set_session(g.printing_session))
+        service_ctrl = ServiceController()
+        service = service_ctrl.get_action_service(action)
+        invoice_ctrl = InvoiceController()
         return {
             'event': event,
             'action': action,
@@ -292,6 +309,12 @@ class Print_Template(object):
             'currentActionIndex': 0,
             'quoting': quoting,
             'patient_orgStructure': current_patient_orgStructure(event.id),
+            'service': service,
+            'utils': {
+                'format_money': format_money,
+                'get_invoice': invoice_ctrl.get_service_invoice,
+                'get_service_payment_info': service_ctrl.get_service_payment_info
+            }
         }
 
     def context_account(self, data):
@@ -427,18 +450,25 @@ class Print_Template(object):
 
     def context_invoice(self, data):
         invoice_id = safe_int(data['invoice_id'])
-        InvoiceController.set_session(g.printing_session)
-        ctrl = InvoiceController()
-        invoice = ctrl.get_invoice(invoice_id)
+        InvoiceController.get_selecter().set_model_provider(PrintingModelProvider.set_session(g.printing_session))
+        invoice_ctrl = InvoiceController()
+        invoice = invoice_ctrl.get_invoice(invoice_id)
         event_id = safe_int(data['event_id'])
         event = g.printing_session.query(Event).get(event_id)
         conv = NumToTextConverter()
         return {
             'invoice': invoice,
             'event': event,
-            'converter': conv
+            'utils': {
+                'converter': conv,
+                'format_money': format_money,
+                'calc_invoice_sum_wo_discounts': calc_invoice_sum_wo_discounts,
+                'check_invoice_closed': check_invoice_closed,
+                'get_invoice_payment_info': invoice_ctrl.get_invoice_payment_info,
+                'check_invoice_can_add_discounts': check_invoice_can_add_discounts
+            }
         }
-
+    
     def context_biomaterials(self, data):
         ttj_ids = data.get('ttj_ids')
         ttj_records = g.printing_session.query(TakenTissueJournal).filter(TakenTissueJournal.id.in_(ttj_ids)).all()

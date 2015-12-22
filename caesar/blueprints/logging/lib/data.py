@@ -1,10 +1,9 @@
 # -*- encoding: utf8 -*-
-from pysimplelogs.pysimplelogs import Simplelog, get_levels_list
+from pysimplelogs2 import Simplelog
 from config import SIMPLELOGS_URL
 
 
 class Log_Data(object):
-
     def __init__(self):
         self.simplelogs = Simplelog(SIMPLELOGS_URL)
 
@@ -12,12 +11,10 @@ class Log_Data(object):
         return self.simplelogs.get_owners()
 
     def get_levels(self):
-        return get_levels_list(SIMPLELOGS_URL)
+        return self.simplelogs.get_levels_list()
 
     def get_list(self, **kwargs):
-        params = kwargs
-        return self.simplelogs.get_list(**params)
+        return self.simplelogs.get_list(**kwargs)
 
     def get_count(self, **kwargs):
-        params = kwargs
-        return self.simplelogs.count(**params)
+        return self.simplelogs.count(**kwargs)
