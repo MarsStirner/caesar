@@ -34,8 +34,16 @@ class Contract(Base):
     payer = relationship('Contract_Contragent', foreign_keys=[payer_id])
     finance = relationship('rbFinance')
     contract_type = relationship('rbContractType')
-    contingent_list = relationship('Contract_Contingent', backref='contract')
-    pricelist_list = relationship('PriceList', secondary='Contract_PriceList')
+    contingent_list = relationship(
+        'Contract_Contingent',
+        primaryjoin='and_(Contract_Contingent.contract_id == Contract.id, Contract_Contingent.deleted == 0)',
+        backref='contract'
+    )
+    pricelist_list = relationship(
+        'PriceList',
+        secondary='Contract_PriceList',
+        secondaryjoin='and_(Contract_PriceListAssoc.priceList_id == PriceList.id, PriceList.deleted == 0)',
+    )
 
     def __unicode__(self):
         return u'%s %s' % (self.number, self.date)
@@ -143,14 +151,14 @@ class rbContractType(Base):
     name = Column(Unicode(64), nullable=False)
     counterPartyOne = Column(SmallInteger, nullable=False)
     counterPartyTwo = Column(SmallInteger, nullable=False)
-    usingInsurancePolicy = Column(SmallInteger, nullable=False)
+    requireContingent = Column(SmallInteger, nullable=False)
 
     def __json__(self):
         return {
             'id': self.id,
             'code': self.code,
             'name': self.name,
-            'using_insurance_policy': self.usingInsurancePolicy
+            'require_ontingent': self.requireContingent
         }
 
     def __int__(self):
