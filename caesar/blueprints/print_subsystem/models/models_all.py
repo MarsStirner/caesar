@@ -4131,6 +4131,12 @@ class Stocktran(Info):
     stockMotionItem = relationship(u'StockmotionItem')
 
 
+Action_TakenTissueJournal = Table('Action_TakenTissueJournal', metadata,
+                                  Column('action_id', Integer, ForeignKey('Action.id')),
+                                  Column('takenTissueJournal_id', Integer, ForeignKey('TakenTissueJournal.id'))
+                                  )
+
+
 class TakenTissueJournal(Info):
     __tablename__ = u'TakenTissueJournal'
     __table_args__ = (
@@ -4145,18 +4151,26 @@ class TakenTissueJournal(Info):
     unit_id = Column(ForeignKey('rbUnit.id'), index=True)
     datetimeTaken = Column(DateTime, nullable=False)
     execPerson_id = Column(ForeignKey('Person.id'), index=True)
-    note = Column(String(128), nullable=False)
-    barcode = Column(Integer, nullable=False)
-    period = Column(Integer, nullable=False)
+    note = Column(String(128), nullable=False, default='')
+    barcode = Column(Integer, nullable=False)  # set with trigger
+    period = Column(Integer, nullable=False)  # set with trigger
+    testTubeType_id = Column(ForeignKey('rbTestTubeType.id'), index=True)
+    statusCode = Column("status", Integer, nullable=False, server_default=u"'0'")
 
     client = relationship(u'Client')
     execPerson = relationship(u'Person')
     tissueType = relationship(u'rbTissueType')
+    testTubeType = relationship(u'rbTestTubeType')
     unit = relationship(u'rbUnit')
+    actions = relationship(u'Action', secondary=Action_TakenTissueJournal, lazy='joined')
 
     @property
     def barcode_s(self):
         return code128C(self.barcode).decode('windows-1252')
+
+    # @property
+    # def status(self):
+    #     return TTJStatus(self.statusCode) if self.statusCode is not None else None
 
 
 class Tempinvalid(Info):
@@ -5705,7 +5719,7 @@ class rbTempInvalidRegime(Info):
     name = Column(String(64), nullable=False, index=True)
 
 
-class rbTempInvalidResult(Info):
+class rbTempInvalidResult(RBInfo):
     __tablename__ = u'rbTempInvalidResult'
 
     id = Column(Integer, primary_key=True)
@@ -5726,7 +5740,7 @@ class rbTest(Info):
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
 
 
-class rbTestTubeType(Info):
+class rbTestTubeType(RBInfo):
     __tablename__ = u'rbTestTubeType'
 
     id = Column(Integer, primary_key=True)

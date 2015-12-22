@@ -10,7 +10,7 @@ from nemesis.lib.utils import string_to_datetime, safe_date, safe_int
 from nemesis.lib.jsonify import ScheduleVisualizer
 from ..models.models_all import (Orgstructure, Person, Organisation, v_Client_Quoting, Event, Action, Account,
     Client, Mkb, ActionProperty, ActionProperty_OrgStructure, Actionpropertytype, Actiontype,
-    ActionProperty_HospitalBed, OrgstructureHospitalbed, ActionProperty_Integer)
+    ActionProperty_HospitalBed, OrgstructureHospitalbed, ActionProperty_Integer, TakenTissueJournal)
 from ..models.schedule import ScheduleClientTicket
 from ..models.expert_protocol import EventMeasure
 from nemesis.lib.const import (STATIONARY_ORG_STRUCT_STAY_CODE, STATIONARY_HOSP_BED_CODE, STATIONARY_MOVING_CODE,
@@ -437,4 +437,11 @@ class Print_Template(object):
             'invoice': invoice,
             'event': event,
             'converter': conv
+        }
+
+    def context_biomaterials(self, data):
+        ttj_ids = data.get('ttj_ids')
+        ttj_records = g.printing_session.query(TakenTissueJournal).filter(TakenTissueJournal.id.in_(ttj_ids)).all()
+        return {
+            'ttj_records': ttj_records
         }
