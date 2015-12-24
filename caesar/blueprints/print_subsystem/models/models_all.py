@@ -1681,6 +1681,12 @@ class Client(Info):
     def locAddress(self):
         return self.loc_addresses[0] if self.loc_addresses else None
 
+    @property
+    def prescriptions(self):
+        from .prescriptions import MedicalPrescription
+
+        return g.printing_session.query(MedicalPrescription).join(Action, Event).filter(Event.client_id == self.id).all()
+
     def __unicode__(self):
         return self.formatShortNameInt(self.lastName, self.firstName, self.patrName)
 
@@ -2776,6 +2782,12 @@ class Event(Info):
     def date(self):
         date = self.execDate if self.execDate is not None else datetime.date.today()
         return date
+
+    @property
+    def prescriptions(self):
+        from .prescriptions import MedicalPrescription
+
+        return g.printing_session.query(MedicalPrescription).join(Action).filter(Action.event_id == self.id).all()
 
     def __unicode__(self):
         return unicode(self.eventType)
@@ -5235,7 +5247,7 @@ class rbMesSpecification(RBInfo):
     done = Column(Integer, nullable=False)
 
 
-class rbMethodOfAdministration(Info):
+class rbMethodOfAdministration(RBInfo):
     __tablename__ = u'rbMethodOfAdministration'
 
     id = Column(Integer, primary_key=True)
@@ -5864,6 +5876,51 @@ class rbUnit(RBInfo):
     name = Column(Unicode(256), index=True)
 
 
+class rbUnitsGroup(Info):
+    __tablename__ = "rbUnitsGroup"
+
+    id = Column(Integer, primary_key=True)
+    code = Column(String(16), nullable=False)
+    name = Column(String(255), nullable=False)
+    shortname = Column(String(32), nullable=False)
+
+    def __unicode__(self):
+        return self.name
+
+    def __json__(self):
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name': self.name,
+            'short_name': self.shortname,
+            'children': self.children,
+        }
+
+
+class rbUnits(Info):
+    __tablename__ = "rbUnits"
+
+    id = Column(Integer, primary_key=True)
+    code = Column(String(16), nullable=False)
+    name = Column(String(255), nullable=False)
+    shortname = Column(String(32), nullable=False)
+    group_id = Column(ForeignKey("rbUnitsGroup.id"), index=True, nullable=False)
+
+    group = relationship('rbUnitsGroup', backref='children')
+
+    def __unicode__(self):
+        return self.name
+
+    def __json__(self):
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name': self.name,
+            'short_name': self.shortname,
+            'group_id': self.group_id
+        }
+
+
 class rbUserProfile(Info):
     __tablename__ = u'rbUserProfile'
 
@@ -6318,6 +6375,9 @@ class rlsForm(Info):
     id = Column(Integer, primary_key=True)
     name = Column(String(128), unique=True)
 
+    def __unicode__(self):
+        return self.name
+
 
 class rlsNomen(Info):
     __tablename__ = u'rlsNomen'
@@ -6343,12 +6403,21 @@ class rlsNomen(Info):
     tradeName = relationship(u'rlsTradeName')
     unit = relationship(u'rbUnit', primaryjoin='rlsNomen.unit_id == rbUnit.id')
 
+    def __unicode__(self):
+        if self.dosageUnit:
+            return u'{0} ({1} {2}; {3}; {4})'.format(self.tradeName, self.dosageValue, self.dosageUnit.code,
+                                                    self.form, self.packing)
+        return u'{0} ({1}; {2})'.format(self.tradeName.name, self.form.name, self.packing.name)
+
 
 class rlsPacking(Info):
     __tablename__ = u'rlsPacking'
 
     id = Column(Integer, primary_key=True)
     name = Column(String(128), unique=True)
+
+    def __unicode__(self):
+        return self.name
 
 
 class rlsPharmGroup(Info):
@@ -6379,6 +6448,9 @@ class rlsTradeName(Info):
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
     localName = Column(String(255))
+
+    def __unicode__(self):
+        return self.name
 
 
 class trfuFinalVolume(Info):

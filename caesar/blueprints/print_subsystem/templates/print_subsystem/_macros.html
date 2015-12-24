@@ -55,3 +55,30 @@
         {% endif %}
     {% endfor %}
 {%- endmacro %}
+
+{% macro print_prescriptions(client) %}
+    <table>
+        <thead>
+            <tr>
+                <th>Наименование препарата</th>
+                <th>Доза</th>
+                <th>Частота</th>
+                <th>Длительность</th>
+                <th>Путь введения</th>
+                <th>Примечание</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prescr in client.prescriptions %}
+                <tr>
+                    <td>{{prescr.rls}}</td>
+                    <td>{{prescr.dose_amount|round(1)}} {{prescr.dose_unit.shortname}}</td>
+                    <td>{{prescr.frequency_value|round(1)}} {{prescr.frequency_unit.shortname}}</td>
+                    <td>{{prescr.duration_value|round(1)}} {{prescr.duration_unit.shortname}}</td>
+                    <td>{{prescr.methodOfAdministration}}</td>
+                    <td>{{prescr.note}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{%- endmacro %}
