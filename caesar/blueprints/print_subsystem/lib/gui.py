@@ -45,11 +45,14 @@ __author__ = 'mmalkov'
 #         reportView.setWindowTitle(u"Выгрузка в ЭМК")
 #         reportView.saveAsTelemedFile(clientInfo, eventInfo, templatesInfo, person)
 
+simple_logger = logging.getLogger('simple')
+
 
 def applyTemplate(templateId, data):
     u"""Выводит на печать шаблон печати номер templateId с данными data"""
     template_data = g.printing_session.query(rbPrintTemplate).get(templateId)
     if not template_data:
+        simple_logger.error(u'Шаблон с id=%s не найден' % templateId)
         raise RenderTemplateException(u'Шаблон с id=%s не найден' % templateId, {
             'type': RenderTemplateException.Type.other,
             'template_name': '<unknown>',
@@ -58,7 +61,7 @@ def applyTemplate(templateId, data):
     try:
         return renderTemplate(template_data.templateText, data)
     except TemplateSyntaxError, e:
-        print e
+        simple_logger.critical('Синтаксическая ошибка в шаблоне id = %s', templateId, exc_info=True)
         logging.error('syntax error in template id = %s', templateId, exc_info=True)
         raise RenderTemplateException(e.message, {
             'type': RenderTemplateException.Type.syntax,
@@ -66,7 +69,7 @@ def applyTemplate(templateId, data):
             'lineno': e.lineno
         })
     except Exception, e:
-        print unicode(traceback.format_exc(), 'utf-8')
+        simple_logger.critical('Ошибка при генерации шаблона id = %s', templateId, exc_info=True)
         logging.critical('erroneous template id = %s', templateId, exc_info=True)
         tb = traceback.format_exc()
         if isinstance(tb, str):
