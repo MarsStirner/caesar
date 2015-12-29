@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import re
 import datetime
 from flask import g
@@ -9,11 +10,18 @@ from ..models.models_all import rbSpecialVariablesPreferences
 __author__ = 'mmalkov'
 
 
+simple_logger = logging.getLogger('simple')
+
+
 def SpecialVariable(name, *args, **kwargs):
     sp_variable = g.printing_session.query(rbSpecialVariablesPreferences).filter(rbSpecialVariablesPreferences.name == name).first()
+    if not sp_variable:
+        simple_logger.critical(u'Специальная переменная "%s" не найдена' % name)
+        raise RuntimeError(u'Специальная переменная "%s" не найдена' % name)
     # Проверка валидности sql-запроса
-    sql_text = sp_variable.query_text
-    if re.search(r"\W(delete|drop|insert|alter)\s", sql_text, re.I) or not re.match(r"^\s*SELECT", sql_text, re.I):
+    query_text = sp_variable.query_text
+    if re.search(r"\W(delete|drop|insert|alter)\s", query_text, re.I) or not re.match(r"^\s*SELECT", query_text, re.I):
+        simple_logger.critical(u'При работе со специальными переменными вы можете использовать только SELECT-запросы!\n' + query_text)
         raise RuntimeError(
             u"При работе со специальными переменными вы можете использовать только SELECT-запросы! "
             u"Проверьте тексты запросов.")
@@ -53,15 +61,22 @@ def SpecialVariable(name, *args, **kwargs):
         else:
             return unicode(value)
 
-    sql_text = re.sub('::?@?(\w+)', matcher, sql_text, flags=re.U)
+    exec_text = re.sub('::?@?(\w+)', matcher, query_text, flags=re.U)
 
     try:
-        result = g.printing_session.execute(sql_text).fetchall()
+        result = g.printing_session.execute(exec_text).fetchall()
     except ProgrammingError:
+        simple_logger.critical(u'Ошибка в тексте запроса специальной переменной "%s"\n\n%s\n\n%s' % (name, query_text, (args, kwargs)))
         print "Special Variable ERROR: ", name
         raise
     except OperationalError:
+        simple_logger.critical(u'Ошибка при выполнении запроса специальной переменной "%s"\n\n%s\n\n%s' % (name, query_text, (args, kwargs)))
+        print "Special Variable execution ERROR: ", name
+        raise
+    except:
+        simple_logger.critical(u'Неизвестная ошибка при выполнении запроса специальной переменной "%s"\n\n%s\n\n%s' % (name, query_text, (args, kwargs)))
         print "Special Variable execution ERROR: ", name
         raise
     else:
+        simple_logger.info(u'Специальная переменная "%s" выполнена' % name)
         return result
