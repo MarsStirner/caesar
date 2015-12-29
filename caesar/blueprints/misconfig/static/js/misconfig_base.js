@@ -110,11 +110,19 @@ WebMis20
     BasicModelConstructor.instantiateAll = function (args) {
         var klass = this;
         var url = klass.getListUrl(args);
+        var paginate = args === undefined ? false : Boolean(args.paginate);
         return ApiCalls.wrapper('GET', url, args)
             .then(function (data) {
-                return data.items.map(function (item) {
-                    return new klass(item);
-                });
+                if (paginate) {
+                    data.items = data.items.map(function (item) {
+                        return new klass(item);
+                    });
+                } else {
+                    data = data.items.map(function (item) {
+                        return new klass(item);
+                    });
+                }
+                return data;
             });
     };
     return BasicModelConstructor;
@@ -134,6 +142,31 @@ WebMis20
 }])
 .controller('MisConfigBaseCtrl', ['$scope', '$modal', 'MessageBox',
         function ($scope, $modal, MessageBox) {
+    /* API контроллера для редактирования списка записей:
+     - setViewParams - установка параметров поведения формы (страничный режим, наличие фильтра и пр.)
+     - setSimpleModalConfig - установка параметров модального диалога редактирования записи
+     - getEditModal - получить объект нового открытого модального диалога
+     - getUrlParam - получить значение аргумента из url
+     - _refreshData - обновить список записей
+     - create_new - получение новой модели записи с вызовом _editNew()
+     - _editNew - открытие диалога редактирования записи с последующим обновлением списка записей
+     - edit - редактирование записи с поледующим обновлением списка
+     - remove - получение записи по индексу и вызов _remove()
+     - _remove - процесс удаления записи
+     - restore - получение записи по индексу и вызов _restore()
+     - _remove - процесс отмены удаления записи
+     - canEdit - можно ли редактировать
+     - canDelete - можно ли удалить
+     - canUndelete - можно ли отменить удаление
+
+     */
+    var viewParams = {
+        paginate: false,
+        filter: false
+    };
+    $scope.setViewParams = function (new_params) {
+        angular.extend(viewParams, new_params);
+    };
     var _simpleModalConfig = {
         controller: 'SimpleConfigModalCtrl',
         size: 'lg',
@@ -161,6 +194,20 @@ WebMis20
 
     $scope.EntityClass = null;
     $scope.item_list = [];
+    $scope.pager = {
+        current_page: 1,
+        per_page: 15,
+        max_pages: 15,
+        pages: null,
+        record_count: null
+    };
+    $scope.flt = {
+        enabled: false,
+        model: {}
+    };
+    $scope._refreshData = function (args) {
+        return $scope.EntityClass.instantiateAll(args);
+    };
     $scope.create_new = function () {
         $scope.EntityClass.instantiate(undefined, {'new': true}).
             then(function (item) {
@@ -169,7 +216,11 @@ WebMis20
     };
     $scope._editNew = function (item) {
         getSimpleEditModal(item).result.then(function (item) {
-            $scope.item_list.push(item);
+            if (viewParams.paginate) {
+                $scope.refreshData();
+            } else {
+                $scope.item_list.push(item);
+            }
         });
     };
     $scope.edit = function (index) {

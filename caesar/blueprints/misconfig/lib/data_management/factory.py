@@ -18,6 +18,7 @@ from .expert_protocol import (MeasureModelManager, ExpertProtocolModelManager, E
 from .person import PersonModelManager, PersonCurationModelManager
 from .print_template import RbPrintTemplateModelManager
 from .pricelist import PriceListModelManager, PriceListItemModelManager
+from .rbservice import RbServiceModelManager
 
 
 all_rbs = {
@@ -53,7 +54,6 @@ simple_rbs = [
     'rbMeasureScheduleApplyType', 'rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology',
     # next are used only for backend data manipulation, they are not presented on frontend ui
     'rbPost', 'rbSpeciality', 'rbUnits', 'rbRequestType', 'rbEventTypePurpose', 'rbUserProfile', 'EventType',
-    'rbService'
 ]
 
 rb_groups = {
@@ -95,10 +95,12 @@ def get_manager(name, **params):
         return SimpleRefBookModelManager(all_rbs[name])
     elif name == 'rbTreatment':
         return RbTreatmentModelManager()
+    elif name == 'rbService':
+        return RbServiceModelManager()
     elif name == 'Organisation':
         return OrganisationModelManager(**params)
     elif name == 'OrgStructure':
-        return OrgStructureModelManager(**params)
+        return OrgStructureModelManager()
     elif name == 'Measure':
         return MeasureModelManager()
     elif name == 'ExpertProtocol':

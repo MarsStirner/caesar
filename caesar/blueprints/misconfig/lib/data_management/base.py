@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from nemesis.lib.utils import safe_dict, safe_traverse
+from flask import abort
+
+from nemesis.lib.utils import safe_dict, safe_int
 from nemesis.systemwide import db
+from nemesis.lib.pagination import Pagination
 
 
 class FCType(object):
@@ -72,6 +75,46 @@ class BaseModelManager(object):
                 *options
             )
         return query.all()
+
+    def get_paginated_data(self, **kwargs):
+        per_page = safe_int(kwargs.get('per_page')) or 20
+        page = safe_int(kwargs.get('page')) or 1
+        query = self._model.query
+        where = kwargs.get('where')
+        if where:
+            query = query.filter(*where)
+        order = kwargs.get('order')
+        if order:
+            query = query.order_by(*order)
+        options = kwargs.get('options')
+        if options:
+            query = query.options(
+                *options
+            )
+        paginated_data = self._paginate(query, page, per_page)
+        return paginated_data
+
+    def _paginate(self, query, page, per_page=20, error_out=False):
+        """Returns `per_page` items from page `page`.  By default it will
+        abort with 404 if no items were found and the page was larger than
+        1.  This behavor can be disabled by setting `error_out` to `False`.
+
+        Returns an :class:`Pagination` object.
+        """
+        if error_out and page < 1:
+            abort(404)
+        items = query.limit(per_page).offset((page - 1) * per_page).all()
+        if not items and page != 1 and error_out:
+            abort(404)
+
+        # No need to count if we're on the first page and there are fewer
+        # items than we expected.
+        if page == 1 and len(items) < per_page:
+            total = len(items)
+        else:
+            total = query.order_by(None).count()
+
+        return Pagination(query, page, per_page, total, items)
 
     def fill(self, item, data, parent_obj=None):
         for field in self._fields:

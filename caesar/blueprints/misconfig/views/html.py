@@ -105,3 +105,8 @@ def price_list_html(pricelist_id=None):
             abort(404)
         return render_template('misconfig/pricelist/pricelist.html', pricelist=pl)
     return render_template('misconfig/pricelist/pricelist-list.html')
+
+
+@module.route('/rbservice/')
+def rbservice_html():
+    return render_template('misconfig/refbook/rbservice-list.html')

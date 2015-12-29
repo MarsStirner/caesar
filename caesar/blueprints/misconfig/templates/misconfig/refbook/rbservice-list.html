@@ -1,0 +1,65 @@
+{% extends 'misconfig/base.html' %}
+
+{% block content %}
+<div class="container-fluid" ng-controller="RbServiceListConfigCtrl" ng-cloak>
+    <alert-notify></alert-notify>
+    <ul class="breadcrumb">
+        <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
+        <li>Справочник услуг</li>
+    </ul>
+    <div class="row">
+    <div class="col-md-12">
+        <table class="table table-condensed">
+            <thead>
+                <tr>
+                <th>id</th>
+                <th>Код</th>
+                <th>Наименование</th>
+                <th>Дата начала действия</th>
+                <th>Дата окончания действия</th>
+                <th>Удалён</th>
+                <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="(key, item) in item_list" ng-class="{'bg-danger': item.deleted}">
+                    <td>[[ item.id ]]</td>
+                    <td>[[ item.code ]]</td>
+                    <td>[[ item.name ]]</td>
+                    <td>[[ item.beg_date | asDate ]]</td>
+                    <td>[[ item.end_date | asDate ]]</td>
+                    <td>[[ item.deleted ]]</td>
+                    <td class="nowrap" width="1%">
+                        <button type="button" class="btn btn-primary" ng-if="canEdit(item)" ng-click="edit($index)" title="Редактировать">
+                            <i class="fa fa-pencil"></i></button>
+                        <button type="button" class="btn btn-danger" ng-if="canDelete(item)" ng-click="remove($index)" title="Удалить">
+                            <i class="fa fa-trash"></i></button>
+                        <button type="button" class="btn btn-info" ng-if="canUndelete(item)" ng-click="restore($index)" title="Восстановить">
+                            <i class="fa fa-undo"></i></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="row">
+    <div class="col-md-8">
+        <pagination ng-model="pager.current_page" total-items="pager.pages" items-per-page="1"
+            max-size="pager.max_pages" ng-change="onPageChanged()" ng-show="pager.pages > 1" boundary-links="true"
+            class="pagination pagination-sm pagination-nomargin">
+        </pagination>
+    </div>
+    <div class="col-md-4">
+        <button type="button" class="btn btn-lg btn-success pull-right" ng-click="create_new()"
+            title="Добавить запись"><i class="fa fa-plus"> Добавить запись</i>
+        </button>
+    </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modules_js %}
+{{ super() }}
+<script src="{{ url_for('.static', filename='js/rbservice/models.js', v=version) }}"></script>
+<script src="{{ url_for('.static', filename='js/rbservice/rbservice.js', v=version) }}"></script>
+<script type="text/ng-template" id="/caesar/misconfig/refbook/rbservice-edit-modal.html">{% include "misconfig/refbook/rbservice-edit-modal.html" %}</script>
+{% endblock %}
