@@ -59,22 +59,22 @@ def SpecialVariable(name, *args, **kwargs):
         elif isinstance(value, datetime.time):
             return u"'%s'" % value.strftime('%H:%M')
         else:
-            return unicode(value)
+            return unicode(value).replace("'", "\'")
 
     exec_text = re.sub('::?@?(\w+)', matcher, query_text, flags=re.U)
 
     try:
         result = g.printing_session.execute(exec_text).fetchall()
     except ProgrammingError:
-        simple_logger.critical(u'Ошибка в тексте запроса специальной переменной "%s"\n\n%s\n\n%s' % (name, query_text, (args, kwargs)))
+        simple_logger.critical(u'Ошибка в тексте запроса специальной переменной "%s"\n\n%s\n\n%s\n\n%s' % (name, query_text, (args, kwargs), exec_text))
         print "Special Variable ERROR: ", name
         raise
     except OperationalError:
-        simple_logger.critical(u'Ошибка при выполнении запроса специальной переменной "%s"\n\n%s\n\n%s' % (name, query_text, (args, kwargs)))
+        simple_logger.critical(u'Ошибка при выполнении запроса специальной переменной "%s"\n\n%s\n\n%s\n\n%s' % (name, query_text, (args, kwargs), exec_text))
         print "Special Variable execution ERROR: ", name
         raise
     except:
-        simple_logger.critical(u'Неизвестная ошибка при выполнении запроса специальной переменной "%s"\n\n%s\n\n%s' % (name, query_text, (args, kwargs)))
+        simple_logger.critical(u'Неизвестная ошибка при выполнении запроса специальной переменной "%s"\n\n%s\n\n%s\n\n%s' % (name, query_text, (args, kwargs), exec_text))
         print "Special Variable execution ERROR: ", name
         raise
     else:
