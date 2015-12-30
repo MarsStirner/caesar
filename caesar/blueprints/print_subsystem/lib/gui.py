@@ -61,16 +61,16 @@ def applyTemplate(templateId, data):
     try:
         return renderTemplate(template_data.templateText, data)
     except TemplateSyntaxError, e:
-        simple_logger.critical('Синтаксическая ошибка в шаблоне id = %s', templateId, exc_info=True)
-        logging.error('syntax error in template id = %s', templateId, exc_info=True)
+        simple_logger.critical(u'Синтаксическая ошибка в шаблоне id = %s', templateId, exc_info=True)
+        logging.error(u'syntax error in template id = %s', templateId, exc_info=True)
         raise RenderTemplateException(e.message, {
             'type': RenderTemplateException.Type.syntax,
             'template_name': template_data.name,
             'lineno': e.lineno
         })
     except Exception, e:
-        simple_logger.critical('Ошибка при генерации шаблона id = %s', templateId, exc_info=True)
-        logging.critical('erroneous template id = %s', templateId, exc_info=True)
+        simple_logger.critical(u'Ошибка при генерации шаблона id = %s', templateId, exc_info=True)
+        logging.critical(u'erroneous template id = %s', templateId, exc_info=True)
         tb = traceback.format_exc()
         if isinstance(tb, str):
             tb = tb.decode('utf-8')
