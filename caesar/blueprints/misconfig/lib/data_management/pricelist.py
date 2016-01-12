@@ -4,7 +4,7 @@ from sqlalchemy.orm import joinedload
 
 from .base import BaseModelManager, FieldConverter, FCType
 from nemesis.models.accounting import PriceList, PriceListItem
-from nemesis.lib.utils import (safe_int, safe_unicode, safe_double, safe_date)
+from nemesis.lib.utils import (safe_int, safe_unicode, safe_double, safe_date, safe_bool)
 
 
 class PriceListModelManager(BaseModelManager):
@@ -38,6 +38,7 @@ class PriceListItemModelManager(BaseModelManager):
             FieldConverter(FCType.basic, 'serviceNameOW', safe_unicode, 'service_name'),
             FieldConverter(FCType.basic, 'deleted', safe_int, 'deleted'),
             FieldConverter(FCType.basic, 'price', safe_double, 'price'),
+            FieldConverter(FCType.basic, 'isAccumulativePrice', safe_int, 'is_accumulative_price', safe_bool),
             FieldConverter(
                 FCType.relation,
                 'service', (self.handle_onetomany_nonedit, ),
@@ -63,3 +64,10 @@ class PriceListItemModelManager(BaseModelManager):
             where.append(self._model.priceList_id.__eq__(kwargs['pricelist_id']))
         options = [joinedload(PriceListItem.service)]
         return super(PriceListItemModelManager, self).get_list(where=where, options=options)
+
+    def get_paginated_data(self, **kwargs):
+        where = []
+        if 'pricelist_id' in kwargs:
+            where.append(self._model.priceList_id.__eq__(kwargs['pricelist_id']))
+        options = [joinedload(PriceListItem.service)]
+        return super(PriceListItemModelManager, self).get_paginated_data(where=where, options=options, **kwargs)

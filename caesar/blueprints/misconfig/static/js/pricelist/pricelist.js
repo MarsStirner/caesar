@@ -14,7 +14,6 @@ WebMis20
         $window.location.href = WMConfig.url.misconfig.html_price_list + $scope.item_list[idx].id;
     };
 
-    $scope.model = [];
     PriceList.instantiateAll().then(function (pricelist) {
         $scope.item_list = pricelist;
     });
@@ -22,8 +21,61 @@ WebMis20
 .controller('PricelistConfigCtrl', ['$scope', '$controller', 'PriceListItem',
         function ($scope, $controller, PriceListItem) {
     $controller('MisConfigBaseCtrl', {$scope: $scope});
+    $scope.setViewParams({paginate: true});
     $scope.EntityClass = PriceListItem;
+    $scope.setSimpleModalConfig({
+        controller: 'PricelistItemConfigModalCtrl',
+        size: 'lg',
+        templateUrl: '/caesar/misconfig/pricelist/pricelist-item-edit-modal.html'
+    });
 
+    var setData = function (paged_data) {
+        $scope.item_list = paged_data.items;
+        $scope.pager.record_count = paged_data.count;
+        $scope.pager.pages = paged_data.total_pages;
+    };
+    $scope.refreshData = function () {
+        var args = {
+            paginate: true,
+            page: $scope.pager.current_page,
+            per_page: $scope.pager.per_page,
+            pricelist_id: $scope.pricelist_id  //,
+            //number: $scope.flt.model.number || undefined,
+            //finance_id: safe_traverse($scope.flt.model, ['finance_type', 'id']),
+            //payer_query: $scope.flt.model.payer_query || undefined,
+            //recipient_query: $scope.flt.model.recipient_query || undefined,
+            //beg_date_from: $scope.flt.model.beg_date_from || undefined,
+            //beg_date_to: $scope.flt.model.beg_date_to || undefined,
+            //end_date_from: $scope.flt.model.end_date_from || undefined,
+            //end_date_to: $scope.flt.model.end_date_to || undefined,
+            //set_date_from: $scope.flt.model.set_date_from || undefined,
+            //set_date_to: $scope.flt.model.set_date_to || undefined
+        };
+        $scope._refreshData(args).then(setData);
+    };
+    $scope.onPageChanged = function () {
+        $scope.refreshData();
+    };
+    $scope.toggleFilter = function () {
+        $scope.flt.enabled = !$scope.flt.enabled;
+    };
+    $scope.isFilterEnabled = function () {
+        return $scope.flt.enabled;
+    };
+    $scope.clear = function () {
+        $scope.pager.current_page = 1;
+        $scope.pager.pages = null;
+        $scope.pager.record_count = null;
+        $scope.flt.model = {};
+    };
+    $scope.clearAll = function () {
+        $scope.clear();
+        $scope.item_list = [];
+    };
+    $scope.getData = function () {
+        $scope.pager.current_page = 1;
+        $scope.refreshData();
+    };
     $scope.create_new = function () {
         $scope.EntityClass.instantiate(undefined, {'new': true, pricelist_id: $scope.pricelist_id}).
             then(function (item) {
@@ -33,18 +85,8 @@ WebMis20
 
     $scope.init = function (pricelist_id) {
         $scope.pricelist_id = pricelist_id;
-        PriceListItem.instantiateAll({
-            pricelist_id: $scope.pricelist_id
-        }).then(function (items) {
-            $scope.item_list = items;
-        });
+        $scope.refreshData();
     };
-
-    $scope.setSimpleModalConfig({
-        controller: 'PricelistItemConfigModalCtrl',
-        size: 'lg',
-        templateUrl: '/caesar/misconfig/pricelist/pricelist-item-edit-modal.html'
-    });
 }])
 .controller('PricelistItemConfigModalCtrl', ['$scope', '$modalInstance', 'model',
     function ($scope, $modalInstance, model) {
@@ -53,6 +95,11 @@ WebMis20
         $scope.onServiceChanged = function () {
             $scope.model.service_code = $scope.model.service.code;
             $scope.model.service_name = $scope.model.service.name;
+        };
+        $scope.onChkAggregatedChanged = function () {
+            if ($scope.model.is_accumulative_price) {
+                $scope.model.price = '0';
+            }
         };
         $scope.close = function () {
             $scope.model.save().

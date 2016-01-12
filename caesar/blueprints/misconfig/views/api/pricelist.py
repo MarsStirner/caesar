@@ -88,10 +88,25 @@ def api_v1_pricelist_item_get(pricelist_id, item_id=None):
 @module.route('/api/v1/pricelist/<int:pricelist_id>/item/list/', methods=['GET'])
 @api_method
 def api_v1_pricelist_item_list_get(pricelist_id):
+    args = request.args.to_dict()
+    if request.json:
+        args.update(request.json)
+    paginate = safe_bool(args.get('paginate', True))
     mng = get_manager('PriceListItem')
-    return {
-        'items': map(mng.represent, mng.get_list(pricelist_id=pricelist_id))
-    }
+    if paginate:
+        data = mng.get_paginated_data(**args)
+        return {
+            'count': data.total,
+            'total_pages': data.pages,
+            'items': [
+                mng.represent(item) for item in data.items
+            ]
+        }
+    else:
+        data = mng.get_list(**args)
+        return {
+            'items': map(mng.represent, data)
+        }
 
 
 @module.route('/api/v1/pricelist/<int:pricelist_id>/item/', methods=['POST'])

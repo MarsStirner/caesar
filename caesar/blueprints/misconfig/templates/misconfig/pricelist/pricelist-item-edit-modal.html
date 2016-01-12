@@ -50,6 +50,16 @@
         </div>
     </div>
 
+    <div class="form-group">
+        <label for="is_accumulative_price" class="col-sm-3 control-label"
+            title="для комплексных услуг итоговая стоимость может рассчитываться по стоимостям услуг, входящих в эту группу услуг, по соответствующим позициям прайс-листа">
+            Составная стоимость</label>
+        <div class="col-sm-9">
+            <input ng-model="model.is_accumulative_price" type="checkbox" id="is_accumulative_price"
+                ng-change="onChkAggregatedChanged()">
+        </div>
+    </div>
+
 </form>
 </div>
 <div class="modal-footer">

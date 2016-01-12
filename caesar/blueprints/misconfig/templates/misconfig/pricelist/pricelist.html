@@ -26,11 +26,11 @@
             </thead>
             <tbody>
                 <tr ng-repeat="(key, item) in item_list" ng-class="{'bg-danger': item.deleted}">
-                    <td bind-once>[[ item.id ]]</td>
-                    <td bind-once>[[ item.service.name ]]</td>
-                    <td bind-once>[[ item.service_code ]]</td>
-                    <td bind-once>[[ item.service_name ]]</td>
-                    <td bind-once>[[ item.price ]]</td>
+                    <td>[[ item.id ]]</td>
+                    <td>[[ item.service.name ]]</td>
+                    <td>[[ item.service_code ]]</td>
+                    <td>[[ item.service_name ]]</td>
+                    <td>[[ item.price ]]</td>
                     <td>[[ item.beg_date | asDate ]]</td>
                     <td>[[ item.end_date | asDate ]]</td>
                     <td>[[ item.deleted ]]</td>
@@ -46,10 +46,18 @@
             </tbody>
         </table>
     </div>
-    <div class="clearfix">
+    <div class="row">
+    <div class="col-md-8">
+        <pagination ng-model="pager.current_page" total-items="pager.pages" items-per-page="1"
+            max-size="pager.max_pages" ng-change="onPageChanged()" ng-show="pager.pages > 1" boundary-links="true"
+            class="pagination pagination-sm pagination-nomargin">
+        </pagination>
+    </div>
+    <div class="col-md-4">
         <button type="button" class="btn btn-lg btn-success pull-right" ng-click="create_new()"
             title="Добавить запись"><i class="fa fa-plus"> Добавить запись</i>
         </button>
+    </div>
     </div>
     </div>
 </div>

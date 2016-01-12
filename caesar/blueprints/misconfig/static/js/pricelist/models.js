@@ -20,7 +20,7 @@ WebMis20
     PriceListItem.inheritsFrom(BasicModel);
     PriceListItem.initialize({
         fields: ['id', 'pricelist_id', 'beg_date', 'end_date', 'service_code', 'service_name',
-            'deleted', 'price', 'service']
+            'deleted', 'price', 'is_accumulative_price', 'service']
     }, PriceListItem);
     PriceListItem.getBaseUrl = function (args) {
         return WMConfig.url.misconfig.api_pricelist_item_base.format(args.pricelist_id);
