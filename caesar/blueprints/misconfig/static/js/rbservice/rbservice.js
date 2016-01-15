@@ -75,6 +75,9 @@ WebMis20
             return $scope.model.is_complex;
         };
         $scope.addNewItem = function () {
+            // disable simple looped service groups
+            if ($scope.new_item.model.id === $scope.model.id) return;
+
             $scope.model.subservice_list.push($scope.new_item.model);
             $scope.new_item.model = null;
         };
