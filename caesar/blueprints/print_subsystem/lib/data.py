@@ -468,7 +468,7 @@ class Print_Template(object):
                 'check_invoice_can_add_discounts': check_invoice_can_add_discounts
             }
         }
-    
+
     def context_biomaterials(self, data):
         ttj_ids = data.get('ttj_ids')
         ttj_records = g.printing_session.query(TakenTissueJournal).filter(TakenTissueJournal.id.in_(ttj_ids)).all()

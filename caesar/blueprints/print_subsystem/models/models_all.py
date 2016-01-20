@@ -6450,7 +6450,7 @@ class rlsTradeName(Info):
     localName = Column(String(255))
 
     def __unicode__(self):
-        return self.name
+        return self.name if self.name else ''
 
 
 class trfuFinalVolume(Info):
