@@ -21,7 +21,7 @@ class FieldConverter():
         self.field_type = field_type
         self.m_name = model_name
         self.j_name = json_name
-        self.manager = model_manager
+        self._manager = model_manager
 
         if self.field_type in (FCType.basic, FCType.relation) and to_model is None:
             raise AttributeError('`to_model` parameter is required for valid model value conversion')
@@ -39,6 +39,14 @@ class FieldConverter():
             self.to_json = lambda *args: to_json(self, *args)
         else:
             self.to_json = to_json
+
+    @property
+    def manager(self):
+        if callable(self._manager):
+            return self._manager()
+        else:
+            return self._manager
+
 
 
 def represent_model(value, manager):

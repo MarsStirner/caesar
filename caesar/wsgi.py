@@ -98,6 +98,8 @@ def caesar_urls():
                 'api_pricelist_list_base': url_for('misconfig.api_v1_pricelist_list_get'),
                 'api_pricelist_item_base': url_for('misconfig.api_v1_pricelist_item_get', pricelist_id=-99999).replace('-99999', '{0}'),
                 'api_pricelist_item_list_base': url_for('misconfig.api_v1_pricelist_item_list_get', pricelist_id=-99999).replace('-99999', '{0}'),
+                # rbservice
+                'api_rb_service_group_assoc_base': url_for('misconfig.api_v1_rb_service_group_assoc_get')
             }
         },
     }

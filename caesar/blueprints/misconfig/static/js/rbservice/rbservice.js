@@ -69,7 +69,8 @@ WebMis20
     function ($scope, $modalInstance, model) {
         $scope.model = model;
         $scope.new_item = {
-            model: null
+            model: null,
+            service_kind: null
         };
         $scope.isComplex = function () {
             return $scope.model.is_complex;
@@ -78,11 +79,18 @@ WebMis20
             // disable simple looped service groups
             if ($scope.new_item.model.id === $scope.model.id) return;
 
-            $scope.model.subservice_list.push($scope.new_item.model);
-            $scope.new_item.model = null;
+            $scope.model.getNewGroupItem()
+                .then(function (assoc_group) {
+                    assoc_group.service_kind = $scope.new_item.service_kind;
+                    assoc_group.subservice = $scope.new_item.model;
+
+                    $scope.model.addGroupItem(assoc_group);
+                    $scope.new_item.model = null;
+                    $scope.new_item.service_kind = null;
+                });
         };
         $scope.removeItem = function (idx) {
-            $scope.model.subservice_list.splice(idx, 1);
+            $scope.model.removeGroupItem(idx)
         };
         $scope.btnAddItemDisabled = function () {
             return !safe_traverse($scope.new_item, ['model', 'id']);

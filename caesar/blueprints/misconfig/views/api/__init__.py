@@ -13,3 +13,5 @@ from person_curation import *
 from print_template import *
 
 from pricelist import *
+
+from rbservice import *

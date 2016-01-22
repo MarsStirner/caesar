@@ -49,26 +49,42 @@
                 <div class="row">
                 <div class="col-md-12">
                     <ul class="list-group">
-                        <li ng-repeat="subservice in model.subservice_list" class="list-group-item">
-                            <span>[[ subservice.code ]], [[ subservice.name ]]</span>
+                        <li ng-repeat="assoc in model.subservice_assoc" class="list-group-item">
                             <span class="fa fa-remove text-danger cursor-pointer pull-right"
                                 ng-click="removeItem($index)" title="Удалить"></span>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <ui-select ng-model="assoc.subservice" theme="select2" ext-select-rb-service
+                                        append-to-body="true" placeholder="Выберите услугу, входящую в текущую группу услуг">
+                                    </ui-select>
+                                </div>
+                                <div class="col-md-3">
+                                    <rb-select ng-model="assoc.service_kind" theme="select2" ref-book="rbServiceKind"
+                                        append-to-body="true" placeholder="Вид услуги в группе">
+                                    </rb-select>
+                                </div>
+                            </div>
                         </li>
                     </ul>
                 </div>
                 </div>
                 <div class="row">
-                <div class="col-md-9">
-                    <rb-select ng-model="new_item.model" ref-book="rbService" theme="select2"
-                        append-to-body="true" placeholder="Выберите услугу, входящую в текущую группу услуг">
-                    </rb-select>
-                </div>
-                <div class="col-md-3">
-                    <button type="button" class="btn btn-sm btn-primary pull-right" ng-click="addNewItem()"
-                        ng-disabled="btnAddItemDisabled()">
-                        <span class="fa fa-plus"> Добавить запись</span>
-                    </button>
-                </div>
+                    <div class="col-md-6">
+                        <ui-select ng-model="new_item.model" theme="select2" ext-select-rb-service
+                            append-to-body="true" placeholder="Выберите услугу, входящую в текущую группу услуг">
+                        </ui-select>
+                    </div>
+                    <div class="col-md-3">
+                        <rb-select ng-model="new_item.service_kind" theme="select2" ref-book="rbServiceKind"
+                            append-to-body="true" placeholder="Вид услуги в группе">
+                        </rb-select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="button" class="btn btn-sm btn-primary pull-right" ng-click="addNewItem()"
+                            ng-disabled="btnAddItemDisabled()">
+                            <span class="fa fa-plus"> Добавить запись</span>
+                        </button>
+                    </div>
                 </div>
             </div>
             </div>

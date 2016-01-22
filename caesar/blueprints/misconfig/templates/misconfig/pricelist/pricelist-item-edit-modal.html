@@ -7,8 +7,9 @@
     <div class="form-group">
         <label for="service" class="col-sm-3 control-label">Услуга</label>
         <div class="col-sm-9">
-            <rb-select ng-model="model.service" ref-book="rbService" id="service" placeholder="Услуга"
-                ng-change="onServiceChanged()"></rb-select>
+            <ui-select ng-model="model.service" theme="select2" ext-select-rb-service id="service"
+                ng-change="onServiceChanged()" placeholder="Услуга">
+            </ui-select>
         </div>
     </div>
 
