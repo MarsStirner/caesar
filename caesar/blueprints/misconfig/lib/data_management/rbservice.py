@@ -22,6 +22,25 @@ class RbServiceModelManager(SimpleRefBookModelManager):
             )
         ])
 
+    def filter_(self, **kwargs):
+        query = self._model.query
+        if 'name' in kwargs:
+            query = query.filter(rbService.name.like(u'%{0}%'.format(kwargs['name'])))
+        if 'code' in kwargs:
+            query = query.filter(rbService.code.like(u'%{0}%'.format(kwargs['code'])))
+        if 'beg_date_from' in kwargs:
+            query = query.filter(rbService.begDate >= safe_date(kwargs['beg_date_from']))
+        if 'beg_date_to' in kwargs:
+            query = query.filter(rbService.begDate <= safe_date(kwargs['beg_date_to']))
+        if 'end_date_from' in kwargs:
+            query = query.filter(rbService.endDate >= safe_date(kwargs['end_date_from']))
+        if 'end_date_to' in kwargs:
+            query = query.filter(rbService.endDate <= safe_date(kwargs['end_date_to']))
+        if 'is_complex' in kwargs:
+            query = query.filter(rbService.isComplex == safe_int(safe_bool(kwargs['is_complex'])))
+
+        return query
+
 
 class RbServiceGroupAssocModelManager(BaseModelManager):
 

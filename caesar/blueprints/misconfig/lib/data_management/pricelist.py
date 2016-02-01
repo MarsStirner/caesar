@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from sqlalchemy.orm import joinedload
-
 from .base import BaseModelManager, FieldConverter, FCType
 from nemesis.models.accounting import PriceList, PriceListItem
 from nemesis.lib.utils import (safe_int, safe_unicode, safe_double, safe_date, safe_bool)
@@ -58,16 +56,21 @@ class PriceListItemModelManager(BaseModelManager):
             item.endDate = pricelist.endDate
         return item
 
-    def get_list(self, **kwargs):
-        where = []
+    def filter_(self, **kwargs):
+        query = self._model.query
+        if 'name' in kwargs:
+            query = query.filter(PriceListItem.serviceNameOW.like(u'%{0}%'.format(kwargs['name'])))
+        if 'code' in kwargs:
+            query = query.filter(PriceListItem.serviceCodeOW.like(u'%{0}%'.format(kwargs['code'])))
+        if 'beg_date_from' in kwargs:
+            query = query.filter(PriceListItem.begDate >= safe_date(kwargs['beg_date_from']))
+        if 'beg_date_to' in kwargs:
+            query = query.filter(PriceListItem.begDate <= safe_date(kwargs['beg_date_to']))
+        if 'end_date_from' in kwargs:
+            query = query.filter(PriceListItem.endDate >= safe_date(kwargs['end_date_from']))
+        if 'end_date_to' in kwargs:
+            query = query.filter(PriceListItem.endDate <= safe_date(kwargs['end_date_to']))
         if 'pricelist_id' in kwargs:
-            where.append(self._model.priceList_id.__eq__(kwargs['pricelist_id']))
-        options = [joinedload(PriceListItem.service)]
-        return super(PriceListItemModelManager, self).get_list(where=where, options=options)
+            query = query.filter(PriceListItem.priceList_id == kwargs['pricelist_id'])
 
-    def get_paginated_data(self, **kwargs):
-        where = []
-        if 'pricelist_id' in kwargs:
-            where.append(self._model.priceList_id.__eq__(kwargs['pricelist_id']))
-        options = [joinedload(PriceListItem.service)]
-        return super(PriceListItemModelManager, self).get_paginated_data(where=where, options=options, **kwargs)
+        return query

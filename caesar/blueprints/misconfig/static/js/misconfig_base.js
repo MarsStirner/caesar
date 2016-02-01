@@ -256,6 +256,26 @@ WebMis20
     $scope.canUndelete = function (item) {
         return item.deleted !== undefined && item.deleted;
     };
+    $scope.toggleFilter = function () {
+        $scope.flt.enabled = !$scope.flt.enabled;
+    };
+    $scope.isFilterEnabled = function () {
+        return $scope.flt.enabled;
+    };
+    $scope.clear = function () {
+        $scope.flt.model = {};
+    };
+    $scope.clearAll = function () {
+        $scope.clear();
+        $scope.pager.current_page = 1;
+        $scope.pager.pages = null;
+        $scope.pager.record_count = null;
+        $scope.item_list = [];
+    };
+    $scope.getData = function () {
+        $scope.pager.current_page = 1;
+        $scope.refreshData();
+    };
 }])
 .controller('SimpleConfigModalCtrl', ['$scope', '$modalInstance', 'model',
     function ($scope, $modalInstance, model) {

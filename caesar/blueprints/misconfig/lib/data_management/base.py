@@ -48,7 +48,6 @@ class FieldConverter():
             return self._manager
 
 
-
 def represent_model(value, manager):
     if isinstance(value, list):
         return map(manager.represent, value)
@@ -69,11 +68,16 @@ class BaseModelManager(object):
     def get_by_id(self, item_id):
         return self._model.query.get(item_id)
 
+    def filter_(self, **kwargs):
+        return self._model.query
+
     def get_list(self, **kwargs):
         query = self._model.query
         where = kwargs.get('where')
         if where:
             query = query.filter(*where)
+        else:
+            query = self.filter_(**kwargs)
         order = kwargs.get('order')
         if order:
             query = query.order_by(*order)
@@ -91,6 +95,8 @@ class BaseModelManager(object):
         where = kwargs.get('where')
         if where:
             query = query.filter(*where)
+        else:
+            query = self.filter_(**kwargs)
         order = kwargs.get('order')
         if order:
             query = query.order_by(*order)
@@ -139,14 +145,6 @@ class BaseModelManager(object):
                 else:
                     raise AttributeError('bad field type')
 
-                # TODO: check
-                # if isinstance(getattr(item, item_field_name), list):
-                #     if isinstance(value, list):
-                #         getattr(item, item_field_name).extend(value)
-                #     else:
-                #         getattr(item, item_field_name).append(value)
-                # else:
-                #     setattr(item, item_field_name, value)
                 setattr(item, item_field_name, value)
         return item
 

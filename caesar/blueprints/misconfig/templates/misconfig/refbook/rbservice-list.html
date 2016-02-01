@@ -8,7 +8,60 @@
         <li>Справочник услуг</li>
     </ul>
     <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-3" ng-show="isFilterEnabled()">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">Фильтр</h3>
+            </div>
+            <div class="panel-body">
+                <label for="filter-name">Наименование</label>
+                <input class="form-control" id="filter-name" type="text" ng-model="flt.model.name" placeholder="Наименование">
+
+                <label for="filter-code">Код</label>
+                <input class="form-control" id="filter-code" type="text" ng-model="flt.model.code" placeholder="Код">
+
+                <label for="filter-beg-date-from">Начало действия (от, до)</label>
+                <div class="row">
+                    <div class="col-md-6">
+                        <wm-date id="filter-beg-date-from" ng-model="flt.model.beg_date_from"></wm-date>
+                    </div>
+                    <div class="col-md-6">
+                        <wm-date id="filter-beg-date-to" ng-model="flt.model.beg_date_to"></wm-date>
+                    </div>
+                </div>
+
+                <label for="filter-end-date">Окончание действия (от, до)</label>
+                <div class="row">
+                    <div class="col-md-6">
+                        <wm-date id="filter-end-date-from" ng-model="flt.model.end_date_from"></wm-date>
+                    </div>
+                    <div class="col-md-6">
+                        <wm-date id="filter-end-date-to" ng-model="flt.model.end_date_to"></wm-date>
+                    </div>
+                </div>
+
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" ng-model="flt.model.is_complex">Является комплексной
+                    </label>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <button class="btn btn-default" ng-click="getData()">Получить данные</button>
+                <div class="btn-group">
+                    <button class="btn btn-default" ng-click="clear()">Сбросить</button>
+                    <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                        <span class="caret"></span>
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a ng-click="clearAll()">Сбросить и очистить результаты</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-[[ isFilterEnabled() ? 9 : 12 ]]">
         <table class="table table-condensed">
             <thead>
                 <tr>
@@ -41,14 +94,22 @@
             </tbody>
         </table>
     </div>
+    </div>
+
     <div class="row">
-    <div class="col-md-8">
+    <div class="[[ isFilterEnabled() ? 'col-md-offset-3' : '' ]] col-md-1">
+        <button type="button" title="[[ isFilterEnabled() ? 'Скрыть' : 'Показать' ]] фильтр" ng-click="toggleFilter()"
+            class="btn btn-primary">
+            <i class="fa fa-filter"></i>
+        </button>
+    </div>
+    <div class="col-md-[[ isFilterEnabled() ? 5 : 7 ]]">
         <pagination ng-model="pager.current_page" total-items="pager.pages" items-per-page="1"
             max-size="pager.max_pages" ng-change="onPageChanged()" ng-show="pager.pages > 1" boundary-links="true"
             class="pagination pagination-sm pagination-nomargin">
         </pagination>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-[[ isFilterEnabled() ? 3 : 4 ]]">
         <button type="button" class="btn btn-lg btn-success pull-right" ng-click="create_new()"
             title="Добавить запись"><i class="fa fa-plus"> Добавить запись</i>
         </button>
