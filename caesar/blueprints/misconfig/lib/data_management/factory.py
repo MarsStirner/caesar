@@ -7,6 +7,7 @@ from nemesis.models.event import EventType
 from nemesis.models.person import rbPost, rbOrgCurationLevel, rbSpeciality, rbUserProfile
 from nemesis.models.risar import rbPerinatalRiskRate, rbPregnancyPathology
 from nemesis.models.refbooks import rbUnits
+from nemesis.models.accounting import rbServiceKind
 from nemesis.lib.settings import Settings
 
 from .refbook import (SimpleRefBookModelManager, RbTreatmentModelManager, RbPerinatalRRModelManager,
@@ -18,6 +19,7 @@ from .expert_protocol import (MeasureModelManager, ExpertProtocolModelManager, E
 from .person import PersonModelManager, PersonCurationModelManager
 from .print_template import RbPrintTemplateModelManager
 from .pricelist import PriceListModelManager, PriceListItemModelManager
+from .rbservice import RbServiceModelManager, RbServiceGroupAssocModelManager
 
 
 all_rbs = {
@@ -40,12 +42,14 @@ all_rbs = {
     'rbPregnancyPathology': rbPregnancyPathology,
     'rbUnits': rbUnits,
     'rbEventTypePurpose': rbEventTypePurpose,
-    'rbUserProfile': rbUserProfile
+    'rbUserProfile': rbUserProfile,
+    'rbServiceKind': rbServiceKind
 }
 
 basic_rbs = [
     'rbPacientModel', 'rbTreatment', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType',
-    'rbMeasureScheduleApplyType', 'rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology', 'rbUnits'
+    'rbMeasureScheduleApplyType', 'rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology', 'rbUnits',
+    'rbServiceKind'
 ]
 
 simple_rbs = [
@@ -53,7 +57,7 @@ simple_rbs = [
     'rbMeasureScheduleApplyType', 'rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology',
     # next are used only for backend data manipulation, they are not presented on frontend ui
     'rbPost', 'rbSpeciality', 'rbUnits', 'rbRequestType', 'rbEventTypePurpose', 'rbUserProfile', 'EventType',
-    'rbService'
+    'rbServiceKind'
 ]
 
 rb_groups = {
@@ -95,10 +99,12 @@ def get_manager(name, **params):
         return SimpleRefBookModelManager(all_rbs[name])
     elif name == 'rbTreatment':
         return RbTreatmentModelManager()
+    elif name == 'rbService':
+        return RbServiceModelManager()
     elif name == 'Organisation':
         return OrganisationModelManager(**params)
     elif name == 'OrgStructure':
-        return OrgStructureModelManager(**params)
+        return OrgStructureModelManager()
     elif name == 'Measure':
         return MeasureModelManager()
     elif name == 'ExpertProtocol':
@@ -135,3 +141,5 @@ def get_manager(name, **params):
         return PriceListItemModelManager()
     elif name == 'rbPrintTemplate':
         return RbPrintTemplateModelManager()
+    elif name == 'rbServiceGroupAssoc':
+        return RbServiceGroupAssocModelManager()

@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from nemesis.lib.utils import safe_dict, safe_traverse
+from flask import abort
+
+from nemesis.lib.utils import safe_dict, safe_int
 from nemesis.systemwide import db
+from nemesis.lib.pagination import Pagination
 
 
 class FCType(object):
@@ -18,7 +21,7 @@ class FieldConverter():
         self.field_type = field_type
         self.m_name = model_name
         self.j_name = json_name
-        self.manager = model_manager
+        self._manager = model_manager
 
         if self.field_type in (FCType.basic, FCType.relation) and to_model is None:
             raise AttributeError('`to_model` parameter is required for valid model value conversion')
@@ -36,6 +39,13 @@ class FieldConverter():
             self.to_json = lambda *args: to_json(self, *args)
         else:
             self.to_json = to_json
+
+    @property
+    def manager(self):
+        if callable(self._manager):
+            return self._manager()
+        else:
+            return self._manager
 
 
 def represent_model(value, manager):
@@ -58,11 +68,16 @@ class BaseModelManager(object):
     def get_by_id(self, item_id):
         return self._model.query.get(item_id)
 
+    def filter_(self, **kwargs):
+        return self._model.query
+
     def get_list(self, **kwargs):
         query = self._model.query
         where = kwargs.get('where')
         if where:
             query = query.filter(*where)
+        else:
+            query = self.filter_(**kwargs)
         order = kwargs.get('order')
         if order:
             query = query.order_by(*order)
@@ -72,6 +87,48 @@ class BaseModelManager(object):
                 *options
             )
         return query.all()
+
+    def get_paginated_data(self, **kwargs):
+        per_page = safe_int(kwargs.get('per_page')) or 20
+        page = safe_int(kwargs.get('page')) or 1
+        query = self._model.query
+        where = kwargs.get('where')
+        if where:
+            query = query.filter(*where)
+        else:
+            query = self.filter_(**kwargs)
+        order = kwargs.get('order')
+        if order:
+            query = query.order_by(*order)
+        options = kwargs.get('options')
+        if options:
+            query = query.options(
+                *options
+            )
+        paginated_data = self._paginate(query, page, per_page)
+        return paginated_data
+
+    def _paginate(self, query, page, per_page=20, error_out=False):
+        """Returns `per_page` items from page `page`.  By default it will
+        abort with 404 if no items were found and the page was larger than
+        1.  This behavor can be disabled by setting `error_out` to `False`.
+
+        Returns an :class:`Pagination` object.
+        """
+        if error_out and page < 1:
+            abort(404)
+        items = query.limit(per_page).offset((page - 1) * per_page).all()
+        if not items and page != 1 and error_out:
+            abort(404)
+
+        # No need to count if we're on the first page and there are fewer
+        # items than we expected.
+        if page == 1 and len(items) < per_page:
+            total = len(items)
+        else:
+            total = query.order_by(None).count()
+
+        return Pagination(query, page, per_page, total, items)
 
     def fill(self, item, data, parent_obj=None):
         for field in self._fields:
@@ -88,14 +145,6 @@ class BaseModelManager(object):
                 else:
                     raise AttributeError('bad field type')
 
-                # TODO: check
-                # if isinstance(getattr(item, item_field_name), list):
-                #     if isinstance(value, list):
-                #         getattr(item, item_field_name).extend(value)
-                #     else:
-                #         getattr(item, item_field_name).append(value)
-                # else:
-                #     setattr(item, item_field_name, value)
                 setattr(item, item_field_name, value)
         return item
 

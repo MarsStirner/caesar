@@ -4,9 +4,9 @@ WebMis20
 .service('RbList', ['$injector', 'ApiCalls', function ($injector, ApiCalls) {
     var self = this;
     this.loading = ApiCalls.wrapper('GET', '/misconfig/api/v1/rb/list/')
-    .then(function (data) {
-        self.items = data.supported_rbs;
-    });
+        .then(function (data) {
+            self.items = data.supported_rbs;
+        });
     this.getByName = function (name) {
         var curRbList;
         for (var prop in self.items) {

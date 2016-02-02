@@ -1,12 +1,11 @@
 {% extends 'misconfig/base.html' %}
 
 {% block content %}
-<div class="container-fluid" ng-controller="PricelistConfigCtrl" ng-cloak ng-init="init({{ pricelist.id }})">
+<div class="container-fluid" ng-controller="RbServiceListConfigCtrl" ng-cloak>
     <alert-notify></alert-notify>
     <ul class="breadcrumb">
         <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
-        <li><a href="{{ url_for('.price_list_html') }}">Прайс-листы</a></li>
-        <li>Тарифы прайс-листа "{{ pricelist.name }}"</li>
+        <li>Справочник услуг</li>
     </ul>
     <div class="row">
     <div class="col-md-3" ng-show="isFilterEnabled()">
@@ -15,10 +14,10 @@
                 <h3 class="panel-title">Фильтр</h3>
             </div>
             <div class="panel-body">
-                <label for="filter-name">Наименование в прайсе</label>
+                <label for="filter-name">Наименование</label>
                 <input class="form-control" id="filter-name" type="text" ng-model="flt.model.name" placeholder="Наименование">
 
-                <label for="filter-code">Код в прайсе</label>
+                <label for="filter-code">Код</label>
                 <input class="form-control" id="filter-code" type="text" ng-model="flt.model.code" placeholder="Код">
 
                 <label for="filter-beg-date-from">Начало действия (от, до)</label>
@@ -39,6 +38,12 @@
                     <div class="col-md-6">
                         <wm-date id="filter-end-date-to" ng-model="flt.model.end_date_to"></wm-date>
                     </div>
+                </div>
+
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" ng-model="flt.model.is_complex">Является комплексной
+                    </label>
                 </div>
             </div>
             <div class="panel-footer">
@@ -61,10 +66,8 @@
             <thead>
                 <tr>
                 <th>id</th>
-                <th>Услуга</th>
-                <th>Код в прайсе</th>
-                <th>Наименование в прайсе</th>
-                <th>Стоимость (руб.)</th>
+                <th>Код</th>
+                <th>Наименование</th>
                 <th>Дата начала действия</th>
                 <th>Дата окончания действия</th>
                 <th>Удалён</th>
@@ -74,10 +77,8 @@
             <tbody>
                 <tr ng-repeat="(key, item) in item_list" ng-class="{'bg-danger': item.deleted}">
                     <td>[[ item.id ]]</td>
-                    <td>[[ item.service.name ]]</td>
-                    <td>[[ item.service_code ]]</td>
-                    <td>[[ item.service_name ]]</td>
-                    <td>[[ item.price ]]</td>
+                    <td>[[ item.code ]]</td>
+                    <td>[[ item.name ]]</td>
                     <td>[[ item.beg_date | asDate ]]</td>
                     <td>[[ item.end_date | asDate ]]</td>
                     <td>[[ item.deleted ]]</td>
@@ -92,6 +93,7 @@
                 </tr>
             </tbody>
         </table>
+    </div>
     </div>
 
     <div class="row">
@@ -113,13 +115,12 @@
         </button>
     </div>
     </div>
-    </div>
 </div>
 {% endblock %}
 
 {% block modules_js %}
 {{ super() }}
-<script src="{{ url_for('.static', filename='js/pricelist/models.js', v=version) }}"></script>
-<script src="{{ url_for('.static', filename='js/pricelist/pricelist.js', v=version) }}"></script>
-<script type="text/ng-template" id="/caesar/misconfig/pricelist/pricelist-item-edit-modal.html">{% include "misconfig/pricelist/pricelist-item-edit-modal.html" %}</script>
+<script src="{{ url_for('.static', filename='js/rbservice/models.js', v=version) }}"></script>
+<script src="{{ url_for('.static', filename='js/rbservice/rbservice.js', v=version) }}"></script>
+<script type="text/ng-template" id="/caesar/misconfig/refbook/rbservice-edit-modal.html">{% include "misconfig/refbook/rbservice-edit-modal.html" %}</script>
 {% endblock %}

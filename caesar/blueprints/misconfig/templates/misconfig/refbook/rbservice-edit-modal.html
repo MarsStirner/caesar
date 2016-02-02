@@ -1,0 +1,99 @@
+<div class="modal-header" xmlns="http://www.w3.org/1999/html">
+    <button type="button" class="close" ng-click="$dismiss()">&times;</button>
+    <h4 class="modal-title">Услуга</h4>
+</div>
+<div class="modal-body">
+<form class="form-horizontal">
+
+    <div class="form-group">
+        <label for="code" class="col-sm-3 control-label">Код услуги</label>
+        <div class="col-sm-9">
+            <input type="text" ng-model="model.code" class="form-control" id="code" autocomplete="off"
+                placeholder="Код услуги">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="name" class="col-sm-3 control-label">Наименование услуги</label>
+        <div class="col-sm-9">
+            <input type="text" ng-model="model.name" class="form-control" id="name" autocomplete="off"
+                placeholder="Наименование услуги">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="beg_date" class="col-sm-3 control-label">Дата начала действия</label>
+        <div class="col-sm-9">
+            <wm-date id="beg_date" name="beg_date" ng-model="model.beg_date"></wm-date>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="end_date" class="col-sm-3 control-label">Дата окончания действия</label>
+        <div class="col-sm-9">
+            <wm-date id="end_date" name="end_date" ng-model="model.end_date"></wm-date>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="is_complex" class="col-sm-3 control-label">является комплексной</label>
+        <div class="col-sm-9">
+            <input ng-model="model.is_complex" type="checkbox" id="is_complex">
+        </div>
+    </div>
+
+    <div class="form-group" ng-show="isComplex()">
+        <div class="col-md-offset-3 col-sm-9">
+            <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="row">
+                <div class="col-md-12">
+                    <ul class="list-group">
+                        <li ng-repeat="assoc in model.subservice_assoc" class="list-group-item">
+                            <span class="fa fa-remove text-danger cursor-pointer pull-right"
+                                ng-click="removeItem($index)" title="Удалить"></span>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <ui-select ng-model="assoc.subservice" theme="select2" ext-select-rb-service
+                                        append-to-body="true" placeholder="Выберите услугу, входящую в текущую группу услуг">
+                                    </ui-select>
+                                </div>
+                                <div class="col-md-3">
+                                    <rb-select ng-model="assoc.service_kind" theme="select2" ref-book="rbServiceKind"
+                                        append-to-body="true" placeholder="Вид услуги в группе">
+                                    </rb-select>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ui-select ng-model="new_item.model" theme="select2" ext-select-rb-service
+                            append-to-body="true" placeholder="Выберите услугу, входящую в текущую группу услуг">
+                        </ui-select>
+                    </div>
+                    <div class="col-md-3">
+                        <rb-select ng-model="new_item.service_kind" theme="select2" ref-book="rbServiceKind"
+                            append-to-body="true" placeholder="Вид услуги в группе">
+                        </rb-select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="button" class="btn btn-sm btn-primary pull-right" ng-click="addNewItem()"
+                            ng-disabled="btnAddItemDisabled()">
+                            <span class="fa fa-plus"> Добавить запись</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+</form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-success" ng-click="close()">Подтвердить</button>
+    <button type="button" class="btn btn-danger" ng-click="$dismiss()">Отмена</button>
+</div>
