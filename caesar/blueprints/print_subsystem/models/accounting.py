@@ -8,6 +8,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import orm
 
 from ..database import Base
+from nemesis.models.enums import ServiceKind
 
 
 class Contract(Base):
@@ -131,6 +132,7 @@ class PriceListItem(Base):
     begDate = Column(Date, nullable=False)
     endDate = Column(Date, nullable=False)
     price = Column(Numeric(15, 2), nullable=False)
+    isAccumulativePrice = Column(SmallInteger, nullable=False, server_default=u"'0'")
 
     service = relationship(u'rbService')
 
@@ -165,6 +167,25 @@ class rbContractType(Base):
         return self.id
 
 
+class rbServiceKind(Base):
+    __tablename__ = 'rbServiceKind'
+    _table_description = u'Вид экземпляра услуги'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    code = Column(Unicode(16), nullable=False)
+    name = Column(Unicode(128), nullable=False)
+
+    def __json__(self):
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name': self.name
+        }
+
+    def __int__(self):
+        return self.id
+
+
 class Service(Base):
     __tablename__ = u'Service'
 
@@ -174,27 +195,50 @@ class Service(Base):
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer, index=True)
     priceListItem_id = Column(Integer, ForeignKey('PriceListItem.id'), nullable=False)
+    serviceKind_id = Column(Integer, ForeignKey('rbServiceKind.id'), nullable=False)
+    parent_id = Column(Integer, ForeignKey('Service.id'))
+    event_id = Column(Integer, ForeignKey('Event.id'), nullable=False)
     action_id = Column(Integer, ForeignKey('Action.id'))
+    actionProperty_id = Column(Integer, ForeignKey('ActionProperty.id'))
     amount = Column(Float, nullable=False)
     deleted = Column(SmallInteger, nullable=False, server_default=u"'0'")
     discount_id = Column(Integer, ForeignKey('ServiceDiscount.id'))
 
     price_list_item = relationship('PriceListItem')
+    service_kind = relationship('rbServiceKind')
+    parent_service = relationship('Service', remote_side=[id])
+    event = relationship('Event')
     action = relationship('Action')
+    action_property = relationship('ActionProperty')
     discount = relationship('ServiceDiscount')
 
     def __init__(self):
-        self.sum_ = self._get_recalc_sum()
         self._in_invoice = None
         self._invoice = None
         self._invoice_loaded = False
+        self._subservice_list = None
+        self._sum = None
+        self._sum_loaded = False
 
     @orm.reconstructor
     def init_on_load(self):
-        self.sum_ = self._get_recalc_sum()
         self._in_invoice = None
         self._invoice = None
         self._invoice_loaded = False
+        self._subservice_list = None
+        self._sum = None
+        self._sum_loaded = False
+
+    @property
+    def sum_(self):
+        if not self._sum_loaded:
+            self._sum = self._get_recalc_sum()
+            self._sum_loaded = True
+        return self._sum
+
+    def set_sum_(self, val):
+        self._sum = val
+        self._sum_loaded = True
 
     @property
     def in_invoice(self):
@@ -210,6 +254,51 @@ class Service(Base):
             self._invoice_loaded = True
         return self._invoice
 
+    @property
+    def subservice_list(self):
+        if self._subservice_list is None:
+            self.init_subservice_list()
+        return self._subservice_list
+
+    @subservice_list.setter
+    def subservice_list(self, value):
+        self._subservice_list = value
+
+    def recalc_sum(self):
+        self._sum = self._get_recalc_sum()
+
+    def init_subservice_list(self):
+        self._subservice_list = self._get_subservices()
+        for ss in self._subservice_list:
+            ss.init_subservice_list()
+
+    @property
+    def serviced_entity(self):
+        return self.get_serviced_entity()
+
+    def get_serviced_entity(self):
+        if self.serviceKind_id == ServiceKind.simple_action[0]:
+            return self.action
+        elif self.serviceKind_id == ServiceKind.group[0]:
+            return None
+        elif self.serviceKind_id == ServiceKind.lab_action[0]:
+            return self.action
+        elif self.serviceKind_id == ServiceKind.lab_test[0]:
+            return self.action_property
+
+    def get_flatten_subservices(self):
+        flatten = []
+
+        def traverse(s):
+            for ss in s.subservice_list:
+                if ss.subservice_list:
+                    traverse(ss)
+                else:
+                    flatten.append(ss)
+
+        traverse(self)
+        return flatten
+
     def _get_in_invoice(self):
         from nemesis.lib.data_ctrl.accounting.service import ServiceController
         service_ctrl = ServiceController()
@@ -222,8 +311,14 @@ class Service(Base):
         return invoice
 
     def _get_recalc_sum(self):
-        from nemesis.lib.data_ctrl.accounting.utils import calc_service_sum
-        return calc_service_sum(self) if self.priceListItem_id is not None else 0
+        from nemesis.lib.data_ctrl.accounting.utils import calc_service_total_sum
+        return calc_service_total_sum(self) if self.priceListItem_id is not None else 0
+
+    def _get_subservices(self):
+        from nemesis.lib.data_ctrl.accounting.service import ServiceController
+        service_ctrl = ServiceController()
+        ss_list = service_ctrl.get_subservices(self)
+        return ss_list
 
 
 class ServiceDiscount(Base):
@@ -261,14 +356,39 @@ class Invoice(Base):
     draft = Column(Integer, nullable=False, server_default=u"'0'")
 
     contract = relationship('Contract')
-    item_list = relationship('InvoiceItem', backref='invoice')
+    item_list = relationship(
+        'InvoiceItem',
+        primaryjoin='and_(InvoiceItem.invoice_id==Invoice.id, InvoiceItem.parent_id == None)'
+    )
 
     def __init__(self):
-        self.total_sum = self._get_recalc_total_sum()
+        self._total_sum = None
+        self._total_sum_loaded = False
 
     @orm.reconstructor
     def init_on_load(self):
-        self.total_sum = self._get_recalc_total_sum()
+        self._total_sum = None
+        self._total_sum_loaded = False
+
+    @property
+    def total_sum(self):
+        if not self._total_sum_loaded:
+            self._total_sum = self._get_recalc_total_sum()
+            self._total_sum_loaded = True
+        return self._total_sum
+
+    @total_sum.setter
+    def total_sum(self, val):
+        self._total_sum = val
+        self._total_sum_loaded = True
+
+    def get_all_entities(self):
+        result = [self]
+        for item in self.item_list:
+            result.append(item)
+            result.extend(item.get_flatten_subitems())
+
+        return result
 
     def _get_recalc_total_sum(self):
         from nemesis.lib.data_ctrl.accounting.utils import calc_invoice_total_sum
@@ -286,9 +406,53 @@ class InvoiceItem(Base):
     amount = Column(Float, nullable=False)
     sum = Column(Numeric(15, 2), nullable=False)
     deleted = Column(SmallInteger, nullable=False, server_default=u"'0'")
+    parent_id = Column(Integer, ForeignKey('InvoiceItem.id'))
 
-    service = relationship(u'Service')
+    invoice = relationship('Invoice')
+    service = relationship('Service')
     discount = relationship('ServiceDiscount')
+    parent_item = relationship('InvoiceItem', remote_side=[id])
+
+    def __init__(self):
+        self._subitem_list = None
+
+    @orm.reconstructor
+    def init_on_load(self):
+        self._subitem_list = None
+
+    @property
+    def subitem_list(self):
+        if self._subitem_list is None:
+            self.init_subitem_list()
+        return self._subitem_list
+
+    @subitem_list.setter
+    def subitem_list(self, value):
+        self._subitem_list = value
+
+    def init_subitem_list(self):
+        self._subitem_list = self._get_subitems()
+        for ss in self._subitem_list:
+            ss.init_subitem_list()
+
+    def get_flatten_subitems(self):
+        flatten = []
+
+        def traverse(item):
+            for si in item.subitem_list:
+                if si.subitem_list:
+                    traverse(si)
+                else:
+                    flatten.append(si)
+
+        traverse(self)
+        return flatten
+
+    def _get_subitems(self):
+        from nemesis.lib.data_ctrl.accounting.invoice import InvoiceItemController
+        ii_ctrl = InvoiceItemController()
+        si_list = ii_ctrl.get_subitems(self)
+        return si_list
 
 
 class FinanceTransaction(Base):

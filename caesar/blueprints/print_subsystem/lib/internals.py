@@ -29,7 +29,7 @@ class RenderTemplateException(Exception):
 
 def make_jinja_environment():
     from .filters import do_datetime_format, do_datetime_combine, do_datetime_add_days, do_sum_columns, \
-        do_table_column, do_table_uniform, do_transpose_table
+        do_table_column, do_table_uniform, do_transpose_table, flatten_nested
     env = Environment(
         loader=FileSystemLoader('blueprints/print_subsystem/templates/print_subsystem'),
         finalize=finalizer,
@@ -42,6 +42,7 @@ def make_jinja_environment():
         'sum_columns': do_sum_columns,
         'table_column': do_table_column,
         'table_uniform': do_table_uniform,
+        'flatten_nested': flatten_nested
     })
     return env
 
