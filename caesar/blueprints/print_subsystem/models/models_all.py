@@ -8,7 +8,7 @@ from config import VESTA_URL
 from flask import g
 from sqlalchemy import Column, Integer, String, Unicode, DateTime, ForeignKey, Date, Float, or_, Boolean, Text, \
     SmallInteger, Time, Index, BigInteger, Enum, Table, BLOB, UnicodeText
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship, backref, reconstructor
 
 from nemesis.models.enums import AllergyPower
 from ..config import MODULE_NAME
@@ -365,6 +365,25 @@ class Action(Info):
     # def isHtml(self):
     #     return self.actionType.isHtml if self.actionType else None
 
+    def _load_ap_price_info(self):
+        """Инициализировать свойства данными из соответствующего прайс-листа"""
+        from nemesis.lib.data_ctrl.accounting.pricelist import PriceListItemController
+        from nemesis.lib.data import get_assignable_apts
+
+        assignable = get_assignable_apts(self.actionType_id)
+        assignable_apt_ids = [apt_data[0] for apt_data in assignable]
+        contract_id = self.event.contract_id
+        pli_ctrl = PriceListItemController()
+
+        filtered_apt_prices = pli_ctrl.get_apts_prices_by_pricelist(assignable_apt_ids, contract_id)
+        flt_apt_ids = filtered_apt_prices.keys()
+        for prop in self.properties:
+            if prop.type_id in flt_apt_ids:
+                prop.has_pricelist_service = True
+                prop.pl_price = filtered_apt_prices[prop.type_id]
+            else:
+                prop.has_pricelist_service = False
+
     def __iter__(self):
         for property in self.properties:
             yield property
@@ -398,6 +417,10 @@ class ActionProperty(Info):
     action = relationship(u'Action')
     type = relationship(u'Actionpropertytype')
     unit_all = relationship(u'rbUnit')
+
+    def __init__(self):
+        self._has_pricelist_service = None
+        self._pl_price = None
 
     def get_value_class(self):
         # Следующая магия вытаскивает класс, ассоциированный с backref-пропертей, созданной этим же классом у нашего
@@ -451,6 +474,31 @@ class ActionProperty(Info):
     @property
     def isAssignable(self):
         return self.type.isAssignable
+
+    @reconstructor
+    def init_on_load(self):
+        self._has_pricelist_service = None
+        self._pl_price = None
+
+    @property
+    def has_pricelist_service(self):
+        if self._has_pricelist_service is None:
+            self.action._load_ap_price_info()
+        return self._has_pricelist_service
+
+    @has_pricelist_service.setter
+    def has_pricelist_service(self, value):
+        self._has_pricelist_service = value
+
+    @property
+    def pl_price(self):
+        if self._pl_price is None:
+            self.action._load_ap_price_info()
+        return self._pl_price
+
+    @pl_price.setter
+    def pl_price(self, value):
+        self._pl_price = value
 
     #     if self.type.typeName == "Table":
     #         return values[0].get_value(self.type.valueDomain) if values else ""
@@ -5482,9 +5530,37 @@ class rbService(RBInfo):
     rbMedicalKind_id = Column(ForeignKey('rbMedicalKind.id'), index=True)
     UET = Column(Float(asdecimal=True), nullable=False, server_default=u"'0'")
     departCode = Column(String(3))
+    isComplex = Column(SmallInteger, nullable=False, server_default=u"'0'")
 
     medicalAidProfile = relationship(u'rbMedicalAidProfile')
     rbMedicalKind = relationship(u'rbMedicalKind')
+    subservice_assoc = relationship(
+        'rbServiceGroupAssoc',
+        primaryjoin='rbService.id==rbServiceGroupAssoc.group_id'
+    )
+
+
+class rbServiceGroupAssoc(Base):
+    __tablename__ = u'rbServiceGroup'
+    id = Column(Integer, primary_key=True)
+    group_id = Column(Integer, ForeignKey('rbService.id'), nullable=False)
+    service_id = Column(Integer, ForeignKey('rbService.id'), nullable=False)
+    required = Column(SmallInteger, nullable=False, server_default="'0'")
+    serviceKind_id = Column(Integer, ForeignKey('rbServiceKind.id'), nullable=False)
+
+    subservice = relationship('rbService', foreign_keys=[service_id])
+    service_kind = relationship('rbServiceKind')
+
+    def __json__(self):
+        return {
+            'id': self.id,
+            'group_id': self.group_id,
+            'service_id': self.service_id,
+            'serviceKind_id': self.serviceKind_id
+        }
+
+    def __int__(self):
+        return self.id
 
 
 class rbServiceClass(Info):
@@ -5505,18 +5581,6 @@ class rbServiceFinance(Info):
     id = Column(Integer, primary_key=True)
     code = Column(String(2, u'utf8_unicode_ci'), nullable=False)
     name = Column(String(64, u'utf8_unicode_ci'), nullable=False)
-
-
-class rbServiceGroup(Info):
-    __tablename__ = u'rbServiceGroup'
-    __table_args__ = (
-        Index(u'group_id', u'group_id', u'service_id'),
-    )
-
-    id = Column(Integer, primary_key=True)
-    group_id = Column(Integer, nullable=False)
-    service_id = Column(Integer, nullable=False)
-    required = Column(Integer, nullable=False, server_default=u"'0'")
 
 
 class rbServiceSection(Info):
@@ -5746,13 +5810,23 @@ class rbTempInvalidResult(RBInfo):
     status = Column(Integer, nullable=False)
 
 
-class rbTest(Info):
+class rbTest(RBInfo):
     __tablename__ = u'rbTest'
 
     id = Column(Integer, primary_key=True)
     code = Column(String(16), nullable=False, index=True)
     name = Column(String(128), nullable=False, index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
+
+
+class rbTest_Service(Info):
+    __tablename__ = u'rbTest_Service'
+
+    id = Column(Integer, primary_key=True)
+    test_id = Column(Integer, ForeignKey('rbTest.id'), nullable=False)
+    service_id = Column(Integer, ForeignKey('rbService.id'), nullable=False)
+    begDate = Column(Date, nullable=False)
+    endDate = Column(Date)
 
 
 class rbTestTubeType(RBInfo):
