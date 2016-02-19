@@ -6718,3 +6718,39 @@ class rbPrintTemplateMeta(Info):
             'arguments': args,
             'default': default,
         }
+
+
+class rbHospitalisationGoal(Info):
+    __tablename__ = 'rbHospitalisationGoal'
+
+    id = Column(Integer, primary_key=True)
+    code = Column(String(16), nullable=False)
+    name = Column(String(255), nullable=False)
+
+    def __unicode__(self):
+        return self.name
+
+    def __json__(self):
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name': self.name,
+        }
+
+
+class rbHospitalisationOrder(Info):
+    __tablename__ = 'rbHospitalisationOrder'
+
+    id = Column(Integer, primary_key=True)
+    code = Column(String(16), nullable=False)
+    name = Column(String(255), nullable=False)
+
+    def __unicode__(self):
+        return self.name
+
+    def __json__(self):
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name': self.name,
+        }
