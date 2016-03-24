@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import re
+import os
 
 from jinja2 import FileSystemLoader
 from jinja2.environment import Environment
@@ -31,7 +32,7 @@ def make_jinja_environment():
     from .filters import do_datetime_format, do_datetime_combine, do_datetime_add_days, do_sum_columns, \
         do_table_column, do_table_uniform, do_transpose_table, flatten_nested
     env = Environment(
-        loader=FileSystemLoader('blueprints/print_subsystem/templates/print_subsystem'),
+        loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), '../templates/print_subsystem')),
         finalize=finalizer,
     )
     env.filters.update({

@@ -62,12 +62,15 @@ LPU_STYLE = 'FNKC'
 INDEX_HTML = 'caesar_index.html'
 FILE_STORAGE_PATH = ''
 
+
+CELERY_ENABLED = False
+from celery_config import *
+
+
 try:
     from config_local import *
 except ImportError:
     print('no local config')
-    # no local config found
-    pass
 
 db_uri_format = '{0}://{1}:{2}@{3}:{4}/{5}{6}'
 
@@ -97,5 +100,8 @@ SQLALCHEMY_BINDS = {
         DB_HOST,
         DB_PORT,
         DB_KLADR_NAME,
-        DB_CONNECT_OPTIONS)
+        DB_CONNECT_OPTIONS),
+    'celery_tasks': db_uri_format.format(
+        CAT_DB_DRIVER, CAT_DB_USER, CAT_DB_PASSWORD, CAT_DB_HOST, CAT_DB_PORT, CAT_DB_NAME, CAT_DB_CONNECT_OPTIONS
+    ),
 }
