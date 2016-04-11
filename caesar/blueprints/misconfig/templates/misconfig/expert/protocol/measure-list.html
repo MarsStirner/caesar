@@ -46,10 +46,21 @@
         </tr>
         </tbody>
         </table>
-        <button type="button" class="btn btn-lg btn-success pull-right" ng-if="item_list.length" ng-click="create_new()"
-            title="Добавить запись"><i class="fa fa-plus"></i>
-        </button>
     </div>
+    <div class="row">
+    <div class="col-md-7">
+        <pagination ng-model="pager.current_page" total-items="pager.pages" items-per-page="1"
+            max-size="pager.max_pages" ng-change="onPageChanged()" ng-show="pager.pages > 1" boundary-links="true"
+            class="pagination pagination-sm pagination-nomargin">
+        </pagination>
+    </div>
+    <div class="col-md-5">
+    <button type="button" class="btn btn-lg btn-success pull-right" ng-if="item_list.length" ng-click="create_new()"
+        title="Добавить запись"><i class="fa fa-plus"></i>
+    </button>
+    </div>
+    </div>
+
     </div>
 </div>
 {% endblock %}
