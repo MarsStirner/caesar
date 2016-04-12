@@ -238,7 +238,7 @@ def api_v1_rb_get(name, item_id=None, new=None):
     args = request.args.to_dict()
     if request.json:
         args.update(request.json)
-    paginate = safe_bool(args.get('paginate', True))
+    paginate = safe_bool(args.get('paginate', False))
     if paginate:
         data = mng.get_paginated_data(**args)
         return {

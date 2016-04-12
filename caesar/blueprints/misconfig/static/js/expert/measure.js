@@ -4,25 +4,18 @@ WebMis20
 .controller('MeasureConfigCtrl', ['$scope', '$controller', 'Measure',
         function ($scope, $controller, Measure) {
     $controller('MisConfigBaseCtrl', {$scope: $scope});
-    $scope.setViewParams({paginate: true});
+    $scope.setViewParams({paginate: false});
     $scope.setSimpleModalConfig({
         controller: 'MeasureConfigModalCtrl',
         templateUrl: '/caesar/misconfig/expert/protocol/measure-edit-modal.html'
     });
     $scope.EntityClass = Measure;
 
-    var setData = function (paged_data) {
-        $scope.item_list = paged_data.items;
-        $scope.pager.record_count = paged_data.count;
-        $scope.pager.pages = paged_data.total_pages;
+    var setData = function (items) {
+        $scope.item_list = items;
     };
     $scope.refreshData = function () {
-        var args = {
-            paginate: true,
-            page: $scope.pager.current_page,
-            per_page: $scope.pager.per_page
-        };
-        $scope._refreshData(args).then(setData);
+        $scope._refreshData().then(setData);
     };
     $scope.onPageChanged = function () {
         $scope.refreshData();
