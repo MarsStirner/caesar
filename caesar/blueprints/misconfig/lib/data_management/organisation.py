@@ -37,6 +37,12 @@ class OrganisationModelManager(BaseModelManager):
 
     def create(self, data=None, parent_id=None, parent_obj=None):
         item = super(OrganisationModelManager, self).create(data)
+        if item.title is None:
+            item.title = ''
+        if item.Address is None:
+            item.Address = ''
+        if item.phone is None:
+            item.phone = ''
         item.isHospital = False
         item.isInsurer = False
         item.isLPU = False

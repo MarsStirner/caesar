@@ -44,29 +44,12 @@ class RbPerinatalRRModelManager(BaseModelManager):
             FieldConverter(FCType.basic_repr, 'name', None, 'name'),
             FieldConverter(
                 FCType.relation,
-                'prr_mkbs', self.handle_mkbs,
-                'prr_mkbs', lambda val: represent_model(val, self._prr_mkb_mng)
+                'prr_mkbs', (self.handle_manytomany_assoc_obj, ),
+                'prr_mkbs', (self.represent_model, ),
+                model_manager=self._prr_mkb_mng
             )
         ]
         super(RbPerinatalRRModelManager, self).__init__(rbPerinatalRiskRate, fields)
-
-    def handle_mkbs(self, mkb_list, parent_obj):
-        if mkb_list is None:
-            return []
-        result = []
-        for item_data in mkb_list:
-            item_id = item_data['id']
-            if item_id:
-                item = self._prr_mkb_mng.update(item_id, item_data, parent_obj)
-            else:
-                item = self._prr_mkb_mng.create(item_data, None, parent_obj)
-            result.append(item)
-
-        # deletion
-        for prr_mkb in parent_obj.prr_mkbs:
-            if prr_mkb not in result:
-                db.session.delete(prr_mkb)
-        return result
 
 
 class RbPRRMKBModelManager(BaseModelManager):
@@ -77,8 +60,9 @@ class RbPRRMKBModelManager(BaseModelManager):
             FieldConverter(FCType.basic, 'riskRate_id', safe_int, 'risk_rate_id'),
             FieldConverter(
                 FCType.relation,
-                'mkb', lambda val, par: self.handle_onetomany_nonedit(self._mkb_mng, val),
-                'mkb'
+                'mkb', (self.handle_onetomany_nonedit, ),
+                'mkb',
+                model_manager=self._mkb_mng
             )
         ]
         super(RbPRRMKBModelManager, self).__init__(rbPerinatalRiskRateMkbAssoc, fields)
@@ -98,29 +82,12 @@ class RbPregnancyPathologyModelManager(BaseModelManager):
             FieldConverter(FCType.basic_repr, 'name', None, 'name'),
             FieldConverter(
                 FCType.relation,
-                'pp_mkbs', self.handle_mkbs,
-                'pp_mkbs', lambda val: represent_model(val, self._pp_mkb_mng)
+                'pp_mkbs', (self.handle_manytomany_assoc_obj, ),
+                'pp_mkbs', (self.represent_model, ),
+                model_manager=self._pp_mkb_mng
             )
         ]
         super(RbPregnancyPathologyModelManager, self).__init__(rbPregnancyPathology, fields)
-
-    def handle_mkbs(self, mkb_list, parent_obj):
-        if mkb_list is None:
-            return []
-        result = []
-        for item_data in mkb_list:
-            item_id = item_data['id']
-            if item_id:
-                item = self._pp_mkb_mng.update(item_id, item_data, parent_obj)
-            else:
-                item = self._pp_mkb_mng.create(item_data, None, parent_obj)
-            result.append(item)
-
-        # deletion
-        for pp_mkb in parent_obj.pp_mkbs:
-            if pp_mkb not in result:
-                db.session.delete(pp_mkb)
-        return result
 
 
 class RbPregnancyPathologyMKBModelManager(BaseModelManager):
@@ -131,8 +98,9 @@ class RbPregnancyPathologyMKBModelManager(BaseModelManager):
             FieldConverter(FCType.basic, 'pathology_id', safe_int, 'pathology_id'),
             FieldConverter(
                 FCType.relation,
-                'mkb', lambda val, par: self.handle_onetomany_nonedit(self._mkb_mng, val),
-                'mkb'
+                'mkb', (self.handle_onetomany_nonedit, ),
+                'mkb',
+                model_manager=self._mkb_mng
             )
         ]
         super(RbPregnancyPathologyMKBModelManager, self).__init__(rbPregnancyPathologyMkbAssoc, fields)

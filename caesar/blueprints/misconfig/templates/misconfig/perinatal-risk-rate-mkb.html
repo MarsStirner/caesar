@@ -16,10 +16,9 @@
                     <div style="margin: -15px; padding: 15px;"><h4>[[ item.prr.name ]]</h4></div>
                 </accordion-heading>
                 <div class="row">
-                    <div class="col-md-4">
-                        <span>Степень перинатального риска: [[ item.prr.name ]]</span><br>
+                    <div class="col-md-3">
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-md-9">
                         <div class="panel panel-default">
                         <div class="panel-heading">
                             <div class="btn-group btn-group-sm pull-right">
@@ -31,7 +30,7 @@
                         </div>
                         <div class="panel-body">
                             <div class="row">
-                            <div class="col-md-9">
+                            <div class="col-md-12">
                             <ui-select multiple theme="select2" ng-disabled="!inEditState(key)"
                                    ng-model="item.proxyMkbList" ref-book="MKB" close-on-select="false" ng-change="onMkbListChanged(item)">
                                 <ui-select-match placeholder="МКБ"><span title="[[$item.name]]" ng-bind="$item.code"></span></ui-select-match>

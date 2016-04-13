@@ -34,8 +34,8 @@
         </div>
         <div class="list-group">
             <a href="{{ url_for('.expert_protocol_index_html') }}" class="list-group-item">Протоколы лечения</a>
-            <a href="#" class="list-group-item">Маршрутизация беременных</a>
-            <div class="list-group-item">...</div>
+            <a href="{{ url_for('risar_config.index') }}" class="list-group-item">Маршрутизация беременных</a>
+{#            <div class="list-group-item">...</div>#}
         </div>
     </div>
     {% endif %}

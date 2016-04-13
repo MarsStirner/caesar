@@ -66,6 +66,8 @@ class PersonModelManager(BaseModelManager):
         item = super(PersonModelManager, self).create(data)
         # TODO: add required fields
         item.uuid = get_new_uuid()
+        if item.patrName is None:
+            item.patrName = ''
         if item.SNILS is None:
             item.SNILS = ''
         item.INN = ''
@@ -86,6 +88,10 @@ class PersonModelManager(BaseModelManager):
         item.retired = 0
         item.birthPlace = ''
         item.typeTimeLinePerson = 0
+        if data is not None and 'new_password' in data and data['new_password']:
+            m = md5()
+            m.update(data['new_password'])
+            item.password = m.hexdigest()
         return item
 
     def update(self, item_id, data, parent_obj=None):

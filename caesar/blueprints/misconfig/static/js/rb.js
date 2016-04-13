@@ -85,6 +85,16 @@ WebMis20
     }, rbMeasureScheduleType);
     return rbMeasureScheduleType;
 }])
+.factory('rbMeasureScheduleApplyType', ['SimpleRb', function (SimpleRb) {
+    var rbMeasureScheduleApplyType = function (data) {
+        SimpleRb.call(this, data);
+    };
+    rbMeasureScheduleApplyType.inheritsFrom(SimpleRb);
+    rbMeasureScheduleApplyType.initialize({
+        base_url: '{0}rbMeasureScheduleApplyType/'.format(rbMeasureScheduleApplyType.getBaseUrl())
+    }, rbMeasureScheduleApplyType);
+    return rbMeasureScheduleApplyType;
+}])
 .factory('rbPerinatalRiskRate', ['SimpleRb', function (SimpleRb) {
     var rbPerinatalRiskRate = function (data) {
         SimpleRb.call(this, data);
