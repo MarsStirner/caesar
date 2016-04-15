@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 import struct
 import datetime
-import requests
-
-from config import VESTA_URL
+from ..database import Base, metadata
 
 
 def get_model_by_name(name):
@@ -237,3 +235,71 @@ def formatDate(time):
 
 def formatTime(time):
     return unicode(time.strftime('%H:%M')) if time else ''
+
+
+class Info(Base):
+    u"""Базовый класс для представления объектов при передаче в шаблоны печати"""
+    __abstract__ = True
+
+    def __cmp__(self, x):
+        ss = unicode(self)
+        sx = unicode(x)
+        if ss > sx:
+            return 1
+        elif ss < sx:
+            return -1
+        else:
+            return 0
+
+    def __add__(self, x):
+        return unicode(self) + unicode(x)
+
+    def __radd__(self, x):
+        return unicode(x) + unicode(self)
+
+
+class RBInfo(Info):
+    __abstract__ = True
+
+    def __init__(self):
+        self.code = ""
+        self.name = ""
+
+    def __unicode__(self):
+        return self.name
+
+
+def Query(cls):
+    from flask import g
+    return g.printing_session.query(cls)
+
+
+class ReadProxy(object):
+    def __init__(self, field_name, wrapper_factory, *args, **kwargs):
+        self.field_name = field_name
+        self.wrapper_factory = wrapper_factory
+        self.args = args
+        self.kwargs = kwargs
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        return self.wrapper_factory(
+            getattr(instance, self.field_name),
+            *self.args, **self.kwargs
+        )
+
+
+def DummyProperty(base_class, message):
+    class DummyClass(base_class):
+        def __unicode__(self):
+            return message
+
+    class DummyEmitter(object):
+        def __get__(self, instance, owner):
+            if instance is None:
+                return DummyClass
+            return DummyClass()
+
+    return DummyEmitter
+
