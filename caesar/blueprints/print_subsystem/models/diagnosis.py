@@ -12,7 +12,7 @@ from ..database import metadata
 __author__ = 'viruzzz-kun'
 
 
-def get_client_diagnostics(self, beg_date, end_date=None, including_closed=False):
+def get_client_diagnostics(client, beg_date, end_date=None, including_closed=False):
     """
     :type beg_date: datetime.date
     :type end_date: datetime.date | NoneType
@@ -22,7 +22,6 @@ def get_client_diagnostics(self, beg_date, end_date=None, including_closed=False
     :param including_closed:
     :return:
     """
-    client = self.event.client
     query = Query(Diagnostic).join(
         Diagnosis
     ).filter(
@@ -130,7 +129,11 @@ class ActionDiagnosesInfo(NoInfo, IterableUserDict):
         dk_codes = {dk.code: dk for dk in Query(rbDiagnosisKind)}
         dt_codes = {dt.code: dt for dt in Query(rbDiagnosisTypeN)}
         self.__diagnosis_types = diagnosis_types = self.action.actionType.diagnosis_types
-        self.__diagnostics = diagnostics = get_client_diagnostics(self.action.begDate_raw, self.action.endDate_raw)
+        self.__diagnostics = diagnostics = get_client_diagnostics(
+            self.action.event.client,
+            self.action.begDate_raw,
+            self.action.endDate_raw,
+        )
         self.__associations = associations = Query(Action_Diagnosis).filter(
             Action_Diagnosis.action == self.action,
             Action_Diagnosis.deleted == 0,

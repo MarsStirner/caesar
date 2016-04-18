@@ -197,7 +197,7 @@ class Action(Info):
     #     return self._price
 
     @cached_property
-    def diagnoses(self):
+    def diag_info(self):
         from .diagnosis import ActionDiagnosesInfo
         return ActionDiagnosesInfo(self)
 
