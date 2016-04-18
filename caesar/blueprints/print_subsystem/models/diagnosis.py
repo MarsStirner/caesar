@@ -75,7 +75,9 @@ class DiagnosticInfo(NoInfo):
         self._dk = dk
 
     def __getattr__(self, item):
-        if item in ['action', 'diagnosis', 'mkb', 'mkb2', 'mkb_ex', 'character', 'stage', 'phase', 'traumaType', 'rbAcheResult', 'person', 'dispanser', 'healthGroup', 'modifyPerson', 'createPerson', 'setDate', 'endDate', 'diagnosis_description', 'notes', 'MKB', 'MKB2', 'MKBEx']:
+        if item in ['action', 'diagnosis', 'mkb', 'mkb2', 'mkb_ex', 'character', 'stage', 'phase', 'traumaType',
+                    'rbAcheResult', 'person', 'dispanser', 'healthGroup', 'modifyPerson', 'createPerson', 'setDate',
+                    'endDate', 'diagnosis_description', 'notes', 'MKB', 'MKB2', 'MKBEx']:
             return getattr(
                 object.__getattribute__(self, '_diagnostic'),
                 item
@@ -241,9 +243,9 @@ class Diagnostic(Info):
     action = relationship('Action', backref='diagnostics')
     diagnosis = relationship('Diagnosis', backref='diagnostics')
 
-    mkb = relationship('MKB', foreign_keys=[MKB])
-    mkb2 = relationship('MKB', foreign_keys=[MKB2])
-    mkb_ex = relationship('MKB', foreign_keys=[MKBEx])
+    mkb = relationship('Mkb', foreign_keys=[MKB])
+    mkb2 = relationship('Mkb', foreign_keys=[MKB2])
+    mkb_ex = relationship('Mkb', foreign_keys=[MKBEx])
 
     character = relationship('rbDiseaseCharacter', lazy=False)
     stage = relationship('rbDiseaseStage', lazy=False)

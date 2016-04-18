@@ -1039,7 +1039,7 @@ class Actiontype(Info):
     nomenclatureService = relationship(u'rbService', foreign_keys='Actiontype.nomenclativeService_id')
     property_types = relationship(u'Actionpropertytype')
     group = relationship(u'Actiontype', remote_side=[id])
-    diagnosis_types = relationship(u'rbDiagnosisTypeN')
+    diagnosis_types = relationship(u'rbDiagnosisTypeN', secondary='ActionType_DiagnosisType')
 
     def get_property_type_by_name(self, name):
         for property_type in self.property_types:
