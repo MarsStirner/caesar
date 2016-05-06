@@ -42,10 +42,10 @@
                 </div>
             </div>
             <div class="panel-footer">
-                <button class="btn btn-default" ng-click="getData()">Получить данные</button>
+                <button type="button" class="btn btn-default" ng-click="getData()">Получить данные</button>
                 <div class="btn-group">
-                    <button class="btn btn-default" ng-click="clear()">Сбросить</button>
-                    <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    <button type="button" class="btn btn-default" ng-click="clear()">Сбросить</button>
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                         <span class="caret"></span>
                         <span class="sr-only">Toggle Dropdown</span>
                     </button>
@@ -93,6 +93,7 @@
             </tbody>
         </table>
     </div>
+    </div>
 
     <div class="row">
     <div class="[[ isFilterEnabled() ? 'col-md-offset-3' : '' ]] col-md-1">
@@ -113,7 +114,7 @@
         </button>
     </div>
     </div>
-    </div>
+
 </div>
 {% endblock %}
 

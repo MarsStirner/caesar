@@ -3,13 +3,49 @@
 {% block content %}
 <div class="container-fluid" ng-controller="PersonConfigCtrl" ng-cloak>
     <alert-notify></alert-notify>
-    <button title="Добавить сотрудника" ng-click="create_new()" class="btn btn-success  pull-right" type="button"><i class="fa fa-plus"> Добавить сотрудника</i></button>
+    <button title="Добавить запись" ng-click="create_new()" class="btn btn-success  pull-right" type="button"><i class="fa fa-plus"> Добавить запись</i></button>
     <ul class="breadcrumb">
         <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
         <li>Список сотрудников ЛПУ</li>
     </ul>
     <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-3" ng-show="isFilterEnabled()">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">Фильтр</h3>
+            </div>
+            <div class="panel-body">
+                <label for="filter-fio">ФИО</label>
+                <input class="form-control" id="filter-fio" type="text" ng-model="flt.model.fio"
+                    autocomplete="off" placeholder="ФИО">
+
+                <label for="filter-speciality">Специальность</label>
+                <rb-select ref-book="rbSpeciality" id="filter-speciality" ng-model="flt.model.speciality"
+                    placeholder="Специальность"></rb-select>
+
+                <label for="filter-post">Должность</label>
+                <rb-select ref-book="rbPost" id="filter-post" ng-model="flt.model.post"
+                    placeholder="Должность"></rb-select>
+
+                <label for="filter-org">Организация</label>
+                <ui-select ng-model="flt.model.org" ext-select-org theme="select2" id="filter-org"></ui-select>
+            </div>
+            <div class="panel-footer">
+                <button type="button" class="btn btn-default" ng-click="getData()">Получить данные</button>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default" ng-click="clear()">Сбросить</button>
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                        <span class="caret"></span>
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a ng-click="clearAll()">Сбросить и очистить результаты</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-[[ isFilterEnabled() ? 9 : 12 ]]">
         <table class="table table-condensed">
             <thead>
                 <tr>
@@ -41,6 +77,27 @@
         </table>
     </div>
     </div>
+
+    <div class="row">
+    <div class="[[ isFilterEnabled() ? 'col-md-offset-3' : '' ]] col-md-1">
+        <button type="button" title="[[ isFilterEnabled() ? 'Скрыть' : 'Показать' ]] фильтр" ng-click="toggleFilter()"
+            class="btn btn-primary">
+            <i class="fa fa-filter"></i>
+        </button>
+    </div>
+    <div class="col-md-[[ isFilterEnabled() ? 5 : 7 ]]">
+        <pagination ng-model="pager.current_page" total-items="pager.pages" items-per-page="1"
+            max-size="pager.max_pages" ng-change="onPageChanged()" ng-show="pager.pages > 1" boundary-links="true"
+            class="pagination pagination-sm pagination-nomargin">
+        </pagination>
+    </div>
+    <div class="col-md-[[ isFilterEnabled() ? 3 : 4 ]]">
+        <button type="button" class="btn btn-lg btn-success pull-right" ng-click="create_new()"
+            title="Добавить запись"><i class="fa fa-plus"> Добавить запись</i>
+        </button>
+    </div>
+    </div>
+
 </div>
 {% endblock %}
 

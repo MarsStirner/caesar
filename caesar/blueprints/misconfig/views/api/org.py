@@ -29,12 +29,27 @@ def api_v1_org_get(item_id=None):
 @module.route('/api/v1/org/list/', methods=['GET'])
 @api_method
 def api_v1_org_list_get():
-    stationary = safe_bool(request.args.get('stationary', False))
+    args = request.args.to_dict()
+    if request.json:
+        args.update(request.json)
+
     with_curators = safe_bool(request.args.get('with_curators', False))
+    paginate = safe_bool(args.get('paginate', False))
     mng = get_manager('Organisation', with_curators=with_curators)
-    return {
-        'items': map(mng.represent, mng.get_list(stationary=stationary))
-    }
+    if paginate:
+        data = mng.get_paginated_data(**args)
+        return {
+            'count': data.total,
+            'total_pages': data.pages,
+            'items': [
+                mng.represent(item) for item in data.items
+            ]
+        }
+    else:
+        data = mng.get_list(**args)
+        return {
+            'items': map(mng.represent, data)
+        }
 
 
 @module.route('/api/v1/org/', methods=['POST'])

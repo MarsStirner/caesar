@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 from hashlib import md5
+from sqlalchemy import func
+
 from .base import BaseModelManager, FieldConverter, FCType, represent_model
 from nemesis.models.person import Person, PersonCurationAssoc
 from nemesis.lib.utils import (get_new_uuid, safe_int, safe_unicode, safe_traverse, safe_bool, safe_date)
-from nemesis.systemwide import db
 
 
 class PersonModelManager(BaseModelManager):
-    def __init__(self, with_curations=False):
+    def __init__(self, with_curations=False, with_profiles=False):
         self._post_mng = self.get_manager('rbPost')
         self._spec_mng = self.get_manager('rbSpeciality')
         self._org_mng = self.get_manager('Organisation')
         self._os_mng = self.get_manager('OrgStructure')
-        self._profile_mng = self.get_manager('rbUserProfile')
         fields = [
             FieldConverter(FCType.basic, 'id', safe_int, 'id'),
             FieldConverter(FCType.basic, 'lastName', safe_unicode, 'last_name'),
@@ -45,13 +45,15 @@ class PersonModelManager(BaseModelManager):
                 'org_structure', (self.handle_onetomany_nonedit, ),
                 'org_structure',
                 model_manager=self._os_mng),
-            FieldConverter(
+        ]
+        if with_profiles:
+            self._profile_mng = self.get_manager('rbUserProfile')
+            fields.append(FieldConverter(
                 FCType.relation,
                 'user_profiles', (self.handle_manytomany, ),
                 'user_profiles', (self.represent_model, ),
                 self._profile_mng
-            ),
-        ]
+            ))
         if with_curations:
             self._curation_mng = self.get_manager('rbOrgCurationLevel')
             fields.append(FieldConverter(
@@ -101,6 +103,21 @@ class PersonModelManager(BaseModelManager):
             m.update(data['new_password'])
             item.password = m.hexdigest()
         return item
+
+    def filter_(self, **kwargs):
+        query = self._model.query
+        if 'fio' in kwargs:
+            query_str = u'%{0}%'.format(safe_unicode(kwargs['fio']))
+            query = query.filter(
+                func.concat_ws(' ', Person.lastName, Person.firstName, Person.patrName).like(query_str)
+            )
+        if 'speciality_id' in kwargs:
+            query = query.filter(Person.speciality_id == safe_int(kwargs['speciality_id']))
+        if 'post_id' in kwargs:
+            query = query.filter(Person.post_id == safe_int(kwargs['post_id']))
+        if 'org_id' in kwargs:
+            query = query.filter(Person.org_id == safe_int(kwargs['org_id']))
+        return query
 
 
 class PersonCurationModelManager(BaseModelManager):

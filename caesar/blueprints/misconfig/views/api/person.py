@@ -14,7 +14,8 @@ from blueprints.misconfig.app import module
 def api_v1_person_get(item_id=None):
     get_new = safe_bool(request.args.get('new', False))
     with_curations = safe_bool(request.args.get('with_curations', False))
-    mng = get_manager('Person', with_curations=with_curations)
+    with_profiles = safe_bool(request.args.get('with_profiles', False))
+    mng = get_manager('Person', with_curations=with_curations, with_profiles=with_profiles)
     if get_new:
         item = mng.create()
     elif item_id:
@@ -29,18 +30,36 @@ def api_v1_person_get(item_id=None):
 @module.route('/api/v1/person/list/', methods=['GET'])
 @api_method
 def api_v1_person_list_get():
+    args = request.args.to_dict()
+    if request.json:
+        args.update(request.json)
     with_curations = safe_bool(request.args.get('with_curations', False))
-    mng = get_manager('Person', with_curations=with_curations)
-    return {
-        'items': map(mng.represent, mng.get_list())
-    }
+    with_profiles = safe_bool(request.args.get('with_profiles', False))
+    paginate = safe_bool(args.get('paginate', False))
+    mng = get_manager('Person', with_curations=with_curations, with_profiles=with_profiles)
+    if paginate:
+        data = mng.get_paginated_data(**args)
+        return {
+            'count': data.total,
+            'total_pages': data.pages,
+            'items': [
+                mng.represent(item) for item in data.items
+            ]
+        }
+    else:
+        data = mng.get_list(**args)
+        return {
+            'items': map(mng.represent, data)
+        }
+
 
 @module.route('/api/v1/person/', methods=['POST'])
 @module.route('/api/v1/person/<int:item_id>/', methods=['POST'])
 @api_method
 def api_v1_person_post(item_id=None):
     with_curations = safe_bool(request.args.get('with_curations', False))
-    mng = get_manager('Person', with_curations=with_curations)
+    with_profiles = safe_bool(request.args.get('with_profiles', False))
+    mng = get_manager('Person', with_curations=with_curations, with_profiles=with_profiles)
     data = request.get_json()
 
     if item_id:

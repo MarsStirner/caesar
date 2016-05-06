@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from sqlalchemy import or_
+
 from .base import BaseModelManager, FieldConverter, FCType, represent_model
 from nemesis.models.organisation import (Organisation, OrganisationBirthCareLevel,
     Organisation_OrganisationBCLAssoc, OrganisationCurationAssoc)
@@ -77,6 +79,24 @@ class OrganisationModelManager(BaseModelManager):
 
     def handle_kladr_locality(self, json_data, parent_obj=None):
         return safe_traverse(json_data, 'code', default='')
+
+    def filter_(self, **kwargs):
+        query = self._model.query
+        if 'name' in kwargs:
+            query_str = u'%{0}%'.format(safe_unicode(kwargs['name']))
+            query = query.filter(
+                or_(Organisation.shortName.like(query_str),
+                    Organisation.fullName.like(query_str))
+            )
+        if 'infis' in kwargs:
+            query = query.filter(Organisation.infisCode == safe_unicode(kwargs['infis']))
+        if 'is_lpu' in kwargs:
+            query = query.filter(Organisation.isLPU == safe_int(safe_bool(kwargs['is_lpu'])))
+        if 'is_stationary' in kwargs:
+            query = query.filter(Organisation.isStationary == safe_int(safe_bool(kwargs['is_stationary'])))
+        if 'is_insurer' in kwargs:
+            query = query.filter(Organisation.isInsurer == safe_int(safe_bool(kwargs['is_insurer'])))
+        return query
 
 
 class OrganisationBCLModelManager(BaseModelManager):

@@ -4,6 +4,7 @@ WebMis20
 .controller('PersonConfigCtrl', ['$scope', '$controller', 'Person',
         function ($scope, $controller, Person) {
     $controller('MisConfigBaseCtrl', {$scope: $scope});
+    $scope.setViewParams({paginate: true});
     $scope.EntityClass = Person;
     $scope.setSimpleModalConfig({
         controller: 'PersonConfigModalCtrl',
@@ -11,10 +12,39 @@ WebMis20
         templateUrl: '/caesar/misconfig/person/person-edit-modal.html'
     });
 
-    $scope.model = [];
-    Person.instantiateAll().then(function (persons) {
-        $scope.item_list = persons;
-    });
+    var setData = function (paged_data) {
+        $scope.item_list = paged_data.items;
+        $scope.pager.record_count = paged_data.count;
+        $scope.pager.pages = paged_data.total_pages;
+    };
+    $scope.refreshData = function () {
+        var args = {
+            with_profiles: true,
+            paginate: true,
+            page: $scope.pager.current_page,
+            per_page: $scope.pager.per_page,
+            fio: $scope.flt.model.fio || undefined,
+            speciality_id: safe_traverse($scope.flt.model, ['speciality', 'id']),
+            post_id: safe_traverse($scope.flt.model, ['post', 'id']),
+            org_id: safe_traverse($scope.flt.model, ['org', 'id'])
+        };
+        $scope._refreshData(args).then(setData);
+    };
+    $scope.onPageChanged = function () {
+        $scope.refreshData();
+    };
+    $scope.create_new = function () {
+        $scope.EntityClass.instantiate(undefined, {'new': true, with_profiles: true}).
+            then(function (item) {
+                $scope._editNew(item);
+            });
+    };
+
+    $scope.init = function () {
+        $scope.refreshData();
+    };
+
+    $scope.init();
 }])
 .controller('PersonConfigModalCtrl', ['$scope', '$modalInstance', 'model', 'RefBookService',
     function ($scope, $modalInstance, model, RefBookService) {
