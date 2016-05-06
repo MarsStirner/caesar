@@ -2585,6 +2585,11 @@ class Event(Info):
     diagnostics = DummyProperty(list, u'Поле diagnostics у обращения не реализовано')
     diagnosises = DummyProperty(list, u'Поле diagnosises у обращения не реализовано')
 
+    @cached_property
+    def diag_info(self):
+        from .diagnosis import EventDiagnosesInfo
+        return EventDiagnosesInfo(self)
+
     @property
     def setDate(self):
         return DateTimeInfo(self.setDate_raw)

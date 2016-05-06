@@ -175,6 +175,87 @@ class ActionDiagnosesInfo(NoInfo, IterableUserDict):
         self.__loaded = True
 
 
+class EventDiagnosesInfo(NoInfo, IterableUserDict):
+    def __init__(self, event):
+        """
+        @type event: blueprints.print_subsystem.models.models_all.event
+        @param event:
+        """
+        self.__data = {}
+        self.event = event
+        self.__loaded = False
+        self.__diagnosis_types = []
+        self.__diagnostics = []
+        self.__associations = []
+        IterableUserDict.__init__(self)
+
+    @property
+    def data(self):
+        if not self.__loaded:
+            self.__load_raw_data()
+        return self.__data
+
+    @data.setter
+    def data(self, value):
+        self.__loaded = False
+        self.__diagnosis_types = []
+        self.__diagnostics = []
+        self.__associations = []
+        self.__data = value
+
+    def __load_raw_data(self):
+        dk_codes = {dk.code: dk for dk in Query(rbDiagnosisKind)}
+        dt_codes = {dt.code: dt for dt in Query(rbDiagnosisTypeN)}
+        self.__diagnostics = diagnostics = get_client_diagnostics(
+            self.event.client,
+            self.event.begDate_raw,
+            self.event.endDate_raw,
+        )
+        self.__associations = associations = Query(Event_Diagnosis).filter(
+            Event_Diagnosis.event == self.event,
+            Event_Diagnosis.deleted == 0,
+        ).all()
+        self.__diagnosis_types = diagnosis_types = sorted(
+            set(self.event.eventType.diagnosis_types) | set(e_d.diagnosisType for e_d in associations),
+            key=lambda dt: dt.rank
+        )
+
+        diag_id_2_diagnostic = {
+            diagnostic.diagnosis_id: diagnostic
+            for diagnostic in diagnostics
+        }
+
+        diag_id_2_dk_code = {
+            dt.code: {
+                dic.diagnosis_id: u'associated'
+                for dic in diagnostics
+            }
+            for dt in diagnosis_types
+        }
+        for assoc in associations:
+            try:
+                diag_id_2_dk_code[assoc.diagnosisType.code][assoc.diagnosis_id] = assoc.diagnosisKind.code
+            except KeyError:
+                pass
+
+        self.__data = {
+            dt_code: {
+                dk_code: [
+                    DiagnosticInfo(
+                        diag_id_2_diagnostic[diagnosis_id],
+                        dk,
+                        dt_codes[dt_code],
+                    )
+                    for diagnosis_id, code in six.iteritems(dt_value)
+                    if code == dk_code
+                ]
+                for dk_code, dk in six.iteritems(dk_codes)
+            }
+            for dt_code, dt_value in six.iteritems(diag_id_2_dk_code)
+        }
+        self.__loaded = True
+
+
 class Diagnosis(Info):
     __tablename__ = u'Diagnosis'
 
