@@ -49,7 +49,7 @@ WebMis20
         });
     Organisation.instantiateAll({
         with_curators: true,
-        stationary: true
+        is_lpu: true
     }).then(function (orgs) {
         $scope.model = {};
         angular.forEach(orgs, function (org, key) {

@@ -73,8 +73,10 @@ class OrganisationModelManager(BaseModelManager):
 
     def get_list(self, **kwargs):
         where = []
-        if kwargs.get('stationary'):
+        if kwargs.get('is_stationary'):
             where.append(self._model.isStationary.__eq__(1))
+        if kwargs.get('is_lpu'):
+            where.append(self._model.isLPU.__eq__(1))
         return super(OrganisationModelManager, self).get_list(where=where)
 
     def handle_kladr_locality(self, json_data, parent_obj=None):
