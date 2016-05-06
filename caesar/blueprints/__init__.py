@@ -1,1 +1,1 @@
-__author__ = 'santipov'
+# coding: utf-8

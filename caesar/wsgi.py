@@ -32,27 +32,29 @@ def general_menu():
         title=u'Настройки МИС',
         visible=UserProfileManager.has_ui_admin(),
     ), dict(
-        link='dict.index',
-        title=u'Справочники',
-        visible=UserProfileManager.has_ui_admin(),
-    ), dict(
         link='logging.index',
         title=u'Журнал',
-        visible=UserProfileManager.has_ui_admin(),
-    ), dict(
-        link='reports.index',
-        title=u'Отчёты',
         visible=UserProfileManager.has_ui_admin(),
     ), dict(
         link='print_subsystem.index',
         title=u'Печать',
         visible=UserProfileManager.has_ui_admin(),
-    )]
+    )
+    # dict(
+    #     link='dict.index',
+    #     title=u'Справочники',
+    #     visible=UserProfileManager.has_ui_admin(),
+    # ), dict(
+    #     link='reports.index',
+    #     title=u'Отчёты',
+    #     visible=UserProfileManager.has_ui_admin(),
+    # ),
+    ]
     if mis_settings.getBool('RISAR.Enabled', False):
         menu_items.append(dict(
             link='risar_config.index',
             title=u'РИСАР',
-            visible=True,
+            visible=UserProfileManager.has_ui_admin(),
         ))
     return dict(main_menu=menu_items)
 
