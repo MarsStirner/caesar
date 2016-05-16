@@ -361,7 +361,7 @@ class Invoice(Base):
     createPerson = relationship('Person', foreign_keys=[createPerson_id])
     modifyPerson = relationship('Person', foreign_keys=[modifyPerson_id])
     contract = relationship('Contract')
-    parent = relationship('Invoice', remote_side=[id])
+    parent = relationship('Invoice', remote_side=[id], backref='refunds')
     item_list = relationship(
         'InvoiceItem',
         primaryjoin='and_(InvoiceItem.invoice_id==Invoice.id, InvoiceItem.parent_id == None, InvoiceItem.deleted == 0)'
