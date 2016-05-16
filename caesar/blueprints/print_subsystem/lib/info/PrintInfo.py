@@ -2,6 +2,7 @@
 
 #from PyQt4 import QtCore, QtGui
 # from library.Utils import *
+from blueprints.print_subsystem.models.models_utils import Query
 from flask import g
 
 
@@ -95,7 +96,7 @@ class CTemplatableInfoMixin:
         # формирование html по id шаблона
         from ..internals import renderTemplate
         from ...models.models_all import rbPrintTemplate
-        template_data = g.printing_session.query(rbPrintTemplate).get(templateId)
+        template_data = Query(rbPrintTemplate).get(templateId)
         if not template_data:
             return ''
         data = self.getData()

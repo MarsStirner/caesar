@@ -1,15 +1,5 @@
 # -*- coding: utf-8 -*-
-# from PyQt4 import QtGui, QtCore
-import codecs
-import logging
-import os
-# import sip
-# from library.Journaling import CJournaling
-# from library.TextDocument import CTextDocument
-# from library.Utils import forceString, forceInt, forceRef
-# from internals import renderTemplate, CPageFormat
-#from specialvars import getSpVarsUsedInTempl, getSpecialVariableValue, SpecialVariable
-from flask import g
+from blueprints.print_subsystem.models.models_utils import Query
 from ..models.models_all import rbPrintTemplate, Action, Actiontype
 
 __author__ = 'mmalkov'
@@ -18,7 +8,7 @@ __author__ = 'mmalkov'
 def getPrintTemplates(context):
     return [
         (r.name, r.id, r.dpdAgreement, r.fileName, r.code)
-        for r in g.printing_session.query(rbPrintTemplate).filter(rbPrintTemplate.context == context)
+        for r in Query(rbPrintTemplate).filter(rbPrintTemplate.context == context)
     ] if context else []
 
 
@@ -34,7 +24,7 @@ def get_action(event, flat_code, one=True):
     :return: действие
     :rtype: Action | None
     """
-    query = g.printing_session.query(Action).join(Actiontype).filter(Action.event == event, Action.deleted == 0)
+    query = Query(Action).join(Actiontype).filter(Action.event == event, Action.deleted == 0)
     if isinstance(flat_code, (list, tuple)):
         query = query.filter(Actiontype.flatCode.in_(flat_code))
     elif isinstance(flat_code, basestring):

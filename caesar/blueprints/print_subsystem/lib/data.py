@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 
+from blueprints.print_subsystem.models.models_utils import Query
 from flask import g
 from sqlalchemy import func, and_
 from blueprints.print_subsystem.models.schedule import Schedule
@@ -28,7 +29,7 @@ from .model_provider import PrintingModelProvider
 
 
 def current_patient_orgStructure(event_id):
-    return g.printing_session.query(Orgstructure).\
+    return Query(Orgstructure).\
         join(ActionProperty_OrgStructure, Orgstructure.id == ActionProperty_OrgStructure.value_).\
         join(ActionProperty, ActionProperty.id == ActionProperty_OrgStructure.id).\
         join(Action).\
@@ -91,7 +92,7 @@ def get_patient_hospital_bed(event, dt=None):
 
 
 def _get_moving_query(event, dt=None, finished=None):
-    query = g.printing_session.query(Action).join(
+    query = Query(Action).join(
         Actiontype
     ).filter(
         Action.event_id == event.id,
@@ -173,7 +174,7 @@ def get_hosp_length(event):
 
 
 def _get_hosp_release_query(event):
-    query = g.printing_session.query(Action).join(
+    query = Query(Action).join(
         Actiontype
     ).filter(
         Action.event_id == event.id,
@@ -192,7 +193,7 @@ class Print_Template(object):
 
     def update_context(self, template_id, context):
         from ..models.models_all import rbPrintTemplateMeta, Organisation, Orgstructure, rbService, Person
-        for desc in g.printing_session.query(rbPrintTemplateMeta).filter(rbPrintTemplateMeta.template_id == template_id):
+        for desc in Query(rbPrintTemplateMeta).filter(rbPrintTemplateMeta.template_id == template_id):
             name = desc.name
             if name not in context:
                 continue
@@ -209,15 +210,15 @@ class Print_Template(object):
             elif typeName == 'Time':
                 context[name] = datetime.datetime.strptime(value, '%H:%M').time() if value else None
             elif typeName == 'Organisation':
-                context[name] = g.printing_session.query(Organisation).get(int(value)) if value else None
+                context[name] = Query(Organisation).get(int(value)) if value else None
             elif typeName == 'Person':
-                context[name] = g.printing_session.query(Person).get(int(value)) if value else None
+                context[name] = Query(Person).get(int(value)) if value else None
             elif typeName == 'OrgStructure':
-                context[name] = g.printing_session.query(Orgstructure).get(int(value)) if value else None
+                context[name] = Query(Orgstructure).get(int(value)) if value else None
             elif typeName == 'Service':
-                context[name] = g.printing_session.query(rbService).get(int(value)) if value else None
+                context[name] = Query(rbService).get(int(value)) if value else None
             elif typeName == 'MKB':
-                context[name] = g.printing_session.query(Mkb).get(int(value)) if value else None
+                context[name] = Query(Mkb).get(int(value)) if value else None
 
     def print_template(self, doc):
         context_type = doc['context_type']
@@ -235,11 +236,11 @@ class Print_Template(object):
                 ext[sp_name] = SpecialVariable(sp_name, **context)
             del context['special_variables']
             context.update(ext)
-        currentOrganisation = g.printing_session.query(Organisation).get(context['currentOrganisation']) if \
+        currentOrganisation = Query(Organisation).get(context['currentOrganisation']) if \
             context['currentOrganisation'] else ""
-        currentOrgStructure = g.printing_session.query(Orgstructure).get(context['currentOrgStructure']) if \
+        currentOrgStructure = Query(Orgstructure).get(context['currentOrgStructure']) if \
             context['currentOrgStructure'] else ""
-        currentPerson = g.printing_session.query(Person).get(context['currentPerson']) if \
+        currentPerson = Query(Person).get(context['currentPerson']) if \
             context['currentPerson'] else ""
 
         context.update({
@@ -262,11 +263,11 @@ class Print_Template(object):
         invoice_list = []
         if 'event_id' in data:
             event_id = data['event_id']
-            event = g.printing_session.query(Event).get(event_id)
+            event = Query(Event).get(event_id)
             client = event.client
 
             client.date = event.execDate.date if event.execDate else self.today
-            quoting = g.printing_session.query(v_Client_Quoting).filter_by(event_id=event_id).\
+            quoting = Query(v_Client_Quoting).filter_by(event_id=event_id).\
                 filter_by(clientId=event.client.id).filter_by(deleted=0).first()
             if not quoting:
                 quoting = v_Client_Quoting()
@@ -291,10 +292,10 @@ class Print_Template(object):
     def context_action(self, data):
         # ActionEditDialod, ActionInfoFrame
         action_id = data[u'action_id']
-        action = g.printing_session.query(Action).get(action_id)
+        action = Query(Action).get(action_id)
         event = action.event
         event.client.date = event.execDate.date if event.execDate.date else self.today
-        quoting = g.printing_session.query(v_Client_Quoting).filter_by(event_id=event.id).\
+        quoting = Query(v_Client_Quoting).filter_by(event_id=event.id).\
             filter_by(clientId=event.client.id).filter_by(deleted=0).first()
         if not quoting:
             quoting = v_Client_Quoting()
@@ -321,7 +322,7 @@ class Print_Template(object):
         # расчеты (CAccountingDialog)
         account_id = data['account_id']
         account_items_idList = data['account_items_idList']
-        accountInfo = g.printing_session.query(Account).get(account_id)
+        accountInfo = Query(Account).get(account_id)
         accountInfo.selectedItemIdList = account_items_idList
         # accountInfo.selectedItemIdList = self.modelAccountItems.idList() ???
         return {
@@ -332,7 +333,7 @@ class Print_Template(object):
     #     operations = metrics = None
     #
     #     def get_metrics():
-    #         m = g.printing_session.query(EventPayment).with_entities(
+    #         m = Query(EventPayment).with_entities(
     #             func.count(),
     #             func.sum(func.IF(EventPayment.sum > 0, EventPayment.sum, 0)),
     #             - func.sum(func.IF(EventPayment.sum < 0, EventPayment.sum, 0))
@@ -344,7 +345,7 @@ class Print_Template(object):
     #         }
     #
     #     if 'payments_id_list' in data:
-    #         operations = g.printing_session.query(EventPayment).filter(
+    #         operations = Query(EventPayment).filter(
     #             EventPayment.id.in_(data['payments_id_list'])
     #         ).order_by(EventPayment.date, EventPayment.id).all()
     #         metrics = get_metrics()
@@ -356,7 +357,7 @@ class Print_Template(object):
     def context_person(self, data):
         # PersonDialogcf
         person_id = data['person_id']
-        person = g.printing_session.query(Person).get(person_id)
+        person = Query(Person).get(person_id)
         return {
             'person': person
         }
@@ -364,7 +365,7 @@ class Print_Template(object):
     def context_registry(self, data):
         # RegistryWindow
         client_id = data['client_id']
-        client = g.printing_session.query(Client).get(client_id)
+        client = Query(Client).get(client_id)
         client.date = self.today
         return {
             'client': client
@@ -374,9 +375,9 @@ class Print_Template(object):
         # BeforeRecord
         client_id = data['client_id']
         client_ticket_id = data['ticket_id']
-        client = g.printing_session.query(Client).get(client_id)
+        client = Query(Client).get(client_id)
         client.date = self.today
-        client_ticket = g.printing_session.query(ScheduleClientTicket).get(client_ticket_id)
+        client_ticket = Query(ScheduleClientTicket).get(client_ticket_id)
         timeRange = '--:-- - --:--'
         num = 0
         return {
@@ -388,7 +389,7 @@ class Print_Template(object):
         event = None
         if 'event_id' in data:
             event_id = data['event_id']
-            event = g.printing_session.query(Event).get(event_id)
+            event = Query(Event).get(event_id)
         return {
             'event': event,
             'client': event.client if event else None,
@@ -407,10 +408,10 @@ class Print_Template(object):
         action = None
         if 'event_id' in data:
             event_id = data['event_id']
-            event = g.printing_session.query(Event).get(event_id)
+            event = Query(Event).get(event_id)
         if 'action_id' in data:
             action_id = data['action_id']
-            action = g.printing_session.query(Action).get(action_id)
+            action = Query(Action).get(action_id)
         return {
             'event': event,
             'client': event.client if event else None,
@@ -421,7 +422,7 @@ class Print_Template(object):
         event = None
         if 'event_id' in data:
             event_id = data['event_id']
-            event = g.printing_session.query(Event).get(event_id)
+            event = Query(Event).get(event_id)
         return {
             'event': event
         }
@@ -429,7 +430,7 @@ class Print_Template(object):
     def context_event_measure(self, data):
         em = None
         if 'event_measure_id' in data:
-            em = g.printing_session.query(EventMeasure).get(data['event_measure_id'])
+            em = Query(EventMeasure).get(data['event_measure_id'])
         return {
             'em': em
         }
@@ -440,7 +441,7 @@ class Print_Template(object):
         start_date = safe_date(data.get('start_date', today))
         end_date = safe_date(data.get('end_date', today))
         sviz = ScheduleVisualizer()
-        person = g.printing_session.query(Person).get(person_id)
+        person = Query(Person).get(person_id)
         return {
             'schedule': Schedule(),
             'person': sviz.make_person(person),
@@ -454,7 +455,7 @@ class Print_Template(object):
         invoice_ctrl = InvoiceController()
         invoice = invoice_ctrl.get_invoice(invoice_id)
         event_id = safe_int(data['event_id'])
-        event = g.printing_session.query(Event).get(event_id)
+        event = Query(Event).get(event_id)
         conv = NumToTextConverter()
         return {
             'invoice': invoice,
@@ -471,7 +472,7 @@ class Print_Template(object):
 
     def context_biomaterials(self, data):
         ttj_ids = data.get('ttj_ids')
-        ttj_records = g.printing_session.query(TakenTissueJournal).filter(TakenTissueJournal.id.in_(ttj_ids)).all()
+        ttj_records = Query(TakenTissueJournal).filter(TakenTissueJournal.id.in_(ttj_ids)).all()
         return {
             'ttj_records': ttj_records
         }

@@ -2,6 +2,8 @@
 
 import logging
 import traceback
+
+from blueprints.print_subsystem.models.models_utils import Query
 from flask import g
 from jinja2 import TemplateSyntaxError
 from blueprints.print_subsystem.lib.internals import RenderTemplateException
@@ -50,7 +52,7 @@ simple_logger = logging.getLogger('simple')
 
 def applyTemplate(templateId, data):
     u"""Выводит на печать шаблон печати номер templateId с данными data"""
-    template_data = g.printing_session.query(rbPrintTemplate).get(templateId)
+    template_data = Query(rbPrintTemplate).get(templateId)
     if not template_data:
         simple_logger.error(u'Шаблон с id=%s не найден' % templateId)
         raise RenderTemplateException(u'Шаблон с id=%s не найден' % templateId, {

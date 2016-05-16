@@ -4,6 +4,7 @@ import os
 import traceback
 import logging
 
+from blueprints.print_subsystem.models.models_utils import Query
 from flask import render_template, abort, request, url_for, send_file, g
 from jinja2 import TemplateNotFound
 
@@ -124,7 +125,7 @@ def api_templates(context=None):
     # А в Гиппократе всё работает. Там те же две БД.
     if not context:
         return jsonify(None)
-    templates = g.printing_session.query(rbPrintTemplate).filter(
+    templates = Query(rbPrintTemplate).filter(
         rbPrintTemplate.context == context,
         rbPrintTemplate.deleted == 0
     )

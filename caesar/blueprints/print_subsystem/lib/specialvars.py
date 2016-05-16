@@ -2,6 +2,8 @@
 import logging
 import re
 import datetime
+
+from blueprints.print_subsystem.models.models_utils import Query
 from flask import g
 from sqlalchemy.exc import ProgrammingError, OperationalError
 
@@ -14,7 +16,7 @@ simple_logger = logging.getLogger('simple')
 
 
 def SpecialVariable(name, *args, **kwargs):
-    sp_variable = g.printing_session.query(rbSpecialVariablesPreferences).filter(rbSpecialVariablesPreferences.name == name).first()
+    sp_variable = Query(rbSpecialVariablesPreferences).filter(rbSpecialVariablesPreferences.name == name).first()
     if not sp_variable:
         simple_logger.critical(u'Специальная переменная "%s" не найдена' % name)
         raise RuntimeError(u'Специальная переменная "%s" не найдена' % name)
