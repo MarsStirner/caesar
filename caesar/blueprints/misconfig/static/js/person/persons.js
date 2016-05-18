@@ -67,7 +67,9 @@ WebMis20
         };
         $scope.model = model;
         $scope.close = function () {
-            $scope.model.save().
+            $scope.model.save(undefined, undefined, {
+                with_profiles: true
+            }).
                 then(function (model) {
                     $scope.$close(model);
                 });
