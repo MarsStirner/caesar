@@ -2,6 +2,7 @@
 import datetime
 import re
 import os
+from blueprints.print_subsystem.models.models_utils import code128C_any
 
 from jinja2 import FileSystemLoader
 from jinja2.environment import Environment
@@ -43,7 +44,8 @@ def make_jinja_environment():
         'sum_columns': do_sum_columns,
         'table_column': do_table_column,
         'table_uniform': do_table_uniform,
-        'flatten_nested': flatten_nested
+        'flatten_nested': flatten_nested,
+        'code128c': code128C_any,
     })
     return env
 
