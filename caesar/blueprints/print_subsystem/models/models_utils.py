@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-import struct
 import datetime
-from ..database import Base, metadata
+import struct
 
 
 def get_model_by_name(name):
@@ -52,7 +51,7 @@ def code128C_any(string):
         if number == 0:
             break
     result.reverse()
-    result.append((sum(map(lambda (k, c): (k+1)*c, enumerate(result))) + 105) % 103)
+    result.append(reduce(lambda x, (k, c): (x + (k + 1) * c) % 103, enumerate(result), 2))
     result = [0xcd] + [
         (w + 100 if w > 94 else w + 32)
         for w in result
@@ -252,38 +251,6 @@ def formatDate(time):
 
 def formatTime(time):
     return unicode(time.strftime('%H:%M')) if time else ''
-
-
-class Info(Base):
-    u"""Базовый класс для представления объектов при передаче в шаблоны печати"""
-    __abstract__ = True
-
-    def __cmp__(self, x):
-        ss = unicode(self)
-        sx = unicode(x)
-        if ss > sx:
-            return 1
-        elif ss < sx:
-            return -1
-        else:
-            return 0
-
-    def __add__(self, x):
-        return unicode(self) + unicode(x)
-
-    def __radd__(self, x):
-        return unicode(x) + unicode(self)
-
-
-class RBInfo(Info):
-    __abstract__ = True
-
-    def __init__(self):
-        self.code = ""
-        self.name = ""
-
-    def __unicode__(self):
-        return self.name
 
 
 def Query(cls):

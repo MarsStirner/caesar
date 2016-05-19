@@ -4,7 +4,8 @@ import datetime
 import six
 import sqlalchemy
 from UserDict import IterableUserDict
-from blueprints.print_subsystem.models.models_utils import Info, RBInfo, DateInfo, ReadProxy, Query
+from blueprints.print_subsystem.models.models_utils import DateInfo, ReadProxy, Query
+from blueprints.print_subsystem.models.rbinfo import Info, RBInfo
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Date, Text, Table, or_
 from sqlalchemy.orm import relationship
 from ..database import metadata

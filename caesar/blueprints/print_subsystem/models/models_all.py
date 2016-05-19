@@ -17,9 +17,10 @@ from werkzeug.utils import cached_property
 from ..config import MODULE_NAME
 from ..lib.html import convenience_HtmlRip, replace_first_paragraph
 from ..lib.num_to_text_converter import NumToTextConverter
-from models_utils import Info, RBInfo, DateTimeInfo, formatNameInt, formatShortNameInt, code128C, formatSex, \
+from models_utils import DateTimeInfo, formatNameInt, formatShortNameInt, code128C, formatSex, \
     DummyProperty, DateInfo, Query, formatMonthsWeeks, formatDays, formatYears, formatYearsMonths, TimeInfo, \
     get_model_by_name, calcAgeTuple
+from blueprints.print_subsystem.models.rbinfo import Info, RBInfo
 from kladr_models import Kladr, Street
 from ..database import Base, metadata
 from sqlalchemy.dialects.mysql.base import MEDIUMBLOB
