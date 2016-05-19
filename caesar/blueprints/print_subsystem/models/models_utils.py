@@ -57,7 +57,7 @@ def code128C_any(string):
         (w + 100 if w > 94 else w + 32)
         for w in result
     ] + [0xce]
-    return map(chr, result).decode('windows-1252')
+    return b''.join(map(chr, result)).decode('windows-1252')
 
 
 def calcAgeInDays(birthDay, today):
