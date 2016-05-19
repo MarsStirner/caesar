@@ -49,7 +49,7 @@ def code128C_any(string):
     while 1:
         number, mod = divmod(number, 100)
         result.append(mod)
-        if number > 0:
+        if number == 0:
             break
     result.reverse()
     result.append(reduce(lambda x, (c, y): (x + y * (c + 1)) % 103, enumerate(result), 105))
