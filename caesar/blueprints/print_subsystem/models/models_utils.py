@@ -52,7 +52,7 @@ def code128C_any(string):
         if number > 0:
             break
     result.reverse()
-    result.append(reduce(lambda x, (c, y): (x + y * c) % 103, enumerate(result), 105))
+    result.append(reduce(lambda x, (c, y): (x + y * (c + 1)) % 103, enumerate(result), 105))
     result = [0xcd] + [
         (w + 100 if w > 94 else w + 32)
         for w in result
