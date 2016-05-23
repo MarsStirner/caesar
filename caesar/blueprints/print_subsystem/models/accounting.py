@@ -6,7 +6,7 @@ from nemesis.lib.types import CalculatedProperty, CalculatedPropertyRO
 from .models_utils import Query
 from sqlalchemy import Column, Unicode, ForeignKey, Date, Float, DateTime, SmallInteger, Numeric, String
 from sqlalchemy import Integer
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy import orm
 
 from ..database import Base
@@ -361,7 +361,12 @@ class Invoice(Base):
     createPerson = relationship('Person', foreign_keys=[createPerson_id])
     modifyPerson = relationship('Person', foreign_keys=[modifyPerson_id])
     contract = relationship('Contract')
-    parent = relationship('Invoice', remote_side=[id], backref='refunds')
+    parent = relationship(
+        'Invoice',
+        remote_side=[id],
+        backref=backref('refunds', primaryjoin='and_(Invoice.id == remote(Invoice.parent_id), remote(Invoice.deleted) == 0)')
+    )
+
     item_list = relationship(
         'InvoiceItem',
         primaryjoin='and_(InvoiceItem.invoice_id==Invoice.id, InvoiceItem.parent_id == None, InvoiceItem.deleted == 0)'
@@ -374,12 +379,14 @@ class Invoice(Base):
     total_sum = CalculatedProperty('_total_sum')
     refund_sum = CalculatedProperty('_refund_sum')
     coordinated_refund = CalculatedPropertyRO('_coordinated_refund')
+    sum_ = CalculatedProperty('_sum_')
 
     @orm.reconstructor
     def kill_calculated_fields(self):
         del self.total_sum
         del self.refund_sum
         del self.coordinated_refund
+        del self.sum_
 
     @total_sum
     def total_sum(self):
@@ -390,6 +397,11 @@ class Invoice(Base):
     def refund_sum(self):
         from nemesis.lib.data_ctrl.accounting.utils import calc_invoice_refund_sum
         return calc_invoice_refund_sum(self)
+
+    @sum_
+    def sum_(self):
+        from nemesis.lib.data_ctrl.accounting.utils import calc_invoice_sum_with_refunds
+        return calc_invoice_sum_with_refunds(self)
 
     @coordinated_refund
     def coordinated_refund(self):

@@ -454,14 +454,15 @@ class Print_Template(object):
         InvoiceController.get_selecter().set_model_provider(PrintingModelProvider.set_session(g.printing_session))
         invoice_ctrl = InvoiceController()
         invoice = invoice_ctrl.get_invoice(invoice_id)
-        event_id = safe_int(data['event_id'])
-        event = Query(Event).get(event_id)
+        event_id = safe_int(data.get('event_id'))
+        event = Query(Event).get(event_id) if event_id else None
         conv = NumToTextConverter()
         return {
             'invoice': invoice,
             'event': event,
             'utils': {
                 'converter': conv,
+                'get_converter': lambda: NumToTextConverter(),
                 'format_money': format_money,
                 'calc_invoice_sum_wo_discounts': calc_invoice_sum_wo_discounts,
                 'check_invoice_closed': check_invoice_closed,
