@@ -15,7 +15,7 @@ class FCType(object):
     parent = 4  # поле, представляющее родительскую сущность
 
 
-class FieldConverter():
+class FieldConverter(object):
 
     def __init__(self, field_type, model_name, to_model=None, json_name=None, to_json=None, model_manager=None):
         self.field_type = field_type

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-from nemesis.models.exists import (rbPacientModel, rbTreatment, rbTreatmentType, rbFinance)
+from nemesis.models.exists import (rbPacientModel, rbTreatment, rbTreatmentType, rbFinance, rbRequestType, rbEventTypePurpose, rbResult, rbService)
 from nemesis.models.expert_protocol import (rbMeasureType, rbMeasureScheduleType, rbMeasureScheduleApplyType, Measure)
-from nemesis.models.exists import rbRequestType, rbEventTypePurpose, rbResult, rbService
 from nemesis.models.actions import ActionType
 from nemesis.models.event import EventType
 from nemesis.models.person import rbPost, rbOrgCurationLevel, rbSpeciality, rbUserProfile
@@ -115,7 +114,7 @@ def get_manager(name, **params):
         return ExpertSchemeMeasureModelManager()
     elif name == 'MeasureSchedule':
         return MeasureScheduleModelManager()
-    elif name == 'ActionType':
+    elif name == 'ActionType_simple':
         return SimpleRefBookModelManager(ActionType)
     elif name == 'MKB':
         return MKBModelManager()

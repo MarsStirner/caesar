@@ -6,6 +6,8 @@ from nemesis.lib.apiutils import api_method, ApiException
 from nemesis.lib.utils import safe_bool
 from blueprints.misconfig.lib.data_management.factory import get_manager
 from blueprints.misconfig.app import module
+from nemesis.models.person import Person
+from sqlalchemy.orm import joinedload
 
 
 @module.route('/api/v1/person/', methods=['GET'])
@@ -32,8 +34,17 @@ def api_v1_person_list_get():
     with_curations = safe_bool(request.args.get('with_curations', False))
     mng = get_manager('Person', with_curations=with_curations)
     return {
-        'items': map(mng.represent, mng.get_list())
+        'items': map(
+            mng.represent,
+            mng.get_list(options=[
+                joinedload(Person.user_profiles),
+                joinedload(Person.organisation),
+                joinedload(Person.post),
+                joinedload(Person.org_structure),
+            ])
+        )
     }
+
 
 @module.route('/api/v1/person/', methods=['POST'])
 @module.route('/api/v1/person/<int:item_id>/', methods=['POST'])

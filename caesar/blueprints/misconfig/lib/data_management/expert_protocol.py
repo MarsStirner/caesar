@@ -10,7 +10,7 @@ from nemesis.models.expert_protocol import (Measure, ExpertProtocol, ExpertSchem
 class MeasureModelManager(BaseModelManager):
     def __init__(self):
         self._mt_mng = self.get_manager('rbMeasureType')
-        self._at_mng = self.get_manager('ActionType')
+        self._at_mng = self.get_manager('ActionType_simple')
         fields = [
             FieldConverter(FCType.basic, 'id', safe_int, 'id'),
             FieldConverter(
