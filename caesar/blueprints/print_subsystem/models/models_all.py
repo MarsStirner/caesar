@@ -8,6 +8,7 @@ import jinja2
 import requests
 
 from flask import g
+from nemesis.lib.types import ProxyField, CalculatedPropertyRO
 from sqlalchemy import Column, Integer, String, Unicode, DateTime, ForeignKey, Date, Float, or_, Boolean, Text, \
     SmallInteger, Time, Index, BigInteger, Enum, Table, BLOB, UnicodeText
 from sqlalchemy.orm import relationship, backref, reconstructor
@@ -29,6 +30,18 @@ from nemesis.lib.const import (STATIONARY_EVENT_CODES, DIAGNOSTIC_EVENT_CODES, P
 
 
 TABLE_PREFIX = MODULE_NAME
+
+
+class DateTimeInfoProxyField(ProxyField):
+    _get_converter = DateTimeInfo
+
+
+class DateInfoProxyField(ProxyField):
+    _get_converter = DateInfo
+
+
+class TimeInfoProxyField(ProxyField):
+    _get_converter = TimeInfo
 
 
 class ConfigVariables(Base):
@@ -187,40 +200,28 @@ class Action(Info):
     self_contract = relationship('Contract')
     bbt_response = relationship(u'BbtResponse', uselist=False)
 
-    # def getPrice(self, tariffCategoryId=None):
-    #     if self.price is None:
-    #         event = self.getEventInfo()
-    #         tariffDescr = event.getTariffDescr()
-    #         tariffList = tariffDescr.actionTariffList
-    #         serviceId = self.service.id
-    #         tariffCategoryId = self.person.tariffCategory.id
-    #         self._price = CContractTariffCache.getPrice(tariffList, serviceId, tariffCategoryId)
-    #     return self._price
-
     @cached_property
     def diag_info(self):
         from .diagnosis import ActionDiagnosesInfo
         return ActionDiagnosesInfo(self)
 
-    @property
-    def begDate(self):
-        return DateTimeInfo(self.begDate_raw)
+    begDate = DateTimeInfoProxyField('begDate_raw')
+    endDate = DateTimeInfoProxyField('endDate_raw')
+    directionDate = DateTimeInfoProxyField('directionDate_raw')
+    plannedEndDate = DateTimeInfoProxyField('plannedDate_raw')
+    coordDate = DateTimeInfoProxyField('coordDate_raw')
 
-    @property
-    def endDate(self):
-        return DateTimeInfo(self.endDate_raw)
-
-    @property
-    def directionDate(self):
-        return DateTimeInfo(self.directionDate_raw)
-
-    @property
-    def plannedEndDate(self):
-        return DateTimeInfo(self.plannedEndDate_raw)
-
-    @property
-    def coordDate(self):
-        return DateTimeInfo(self.coordDate_raw)
+    group = ProxyField('actionType.group')
+    class_ = ProxyField('actionType.class_')
+    code = ProxyField('actionType.code')
+    flatCode = ProxyField('actionType.flatCode')
+    name = ProxyField('actionType.name')
+    title = ProxyField('actionType.title')
+    service = ProxyField('actionType.service')
+    services = ProxyField('actionType.services')
+    showTime = ProxyField('actionType.showTime')
+    isMes = ProxyField('actionType.isMes')
+    nomenclatureService = ProxyField('actionType.nomenclatureService')
 
     @property
     def finance(self):
@@ -258,92 +259,6 @@ class Action(Info):
         self.properties = sorted(self.properties, key=lambda prop: prop.type.idx)
         return self.properties[index]
 
-    @property
-    def group(self):
-        return self.actionType.group if self.actionType else None
-
-    @property
-    def class_(self):
-        return self.actionType.class_ if self.actionType else None
-
-    @property
-    def code(self):
-        return self.actionType.code if self.actionType else None
-
-    @property
-    def flatCode(self):
-        return self.actionType.flatCode if self.actionType else None
-
-    @property
-    def name(self):
-        return self.actionType.name if self.actionType else None
-
-    @property
-    def title(self):
-        return self.actionType.title if self.actionType else None
-
-    @property
-    def service(self):
-        return self.actionType.service if self.actionType else None
-
-    @property
-    def services(self):
-        return self.actionType.services if self.actionType else None
-
-    @property
-    def showTime(self):
-        return self.actionType.showTime if self.actionType else None
-
-    @property
-    def isMes(self):
-        return self.actionType.isMes if self.actionType else None
-
-    @property
-    def nomenclatureService(self):
-        return self.actionType.nomenclatureService if self.actionType else None
-
-    # @property
-    # def tariff(self):
-    #     services = self.services
-    #     if not services:
-    #         return
-    #     if not hasattr(self, '_tariff'):
-    #         event_date = self.event.setDate_raw.date()
-    #         cur_date = datetime.date.today()
-    #         service_id_list = [ats.service_id for ats in services
-    #                            if ats.begDate <= event_date <= (ats.endDate or cur_date)]
-    #         contract = self.contract
-    #         query = Query(ContractTariff).filter(
-    #             ContractTariff.master_id == contract.id,
-    #             ContractTariff.service_id.in_(service_id_list),
-    #             ContractTariff.deleted == 0,
-    #             ContractTariff.eventType_id == self.event.eventType_id,
-    #             # or_(
-    #             #     ContractTariff.eventType_id == self.event.eventType_id,
-    #             #     ContractTariff.eventType_id.is_(None)
-    #             # ),
-    #             ContractTariff.begDate <= event_date,
-    #             ContractTariff.endDate >= event_date
-    #         )
-    #         tariff = query.first()
-    #         self._tariff = tariff
-    #     return self._tariff
-
-    # @property
-    # def price(self):
-    #     tariff = self.tariff
-    #     if tariff:
-    #         return tariff.price
-    #     return 0.0
-
-    # @property
-    # def sum_total(self):
-    #     return self.price * self.amount
-
-    # @property
-    # def isHtml(self):
-    #     return self.actionType.isHtml if self.actionType else None
-
     def _load_ap_price_info(self):
         """Инициализировать свойства данными из соответствующего прайс-листа"""
         from nemesis.lib.data_ctrl.accounting.pricelist import PriceListItemController
@@ -364,8 +279,7 @@ class Action(Info):
                 prop.has_pricelist_service = False
 
     def __iter__(self):
-        for property in self.properties:
-            yield property
+        return iter(self.properties)
 
     def __getitem__(self, key):
         if isinstance(key, basestring):
@@ -1141,6 +1055,17 @@ class Address(Info):
 
     house = relationship(u'Addresshouse')
 
+    kladr_locality = CalculatedPropertyRO('_kladr_locality')
+    city = ProxyField('kladr_locality.fullname', default_value='')
+    city_old = CalculatedPropertyRO('_city_old')
+    town = ProxyField('city')
+    kladr_street = CalculatedPropertyRO('_kladr_street')
+    street = ProxyField('kladr_street.name', default_value='')
+    street_free = ProxyField('house.streetFreeInput')
+    street_old = CalculatedPropertyRO('_street_old')
+    number = ProxyField('house.number')
+    curpus = ProxyField('house.corpus')
+
     @property
     def KLADRCode(self):
         # без учета последних двух цифр, которые относятся к версии кода
@@ -1155,21 +1080,13 @@ class Address(Info):
             else self.house.KLADRStreetCode
         )
 
-    @property
+    @kladr_locality
     def kladr_locality(self):
         if self.KLADRCode:
-            if not hasattr(self, '_kladr_locality'):
-                from nemesis.lib.vesta import Vesta
-                self._kladr_locality = Vesta.get_kladr_locality(self.KLADRCode)
-            return self._kladr_locality
-        else:
-            return None
+            from nemesis.lib.vesta import Vesta
+            return Vesta.get_kladr_locality(self.KLADRCode)
 
-    @property
-    def city(self):
-        return self.kladr_locality.fullname if self.kladr_locality else ''
-
-    @property
+    @city_old
     def city_old(self):
         if self.house.KLADRCode:
             record = Kladr.query.filter(Kladr.CODE == self.house.KLADRCode).first()
@@ -1180,32 +1097,15 @@ class Address(Info):
                 name.insert(0, " ".join([record.NAME, record.SOCR]))
                 parent = record.parent
             return ", ".join(name)
-        else:
-            return ''
+        return ''
 
-    @property
-    def town(self):
-        return self.city
-
-    @property
+    @kladr_street
     def kladr_street(self):
         if self.KLADRStreetCode:
-            if not hasattr(self, '_kladr_street'):
-                from nemesis.lib.vesta import Vesta
-                self._kladr_street = Vesta.get_kladr_street(self.KLADRStreetCode)
-            return self._kladr_street
-        else:
-            return None
+            from nemesis.lib.vesta import Vesta
+            return Vesta.get_kladr_street(self.KLADRStreetCode)
 
-    @property
-    def street(self):
-        return self.kladr_street.name if self.kladr_street else ''
-
-    @property
-    def street_free(self):
-        return self.house.streetFreeInput if self.house else None
-
-    @property
+    @street_old
     def street_old(self):
         if self.house.KLADRStreetCode:
             record = Street.query.filter(Street.CODE == self.house.KLADRStreetCode).first()
@@ -1225,14 +1125,6 @@ class Address(Info):
         if self.flat:
             parts.append(u'кв.'+self.flat)
         return (', '.join(parts)).strip()
-
-    @property
-    def number(self):
-        return self.house.number
-
-    @property
-    def corpus(self):
-        return self.house.corpus
 
     def __unicode__(self):
         return self.text
@@ -1570,9 +1462,7 @@ class Client(Info):
         innerjoin=True
     )
 
-    @property
-    def birthDate(self):
-        return DateInfo(self.birthDate_raw)
+    birthDate = DateTimeInfoProxyField('birthDate_raw')
 
     @property
     def bloodType(self):
@@ -1751,49 +1641,23 @@ class Clientaddress(Info):
 
     address = relationship(u'Address')
 
-    @property
-    def KLADRCode(self):
-        return self.address.house.KLADRCode if self.address else ''
-
-    @property
-    def KLADRStreetCode(self):
-        return self.address.house.KLADRStreetCode if self.address else ''
-
-    @property
-    def city(self):
-        return self.address.city if self.address else ''
-
-    @property
-    def town(self):
-        return self.address.town if self.address else ''
-
-    @property
-    def text(self):
-        return self.address.text if self.address else ''
-
-    @property
-    def number(self):
-        return self.address.number if self.address else ''
-
-    @property
-    def corpus(self):
-        return self.address.corpus if self.address else ''
+    KLADRCode = ProxyField('address.house.KLADRCode', '')
+    KLADRStreetCode = ProxyField('address.house.KLADRStreetCode', '')
+    city = ProxyField('address.city', '')
+    town = ProxyField('address.town', '')
+    text = ProxyField('address.text', '')
+    number = ProxyField('address.number', '')
+    corpus = ProxyField('address.corpus', '')
 
     @property
     def is_russian(self):
         return bool(self.KLADRCode)
 
     def is_from_kladr(self, full=True):
-        if full:
-            return bool(self.KLADRCode and self.KLADRStreetCode)
-        else:
-            return bool(self.KLADRCode)
+        return bool(self.KLADRCode and not (full and not self.KLADRStreetCode))
 
     def __unicode__(self):
-        if self.text:
-            return self.text
-        else:
-            return self.freeInput
+        return self.text or self.freeInput
 
 
 class Clientallergy(Info):
@@ -1845,19 +1709,12 @@ class Clientattach(Info):
     orgStructure = relationship(u'Orgstructure')
     attachType = relationship(u'rbAttachType')
 
-    @property
-    def code(self):
-        return self.attachType.code
+    code = ProxyField('attachType.code')
+    name = ProxyField('attachType.name')
+    outcome = ProxyField('attachType.outcome')
+    document = CalculatedPropertyRO('_document')
 
-    @property
-    def name(self):
-        return self.attachType.name
-
-    @property
-    def outcome(self):
-        return self.attachType.outcome
-
-    @property
+    @document
     def document(self):
         if self.document_id:
             return self.self_document
@@ -1865,10 +1722,13 @@ class Clientattach(Info):
             return self.getClientDocument()
 
     def getClientDocument(self):
-        documents = Query(Clientdocument).filter(Clientdocument.clientId == self.client_id).\
-            filter(Clientdocument.deleted == 0).all()
-        documents = [document for document in documents if document.documentType and document.documentType.group.code == "1"]
-        return documents[-1]
+        return Query(Clientdocument).outerjoin(
+            rbDocumentType, rbDocumentTypeGroup
+        ).filter(
+            Clientdocument.clientId == self.client_id,
+            rbDocumentTypeGroup.code == u"1",
+            Clientdocument.deleted == 0,
+        ).order_by(Clientdocument.createDatetime.desc()).first()
 
     def __unicode__(self):
         try:
@@ -1906,9 +1766,7 @@ class Clientcontact(Info):
     client = relationship(u'Client')
     contactType = relationship(u'rbContactType')
 
-    @property
-    def name(self):
-        return self.contactType.name
+    name = ProxyField('contactType.name')
 
     def __unicode__(self):
         return (self.name+': '+self.contact+' ('+self.notes+')') if self.notes else (self.name+': '+self.contact)
@@ -1938,9 +1796,7 @@ class Clientdocument(Info):
     client = relationship(u'Client')
     documentType = relationship(u'rbDocumentType')
 
-    @property
-    def documentTypeCode(self):
-        return self.documentType.regionalCode
+    documentTypeCode = ProxyField('documentType.regionalCode')
 
     def __unicode__(self):
         return (' '.join([self.documentType.name if self.documentType else '', self.serial if self.serial else '',
@@ -2002,13 +1858,8 @@ class Clientidentification(Info):
     client = relationship(u'Client')
     accountingSystems = relationship(u'rbAccountingSystem')
 
-    @property
-    def code(self):
-        return self.attachType.code
-
-    @property
-    def name(self):
-        return self.attachType.name
+    code = ProxyField('attachType.code')
+    name = ProxyField('attachType.name')
 
     # byCode = {code: identifier}
     # nameDict = {code: name}
@@ -2096,17 +1947,9 @@ class Clientrelation(Info):
 
     relativeType = relationship(u'rbRelationType')
 
-    @property
-    def leftName(self):
-        return self.relativeType.leftName
-
-    @property
-    def rightName(self):
-        return self.relativeType.rightName
-
-    @property
-    def code(self):
-        return self.relativeType.code
+    leftName = ProxyField('relativeType.leftName')
+    rightName = ProxyField('relativeType.rightName')
+    code = ProxyField('relativeType.code')
 
     @property
     def name(self):
@@ -2117,53 +1960,18 @@ class DirectClientRelation(Clientrelation):
 
     other = relationship(u'Client', foreign_keys='Clientrelation.relative_id')
 
-    @property
-    def role(self):
-        return self.leftName
-
-    @property
-    def otherRole(self):
-        return self.rightName
-
-    @property
-    def regionalCode(self):
-        return self.relativeType.regionalCode
-
-    @property
-    def clientId(self):
-        return self.relative_id
-
-    @property
-    def isDirectGenetic(self):
-        return self.relativeType.isDirectGenetic
-
-    @property
-    def isBackwardGenetic(self):
-        return self.relativeType.isBackwardGenetic
-
-    @property
-    def isDirectRepresentative(self):
-        return self.relativeType.isDirectRepresentative
-
-    @property
-    def isBackwardRepresentative(self):
-        return self.relativeType.isBackwardRepresentative
-
-    @property
-    def isDirectEpidemic(self):
-        return self.relativeType.isDirectEpidemic
-
-    @property
-    def isBackwardEpidemic(self):
-        return self.relativeType.isBackwardEpidemic
-
-    @property
-    def isDirectDonation(self):
-        return self.relativeType.isDirectDonation
-
-    @property
-    def isBackwardDonation(self):
-        return self.relativeType.isBackwardDonation
+    role = ProxyField('leftName')
+    otherRole = ProxyField('rightName')
+    regionalCode = ProxyField('relativeType.regionalCode')
+    clientId = ProxyField('relative_id')
+    isDirectGenetic = ProxyField('relativeType.isDirectGenetic')
+    isBackwardGenetic = ProxyField('relativeType.isBackwardGenetic')
+    isDirectRepresentative = ProxyField('relativeType.isDirectRepresentative')
+    isBackwardRepresentative = ProxyField('relativeType.isBackwardRepresentative')
+    isDirectEpidemic = ProxyField('relativeType.isDirectEpidemic')
+    isBackwardEpidemic = ProxyField('relativeType.isBackwardEpidemic')
+    isDirectDonation = ProxyField('relativeType.isDirectDonation')
+    isBackwardDonation = ProxyField('relativeType.isBackwardDonation')
 
     def __unicode__(self):
         return self.name + ' ' + self.other
@@ -2173,52 +1981,18 @@ class ReversedClientRelation(Clientrelation):
 
     other = relationship(u'Client', foreign_keys='Clientrelation.client_id')
 
-    @property
-    def role(self):
-        return self.rightName
-
-    @property
-    def otherRole(self):
-        return self.leftName
-
-    @property
-    def regionalCode(self):
-        return self.relativeType.regionalReverseCode
-
-    @property
-    def clientId(self):
-        return self.client_id
-    @property
-    def isDirectGenetic(self):
-        return self.relativeType.isBackwardGenetic
-
-    @property
-    def isBackwardGenetic(self):
-        return self.relativeType.isDirectGenetic
-
-    @property
-    def isDirectRepresentative(self):
-        return self.relativeType.isBackwardRepresentative
-
-    @property
-    def isBackwardRepresentative(self):
-        return self.relativeType.isDirectRepresentative
-
-    @property
-    def isDirectEpidemic(self):
-        return self.relativeType.isBackwardEpidemic
-
-    @property
-    def isBackwardEpidemic(self):
-        return self.relativeType.isDirectEpidemic
-
-    @property
-    def isDirectDonation(self):
-        return self.relativeType.isBackwardDonation
-
-    @property
-    def isBackwardDonation(self):
-        return self.relativeType.isDirectDonation
+    role = ProxyField('rightName')
+    otherRole = ProxyField('leftName')
+    regionalCode = ProxyField('relativeType.regionalReverseCode')
+    clientId = ProxyField('client_id')
+    isDirectGenetic = ProxyField('relativeType.isBackwardGenetic')
+    isBackwardGenetic = ProxyField('relativeType.isDirectGenetic')
+    isDirectRepresentative = ProxyField('relativeType.isBackwardRepresentative')
+    isBackwardRepresentative = ProxyField('relativeType.isDirectRepresentative')
+    isDirectEpidemic = ProxyField('relativeType.isBackwardEpidemic')
+    isBackwardEpidemic = ProxyField('relativeType.isDirectEpidemic')
+    isDirectDonation = ProxyField('relativeType.isBackwardDonation')
+    isBackwardDonation = ProxyField('relativeType.isDirectDonation')
 
     def __unicode__(self):
         return self.name + ' ' + self.other
@@ -2246,18 +2020,11 @@ class Clientsocstatus(Info):
     client = relationship(u'Client')
     socStatusType = relationship(u'rbSocStatusType')
     self_document = relationship(u'Clientdocument')
+    client_document = CalculatedPropertyRO('_client_document')
 
-    @property
-    def classes(self):
-        return self.socStatusType.classes
-
-    @property
-    def code(self):
-        return self.socStatusType.code
-
-    @property
-    def name(self):
-        return self.socStatusType.name
+    classes = ProxyField('socStatusType.classes')
+    code = ProxyField('socStatusType.code')
+    name = ProxyField('socStatusType.name')
 
     @property
     def document(self):
@@ -2267,11 +2034,15 @@ class Clientsocstatus(Info):
             return self.getClientDocument()
 
     def getClientDocument(self):
-        documents = Query(Clientdocument).filter(Clientdocument.clientId == self.client_id).\
-            filter(Clientdocument.deleted == 0).all()
-        documents = [document for document in documents if document.documentType and
-                     document.documentType.group.code == "1"]
-        return documents[-1]
+        return Query(Clientdocument).outerjoin(
+            rbDocumentType, rbDocumentTypeGroup
+        ).filter(
+            Clientdocument.clientId == self.client_id,
+            Clientdocument.deleted == 0,
+            rbDocumentTypeGroup.code == u"1"
+        ).order_by(Clientdocument.createDatetime.desc()).first()
+
+    client_document(getClientDocument)
 
     def __unicode__(self):
         return self.name
@@ -2345,13 +2116,8 @@ class ClientworkHurtFactor(Info):
     master = relationship(u'ClientworkHurt')
     factorType = relationship(u'rbHurtFactorType')
 
-    @property
-    def code(self):
-        return self.factorType.code
-
-    @property
-    def name(self):
-        return self.factorType.name
+    code = ProxyField('factorType.code')
+    name = ProxyField('factorType.name')
 
 
 class ClientQuoting(Info):
@@ -2390,21 +2156,10 @@ class ClientQuoting(Info):
     master = relationship(u'Client')
     details = relationship('VMPQuotaDetails', lazy=False)
 
-    @property
-    def patientModel(self):
-        return self.details.patientModel
-
-    @property
-    def treatment(self):
-        return self.details.treatment
-
-    @property
-    def quotaType(self):
-        return self.details.quotaType
-
-    @property
-    def mkb(self):
-        return self.details.mkb
+    patientMode = ProxyField('details.patientModel')
+    treatment = ProxyField('details.treatment')
+    quotaType = ProxyField('details.quotaType')
+    mkb = ProxyField('details.mkb')
 
 
 class ClientQuotingdiscussion(Info):
@@ -2591,29 +2346,15 @@ class Event(Info):
         from .diagnosis import EventDiagnosesInfo
         return EventDiagnosesInfo(self)
 
-    @property
-    def setDate(self):
-        return DateTimeInfo(self.setDate_raw)
-
-    @property
-    def execDate(self):
-        return DateTimeInfo(self.execDate_raw)
-
-    @property
-    def prevEventDate(self):
-        return DateInfo(self.prevEventDate_raw)
-
-    @property
-    def nextEventDate(self):
-        return DateInfo(self.nextEventDate_raw)
+    setDate = DateTimeInfoProxyField('setDate_raw')
+    execDate = DateTimeInfoProxyField('execDate_raw')
+    prevEventDate = DateTimeInfoProxyField('prevEventDate_raw')
+    nextEventDate = DateTimeInfoProxyField('nextEventDate_raw')
+    finance = ProxyField('eventType.finance')
 
     @property
     def isPrimary(self):
         return self.isPrimaryCode == 1
-
-    @property
-    def finance(self):
-        return self.eventType.finance
 
     @property
     def orgStructure(self):
@@ -2629,19 +2370,18 @@ class Event(Info):
         from ..lib.data import get_patient_location
         return get_patient_location(self, dt)
 
-    @property
-    def hospLength(self):
-        if not hasattr(self, '_hosp_length'):
-            from ..lib.data import get_hosp_length
-            self._hosp_length = get_hosp_length(self)
-        return self._hosp_length
+    hospLength = CalculatedPropertyRO('_hosp_length')
+    hospitalBed = CalculatedPropertyRO('_hospitalBed')
 
-    @property
+    @hospLength
+    def hospLength(self):
+        from ..lib.data import get_hosp_length
+        return get_hosp_length(self)
+
+    @hospitalBed
     def hospitalBed(self):
-        if not hasattr(self, '_hospital_bed'):
-            from ..lib.data import get_patient_hospital_bed
-            self._hospital_bed = get_patient_hospital_bed(self)
-        return self._hospital_bed
+        from ..lib.data import get_patient_hospital_bed
+        return get_patient_hospital_bed(self)
 
     @property
     def is_closed(self):
@@ -2694,14 +2434,18 @@ class Event(Info):
     def is_budget(self):
         return self.eventType.finance.code == BUDGET_EVENT_CODE
 
-    @property
+    departmentManager = CalculatedPropertyRO('_departmentManager')
+
+    @departmentManager
     def departmentManager(self):
-        persons = Query(Person).filter(Person.orgStructure_id == self.orgStructure.id).all() if self.orgStructure else []
-        if persons:
-            for person in persons:
-                if person.post and person.post.flatCode == u'departmentManager':
-                    return person
-        return None
+        if not self.orgStructure:
+            return None
+        return Query(Person).join(
+            rbPost
+        ).filter(
+            Person.orgStructure == self.orgStructure,
+            rbPost.flatCode == u'departmentManager'
+        ).first()
 
     @property
     def date(self):
@@ -3008,14 +2752,8 @@ class JobTicket(Info):
     note = Column(String(128), nullable=False, server_default=u"''")
 
     job = relationship(u'Job', lazy='joined')
-
-    @property
-    def jobType(self):
-        self.job.job_type
-
-    @property
-    def orgStructure(self):
-        self.job.org_structure
+    jobType = ProxyField('job.job_type')
+    orgStructure = ProxyField('job.org_structure')
 
     def __unicode__(self):
         return u'%s, %s, %s' % (unicode(self.jobType),
@@ -3120,11 +2858,10 @@ class Mkb(Info):
             result = record.DiagName
             if subclass:
                 subclassId = record.MKBSubclass_id
-                recordSubclass = (RbmkbsubclassItem.
-                                  query.
-                                  filter(RbmkbsubclassItem.master_id == subclassId,
-                                         RbmkbsubclassItem.code == subclass).
-                                  first())
+                recordSubclass = Query(RbmkbsubclassItem).filter(
+                    RbmkbsubclassItem.master_id == subclassId,
+                    RbmkbsubclassItem.code == subclass
+                ).first()
                 if recordSubclass:
                     result = u'{0} {1}'.format(result, recordSubclass.name)
                 else:
@@ -3239,7 +2976,7 @@ class Orgstructure(Info):
 
     def get_org_structure_full_name(self):
         names = [self.code]
-        ids = set([self.id])
+        ids = {self.id}
         parent_id = self.parent_id
         parent = self.parent
 
