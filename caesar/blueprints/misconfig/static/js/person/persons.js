@@ -79,15 +79,9 @@ WebMis20
         $scope.model = model;
 
         $scope.addContact = function(group, code){
-            var code = code.toString();
-            $scope.model[group].push({
-                id: null,
-                value: '',
-                deleted: 0,
-                contact_type: {id: $scope.contactTypeByCode[code].id}
-
-            });
-        }
+            var ct = $scope.contactTypeByCode[code];
+            $scope.model.addNewContact(ct, group);
+        };
 
         $scope.deleteContact = function(conGroup){
             // conGroup=one from ['phones', 'skypes', 'emails']
