@@ -5,6 +5,7 @@ from nemesis.models.exists import rbRequestType, rbEventTypePurpose, rbResult, r
 from nemesis.models.actions import ActionType
 from nemesis.models.event import EventType
 from nemesis.models.person import rbPost, rbOrgCurationLevel, rbSpeciality, rbUserProfile
+from nemesis.models.exists import rbContactType
 from nemesis.models.risar import rbPerinatalRiskRate, rbPregnancyPathology
 from nemesis.models.refbooks import rbUnits
 from nemesis.models.accounting import rbServiceKind
@@ -16,7 +17,7 @@ from .refbook import (SimpleRefBookModelManager, RbTreatmentModelManager, RbPeri
 from .organisation import (OrganisationModelManager, OrganisationBCLModelManager, OrgStructureModelManager)
 from .expert_protocol import (MeasureModelManager, ExpertProtocolModelManager, ExpertSchemeModelManager,
     ExpertSchemeMeasureModelManager, MeasureScheduleModelManager)
-from .person import PersonModelManager, PersonCurationModelManager
+from .person import PersonModelManager, PersonCurationModelManager, PersonContactManager
 from .print_template import RbPrintTemplateModelManager
 from .pricelist import PriceListModelManager, PriceListItemModelManager
 from .rbservice import RbServiceModelManager, RbServiceGroupAssocModelManager
@@ -43,7 +44,8 @@ all_rbs = {
     'rbUnits': rbUnits,
     'rbEventTypePurpose': rbEventTypePurpose,
     'rbUserProfile': rbUserProfile,
-    'rbServiceKind': rbServiceKind
+    'rbServiceKind': rbServiceKind,
+    'rbContactType': rbContactType
 }
 
 basic_rbs = [
@@ -57,7 +59,7 @@ simple_rbs = [
     'rbMeasureScheduleApplyType', 'rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology',
     # next are used only for backend data manipulation, they are not presented on frontend ui
     'rbPost', 'rbSpeciality', 'rbUnits', 'rbRequestType', 'rbEventTypePurpose', 'rbUserProfile', 'EventType',
-    'rbServiceKind'
+    'rbServiceKind', 'rbContactType'
 ]
 
 rb_groups = {
@@ -143,3 +145,5 @@ def get_manager(name, **params):
         return RbPrintTemplateModelManager()
     elif name == 'rbServiceGroupAssoc':
         return RbServiceGroupAssocModelManager()
+    elif name == 'PersonContact':
+        return PersonContactManager()
