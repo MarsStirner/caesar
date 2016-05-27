@@ -63,8 +63,8 @@ WebMis20
     };
     PersonContact.inheritsFrom(BasicModel);
     PersonContact.initialize({
-        fields: ['id', 'person_id', 'org_curation_level_id', 'org_curation_level', 'person'],
-        list_url: WMConfig.url.misconfig.api_person_curation_level_list_get
+        fields: ['id', 'person_id', 'contactType_id', 'contactType', 'org_curation_level', 'value'],
+        list_url: WMConfig.url.misconfig.api_v1_person_contact_get
     }, PersonCuration);
     return PersonCuration;
 }]);
