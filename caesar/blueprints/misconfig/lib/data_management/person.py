@@ -3,7 +3,7 @@ from hashlib import md5
 from sqlalchemy import func
 
 from .base import BaseModelManager, FieldConverter, FCType, represent_model
-from nemesis.models.person import Person, PersonCurationAssoc
+from nemesis.models.person import Person, PersonCurationAssoc, PersonContact
 from nemesis.lib.utils import (get_new_uuid, safe_int, safe_unicode, safe_traverse, safe_bool, safe_date)
 
 
@@ -13,6 +13,7 @@ class PersonModelManager(BaseModelManager):
         self._spec_mng = self.get_manager('rbSpeciality')
         self._org_mng = self.get_manager('Organisation')
         self._os_mng = self.get_manager('OrgStructure')
+        self._person_contact = self.get_manager('PersonContact')
         fields = [
             FieldConverter(FCType.basic, 'id', safe_int, 'id'),
             FieldConverter(FCType.basic, 'lastName', safe_unicode, 'last_name'),
@@ -30,6 +31,11 @@ class PersonModelManager(BaseModelManager):
                 'post', (self.handle_onetomany_nonedit, ),
                 'post',
                 model_manager=self._post_mng),
+            FieldConverter(
+                FCType.relation,
+                'contacts', (self.handle_manytomany_assoc_obj, ),
+                'contacts', (self.represent_model,),
+                model_manager=self._person_contact),
             FieldConverter(
                 FCType.relation,
                 'speciality', (self.handle_onetomany_nonedit, ),
@@ -62,6 +68,7 @@ class PersonModelManager(BaseModelManager):
                 'curation_levels', (self.represent_model, ),
                 self._curation_mng
             ))
+
         super(PersonModelManager, self).__init__(Person, fields)
 
     def create(self, data=None, parent_id=None, parent_obj=None):
@@ -143,5 +150,33 @@ class PersonCurationModelManager(BaseModelManager):
 
     def create(self, data=None, parent_id=None, parent_obj=None):
         item = super(PersonCurationModelManager, self).create(data, parent_id, parent_obj)
+        item.person_id = data.get('person_id') if data is not None else parent_id
+        return item
+
+
+class PersonContactManager(BaseModelManager):
+    def __init__(self):
+        self._ocl_mng = self.get_manager('rbContactType')
+        fields = [
+            FieldConverter(FCType.basic, 'id', safe_int, 'id'),
+            FieldConverter(FCType.basic, 'value', safe_unicode, 'value'),
+            FieldConverter(FCType.basic, 'person_id', safe_int, 'person_id'),
+            FieldConverter(FCType.basic, 'contactType_id', safe_int, 'contact_type_id'),
+            FieldConverter(
+                FCType.relation,
+                'contactType', (self.handle_onetomany_nonedit, ),
+                'contact_type',
+                model_manager=self._ocl_mng
+            ),
+            FieldConverter(
+                FCType.relation_repr,
+                'person', None,
+                'person'
+            ),
+        ]
+        super(PersonContactManager, self).__init__(PersonContact, fields)
+
+    def create(self, data=None, parent_id=None, parent_obj=None):
+        item = super(PersonContactManager, self).create(data, parent_id, parent_obj)
         item.person_id = data.get('person_id') if data is not None else parent_id
         return item
