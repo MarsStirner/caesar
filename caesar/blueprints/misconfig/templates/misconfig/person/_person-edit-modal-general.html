@@ -21,6 +21,7 @@
                 </select>
             </div>
         </div>
+
         <div class="row">
             <div class="form-group col-md-3">
                 <label for="birthdate" class="control-label">Дата рождения</label>
@@ -38,6 +39,76 @@
                 <input id="inn" type="text" class="form-control" placeholder="ИНН" ng-model="model.inn">
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-4" >
+                <div ng-repeat="cont in model.phones" class="row">
+                    <div class="col-sm-9">
+                        <label for="phone" class="control-label">Телефон</label>
+                          <div class="input-group">
+                            <input id="phone" type="text" class="form-control" placeholder="Телефон"  ng-model="cont.value">
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" ng-click="deleteContact('phones')">
+                                    <i class="glyphicon glyphic glyphicon-minus" style="font-size:80%;"></i>
+                                </button>
+                            </span>
+                          </div>
+                    </div>
+
+
+                </div>
+
+                    <button type="button" class="btn btn-default" ng-click="addContact('phones', '13')">
+                        <i class="glyphicon glyphicon-plus" style="font-size:95%;">Добавить телефон</i>
+                    </button>
+
+
+
+            </div>
+            <div class="col-md-4">
+                <div ng-repeat="cont in model.emails" class="row">
+                    <div class="col-sm-9">
+                        <label for="phone" class="control-label">E-mail</label>
+                          <div class="input-group">
+                            <input id="phone" type="text" class="form-control" placeholder="E-mail"  ng-model="cont.value">
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" ng-click="deleteContact('emails')">
+                                    <i class="glyphicon glyphic glyphicon-minus" style="font-size:80%;"></i>
+                                </button>
+                            </span>
+                          </div>
+                    </div>
+
+
+                </div>
+
+               <button type="button" class="btn btn-default" ng-click="addContact('emails', '04')">
+                        <i class="glyphicon glyphicon-plus" style="font-size:95%;">Добавить E-mail</i>
+               </button>
+
+            </div>
+            <div ng class="col-md-4">
+                <div ng-repeat="cont in model.skypes" class="row">
+                    <div class="col-sm-9">
+                        <label for="phone" class="control-label">Skype</label>
+                          <div class="input-group">
+                            <input id="phone" type="text" class="form-control" placeholder="Skype"  ng-model="cont.value">
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" ng-click="deleteContact('skypes')">
+                                    <i class="glyphicon glyphic glyphicon-minus" style="font-size:80%;"></i>
+                                </button>
+                            </span>
+                          </div>
+                    </div>
+
+
+                </div>
+               <button type="button" class="btn btn-default" ng-click="addContact('skypes', '12')">
+                        <i class="glyphicon glyphicon-plus" style="font-size:95%;">Добавить Skype</i>
+               </button>
+
+            </div>
+        </div>
+
         <div class="row">
             <div class="form-group col-md-4">
                 <label for="organisation" class="control-label">Организация</label>

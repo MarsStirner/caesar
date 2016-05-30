@@ -1,5 +1,4 @@
 'use strict';
-
 WebMis20
 .controller('PersonConfigCtrl', ['$scope', '$controller', 'Person',
         function ($scope, $controller, Person) {
@@ -46,10 +45,22 @@ WebMis20
 
     $scope.init();
 }])
-.controller('PersonConfigModalCtrl', ['$scope', '$modalInstance', 'model', 'RefBookService',
-    function ($scope, $modalInstance, model, RefBookService) {
+.controller('PersonConfigModalCtrl', ['$scope','$q', '$modalInstance', 'model', 'RefBookService',
+    function ($scope, $q, $modalInstance, model, RefBookService) {
         $scope.rbGender = RefBookService.get('Gender');
         $scope.rbUserProfile = RefBookService.get('rbUserProfile');
+        $scope.rbContactType = RefBookService.get('rbContactType');
+        $scope.contactTypeByCode = {};
+        $scope.init = function () {
+            $q.all([$scope.rbContactType.loading]).then(function () {
+                _.map($scope.rbContactType.objects, function(item) {
+                        $scope.contactTypeByCode[item.code] = item;
+                });
+
+            });
+
+        }
+
         $scope.formatOrgName = function (org) {
             return org && org.short_name;
         };
@@ -66,6 +77,17 @@ WebMis20
             $scope.model.user_profiles.push(profile);
         };
         $scope.model = model;
+
+        $scope.addContact = function(group, code){
+            var ct = $scope.contactTypeByCode[code];
+            $scope.model.addNewContact(ct, group);
+        };
+
+        $scope.deleteContact = function(conGroup){
+            // conGroup=one from ['phones', 'skypes', 'emails']
+            var ind = $scope.model[conGroup].indexOf(this.cont);
+            if (ind !== -1) {$scope.model[conGroup].splice(ind, 1)};
+        }
         $scope.close = function () {
             $scope.model.save(undefined, undefined, {
                 with_profiles: true
@@ -74,5 +96,6 @@ WebMis20
                     $scope.$close(model);
                 });
         };
+        $scope.init();
 }])
 ;
