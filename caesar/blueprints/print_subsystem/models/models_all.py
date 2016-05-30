@@ -1651,11 +1651,15 @@ class Client(Info):
 
     @property
     def age(self):
+        return self.age_at()
+
+    def age_at(self, date=None):
         bd = self.birthDate_raw
-        date = datetime.date.today()
-        if not self.age_tuple():
+        date = date or datetime.date.today()
+        age_tuple = self.age_tuple(date)
+        if not age_tuple:
             return u'ещё не родился'
-        (days, weeks, months, years) = self.age_tuple()
+        (days, weeks, months, years) = age_tuple
         if years > 7:
             return formatYears(years)
         elif years > 1:
