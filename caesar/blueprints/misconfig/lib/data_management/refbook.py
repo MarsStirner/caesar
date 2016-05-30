@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
+
+from sqlalchemy.orm import joinedload
+
 from blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, FCType, represent_model
 from nemesis.lib.utils import safe_int, safe_unicode
 from nemesis.models.exists import rbTreatment, MKB, rbResult
 from nemesis.models.risar import (rbPerinatalRiskRate, rbPerinatalRiskRateMkbAssoc, rbPregnancyPathology,
-    rbPregnancyPathologyMkbAssoc)
+    rbPregnancyPathologyMkbAssoc, rbRadzRiskFactor, rbRadzStage)
 from nemesis.systemwide import db
 
 
@@ -50,6 +53,10 @@ class RbPerinatalRRModelManager(BaseModelManager):
             )
         ]
         super(RbPerinatalRRModelManager, self).__init__(rbPerinatalRiskRate, fields)
+
+    def get_list(self, **kwargs):
+        options = [joinedload(rbPerinatalRiskRate.prr_mkbs).joinedload('mkb')]
+        return super(RbPerinatalRRModelManager, self).get_list(options=options, **kwargs)
 
 
 class RbPRRMKBModelManager(BaseModelManager):
@@ -132,3 +139,32 @@ class RbResultModelManager(SimpleRefBookModelManager):
                 'event_purpose',
                 model_manager=self._rbetp_mng)
         ])
+
+
+class RbRadzRiskFactorModelManager(SimpleRefBookModelManager):
+    def __init__(self):
+        self._rbfg_mng = self.get_manager('rbRadzRiskFactorGroup')
+        super(RbRadzRiskFactorModelManager, self).__init__(rbRadzRiskFactor, [
+            FieldConverter(
+                FCType.relation,
+                'group', (self.handle_onetomany_nonedit, ),
+                'group',
+                model_manager=self._rbfg_mng)
+        ])
+
+
+class RbRadzStageFactorModelManager(BaseModelManager):
+    def __init__(self):
+        self._rf_mng = self.get_manager('rbRadzRiskFactor')
+        fields = [
+            FieldConverter(FCType.basic_repr, 'id', None, 'id'),
+            FieldConverter(FCType.basic_repr, 'code', None, 'code'),
+            FieldConverter(FCType.basic_repr, 'name', None, 'name'),
+            FieldConverter(
+                FCType.relation,
+                'risk_factors', (self.handle_manytomany, ),
+                'risk_factors', (self.represent_model, ),
+                model_manager=self._rf_mng
+            )
+        ]
+        super(RbRadzStageFactorModelManager, self).__init__(rbRadzStage, fields)

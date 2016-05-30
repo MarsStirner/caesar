@@ -5,14 +5,15 @@ from nemesis.models.exists import rbRequestType, rbEventTypePurpose, rbResult, r
 from nemesis.models.actions import ActionType
 from nemesis.models.event import EventType
 from nemesis.models.person import rbPost, rbOrgCurationLevel, rbSpeciality, rbUserProfile
-from nemesis.models.risar import rbPerinatalRiskRate, rbPregnancyPathology
+from nemesis.models.risar import (rbPerinatalRiskRate, rbPregnancyPathology, rbRadzRiskFactor,
+    rbRadzRiskFactorGroup, rbRadzStage)
 from nemesis.models.refbooks import rbUnits
 from nemesis.models.accounting import rbServiceKind
 from nemesis.lib.settings import Settings
 
 from .refbook import (SimpleRefBookModelManager, RbTreatmentModelManager, RbPerinatalRRModelManager,
     RbPRRMKBModelManager, RbPregnancyPathologyModelManager, RbPregnancyPathologyMKBModelManager, MKBModelManager,
-    RbResultModelManager)
+    RbResultModelManager, RbRadzRiskFactorModelManager, RbRadzStageFactorModelManager)
 from .organisation import (OrganisationModelManager, OrganisationBCLModelManager, OrgStructureModelManager)
 from .expert_protocol import (MeasureModelManager, ExpertProtocolModelManager, ExpertSchemeModelManager,
     ExpertSchemeMeasureModelManager, MeasureScheduleModelManager)
@@ -43,27 +44,25 @@ all_rbs = {
     'rbUnits': rbUnits,
     'rbEventTypePurpose': rbEventTypePurpose,
     'rbUserProfile': rbUserProfile,
-    'rbServiceKind': rbServiceKind
+    'rbServiceKind': rbServiceKind,
+    'rbRadzRiskFactor': rbRadzRiskFactor,
+    'rbRadzRiskFactorGroup': rbRadzRiskFactorGroup,
+    'rbRadzStage': rbRadzStage
 }
-
-basic_rbs = [
-    'rbPacientModel', 'rbTreatment', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType',
-    'rbMeasureScheduleApplyType', 'rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology', 'rbUnits',
-    'rbServiceKind'
-]
 
 simple_rbs = [
     'rbPacientModel', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType',
     'rbMeasureScheduleApplyType', 'rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology',
     # next are used only for backend data manipulation, they are not presented on frontend ui
     'rbPost', 'rbSpeciality', 'rbUnits', 'rbRequestType', 'rbEventTypePurpose', 'rbUserProfile', 'EventType',
-    'rbServiceKind'
+    'rbServiceKind', 'rbRadzStage', 'rbRadzRiskFactorGroup'
 ]
 
 rb_groups = {
     'vmp': (u'ВМП', ['rbPacientModel', 'rbTreatment', 'rbTreatmentType']),
     'expert_protocol': (u'Протоколы лечения', ['rbMeasureType', 'rbMeasureScheduleType', 'rbMeasureScheduleApplyType']),
-    'risar': (u'РИСАР', ['rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology']),
+    'risar': (u'РИСАР', ['rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology',
+                         'rbRadzRiskFactorGroup', 'rbRadzRiskFactor', 'rbRadzStage']),
     'other': (u'Остальные', ['rbFinance', 'rbRequestType', 'rbResult', 'rbEventTypePurpose']),
     'med_staff': (u'Мед. персонал', ['rbPost', 'rbSpeciality'])
 }
@@ -143,3 +142,7 @@ def get_manager(name, **params):
         return RbPrintTemplateModelManager()
     elif name == 'rbServiceGroupAssoc':
         return RbServiceGroupAssocModelManager()
+    elif name == 'rbRadzRiskFactor':
+        return RbRadzRiskFactorModelManager()
+    elif name == 'rbRadzStageWithFactors':
+        return RbRadzStageFactorModelManager()

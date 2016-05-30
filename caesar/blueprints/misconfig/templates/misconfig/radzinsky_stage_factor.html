@@ -1,0 +1,73 @@
+{% extends 'misconfig/base.html' %}
+
+{% block content %}
+<div class="container-fluid" ng-controller="RadzStageFactorConfigCtrl" ng-cloak>
+    <alert-notify></alert-notify>
+    <ul class="breadcrumb">
+        <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
+        <li>Связь стадий и факторов риска по Радзинскому</li>
+    </ul>
+
+    <div class="row">
+    <div class="col-md-12">
+        <table class="table">
+        <tr>
+            <th width="20%">Этап</th>
+            <th>Факторы</th>
+        </tr>
+        <tbody>
+        <tr ng-repeat="(key, item) in model">
+            <td rowspan="[[item.risk_factors.length || 1]]">[[ item.sf.name ]]</td>
+            <td>
+                <div class="row">
+                <div class="col-md-10">
+                    <div class="panel panel-default">
+                    <ul class="list-group">
+                        <li ng-repeat="factor in item.sf.risk_factors" class="list-group-item">
+                            [[ factor.name ]]
+                            <span class="label label-danger pull-right" ng-show="inEditState(key)"
+                                ng-click="removeFactor(key, $index)">
+                                <i class="fa fa-remove"></i>
+                            </span>
+                        </li>
+                    </ul>
+                    <div class="panel-body" ng-if="inEditState(key)">
+                        <div class="alert alert-danger" role="alert" ng-if="alertFactorDublVisible(key)">
+                            Выбранный фактор уже присутствует в списке. Выберите другое значение.
+                        </div>
+                        <div class="row">
+                            <div class="col-md-10">
+                                <rb-select ref-book="rbRadzRiskFactor" ng-model="item.newFactor"
+                                    ng-change="checkFactorDubl(key)"></rb-select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-primary" ng-click="addFactor(key)"
+                                    ng-disabled="!btnAddFactorAvailable(key)">
+                                    <i class="fa fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="btn-group btn-group-sm pull-right">
+                        <button type="button" class="btn btn-primary" ng-click="startEditing(key)" ng-if="!inEditState(key)">Редактировать</button>
+                        <button type="button" class="btn btn-success" ng-click="finishEditing(key)" ng-if="inEditState(key)">Сохранить</button>
+                        <button type="button" class="btn btn-danger" ng-click="cancelEditing(key)" ng-if="inEditState(key)">Отменить</button>
+                    </div>
+                </div>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+        </table>
+    </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modules_js %}
+{{ super() }}
+<script src="{{ url_for('.static', filename='js/radzinsky-stage-factor.js', v=version) }}"></script>
+{% endblock %}
