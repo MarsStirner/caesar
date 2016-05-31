@@ -161,7 +161,7 @@ class PersonContactManager(BaseModelManager):
             FieldConverter(FCType.basic, 'id', safe_int, 'id'),
             FieldConverter(FCType.basic, 'value', safe_unicode, 'value'),
             FieldConverter(FCType.basic, 'person_id', safe_int, 'person_id'),
-            FieldConverter(FCType.basic, 'contactType_id', safe_int, 'org_curation_level_id'),
+            FieldConverter(FCType.basic, 'contactType_id', safe_int, 'contact_type_id'),
             FieldConverter(
                 FCType.relation,
                 'contactType', (self.handle_onetomany_nonedit, ),

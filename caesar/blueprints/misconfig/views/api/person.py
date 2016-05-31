@@ -88,3 +88,18 @@ def api_v1_person_undelete(item_id):
     mng.store()
     return mng.represent(item)
 
+@module.route('/api/v1/person_contact/', methods=['GET'])
+@module.route('/api/v1/person_contact/<int:item_id>/', methods=['GET'])
+@api_method
+def api_v1_person_contact_get(item_id=None):
+    need_new = safe_bool(request.args.get('new', False))
+    mng = get_manager('PersonContact')
+    if need_new:
+        item = mng.create()
+    elif item_id:
+        item = mng.get_by_id(item_id)
+    else:
+        raise ApiException(404, u'`item_id` required')
+    return {
+        'item': mng.represent(item)
+    }

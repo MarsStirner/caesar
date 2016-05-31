@@ -1,6 +1,7 @@
 'use strict';
 WebMis20
-.factory('Person', ['WMConfig', 'BasicModel', 'PersonCuration', function (WMConfig, BasicModel) {
+.factory('Person', ['WMConfig', 'BasicModel', 'PersonContact',
+        function (WMConfig, BasicModel, PersonContact) {
     var Person = function (data) {
         var self = this;
         BasicModel.call(this, data);
@@ -28,21 +29,23 @@ WebMis20
         base_url:  WMConfig.url.misconfig.api_person_base,
         list_url: WMConfig.url.misconfig.api_person_list_base
     }, Person);
-    //
+
     Person.prototype.save = function(url, data, args) {
         var allContacts = [].concat(this.phones, this.skypes, this.emails);
-        allContacts = _.reject(allContacts, function(item){ return item.value == ''; });
+        allContacts = _.reject(allContacts, function(item){ return item.value === null; });
         this.contacts = allContacts;
-        // this.contacts = [{
-        //     'id':null,
-        //     deleted: 0,
-        //   contact_type: {id: 12},
-        //     value: "self.value"},
-        // ]
 
         return BasicModel.prototype.save.call(this, url, data, args);
     };
-
+    Person.prototype.addNewContact = function (ct, group) {
+        var self = this;
+        PersonContact.instantiate(undefined, {
+            new: true
+        }).then(function (new_contact) {
+            new_contact.contact_type = ct;
+            self[group].push(new_contact);
+        });
+    };
 
     return Person;
 }])
@@ -63,8 +66,8 @@ WebMis20
     };
     PersonContact.inheritsFrom(BasicModel);
     PersonContact.initialize({
-        fields: ['id', 'person_id', 'org_curation_level_id', 'org_curation_level', 'person'],
-        list_url: WMConfig.url.misconfig.api_person_curation_level_list_get
-    }, PersonCuration);
-    return PersonCuration;
+        fields: ['id', 'person_id', 'contact_type_id', 'contact_type', 'value'],
+        base_url: WMConfig.url.misconfig.api_person_contact_base
+    }, PersonContact);
+    return PersonContact;
 }]);
