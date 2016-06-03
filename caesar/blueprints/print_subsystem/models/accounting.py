@@ -206,12 +206,12 @@ class Service(Base):
     deleted = Column(SmallInteger, nullable=False, server_default=u"'0'")
     discount_id = Column(Integer, ForeignKey('ServiceDiscount.id'))
 
-    price_list_item = relationship('PriceListItem')
-    service_kind = relationship('rbServiceKind')
+    price_list_item = relationship('PriceListItem', lazy=False)
+    service_kind = relationship('rbServiceKind', lazy=False)
     parent_service = relationship('Service', remote_side=[id])
-    event = relationship('Event')
-    action = relationship('Action')
-    action_property = relationship('ActionProperty')
+    event = relationship('Event', backref=backref('service', uselist=False))
+    action = relationship('Action', backref=backref('service', uselist=False))
+    action_property = relationship('ActionProperty', backref=backref('service', uselist=False))
     discount = relationship('ServiceDiscount')
 
     def __init__(self):
