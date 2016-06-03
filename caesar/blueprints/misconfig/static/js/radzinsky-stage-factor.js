@@ -7,7 +7,7 @@ WebMis20
     };
     rbRadzStageFactors.inheritsFrom(BasicModel);
     rbRadzStageFactors.initialize({
-        fields: ['id', 'code', 'name', 'risk_factors'],
+        fields: ['id', 'code', 'name', 'stage_factor_assoc'],
         base_url: '/misconfig/api/v1/rb_radzinsky_stage_factor/'
     }, rbRadzStageFactors);
     return rbRadzStageFactors;
@@ -34,18 +34,23 @@ WebMis20
         return $scope.model[key].editing;
     };
     $scope.btnAddFactorAvailable = function (key) {
-        return $scope.model[key].newFactor !== null && !$scope.model[key].factorDubl;
+        return $scope.model[key].newFactor !== null && $scope.model[key].newPoints !== null &&
+            !$scope.model[key].factorDubl;
     };
     $scope.addFactor = function (key) {
         var sf = $scope.model[key].sf;
-        sf.risk_factors.push($scope.model[key].newFactor);
+        sf.stage_factor_assoc.push({
+            factor: $scope.model[key].newFactor,
+            points: $scope.model[key].newPoints
+        });
         $scope.model[key].newFactor = null;
+        $scope.model[key].newPoints = null;
     };
     $scope.removeFactor = function (key, idx) {
-        $scope.model[key].sf.risk_factors.splice(idx, 1);
+        $scope.model[key].sf.stage_factor_assoc.splice(idx, 1);
     };
     $scope.checkFactorDubl = function (key) {
-        var selected = $scope.model[key].sf.risk_factors.map(function (f) { return f.id; });
+        var selected = $scope.model[key].sf.stage_factor_assoc.map(function (a) { return a.factor.id; });
         $scope.model[key].factorDubl = selected.has($scope.model[key].newFactor.id);
     };
     $scope.alertFactorDublVisible = function (key) {
@@ -59,6 +64,7 @@ WebMis20
                 sf: sf,
                 editing: false,
                 newFactor: null,
+                newPoints: null,
                 factorDubl: false
             };
         });

@@ -17,15 +17,17 @@
         </tr>
         <tbody>
         <tr ng-repeat="(key, item) in model">
-            <td rowspan="[[item.risk_factors.length || 1]]">[[ item.sf.name ]]</td>
+            <td rowspan="[[item.stage_factor_assoc.length || 1]]">[[ item.sf.name ]]</td>
             <td>
                 <div class="row">
                 <div class="col-md-10">
                     <div class="panel panel-default">
                     <ul class="list-group">
-                        <li ng-repeat="factor in item.sf.risk_factors" class="list-group-item">
-                            [[ factor.name ]]
-                            <span class="label label-danger pull-right" ng-show="inEditState(key)"
+                        <li ng-repeat="assoc in item.sf.stage_factor_assoc" class="list-group-item">
+                            [[ assoc.factor.name ]] <span ng-show="!inEditState(key)">([[ assoc.points ]])</span>
+                            <span ng-show="inEditState(key)"><input type="number" ng-model="assoc.points"
+                                style="width: 100px" class="text-center"></span>
+                            <span class="label label-danger pull-right"
                                 ng-click="removeFactor(key, $index)">
                                 <i class="fa fa-remove"></i>
                             </span>
@@ -36,9 +38,12 @@
                             Выбранный фактор уже присутствует в списке. Выберите другое значение.
                         </div>
                         <div class="row">
-                            <div class="col-md-10">
+                            <div class="col-md-8">
                                 <rb-select ref-book="rbRadzRiskFactor" ng-model="item.newFactor"
                                     ng-change="checkFactorDubl(key)"></rb-select>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" class="form-control" ng-model="item.newPoints">
                             </div>
                             <div class="col-md-2">
                                 <button type="button" class="btn btn-primary" ng-click="addFactor(key)"
