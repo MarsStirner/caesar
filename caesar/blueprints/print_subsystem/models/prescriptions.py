@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, Unicode, ForeignKey, Date, Float, DateTime, SmallInteger, Numeric, String
-from sqlalchemy import Integer
-from sqlalchemy.orm import relationship
-from sqlalchemy import orm
+from sqlalchemy import Column, ForeignKey, Date, Float, DateTime, String, Integer
+from sqlalchemy.orm import relationship, backref
 
 from ..database import Base
 
@@ -31,19 +29,26 @@ class MedicalPrescription(Base):
     reasonOfCancel = Column(String(256))
     note = Column(String(256))
 
-    createPerson = relationship(u'Person', primaryjoin='MedicalPrescription.createPerson_id == Person.id')
-    modifyPerson = relationship(u'Person', primaryjoin='MedicalPrescription.modifyPerson_id == Person.id')
+    createPerson = relationship(u'Person', foreign_keys=[createPerson_id])
+    modifyPerson = relationship(u'Person', foreign_keys=[modifyPerson_id])
 
-    action = relationship(u'Action', backref='medication_prescriptions')
-    rls = relationship(u'rlsNomen')
-    dose_unit = relationship(u'rbUnits', primaryjoin='MedicalPrescription.dose_unit_id == rbUnits.id')
-    duration_unit = relationship(u'rbUnits', primaryjoin='MedicalPrescription.duration_unit_id == rbUnits.id')
-    frequency_unit = relationship(u'rbUnits', primaryjoin='MedicalPrescription.frequency_unit_id == rbUnits.id')
-    methodOfAdministration = relationship(u'rbMethodOfAdministration')
+    action = relationship(
+        u'Action',
+        backref=backref(
+            'medication_prescriptions',
+            primaryjoin='and_(MedicalPrescription.action_id == Action.id, MedicalPrescription.status_id == 1)'
+        )
+    )
+    rls = relationship(u'rlsNomen', lazy='joined')
+    dose_unit = relationship(u'rbUnits', foreign_keys=[dose_unit_id], lazy='joined')
+    duration_unit = relationship(u'rbUnits', foreign_keys=[duration_unit_id], lazy='joined')
+    frequency_unit = relationship(u'rbUnits', foreign_keys=[frequency_unit_id], lazy='joined')
+    methodOfAdministration = relationship(u'rbMethodOfAdministration', lazy='joined')
 
-    # @property
-    # def status(self):
-    #     return MedicationPrescriptionStatus(self.status_id)
+    @property
+    def status(self):
+        from nemesis.models.enums import MedicationPrescriptionStatus
+        return MedicationPrescriptionStatus(self.status_id)
 
     def __json__(self):
         return {
