@@ -28,7 +28,7 @@
                             <span ng-show="inEditState(key)"><input type="number" ng-model="assoc.points"
                                 style="width: 100px" class="text-center"></span>
                             <span class="label label-danger pull-right"
-                                ng-click="removeFactor(key, $index)">
+                                ng-click="removeFactor(key, $index)" ng-show="inEditState(key)">
                                 <i class="fa fa-remove"></i>
                             </span>
                         </li>
