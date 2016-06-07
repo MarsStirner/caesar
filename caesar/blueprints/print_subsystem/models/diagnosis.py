@@ -209,8 +209,8 @@ class EventDiagnosesInfo(NoInfo, IterableUserDict):
         dt_codes = {dt.code: dt for dt in Query(rbDiagnosisTypeN)}
         self.__diagnostics = diagnostics = get_client_diagnostics(
             self.event.client,
-            self.event.begDate_raw,
-            self.event.endDate_raw,
+            self.event.setDate_raw,
+            self.event.execDate_raw,
         )
         self.__associations = associations = Query(Event_Diagnosis).filter(
             Event_Diagnosis.event == self.event,
