@@ -2588,8 +2588,6 @@ class Event(Info):
     client = relationship(u'Client')
     visits = relationship(u'Visit')
 
-    diagnosis_types = relationship(u'rbDiagnosisTypeN', secondary='EventType_DiagnosisType')
-
     diagnostics = DummyProperty(list, u'Поле diagnostics у обращения не реализовано')
     diagnosises = DummyProperty(list, u'Поле diagnosises у обращения не реализовано')
 
@@ -2790,6 +2788,8 @@ class Eventtype(RBInfo):
     age_eu = Column(Integer)
     age_ec = Column(SmallInteger)
     requestType_id = Column(Integer, ForeignKey('rbRequestType.id'))
+
+    diagnosis_types = relationship(u'rbDiagnosisTypeN', secondary='EventType_DiagnosisType')
 
     counter = relationship(u'rbCounter')
     rbMedicalKind = relationship(u'rbMedicalKind')
