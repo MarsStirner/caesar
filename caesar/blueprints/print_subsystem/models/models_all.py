@@ -2587,6 +2587,9 @@ class Event(Info):
     typeAsset = relationship(u'rbEmergencyTypeAsset')
     client = relationship(u'Client')
     visits = relationship(u'Visit')
+
+    diagnosis_types = relationship(u'rbDiagnosisTypeN', secondary='EventType_DiagnosisType')
+
     diagnostics = DummyProperty(list, u'Поле diagnostics у обращения не реализовано')
     diagnosises = DummyProperty(list, u'Поле diagnosises у обращения не реализовано')
 
