@@ -2,7 +2,7 @@
 
 #from PyQt4 import QtCore, QtGui
 # from library.Utils import *
-from blueprints.print_subsystem.models.models_utils import Query
+from caesar.blueprints.print_subsystem.models.models_utils import Query
 from flask import g
 
 

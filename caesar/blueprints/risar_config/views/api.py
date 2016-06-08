@@ -4,7 +4,7 @@ import itertools
 from ..app import module
 from nemesis.lib.apiutils import api_method
 from nemesis.systemwide import db
-from blueprints.risar_config.views.represent import represent_organisation
+from caesar.blueprints.risar_config.views.represent import represent_organisation
 from nemesis.models.exists import Organisation, MKB
 
 __author__ = 'viruzzz-kun'

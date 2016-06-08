@@ -4,8 +4,8 @@ from flask import request
 
 from nemesis.lib.apiutils import api_method, ApiException
 from nemesis.lib.utils import safe_bool, safe_int
-from blueprints.misconfig.lib.data_management.factory import get_manager
-from blueprints.misconfig.app import module
+from caesar.blueprints.misconfig.lib.data_management.factory import get_manager
+from caesar.blueprints.misconfig.app import module
 
 
 @module.route('/api/v1/expert/protocol/scheme/', methods=['GET'])

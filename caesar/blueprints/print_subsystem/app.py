@@ -25,6 +25,3 @@ def teardown_database(response):
     g.printing_session.rollback()
     del g.printing_session
     return response
-
-from .views import *
-from .models import *

@@ -3,7 +3,7 @@
 import types
 
 from nemesis.lib.data_ctrl.model_provider import AbstractModelProvider
-from blueprints.print_subsystem import models as printing_models
+from caesar.blueprints.print_subsystem import models as printing_models
 
 
 class PrintingModelProvider(AbstractModelProvider):

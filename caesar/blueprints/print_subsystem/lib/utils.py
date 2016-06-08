@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from blueprints.print_subsystem.models.models_utils import Query
+from caesar.blueprints.print_subsystem.models.models_utils import Query
 from ..models.models_all import rbPrintTemplate, Action, Actiontype
 
 __author__ = 'mmalkov'

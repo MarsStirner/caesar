@@ -3,7 +3,7 @@ import logging
 import re
 import datetime
 
-from blueprints.print_subsystem.models.models_utils import Query
+from caesar.blueprints.print_subsystem.models.models_utils import Query
 from flask import g
 from sqlalchemy.exc import ProgrammingError, OperationalError
 

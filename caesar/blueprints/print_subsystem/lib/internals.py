@@ -2,7 +2,7 @@
 import datetime
 import re
 import os
-from blueprints.print_subsystem.models.models_utils import code128C_any, code128C
+from caesar.blueprints.print_subsystem.models.models_utils import code128C_any, code128C
 
 from jinja2 import FileSystemLoader
 from jinja2.environment import Environment

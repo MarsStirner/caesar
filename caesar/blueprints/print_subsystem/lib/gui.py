@@ -3,11 +3,11 @@
 import logging
 import traceback
 
-from blueprints.print_subsystem.models.models_utils import Query
+from caesar.blueprints.print_subsystem.models.models_utils import Query
 from flask import g
 from jinja2 import TemplateSyntaxError
-from blueprints.print_subsystem.lib.internals import RenderTemplateException
-from blueprints.print_subsystem.models.models_all import rbPrintTemplate
+from caesar.blueprints.print_subsystem.lib.internals import RenderTemplateException
+from caesar.blueprints.print_subsystem.models.models_all import rbPrintTemplate
 from internals import renderTemplate
 
 __author__ = 'mmalkov'

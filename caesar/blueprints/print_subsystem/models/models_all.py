@@ -20,7 +20,7 @@ from ..lib.num_to_text_converter import NumToTextConverter
 from models_utils import DateTimeInfo, formatNameInt, formatShortNameInt, code128C, formatSex, \
     DummyProperty, DateInfo, Query, formatMonthsWeeks, formatDays, formatYears, formatYearsMonths, TimeInfo, \
     get_model_by_name, calcAgeTuple
-from blueprints.print_subsystem.models.rbinfo import Info, RBInfo
+from caesar.blueprints.print_subsystem.models.rbinfo import Info, RBInfo
 from kladr_models import Kladr, Street
 from ..database import Base, metadata
 from sqlalchemy.dialects.mysql.base import MEDIUMBLOB

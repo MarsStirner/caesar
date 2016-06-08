@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 
-from blueprints.print_subsystem.models.models_utils import Query
+from caesar.blueprints.print_subsystem.models.models_utils import Query
 from flask import g
 from sqlalchemy import Column, Unicode, ForeignKey, Date, Time, DateTime, SmallInteger, Boolean, UnicodeText
 from sqlalchemy import Integer

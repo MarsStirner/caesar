@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import uuid
 
-from blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, FCType
+from caesar.blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, FCType
 from nemesis.lib.utils import safe_int, safe_unicode
 from nemesis.models.expert_protocol import (Measure, ExpertProtocol, ExpertScheme, ExpertSchemeMeasureAssoc,
     MeasureSchedule)

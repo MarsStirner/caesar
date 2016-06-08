@@ -4,14 +4,14 @@ import os
 import traceback
 import logging
 
-from blueprints.print_subsystem.models.models_utils import Query
+from caesar.blueprints.print_subsystem.models.models_utils import Query
 from flask import render_template, abort, request, url_for, send_file, g
 from jinja2 import TemplateNotFound
 
 from app import module
 from nemesis.lib.utils import jsonify, crossdomain, public_endpoint
-from blueprints.print_subsystem.lib.internals import RenderTemplateException
-from blueprints.print_subsystem.models.models_all import rbPrintTemplate
+from caesar.blueprints.print_subsystem.lib.internals import RenderTemplateException
+from caesar.blueprints.print_subsystem.models.models_all import rbPrintTemplate
 from lib.data import Print_Template
 
 

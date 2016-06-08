@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from blueprints.print_subsystem.database import Base
+from caesar.blueprints.print_subsystem.database import Base
 
 __author__ = 'viruzzz-kun'
 
