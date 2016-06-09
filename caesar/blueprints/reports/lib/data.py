@@ -4,7 +4,7 @@ import exceptions
 from datetime import date, timedelta, datetime
 
 from ..app import module, _config
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 from ..utils import get_lpu_session
 
 

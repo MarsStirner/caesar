@@ -3,7 +3,7 @@ from datetime import datetime
 
 from flask import render_template, abort, request, url_for
 from jinja2 import TemplateNotFound
-from flask.ext.wtf import Form
+from flask_wtf import Form
 
 from ..app import module
 from ..lib.data import Policlinic

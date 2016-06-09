@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, request, session
-from flask.ext.admin import Admin
-from flask.ext.babelex import Babel
+from flask_admin import Admin
+from flask_babelex import Babel
 import views
-from flask.ext.admin.contrib.sqlamodel import ModelView
+from flask_admin.contrib.sqlamodel import ModelView
 from ..app import app, module
 from ..models import *
 

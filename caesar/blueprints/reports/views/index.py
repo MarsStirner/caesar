@@ -3,7 +3,7 @@ from flask import render_template, abort, redirect, url_for, flash
 from jinja2 import TemplateNotFound
 from wtforms import TextField, IntegerField
 from wtforms.validators import Required
-from flask.ext.wtf import Form
+from flask_wtf import Form
 
 from ..app import module
 from ..models import ConfigVariables

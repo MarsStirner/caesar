@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from flask import request
-from flask.ext.admin.contrib.sqlamodel import ModelView
-from flask.ext.admin.base import expose, BaseView
+from flask_admin.contrib.sqlamodel import ModelView
+from flask_admin.base import expose, BaseView
 from wtforms.fields import SelectField, BooleanField
 
 from ...tfoms.models import *
