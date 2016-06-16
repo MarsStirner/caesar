@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import request, abort
+from nemesis.api_blueprint.rb import clears_rb_cache
 
 from nemesis.systemwide import db
 from nemesis.lib.apiutils import api_method, ApiException
@@ -28,6 +29,7 @@ def api_v1_quota_catalog_get(_id=None):
 @module.route('/api/v1/quota_catalog', methods=['POST'])
 @module.route('/api/v1/quota_catalog/<int:_id>', methods=['POST'])
 @api_method
+@clears_rb_cache
 def api_v1_quota_catalog_post(_id=None):
     obj = worker(QuotaCatalog)
     data = request.get_json()
@@ -49,8 +51,10 @@ def api_v1_quota_catalog_clone(_id):
         raise ApiException(404, u'Значение с id={0} не найдено'.format(_id))
     return result
 
+
 @module.route('/api/v1/quota_catalog/<int:_id>', methods=['DELETE'])
 @api_method
+@clears_rb_cache
 def api_v1_quota_catalog_delete(_id):
     obj = worker(QuotaCatalog)
     try:
@@ -84,6 +88,7 @@ def api_v1_quota_profile_get(catalog_id, _id=None):
 @module.route('/api/v1/quota_profile/<int:catalog_id>', methods=['POST'])
 @module.route('/api/v1/quota_profile/<int:catalog_id>/<int:_id>', methods=['POST'])
 @api_method
+@clears_rb_cache
 def api_v1_quota_profile_post(catalog_id, _id=None):
     obj = worker(QuotaType)
     data = request.get_json()
@@ -103,6 +108,7 @@ def api_v1_quota_profile_post(catalog_id, _id=None):
 
 @module.route('/api/v1/quota_profile/<int:catalog_id>/<int:_id>', methods=['DELETE'])
 @api_method
+@clears_rb_cache
 def api_v1_quota_profile_delete(catalog_id, _id):
     obj = worker(QuotaType)
     result = obj.delete(_id)
@@ -134,6 +140,7 @@ def api_v1_quota_type_get(profile_id, _id=None):
 @module.route('/api/v1/quota_type/<int:profile_id>', methods=['POST'])
 @module.route('/api/v1/quota_type/<int:profile_id>/<int:_id>', methods=['POST'])
 @api_method
+@clears_rb_cache
 def api_v1_quota_type_post(profile_id, _id=None):
     obj = worker(QuotaType)
     data = request.get_json()
@@ -155,6 +162,7 @@ def api_v1_quota_type_post(profile_id, _id=None):
 
 @module.route('/api/v1/quota_type/<int:group_id>/<int:_id>', methods=['DELETE'])
 @api_method
+@clears_rb_cache
 def api_v1_quota_type_delete(group_id, _id):
     obj = worker(QuotaType)
     result = obj.delete(_id)
@@ -181,6 +189,7 @@ def api_v1_quota_detail_get(quota_type_id, _id=None):
 @module.route('/api/v1/quota_detail/<int:quota_type_id>', methods=['POST'])
 @module.route('/api/v1/quota_detail/<int:quota_type_id>/<int:_id>', methods=['POST'])
 @api_method
+@clears_rb_cache
 def api_v1_quota_detail_post(quota_type_id, _id=None):
     obj = worker(VMPQuotaDetails)
     data = request.get_json()
@@ -197,6 +206,7 @@ def api_v1_quota_detail_post(quota_type_id, _id=None):
 
 @module.route('/api/v1/quota_detail/<int:quota_type_id>/<int:_id>', methods=['DELETE'])
 @api_method
+@clears_rb_cache
 def api_v1_quota_detail_delete(quota_type_id, _id):
     obj = worker(VMPQuotaDetails)
     try:
@@ -258,6 +268,7 @@ def api_v1_rb_get(name, item_id=None, new=None):
 @module.route('/api/v1/rb/<name>/', methods=['POST'])
 @module.route('/api/v1/rb/<name>/<int:item_id>/', methods=['POST'])
 @api_method
+@clears_rb_cache
 def api_v1_rb_post(name, item_id=None):
     if name not in all_rbs:
         raise ApiException(404, u'Не найден справочник по наименованию {0}'.format(name))
@@ -274,6 +285,7 @@ def api_v1_rb_post(name, item_id=None):
 
 @module.route('/api/v1/rb/<name>/<int:item_id>/', methods=['DELETE'])
 @api_method
+@clears_rb_cache
 def api_v1_rb_delete(name, item_id):
     if name not in all_rbs:
         raise ApiException(404, u'Не найден справочник по наименованию {0}'.format(name))
@@ -286,6 +298,7 @@ def api_v1_rb_delete(name, item_id):
 
 @module.route('/api/v1/rb/<name>/<int:item_id>/undelete/', methods=['POST'])
 @api_method
+@clears_rb_cache
 def api_v1_rb_undelete(name, item_id):
     if name not in all_rbs:
         raise ApiException(404, u'Не найден справочник по наименованию {0}'.format(name))
@@ -318,6 +331,7 @@ def api_v1_rb_perinatal_risk_rate_get(item_id=None):
 @module.route('/api/v1/rb_perinatal_risk_rate/', methods=['POST'])
 @module.route('/api/v1/rb_perinatal_risk_rate/<int:item_id>/', methods=['POST'])
 @api_method
+@clears_rb_cache
 def api_v1_rb_perinatal_risk_rate_post(item_id=None):
     mng = get_manager('rbPerinatalRiskRateWithMKBs')
     data = request.get_json()
@@ -365,6 +379,7 @@ def api_v1_rb_pregnancy_pathology_get(item_id=None):
 @module.route('/api/v1/rb_pregnancy_pathology/', methods=['POST'])
 @module.route('/api/v1/rb_pregnancy_pathology/<int:item_id>/', methods=['POST'])
 @api_method
+@clears_rb_cache
 def api_v1_rb_pregnancy_pathology_post(item_id=None):
     mng = get_manager('rbPregnancyPathologyWithMKBs')
     data = request.get_json()
