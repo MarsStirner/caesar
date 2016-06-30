@@ -4,7 +4,6 @@ import calendar
 import jinja2
 
 from collections import defaultdict
-from config import VESTA_URL
 from flask import g
 from sqlalchemy import Column, Integer, String, Unicode, DateTime, ForeignKey, Date, Float, or_, Boolean, Text, \
     SmallInteger, Time, Index, BigInteger, Enum, Table, BLOB, UnicodeText
@@ -937,11 +936,12 @@ class ActionProperty_ExtReferenceRb(ActionProperty__ValueType):
 
     @property
     def value(self):
+        from nemesis.app import app
         if not hasattr(self, 'table_name'):
             domain = g.printing_session.query(ActionProperty).get(self.id).type.valueDomain
             self.table_name = domain.split(';')[0]
         try:
-            response = requests.get(u'{0}v1/{1}/code/{2}'.format(VESTA_URL, self.table_name, self.value_))
+            response = requests.get(u'{0}v1/{1}/code/{2}'.format(app.config['VESTA_URL'], self.table_name, self.value_))
             result = response.json()['data']
         except Exception, e:
             import traceback
