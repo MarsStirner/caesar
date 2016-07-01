@@ -24,7 +24,7 @@ WebMis20
         fields: ['id', 'last_name', 'first_name', 'patr_name', 'name_text', 'post', 'speciality',
             'organisation', 'org_structure', 'deleted', 'inn', 'snils', 'birth_date', 'sex',
             'user_profiles', 'login', 'new_password', 'contacts',
-            'curation_levels'
+            'curation_levels', 'regional_code'
         ],
         base_url:  WMConfig.url.misconfig.api_person_base,
         list_url: WMConfig.url.misconfig.api_person_list_base
