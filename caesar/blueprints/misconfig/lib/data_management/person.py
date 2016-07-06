@@ -22,6 +22,7 @@ class PersonModelManager(BaseModelManager):
             FieldConverter(FCType.basic, 'login', safe_unicode, 'login'),
             FieldConverter(FCType.basic, 'SNILS', safe_unicode, 'snils'),
             FieldConverter(FCType.basic, 'INN', safe_unicode, 'inn'),
+            FieldConverter(FCType.basic, 'regionalCode', safe_unicode, 'regional_code'),
             FieldConverter(FCType.basic, 'sex', safe_int, 'sex'),
             FieldConverter(FCType.basic, 'birthDate', safe_date, 'birth_date'),
             FieldConverter(FCType.basic_repr, 'nameText', None, 'name_text'),
