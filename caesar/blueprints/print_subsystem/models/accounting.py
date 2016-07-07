@@ -492,6 +492,7 @@ class FinanceTransaction(Base):
     __tablename__ = u'FinanceTransaction'
 
     id = Column(Integer, primary_key=True)
+    createPerson_id = Column(ForeignKey('Person.id'))
     trxDatetime = Column(DateTime, nullable=False, default=datetime.datetime.now)
     trxType_id = Column(Integer, ForeignKey('rbFinanceTransactionType.id'), nullable=False)
     financeOperationType_id = Column(Integer, ForeignKey('rbFinanceOperationType.id'), nullable=False)
@@ -505,6 +506,7 @@ class FinanceTransaction(Base):
     trx_type = relationship('rbFinanceTransactionType')
     operation_type = relationship('rbFinanceOperationType')
     pay_type = relationship('rbPayType')
+    createPerson = relationship('Person', foreign_keys=[createPerson_id])
 
 
 class rbFinanceTransactionType(Base):
