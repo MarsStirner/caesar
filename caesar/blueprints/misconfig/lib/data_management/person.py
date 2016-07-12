@@ -83,7 +83,7 @@ class PersonModelManager(BaseModelManager):
         item.INN = ''
         item.code = ''
         item.federalCode = ''
-        item.regionalCode = ''
+        # item.regionalCode = ''
         item.office = ''
         item.office2 = ''
         item.ambPlan = 0
