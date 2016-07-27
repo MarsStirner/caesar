@@ -58,7 +58,7 @@ class BaseModelManager(object):
 
     @classmethod
     def get_manager(cls, name):
-        from blueprints.misconfig.lib.data_management.factory import get_manager
+        from caesar.blueprints.misconfig.lib.data_management.factory import get_manager
         return get_manager(name)
 
     def __init__(self, model, fields):

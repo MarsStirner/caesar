@@ -3,8 +3,8 @@ import datetime
 
 from flask import g
 from sqlalchemy import func, and_
-from blueprints.print_subsystem.models.schedule import Schedule
-from blueprints.print_subsystem.lib.utils import get_action
+from caesar.blueprints.print_subsystem.models.schedule import Schedule
+from caesar.blueprints.print_subsystem.lib.utils import get_action
 
 from nemesis.lib.utils import string_to_datetime, safe_date, safe_int, format_money
 from nemesis.lib.jsonify import ScheduleVisualizer
@@ -22,7 +22,7 @@ from nemesis.lib.data_ctrl.accounting.invoice import InvoiceController
 from nemesis.lib.data_ctrl.accounting.service import ServiceController
 from nemesis.lib.data_ctrl.accounting.utils import (calc_invoice_sum_wo_discounts, check_invoice_closed,
     check_invoice_can_add_discounts)
-from blueprints.print_subsystem.lib.num_to_text_converter import NumToTextConverter
+from caesar.blueprints.print_subsystem.lib.num_to_text_converter import NumToTextConverter
 from ..models.accounting import Service, Invoice
 from .model_provider import PrintingModelProvider
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from blueprints.utils import check_admin_profile
+from caesar.blueprints.utils import check_admin_profile
 from .config import MODULE_NAME, RUS_NAME
 from flask import Blueprint
 

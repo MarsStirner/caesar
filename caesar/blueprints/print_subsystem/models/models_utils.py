@@ -7,7 +7,7 @@ from config import VESTA_URL
 
 
 def get_model_by_name(name):
-    from blueprints.print_subsystem.models import models_all, schedule
+    from caesar.blueprints.print_subsystem.models import models_all, schedule
     for mod in (models_all, schedule):
         if hasattr(mod, name):
             return getattr(mod, name)

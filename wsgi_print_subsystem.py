@@ -3,7 +3,7 @@
 __author__ = 'viruzzz-kun'
 
 from application.app import app
-from blueprints.print_subsystem.app import module as ps_module
+from caesar.blueprints.print_subsystem.app import module as ps_module
 
 app.register_blueprint(ps_module, url_prefix='/print_subsystem')
 

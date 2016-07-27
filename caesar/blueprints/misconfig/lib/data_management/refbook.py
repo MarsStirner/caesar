@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, FCType, represent_model
+from caesar.blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, FCType, represent_model
 from nemesis.lib.utils import safe_int, safe_unicode
 from nemesis.models.exists import rbTreatment, MKB, rbResult
 from nemesis.models.risar import (rbPerinatalRiskRate, rbPerinatalRiskRateMkbAssoc, rbPregnancyPathology,

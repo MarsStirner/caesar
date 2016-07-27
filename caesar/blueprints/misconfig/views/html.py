@@ -4,7 +4,7 @@ from flask import render_template, abort
 
 from ..app import module
 from nemesis.systemwide import db
-from blueprints.misconfig.lib.data_management.pricelist import PriceListModelManager
+from caesar.blueprints.misconfig.lib.data_management.pricelist import PriceListModelManager
 
 
 __author__ = 'viruzzz-kun'

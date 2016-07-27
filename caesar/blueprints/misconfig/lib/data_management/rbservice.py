@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from blueprints.misconfig.lib.data_management.base import FieldConverter, FCType, BaseModelManager
-from blueprints.misconfig.lib.data_management.refbook import SimpleRefBookModelManager
+from caesar.blueprints.misconfig.lib.data_management.base import FieldConverter, FCType, BaseModelManager
+from caesar.blueprints.misconfig.lib.data_management.refbook import SimpleRefBookModelManager
 from nemesis.models.exists import rbService, rbServiceGroupAssoc
 from nemesis.lib.utils import safe_date, safe_bool, safe_int
 

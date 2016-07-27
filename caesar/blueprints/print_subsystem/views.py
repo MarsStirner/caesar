@@ -9,8 +9,8 @@ from jinja2 import TemplateNotFound
 
 from app import module
 from nemesis.lib.utils import jsonify, crossdomain, public_endpoint
-from blueprints.print_subsystem.lib.internals import RenderTemplateException
-from blueprints.print_subsystem.models.models_all import rbPrintTemplate
+from caesar.blueprints.print_subsystem.lib.internals import RenderTemplateException
+from caesar.blueprints.print_subsystem.models.models_all import rbPrintTemplate
 from lib.data import Print_Template
 
 
