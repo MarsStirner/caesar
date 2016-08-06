@@ -309,7 +309,7 @@ def api_v1_rb_perinatal_risk_rate_get(item_id=None):
     return {
         'items': map(mng.represent, mng.get_list(
             order={
-                'id': 'asc'
+                mng._model.id: 'asc'
             }
         ))
     }
@@ -388,3 +388,31 @@ def api_v1_rb_pregnancy_pathology_get_new(pp_id=None):
     return {
         'item': mng.represent(item)
     }
+
+
+@module.route('/api/v1/rb_radzinsky_stage_factor/', methods=['GET'])
+@api_method
+def api_v1_rb_rb_radzinsky_stage_factor_get():
+    mng = get_manager('rbRadzStageWithFactors')
+    return {
+        'items': map(mng.represent, mng.get_list(
+            order={
+                mng._model.id: 'asc'
+            }
+        ))
+    }
+
+
+@module.route('/api/v1/rb_radzinsky_stage_factor/', methods=['POST'])
+@module.route('/api/v1/rb_radzinsky_stage_factor/<int:item_id>/', methods=['POST'])
+@api_method
+def api_v1_rb_radzinsky_stage_factor_post(item_id=None):
+    mng = get_manager('rbRadzStageWithFactors')
+    data = request.get_json()
+
+    if item_id:
+        item = mng.update(item_id, data)
+    else:
+        item = mng.create(data)
+    mng.store(item)
+    return mng.represent(item)

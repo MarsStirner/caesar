@@ -176,6 +176,37 @@ WebMis20
     }, rbEventTypePurpose);
     return rbEventTypePurpose;
 }])
+.factory('rbRadzRiskFactorGroup', ['SimpleRb', function (SimpleRb) {
+    var rbRadzRiskFactorGroup = function (data) {
+        SimpleRb.call(this, data);
+    };
+    rbRadzRiskFactorGroup.inheritsFrom(SimpleRb);
+    rbRadzRiskFactorGroup.initialize({
+        base_url: '{0}rbRadzRiskFactorGroup/'.format(rbRadzRiskFactorGroup.getBaseUrl())
+    }, rbRadzRiskFactorGroup);
+    return rbRadzRiskFactorGroup;
+}])
+.factory('rbRadzStage', ['SimpleRb', function (SimpleRb) {
+    var rbRadzStage = function (data) {
+        SimpleRb.call(this, data);
+    };
+    rbRadzStage.inheritsFrom(SimpleRb);
+    rbRadzStage.initialize({
+        base_url: '{0}rbRadzStage/'.format(rbRadzStage.getBaseUrl())
+    }, rbRadzStage);
+    return rbRadzStage;
+}])
+.factory('rbRadzRiskFactor', ['SimpleRb', function (SimpleRb) {
+    var rbRadzRiskFactor = function (data) {
+        SimpleRb.call(this, data);
+    };
+    rbRadzRiskFactor.inheritsFrom(SimpleRb);
+    rbRadzRiskFactor.initialize({
+        base_url: '{0}rbRadzRiskFactor/'.format(rbRadzRiskFactor.getBaseUrl()),
+        fields: rbRadzRiskFactor.getFields().concat('group')
+    }, rbRadzRiskFactor);
+    return rbRadzRiskFactor;
+}])
 .controller('RBConfigCtrl', ['$scope', '$controller', '$location', 'RbList',
         function ($scope, $controller, $location, RbList) {
     $controller('MisConfigBaseCtrl', {$scope: $scope});
