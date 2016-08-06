@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
-from caesar.blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, FCType, represent_model
-from nemesis.lib.utils import safe_int, safe_unicode
+
+from sqlalchemy.orm import joinedload
+
+from blueprints.misconfig.lib.data_management.base import BaseModelManager, FieldConverter, FCType, represent_model
+from nemesis.lib.utils import safe_int, safe_unicode, safe_traverse
 from nemesis.models.exists import rbTreatment, MKB, rbResult
 from nemesis.models.risar import (rbPerinatalRiskRate, rbPerinatalRiskRateMkbAssoc, rbPregnancyPathology,
-    rbPregnancyPathologyMkbAssoc)
+    rbPregnancyPathologyMkbAssoc, rbRadzRiskFactor, rbRadzStage, rbRadzRiskFactor_StageAssoc)
 from nemesis.systemwide import db
 
 
@@ -50,6 +53,10 @@ class RbPerinatalRRModelManager(BaseModelManager):
             )
         ]
         super(RbPerinatalRRModelManager, self).__init__(rbPerinatalRiskRate, fields)
+
+    def get_list(self, **kwargs):
+        options = [joinedload(rbPerinatalRiskRate.prr_mkbs).joinedload('mkb')]
+        return super(RbPerinatalRRModelManager, self).get_list(options=options, **kwargs)
 
 
 class RbPRRMKBModelManager(BaseModelManager):
@@ -132,3 +139,81 @@ class RbResultModelManager(SimpleRefBookModelManager):
                 'event_purpose',
                 model_manager=self._rbetp_mng)
         ])
+
+
+class RbRadzRiskFactorModelManager(SimpleRefBookModelManager):
+    def __init__(self):
+        self._rbfg_mng = self.get_manager('rbRadzRiskFactorGroup')
+        super(RbRadzRiskFactorModelManager, self).__init__(rbRadzRiskFactor, [
+            FieldConverter(
+                FCType.relation,
+                'group', (self.handle_onetomany_nonedit, ),
+                'group',
+                model_manager=self._rbfg_mng)
+        ])
+
+
+class RbRadzStageFactorModelManager(BaseModelManager):
+    def __init__(self):
+        self._sfa_mng = RbRadzStageFactorAssocModelManager()
+        fields = [
+            FieldConverter(FCType.basic_repr, 'id', None, 'id'),
+            FieldConverter(FCType.basic_repr, 'code', None, 'code'),
+            FieldConverter(FCType.basic_repr, 'name', None, 'name'),
+            FieldConverter(
+                FCType.relation,
+                'stage_factor_assoc', (self.handle_stage_factor_assoc,),
+                'stage_factor_assoc', (self.represent_model,),
+                model_manager=self._sfa_mng
+            )
+        ]
+        super(RbRadzStageFactorModelManager, self).__init__(rbRadzStage, fields)
+
+    def handle_stage_factor_assoc(self, field, item_list, parent_obj):
+        if item_list is None:
+            return []
+        result = []
+        for item_data in item_list:
+            stage_id = item_data.get('stage_id')
+            if stage_id:
+                factor_id = item_data['factor_id']
+                item = self._sfa_mng._model.query.filter_by(stage_id=stage_id, factor_id=factor_id).first()
+                item = self._sfa_mng.fill(item, item_data, parent_obj)
+            else:
+                stage_id = parent_obj.id
+                factor_id = safe_traverse(item_data, 'factor', 'id')
+                item_data['stage_id'] = stage_id
+                item_data['factor_id'] = factor_id
+                item = self._sfa_mng.create_new(item_data, None, parent_obj)
+            result.append(item)
+
+        # deletion
+        for item in getattr(parent_obj, field.m_name):
+            if item not in result:
+                db.session.delete(item)
+        return result
+
+
+class RbRadzStageFactorAssocModelManager(BaseModelManager):
+    def __init__(self):
+        self._rf_mng = self.get_manager('rbRadzRiskFactor')
+        fields = [
+            FieldConverter(FCType.basic_repr, 'stage_id', None, 'stage_id'),
+            FieldConverter(FCType.basic_repr, 'factor_id', None, 'factor_id'),
+            FieldConverter(FCType.basic, 'points', safe_int, 'points', safe_int),
+            FieldConverter(
+                FCType.relation,
+                'factor', (self.handle_onetomany_nonedit, ),
+                'factor', (self.represent_model, ),
+                model_manager=self._rf_mng
+            )
+        ]
+        super(RbRadzStageFactorAssocModelManager, self).__init__(rbRadzRiskFactor_StageAssoc, fields)
+
+    def create_new(self, data=None, parent_id=None, parent_obj=None):
+        item = self._model()
+        if data is not None:
+            item.stage_id = data['stage_id']
+            item.factor_id = data['factor_id']
+            item.points = data['points']
+        return item

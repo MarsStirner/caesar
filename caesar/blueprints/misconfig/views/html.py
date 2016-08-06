@@ -110,3 +110,8 @@ def price_list_html(pricelist_id=None):
 @module.route('/rbservice/')
 def rbservice_html():
     return render_template('misconfig/refbook/rbservice-list.html')
+
+
+@module.route('/radzinsky-stage-factor/')
+def radzinsky_stage_factor_html():
+    return render_template('misconfig/radzinsky_stage_factor.html')
