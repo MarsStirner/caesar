@@ -13,9 +13,19 @@ class ExpertProtocol(Base):
     id = Column(Integer, primary_key=True)
     code = Column(Unicode(16), index=True)
     name = Column(Unicode(255), nullable=False)
+    sex = Column(Integer, nullable=False, server_default="'0'")
+    age = Column(Unicode(9), nullable=False, server_default="''")
     deleted = Column(Integer, nullable=False, server_default="'0'")
 
     schemes = relationship('ExpertScheme', backref='protocol')
+
+
+class ExpertProtocol_ActionTypeAssoc(Base):
+    __tablename__ = u'ExpertProtocol_ActionType'
+
+    id = Column(Integer, primary_key=True)
+    protocol_id = Column(Integer, ForeignKey('ExpertProtocol.id'), nullable=False)
+    actionType_id = Column(Integer, ForeignKey('ActionType.id'), nullable=False)
 
 
 class ExpertScheme(Base):
