@@ -203,6 +203,7 @@ class Service(Base):
     action_id = Column(Integer, ForeignKey('Action.id'))
     actionProperty_id = Column(Integer, ForeignKey('ActionProperty.id'))
     amount = Column(Float, nullable=False)
+    sum = Column(Numeric(15, 2), nullable=False)
     deleted = Column(SmallInteger, nullable=False, server_default=u"'0'")
     discount_id = Column(Integer, ForeignKey('ServiceDiscount.id'))
 
@@ -214,33 +215,31 @@ class Service(Base):
     action_property = relationship('ActionProperty', backref=backref('service', uselist=False))
     discount = relationship('ServiceDiscount')
 
+    subservice_list = CalculatedProperty('_subservice_list')
+
     def __init__(self):
         self._in_invoice = None
         self._invoice = None
         self._invoice_loaded = False
         self._subservice_list = None
-        self._sum = None
-        self._sum_loaded = False
 
     @orm.reconstructor
     def init_on_load(self):
+        del self.subservice_list
+
         self._in_invoice = None
         self._invoice = None
         self._invoice_loaded = False
-        self._subservice_list = None
-        self._sum = None
-        self._sum_loaded = False
+
+    @subservice_list
+    def subservice_list(self):
+        from nemesis.lib.data_ctrl.accounting.service import ServiceController
+        service_ctrl = ServiceController()
+        return service_ctrl.get_subservices(self)
 
     @property
     def sum_(self):
-        if not self._sum_loaded:
-            self._sum = self._get_recalc_sum()
-            self._sum_loaded = True
-        return self._sum
-
-    def set_sum_(self, val):
-        self._sum = val
-        self._sum_loaded = True
+        return self.sum
 
     @property
     def in_invoice(self):
@@ -255,24 +254,6 @@ class Service(Base):
             self._invoice = invoice
             self._invoice_loaded = True
         return self._invoice
-
-    @property
-    def subservice_list(self):
-        if self._subservice_list is None:
-            self.init_subservice_list()
-        return self._subservice_list
-
-    @subservice_list.setter
-    def subservice_list(self, value):
-        self._subservice_list = value
-
-    def recalc_sum(self):
-        self._sum = self._get_recalc_sum()
-
-    def init_subservice_list(self):
-        self._subservice_list = self._get_subservices()
-        for ss in self._subservice_list:
-            ss.init_subservice_list()
 
     @property
     def serviced_entity(self):
@@ -311,16 +292,6 @@ class Service(Base):
         invoice_ctrl = InvoiceController()
         invoice = invoice_ctrl.get_service_invoice(self)
         return invoice
-
-    def _get_recalc_sum(self):
-        from nemesis.lib.data_ctrl.accounting.utils import calc_service_total_sum
-        return calc_service_total_sum(self) if self.priceListItem_id is not None else 0
-
-    def _get_subservices(self):
-        from nemesis.lib.data_ctrl.accounting.service import ServiceController
-        service_ctrl = ServiceController()
-        ss_list = service_ctrl.get_subservices(self)
-        return ss_list
 
 
 class ServiceDiscount(Base):
