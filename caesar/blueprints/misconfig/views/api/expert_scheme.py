@@ -21,7 +21,7 @@ def api_v1_expert_scheme_get(item_id=None):
     elif item_id:
         item = mng.get_by_id(item_id)
     else:
-        raise ApiException(404, u'`item_id` required')
+        raise ApiException(404, u'необходим `item_id`')
     return {
         'item': mng.represent(item)
     }

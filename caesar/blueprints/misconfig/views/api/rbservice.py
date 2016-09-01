@@ -17,7 +17,7 @@ def api_v1_rb_service_group_assoc_get():
     if get_new:
         item = mng.create()
     else:
-        raise ApiException(404, u'Only `new` records creation supported')
+        raise ApiException(404, u'Подерживается создание только новых записей')
     return {
         'item': mng.represent(item)
     }
