@@ -107,17 +107,17 @@ def print_templates_post():
 
 
 @public_endpoint
-@module.route('/fonts')
-@module.route('/fonts/<filename>')
-@crossdomain('*', methods=['GET'])
+@module.route('/fonts', methods=["GET", "OPTIONS"])
+@module.route('/fonts/<filename>', methods=["GET", "OPTIONS"])
+@crossdomain('*', methods=['GET', "OPTIONS"])
 def fonts(filename=None):
     return send_file(os.path.join(os.path.dirname(__file__), 'static', filename))
 
 
-@module.route('/templates/')
-@module.route('/templates/<context>.json')
+@module.route('/templates/', methods=["GET", "OPTIONS"])
+@module.route('/templates/<context>.json', methods=["GET", "OPTIONS"])
 @public_endpoint
-@crossdomain('*', methods=['GET'])
+@crossdomain('*', methods=['GET', "OPTIONS"])
 def api_templates(context=None):
     # Не пора бы нам от этой ерунды избавиться?
     # Неа, нам нужно подключение к разным БД (http://stackoverflow.com/questions/7923966/flask-sqlalchemy-with-dynamic-database-connections)
