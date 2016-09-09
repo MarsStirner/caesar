@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from flask import request, abort
+from nemesis.models.risar import rbPerinatalRiskRate, rbPerinatalRiskRateMkbAssoc
 
 from nemesis.systemwide import db
 from nemesis.lib.apiutils import api_method, ApiException
 from nemesis.models.exists import QuotaCatalog, QuotaType, VMPQuotaDetails
 from nemesis.lib.utils import safe_bool, safe_int
+from sqlalchemy import func
 
 from ..app import module
 from ..lib.data import worker, WorkerException
@@ -321,6 +323,31 @@ def api_v1_rb_perinatal_risk_rate_get(item_id=None):
 def api_v1_rb_perinatal_risk_rate_post(item_id=None):
     mng = get_manager('rbPerinatalRiskRateWithMKBs')
     data = request.get_json()
+
+    code_by_id = {}
+    mkb_rates = {}
+    for x in data['prr_mkbs']:
+        mkb_id = x['mkb']['id']
+        mkb_rates[mkb_id] = x['risk_rate_id']
+        code_by_id[mkb_id] = x['mkb']['code']
+
+    db_data = dict(db.session.query(rbPerinatalRiskRateMkbAssoc.mkb_id,
+                            func.group_concat(rbPerinatalRiskRateMkbAssoc.riskRate_id.op('SEPARATOR')(',')))\
+        .filter(rbPerinatalRiskRateMkbAssoc.mkb_id.in_(mkb_rates.keys()))\
+        .group_by(rbPerinatalRiskRateMkbAssoc.mkb_id).all())
+
+    if db_data:
+        for mkb_id, risk_rate_id in mkb_rates.items():
+            db_risk_rate = db_data[mkb_id]
+            if db_risk_rate != unicode(risk_rate_id):
+                rates = db_risk_rate.split(',')
+                words = (u"другими", u"степенями") if len(rates) > 1 else (u"другой", u"степенью")
+                error = u"Код {} уже связан с %s %s риска: \n".format(code_by_id[mkb_id]) % words
+                risk_rates = [x.name for x in db.session.query(rbPerinatalRiskRate).\
+                             filter(rbPerinatalRiskRate.id.in_(rates)).all()]
+                error += "<b>,</b>".join(risk_rates)
+                raise ApiException(500, error)
+
 
     if item_id:
         item = mng.update(item_id, data)
