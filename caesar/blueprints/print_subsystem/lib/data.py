@@ -2,6 +2,7 @@
 import datetime
 
 from flask import g
+from nemesis.systemwide import db
 from sqlalchemy import func, and_
 from caesar.blueprints.print_subsystem.models.schedule import Schedule
 from caesar.blueprints.print_subsystem.lib.utils import get_action
@@ -400,6 +401,18 @@ class Print_Template(object):
             'first_inspection': get_action(event, 'risarFirstInspection'),
             'second_inspections': get_action(event, 'risarSecondInspection', one=False),
             'epicrisis': get_action(event, 'epicrisis'),
+        }
+
+    def context_risar_inspections(self, data):
+        action = g.printing_session.query(Action).get(data['action_id'])
+
+        event = action.event
+        return {
+            'event': action.event,
+            'client': event.client if event else None,
+            'action': action,
+            'em_list': g.printing_session.query(EventMeasure).filter(EventMeasure.id.in_(data['em_id_list'])).all()
+
         }
 
     def context_risar_inspection(self, data):
