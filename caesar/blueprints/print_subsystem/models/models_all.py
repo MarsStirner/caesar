@@ -26,6 +26,7 @@ from ..database import Base, metadata
 from sqlalchemy.dialects.mysql.base import MEDIUMBLOB
 from nemesis.lib.const import (STATIONARY_EVENT_CODES, DIAGNOSTIC_EVENT_CODES, POLICLINIC_EVENT_CODES,
     PAID_EVENT_CODE, OMS_EVENT_CODE, DMS_EVENT_CODE, BUDGET_EVENT_CODE, DAY_HOSPITAL_CODE)
+from nemesis.models.utils import UUIDColumn
 
 
 TABLE_PREFIX = MODULE_NAME
@@ -169,6 +170,7 @@ class Action(Info):
     parentAction_id = Column(Integer, index=True)
     uuid_id = Column(Integer, nullable=False, index=True, server_default=u"'0'")
     dcm_study_uid = Column(String(50))
+    uuid = Column(UUIDColumn(), nullable=False)
 
     actionType = relationship(u'Actiontype')
     event = relationship(u'Event')
