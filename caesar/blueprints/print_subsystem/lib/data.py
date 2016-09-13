@@ -411,8 +411,9 @@ class Print_Template(object):
             'event': action.event,
             'client': event.client if event else None,
             'action': action,
-            'em_list': g.printing_session.query(EventMeasure).filter(EventMeasure.id.in_(data['em_id_list'])).all()
-
+            'em_list': enumerate(g.printing_session.query(EventMeasure).\
+                                 filter(EventMeasure.id.in_(data['em_id_list'])).all(),
+                                 1)
         }
 
     def context_risar_inspection(self, data):
