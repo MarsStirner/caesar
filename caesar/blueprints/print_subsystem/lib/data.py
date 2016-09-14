@@ -402,6 +402,18 @@ class Print_Template(object):
             'epicrisis': get_action(event, 'epicrisis'),
         }
 
+    def context_risar_inspections(self, data):
+        action = g.printing_session.query(Action).get(data['action_id'])
+        em_list = g.printing_session.query(EventMeasure).\
+                                      filter(EventMeasure.id.in_(data['em_id_list'])).all()
+        event = action.event
+        return {
+            'event': action.event,
+            'client': event.client if event else None,
+            'action': action,
+            'em_list': em_list
+        }
+
     def context_risar_inspection(self, data):
         event = None
         action = None
