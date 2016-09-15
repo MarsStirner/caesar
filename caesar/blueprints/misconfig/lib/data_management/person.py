@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+import uuid
+
 from hashlib import md5
 from .base import BaseModelManager, FieldConverter, FCType, represent_model
 from nemesis.models.person import Person, PersonCurationAssoc
-from nemesis.lib.utils import (get_new_uuid, safe_int, safe_unicode, safe_traverse, safe_bool, safe_date)
+from nemesis.lib.utils import (safe_int, safe_unicode, safe_traverse, safe_bool, safe_date)
 from nemesis.systemwide import db
 
 
@@ -65,7 +67,7 @@ class PersonModelManager(BaseModelManager):
     def create(self, data=None, parent_id=None, parent_obj=None):
         item = super(PersonModelManager, self).create(data)
         # TODO: add required fields
-        item.uuid = get_new_uuid()
+        item.uuid = uuid.uuid4()
         if item.SNILS is None:
             item.SNILS = ''
         item.INN = ''

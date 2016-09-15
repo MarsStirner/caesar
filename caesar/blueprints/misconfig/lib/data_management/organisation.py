@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+import uuid
+
 from .base import BaseModelManager, FieldConverter, FCType, represent_model
 from nemesis.models.organisation import (Organisation, OrganisationBirthCareLevel,
     Organisation_OrganisationBCLAssoc, OrganisationCurationAssoc)
 from nemesis.models.exists import OrgStructure
-from nemesis.lib.utils import (get_new_uuid, safe_int, safe_unicode, safe_traverse, safe_bool,
+from nemesis.lib.utils import (safe_int, safe_unicode, safe_traverse, safe_bool,
        get_max_item_attribute_value, safe_hex_color, format_hex_color)
 from nemesis.systemwide import db
 
@@ -60,7 +62,7 @@ class OrganisationModelManager(BaseModelManager):
         item.obsoleteInfisCode = ''
         item.obsoleteInfisCode = ''
         item.obsoleteInfisCode = ''
-        item.uuid = get_new_uuid()
+        item.uuid = uuid.uuid4()
         return item
 
     def get_list(self, **kwargs):

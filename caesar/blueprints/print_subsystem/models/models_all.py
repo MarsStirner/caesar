@@ -1530,6 +1530,7 @@ class Client(Info):
     birthPlace = Column(Unicode(128), nullable=False, server_default=u"''")
     embryonalPeriodWeek = Column(String(16), nullable=False, server_default=u"''")
     uuid_id = Column(Integer, nullable=False, index=True, server_default=u"'0'")
+    uuid = Column(UUIDColumn(), nullable=False)
 
     client_attachments = relationship(u'Clientattach', primaryjoin='and_(Clientattach.client_id==Client.id, Clientattach.deleted==0)',
                                       order_by="desc(Clientattach.id)")
@@ -2572,6 +2573,7 @@ class Event(Info):
     urgent = Column(Integer, server_default=u"'0'")
     orgStructure_id = Column(Integer, ForeignKey('Person.orgStructure_id'))
     uuid_id = Column(Integer, nullable=False, index=True, server_default=u"'0'")
+    uuid = Column(UUIDColumn(), nullable=False)
     lpu_transfer = Column(String(100))
 
     actions = relationship(u'Action', primaryjoin='and_(Action.event_id==Event.id,'
@@ -3443,6 +3445,7 @@ class Organisation(Info):
     miacCode = Column(String(10), nullable=False)
     isOrganisation = Column(Integer, nullable=False, server_default=u"'0'")
     uuid_id = Column(Integer, nullable=False, index=True, server_default=u"'0'")
+    uuid = Column(UUIDColumn(), nullable=False)
     isLPU = Column(Integer, nullable=False, server_default=u"'0'")
     isStationary = Column(Integer, nullable=False, server_default=u"'0'")
 
@@ -3546,6 +3549,7 @@ class Person(Info):
     quotUnit = Column(Integer, server_default=u"'0'")
     academicdegree_id = Column(Integer, ForeignKey('rbAcademicDegree.id'))
     academicTitle_id = Column(Integer, ForeignKey('rbAcademicTitle.id'))
+    uuid = Column(UUIDColumn(), nullable=False)
 
     post = relationship(u'rbPost')
     speciality = relationship(u'rbSpeciality')
