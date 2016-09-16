@@ -7,9 +7,45 @@
         <li><a href="{{ url_for('.index_html') }}">Настройки МИС</a></li>
         <li>Связь сотрудника с уровнями курирования</li>
     </ul>
-
     <div class="row">
-    <div class="col-md-12">
+        <div class="col-md-3">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Фильтр</h3>
+                </div>
+                <div class="panel-body">
+                    <label for="filter-fio">ФИО</label>
+                    <input class="form-control" id="filter-fio" type="text" ng-model="flt.model.fio"
+                           autocomplete="off" placeholder="ФИО">
+
+                    <label for="filter-org">Уровень курирования</label>
+                    <rb-select multiple="true" ref-book="rbOrgCurationLevel" add-rb-data="extendCurationLevel()" id="filter-post" ng-model="flt.model.curation_levels"
+                               placeholder="Уровень курирования"></rb-select>
+
+                    <label for="filter-speciality">Специальность</label>
+                    <rb-select ref-book="rbSpeciality" id="filter-speciality" ng-model="flt.model.speciality"
+                               placeholder="Специальность"></rb-select>
+
+                    <label for="filter-post">Должность</label>
+                    <rb-select ref-book="rbPost" id="filter-post" ng-model="flt.model.post"
+                               placeholder="Должность"></rb-select>
+                </div>
+                <div class="panel-footer">
+                    <button type="button" class="btn btn-default" ng-click="getData()">Получить данные</button>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default" ng-click="clear()">Сбросить</button>
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <span class="caret"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a ng-click="clearAll()">Сбросить и очистить результаты</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <div class="col-md-9">
         <table class="table table-condensed">
             <thead>
                 <tr>
@@ -21,9 +57,9 @@
             </thead>
             <tbody>
                 <tr ng-repeat="(key, item) in model">
-                <td bind-once>[[ item.person.name_text ]]</td>
-                <td bind-once>[[ item.person.speciality.name ]]</td>
-                <td bind-once>[[ item.person.post.name ]]</td>
+                <td>[[ item.person.name_text ]]</td>
+                <td>[[ item.person.speciality.name ]]</td>
+                <td>[[ item.person.post.name ]]</td>
                 <td width="40%">
                     <div class="row">
                     <div class="col-md-10">

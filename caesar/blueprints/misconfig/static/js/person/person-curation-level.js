@@ -4,7 +4,7 @@ WebMis20
 .controller('PersonCurationConfigCtrl', ['$scope', '$controller', 'Person',
         function ($scope, $controller, Person) {
     $controller('MisConfigBaseCtrl', {$scope: $scope});
-
+    $scope.EntityClass = Person;
     $scope.model = {};
     $scope.startEditing = function (key) {
         $scope.model[key].editing = true;
@@ -41,10 +41,34 @@ WebMis20
     $scope.alertCurationDublVisible = function (key) {
         return $scope.model[key].curationDubl;
     };
-
-    Person.instantiateAll({
-        with_curations: true
-    }).then(function (persons) {
+    var setData = function (items) {
+        $scope.model = {};
+        angular.forEach(items, function (person, key) {
+            $scope.model[key] = {
+                person: person,
+                editing: false,
+                newCuration: null,
+                curationDubl: false
+            };
+        });
+    };
+    $scope.extendCurationLevel = function () {
+        return function () {
+            return [{id: 0, name: 'без уровня курирования'}];
+        }
+    };
+    $scope.refreshData = function () {
+        var args = {
+            with_profiles: true,
+            with_curations: true,
+            fio: $scope.flt.model.fio || undefined,
+            speciality_id: safe_traverse($scope.flt.model, ['speciality', 'id']),
+            post_id: safe_traverse($scope.flt.model, ['post', 'id']),
+            curation_levels_ids: angular.toJson(_.pluck($scope.flt.model.curation_levels, 'id'))
+        };
+        $scope._refreshData(args).then(setData);
+    };
+    Person.instantiateAll({ with_curations: true}).then(function (persons) {
         $scope.model = {};
         angular.forEach(persons, function (person, key) {
             $scope.model[key] = {
