@@ -151,10 +151,15 @@ class BaseModelManager(object):
     def create(self, data=None, parent_id=None, parent_obj=None):
         item = self._model()
         if data is not None:
+            self.validate(data)
             self.fill(item, data, parent_obj)
         return item
 
+    def validate(self, data=None):
+        pass
+
     def update(self, item_id, data, parent_obj=None):
+        self.validate(data)
         item = self.get_by_id(item_id)
         self.fill(item, data, parent_obj)
         return item
