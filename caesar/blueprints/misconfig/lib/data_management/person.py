@@ -3,8 +3,8 @@ from hashlib import md5
 from sqlalchemy import func
 
 from .base import BaseModelManager, FieldConverter, FCType, represent_model
-from nemesis.models.person import Person, PersonCurationAssoc, PersonContact
-from nemesis.lib.utils import (get_new_uuid, safe_int, safe_unicode, safe_traverse, safe_bool, safe_date)
+from nemesis.models.person import Person, PersonCurationAssoc, PersonContact, rbOrgCurationLevel
+from nemesis.lib.utils import (get_new_uuid, safe_int, safe_unicode, safe_traverse, safe_bool, safe_date, parse_json)
 
 
 class PersonModelManager(BaseModelManager):
@@ -125,6 +125,20 @@ class PersonModelManager(BaseModelManager):
             query = query.filter(Person.post_id == safe_int(kwargs['post_id']))
         if 'org_id' in kwargs:
             query = query.filter(Person.org_id == safe_int(kwargs['org_id']))
+        if 'curation_levels_ids' in kwargs:
+            cl_ids = parse_json(kwargs["curation_levels_ids"])
+            if cl_ids:
+                if len(cl_ids) == 1 and cl_ids[0] == 0:
+                    query = query.outerjoin(PersonCurationAssoc).filter(PersonCurationAssoc.person_id.is_(None))
+                else:
+                    sq = PersonCurationAssoc.query.filter(
+                        PersonCurationAssoc.orgCurationLevel_id.in_(cl_ids)
+                    ).group_by(
+                        PersonCurationAssoc.person_id
+                    ).having(
+                        func.count(PersonCurationAssoc.orgCurationLevel_id.distinct()) >= len(cl_ids)
+                    ).with_entities(PersonCurationAssoc.person_id).subquery()
+                    query = query.join(sq, sq.c.person_id == Person.id)
         return query
 
 
