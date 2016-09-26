@@ -8,7 +8,7 @@
         <li>Связь сотрудника с уровнями курирования</li>
     </ul>
     <div class="row">
-        <div class="col-md-3">
+        <div class="col-md-3 topped" data-spy="affix">
             <div class="panel panel-primary">
                 <div class="panel-heading">
                     <h3 class="panel-title">Фильтр</h3>
@@ -45,69 +45,92 @@
                 </div>
             </div>
         </div>
-    <div class="col-md-9">
-        <table class="table table-condensed">
-            <thead>
-                <tr>
-                <th>Сотрудник</th>
-                <th>Специальность</th>
-                <th>Должность</th>
-                <th>Уровни курирования</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr ng-repeat="(key, item) in model">
-                <td>[[ item.person.name_text ]]</td>
-                <td>[[ item.person.speciality.name ]]</td>
-                <td>[[ item.person.post.name ]]</td>
-                <td width="40%">
-                    <div class="row">
-                    <div class="col-md-10">
-                        <div class="panel panel-default">
-                        <ul class="list-group">
-                            <li ng-repeat="curation_level in item.person.curation_levels" class="list-group-item">
-                                [[ curation_level.name ]]
-                                <span class="label label-danger pull-right" ng-show="inEditState(key)"
-                                    ng-click="removePersonCuration(key, $index)">
-                                    <i class="fa fa-remove"></i>
-                                </span>
-                            </li>
-                        </ul>
-                        <div class="panel-body" ng-if="inEditState(key)">
-                            <div class="alert alert-danger" role="alert" ng-if="alertCurationDublVisible(key)">
-                                Выбранный уровень уже присутствует в списке. Выберите другое значение.
-                            </div>
-                            <div class="row">
-                                <div class="col-md-10">
-                                    <rb-select ng-model="item.newCuration" ref-book="rbOrgCurationLevel"
-                                        ng-change="checkCurationDubl(key)"></rb-select>
+        <div class="col-md-9 pull-right">
+            <table class="table table-condensed">
+                <thead>
+                    <tr>
+                    <th>Сотрудник</th>
+                    <th>Специальность</th>
+                    <th>Должность</th>
+                    <th>Уровни курирования</th>
+                    <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="(key, item) in model">
+                    <td>[[ item.person.name_text ]]</td>
+                    <td>[[ item.person.speciality.name ]]</td>
+                    <td>[[ item.person.post.name ]]</td>
+                    <td width="30%">
+                        <div class="row">
+                            <div class="col-md-9">
+                                <div class="panel panel-default">
+                                <ul class="list-group">
+                                    <li ng-repeat="curation_level in item.person.curation_levels" class="list-group-item">
+                                        [[ curation_level.name ]]
+                                        <span class="label label-danger pull-right" ng-show="inEditState(key)"
+                                            ng-click="removePersonCuration(key, $index)">
+                                            <i class="fa fa-remove"></i>
+                                        </span>
+                                    </li>
+                                </ul>
+                                <div class="panel-body" ng-if="inEditState(key)">
+                                    <div class="alert alert-danger" role="alert" ng-if="alertCurationDublVisible(key)">
+                                        Выбранный уровень уже присутствует в списке. Выберите другое значение.
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-10">
+                                            <rb-select ng-model="item.newCuration"
+                                                ref-book="rbOrgCurationLevel"
+                                                custom-filter="fltCurLevel()"
+                                                ng-change="checkCurationDubl(key)"></rb-select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" class="btn btn-primary" ng-click="addPersonCuration(key)"
+                                                ng-disabled="!btnAddCurationAvailable(key)">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col-md-2">
-                                    <button type="button" class="btn btn-primary" ng-click="addPersonCuration(key)"
-                                        ng-disabled="!btnAddCurationAvailable(key)">
-                                        <i class="fa fa-plus"></i>
-                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </td>
+                    <td>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-primary" ng-click="startEditing(key)" ng-if="!inEditState(key)">Редактировать</button>
+                                    <button type="button" class="btn btn-success" ng-click="finishEditing(key)" ng-if="inEditState(key)">Сохранить</button>
+                                    <button type="button" class="btn btn-danger" ng-click="cancelEditing(key)" ng-if="inEditState(key)">Отменить</button>
                                 </div>
                             </div>
                         </div>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="btn-group btn-group-sm pull-right">
-                            <button type="button" class="btn btn-primary" ng-click="startEditing(key)" ng-if="!inEditState(key)">Редактировать</button>
-                            <button type="button" class="btn btn-success" ng-click="finishEditing(key)" ng-if="inEditState(key)">Сохранить</button>
-                            <button type="button" class="btn btn-danger" ng-click="cancelEditing(key)" ng-if="inEditState(key)">Отменить</button>
-                        </div>
-                    </div>
-                    </div>
-                </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+                    </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}
+{##}
+{% block modules_css %}
+    {{ super() }}
+    <style type="text/css">
+        @media (max-width: 768px) {
+            .affix {
+                position: static!important;
+            }
+            .topped {
+                margin-top:100px!important;
+            }
+        }
+    </style>
+{% endblock %}
+
 
 {% block modules_js %}
 {{ super() }}

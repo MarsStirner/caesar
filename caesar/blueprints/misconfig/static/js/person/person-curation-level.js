@@ -52,9 +52,22 @@ WebMis20
             };
         });
     };
+    $scope.fltCurLevel = function () {
+        return function (level) {
+            return level['code'] !== "0";
+        }
+    };
+    $scope.clear = function () {
+        $scope.flt.model = {};
+    };
+    $scope.clearAll = function () {
+        $scope.clear();
+        $scope.getData();
+
+    };
     $scope.extendCurationLevel = function () {
         return function () {
-            return [{id: 0, name: 'без уровня курирования'}];
+            return [{id: 0, code: "0", name: 'без уровня курирования'}];
         }
     };
     $scope.refreshData = function () {
