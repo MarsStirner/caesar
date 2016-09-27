@@ -211,6 +211,7 @@ class EventMeasure(Base):
     modifyPerson_id = Column(Integer, ForeignKey('Person.id'), index=True)
     event_id = Column(Integer, ForeignKey('Event.id'), nullable=False, index=True)
     schemeMeasure_id = Column(Integer, ForeignKey('ExpertSchemeMeasure.id'), nullable=False, index=True)
+    measure_id = Column(Integer, ForeignKey('Measure.id'), nullable=True, index=True)
     begDateTime = Column(DateTime)
     endDateTime = Column(DateTime)
     status = Column(Integer, nullable=False)
@@ -222,6 +223,7 @@ class EventMeasure(Base):
 
     event = relationship('Event')
     _scheme_measure = relationship('ExpertSchemeMeasureAssoc')
+    _measure = relationship('Measure')
     source_action = relationship('Action', foreign_keys=[sourceAction_id])
     result_action = relationship('Action', foreign_keys=[resultAction_id])
     appointment_action = relationship('Action', foreign_keys=[appointmentAction_id])
@@ -231,5 +233,9 @@ class EventMeasure(Base):
         return self._scheme_measure if self.schemeMeasure_id is not None else None
 
     @property
+    def manual_measure(self):
+        return self._measure if self.measure_id is not None else None
+
+    @property
     def measure(self):
-        return self.scheme_measure.measure if self.scheme_measure is not None else None  # TODO: ручные мероприятия
+        return self.scheme_measure.measure if self.schemeMeasure_id is not None else self.manual_measure
