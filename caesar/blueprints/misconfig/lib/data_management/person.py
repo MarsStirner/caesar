@@ -3,7 +3,8 @@ from hashlib import md5
 from sqlalchemy import func, or_
 
 from .base import BaseModelManager, FieldConverter, FCType, represent_model
-from nemesis.models.person import Person, PersonCurationAssoc, PersonContact, rbOrgCurationLevel
+from nemesis.models.person import (Person, PersonCurationAssoc, PersonContact, PersonCertificate,
+    rbOrgCurationLevel)
 from nemesis.lib.utils import (get_new_uuid, safe_int, safe_unicode, safe_traverse, safe_bool, safe_date, parse_json)
 
 
@@ -11,6 +12,8 @@ class PersonModelManager(BaseModelManager):
     def __init__(self, with_curations=False, with_profiles=False):
         self._post_mng = self.get_manager('rbPost')
         self._spec_mng = self.get_manager('rbSpeciality')
+        self._qualif_mng = self.get_manager('rbDoctorQualification')
+        self._cert_mng = self.get_manager('PersonCertificate')
         self._org_mng = self.get_manager('Organisation')
         self._os_mng = self.get_manager('OrgStructure')
         self._person_contact = self.get_manager('PersonContact')
@@ -42,6 +45,16 @@ class PersonModelManager(BaseModelManager):
                 'speciality', (self.handle_onetomany_nonedit, ),
                 'speciality',
                 model_manager=self._spec_mng),
+            FieldConverter(
+                FCType.relation,
+                'qualification', (self.handle_onetomany_nonedit, ),
+                'qualification',
+                model_manager=self._qualif_mng),
+            FieldConverter(
+                FCType.relation,
+                'cert', (self.handle_onetomany_edit, ),
+                'cert',
+                model_manager=self._cert_mng),
             FieldConverter(
                 FCType.relation,
                 'organisation', (self.handle_onetomany_nonedit, ),
@@ -193,3 +206,30 @@ class PersonContactManager(BaseModelManager):
         item = super(PersonContactManager, self).create(data, parent_id, parent_obj)
         item.person_id = data.get('person_id') if data is not None else parent_id
         return item
+
+
+class PersonCertificateManager(BaseModelManager):
+    def __init__(self):
+        self._cert_type = self.get_manager('rbDoctorCertificateType')
+        fields = [
+            FieldConverter(FCType.basic, 'id', safe_int, 'id'),
+            FieldConverter(FCType.basic, 'deleted', safe_int, 'deleted'),
+            FieldConverter(FCType.basic, 'start_date', safe_date, 'start_date'),
+            FieldConverter(FCType.basic, 'end_date', safe_date, 'end_date'),
+            FieldConverter(FCType.basic, 'number', safe_unicode, 'number'),
+            FieldConverter(FCType.basic, 'cert_type_id', safe_int, 'cert_type_id'),
+            FieldConverter(
+                FCType.relation,
+                'cert_type', (self.handle_onetomany_nonedit, ),
+                'cert_type',
+                model_manager=self._cert_type
+            )
+        ]
+        super(PersonCertificateManager, self).__init__(PersonCertificate, fields)
+
+    def create(self, data=None, parent_id=None, parent_obj=None):
+        item = super(PersonCertificateManager, self).create(data, parent_id, parent_obj)
+        item.person_id = data.get('person_id') if data is not None else parent_id
+        return item
+
+
