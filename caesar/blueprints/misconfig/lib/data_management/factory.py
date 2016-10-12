@@ -4,7 +4,8 @@ from nemesis.models.expert_protocol import (rbMeasureType, rbMeasureScheduleType
 from nemesis.models.exists import rbRequestType, rbEventTypePurpose, rbResult, rbService
 from nemesis.models.actions import ActionType
 from nemesis.models.event import EventType
-from nemesis.models.person import rbPost, rbOrgCurationLevel, rbSpeciality, rbUserProfile
+from nemesis.models.person import (rbPost, rbOrgCurationLevel, rbSpeciality, rbUserProfile, rbDoctorQualification,
+    rbDoctorCertificateType)
 from nemesis.models.exists import rbContactType
 from nemesis.models.risar import (rbPerinatalRiskRate, rbPregnancyPathology, rbRadzRiskFactor,
     rbRadzRiskFactorGroup, rbRadzStage)
@@ -18,7 +19,7 @@ from .refbook import (SimpleRefBookModelManager, RbTreatmentModelManager, RbPeri
 from .organisation import (OrganisationModelManager, OrganisationBCLModelManager, OrgStructureModelManager)
 from .expert_protocol import (MeasureModelManager, ExpertProtocolModelManager, ExpertSchemeModelManager,
     ExpertSchemeMeasureModelManager, MeasureScheduleModelManager)
-from .person import PersonModelManager, PersonCurationModelManager, PersonContactManager
+from .person import PersonModelManager, PersonCurationModelManager, PersonContactManager, PersonCertificateManager
 from .print_template import RbPrintTemplateModelManager
 from .pricelist import PriceListModelManager, PriceListItemModelManager
 from .rbservice import RbServiceModelManager, RbServiceGroupAssocModelManager
@@ -41,6 +42,8 @@ all_rbs = {
     'rbPost': rbPost,
     'rbSpeciality': rbSpeciality,
     'rbOrgCurationLevel': rbOrgCurationLevel,
+    'rbDoctorQualification': rbDoctorQualification,
+    'rbDoctorCertificateType': rbDoctorCertificateType,
     'rbPregnancyPathology': rbPregnancyPathology,
     'rbUnits': rbUnits,
     'rbEventTypePurpose': rbEventTypePurpose,
@@ -55,6 +58,7 @@ all_rbs = {
 simple_rbs = [
     'rbPacientModel', 'rbTreatmentType', 'rbFinance', 'rbMeasureType', 'rbMeasureScheduleType',
     'rbMeasureScheduleApplyType', 'rbPerinatalRiskRate', 'rbOrgCurationLevel', 'rbPregnancyPathology',
+    'rbDoctorQualification', 'rbDoctorCertificateType',
     # next are used only for backend data manipulation, they are not presented on frontend ui
     'rbPost', 'rbSpeciality', 'rbUnits', 'rbRequestType', 'rbEventTypePurpose', 'rbUserProfile', 'EventType',
     'rbServiceKind', 'rbContactType', 'rbRadzStage', 'rbRadzRiskFactorGroup'
@@ -146,6 +150,8 @@ def get_manager(name, **params):
         return RbServiceGroupAssocModelManager()
     elif name == 'PersonContact':
         return PersonContactManager()
+    elif name == 'PersonCertificate':
+        return PersonCertificateManager()
     elif name == 'rbRadzRiskFactor':
         return RbRadzRiskFactorModelManager()
     elif name == 'rbRadzStageWithFactors':

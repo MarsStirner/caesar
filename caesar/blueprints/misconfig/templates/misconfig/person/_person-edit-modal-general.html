@@ -108,7 +108,9 @@
 
             </div>
         </div>
-
+         <div class="row">
+             <br>
+         </div>
         <div class="row">
             <div class="form-group col-md-4">
                 <label for="organisation" class="control-label">Организация</label>
@@ -137,5 +139,37 @@
                 <input id="regional_code" type="text" class="form-control" placeholder="Код врача" maxlength="16" ng-model="model.regional_code">
             </div>
 
+        </div>
+        <div class="row">
+            <div class="col-md-4 text-left"><h4>Сертификат</h4></div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-4">
+                <label for="speciality" class="control-label">Тип</label>
+                <rb-select ng-model="model.cert.cert_type" ref-book="rbDoctorCertificateType"
+                    id="speciality" placeholder="Специальность"></rb-select>
+            </div>
+            <div class="form-group col-md-4">
+                <label for="certificate_number" class="control-label">Номер</label>
+                <input id="certificate_number" type="text" class="form-control" placeholder="Номер сертификата" maxlength="16" ng-model="model.cert.number">
+            </div>
+        </div>
+        <div class="row">
+             <div class="form-group col-md-4">
+                <label for="birthdate" class="control-label">Дата начала</label>
+                <wm-date id="birthdate" name="birthdate" ng-model="model.cert.start_date" max-date="currentDate"></wm-date>
+            </div>
+            <div class="form-group col-md-4">
+                <label for="birthdate" class="control-label">Дата окончания</label>
+                <wm-date id="birthdate" name="birthdate" ng-model="model.cert.end_date" max-date="currentDate"></wm-date>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-4">
+                <label for="qualification" class="control-label">Квалификация</label>
+                <rb-select ng-model="model.qualification" ref-book="rbDoctorQualification"
+                    id="qualification" placeholder="Квалификация"></rb-select>
+            </div>
         </div>
     </form>
