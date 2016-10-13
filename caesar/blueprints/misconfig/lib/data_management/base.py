@@ -65,6 +65,17 @@ class BaseModelManager(object):
         self._model = model
         self._fields = fields
 
+    def get_or_create(self, item_id, data=None, parent_obj=None):
+        if item_id:
+            item = self.get_by_id(item_id)
+        else:
+            item = self.create(data, parent_obj=None)
+
+        created = item_id is None and item is not None
+        if not created:
+            item = self.update_item(item, data, parent_obj)
+        return item
+
     def get_by_id(self, item_id):
         return self._model.query.get(item_id)
 
@@ -158,6 +169,12 @@ class BaseModelManager(object):
     def validate(self, data=None):
         pass
 
+    def update_item(self, item, data, parent_obj=None):
+        self.validate(data)
+        self.fill(item, data, parent_obj)
+        return item
+
+
     def update(self, item_id, data, parent_obj=None):
         self.validate(data)
         item = self.get_by_id(item_id)
@@ -192,12 +209,19 @@ class BaseModelManager(object):
                 result[j_field] = (field.to_json or safe_dict)(getattr(item, field.m_name))
         return result
 
-    def handle_onetomany_nonedit(self, field, json_data, parent_obj=None):
+    def handle_onetomany_edit(self, field, json_data, parent_obj=None):
         if json_data is None:
             return None
-        item_id = json_data['id']
-        item = field.manager.get_by_id(item_id)
+        item_id = json_data.get('id')
+        item = field.manager.get_or_create(item_id=item_id, data=json_data, parent_obj=parent_obj)
         return item
+
+    def handle_onetomany_nonedit(self, field, json_data, parent_obj=None):
+            if json_data is None:
+                return None
+            item_id = json_data['id']
+            item = field.manager.get_by_id(item_id)
+            return item
 
     def handle_manytomany(self, field, item_list, parent_obj):
         if item_list is None:
