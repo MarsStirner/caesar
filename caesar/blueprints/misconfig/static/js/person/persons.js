@@ -59,7 +59,12 @@ WebMis20
 
             });
 
-        }
+        };
+        $scope.forms = {};
+        $scope.ableToSave = true;
+        $scope.$watch('forms.CRD.password.$error.pattern', function(n, o){
+            $scope.ableToSave = n;
+        });
 
         $scope.formatOrgName = function (org) {
             return org && org.short_name;

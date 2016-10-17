@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+
+import re
+
 from hashlib import md5
 from sqlalchemy import func, or_
 
@@ -6,7 +9,7 @@ from .base import BaseModelManager, FieldConverter, FCType, represent_model
 from nemesis.models.person import (Person, PersonCurationAssoc, PersonContact, PersonCertificate,
     rbOrgCurationLevel)
 from nemesis.lib.utils import (get_new_uuid, safe_int, safe_unicode, safe_traverse, safe_bool, safe_date, parse_json)
-
+from nemesis.lib.apiutils import ApiException
 
 class PersonModelManager(BaseModelManager):
     def __init__(self, with_curations=False, with_profiles=False):
@@ -116,6 +119,13 @@ class PersonModelManager(BaseModelManager):
             m.update(data['new_password'])
             item.password = m.hexdigest()
         return item
+
+    def validate(self, data):
+        new_password = data.get('new_password')
+        reg = re.compile(u"[a-zA-Zа-яёА-ЯЁ0-9]*")
+        if not new_password or len(new_password) < 8 or reg.match(new_password).group() < len(new_password):
+            raise ApiException(500, u'Пароль должен содержать не менее 8 буквенно-цифровых символов.')
+
 
     def update(self, item_id, data, parent_obj=None):
         item = super(PersonModelManager, self).update(item_id, data)
