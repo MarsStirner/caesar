@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
 import datetime
+import logging
 
 import six
 import sqlalchemy
 from UserDict import IterableUserDict
-from caesar.blueprints.print_subsystem.models.models_utils import DateInfo, ReadProxy, Query
+from caesar.blueprints.print_subsystem.models.models_utils import DateInfo, DateTimeInfo, ReadProxy, Query
 from caesar.blueprints.print_subsystem.models.rbinfo import Info, RBInfo
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Date, Text, Table, or_
 from sqlalchemy.orm import relationship
 from ..database import metadata
 
 __author__ = 'viruzzz-kun'
+
+
+logger = logging.getLogger('simple')
 
 
 def get_client_diagnostics(client, beg_date, end_date=None, including_closed=False):
@@ -158,21 +162,25 @@ class ActionDiagnosesInfo(NoInfo, IterableUserDict):
             except KeyError:
                 pass
 
-        self.__data = {
-            dt_code: {
-                dk_code: [
-                    DiagnosticInfo(
-                        diag_id_2_diagnostic[diagnosis_id],
-                        dk,
-                        dt_codes[dt_code],
-                    )
-                    for diagnosis_id, code in six.iteritems(dt_value)
-                    if code == dk_code
-                ]
-                for dk_code, dk in six.iteritems(dk_codes)
-            }
-            for dt_code, dt_value in six.iteritems(diag_id_2_dk_code)
-        }
+        dt_info = {}
+        try:
+            for dt_code, dt_value in six.iteritems(diag_id_2_dk_code):
+                dk_info = {}
+                for dk_code, dk in six.iteritems(dk_codes):
+                    dg_info_list = []
+                    for diagnosis_id, code in six.iteritems(dt_value):
+                        if code == dk_code and diagnosis_id in diag_id_2_diagnostic:
+                            dg = diag_id_2_diagnostic[diagnosis_id]
+                            _dk = dt_codes[dt_code]
+                            dg_info_list.append(DiagnosticInfo(dg, dk, _dk))
+                    dk_info[dk_code] = dg_info_list
+
+                dt_info[dt_code] = dk_info
+        except Exception, e:
+            logger.critical('Error loading diagnoses in print', exc_info=True)
+            raise e
+
+        self.__data = dt_info
         self.__loaded = True
 
 
@@ -270,13 +278,13 @@ class Diagnosis(Info):
     client_id = Column(ForeignKey('Client.id'), index=True, nullable=False)
     person_id = Column(ForeignKey('Person.id'), index=True)
     setDate_raw = Column('setDate', Date, default=datetime.date.today)
-    endDate_raw = Column('endDate', Date)
+    endDate_raw = Column('endDate', DateTime)
 
     setDate = ReadProxy('setDate_raw', DateInfo)
-    endDate = ReadProxy('endDate_raw', DateInfo)
+    endDate = ReadProxy('endDate_raw', DateTimeInfo)
 
     client = relationship('Client')
-    person = relationship('Person', foreign_keys=[person_id], lazy=False, innerjoin=True)
+    person = relationship('Person', foreign_keys=[person_id], lazy=False)
     modifyPerson = relationship('Person', foreign_keys=[modifyPerson_id])
     createPerson = relationship('Person', foreign_keys=[createPerson_id])
 
@@ -304,11 +312,11 @@ class Diagnostic(Info):
     MKBEx = Column(String(8), ForeignKey('MKB.DiagID'), index=True)
     notes = Column(Text, nullable=False, default='')
     diagnosis_description = Column(Text)
-    setDate_raw = Column('setDate', Date, default=datetime.date.today)
-    endDate_raw = Column('endDate', Date)
+    setDate_raw = Column('setDate', DateTime, default=datetime.date.today)
+    endDate_raw = Column('endDate', DateTime)
 
-    setDate = ReadProxy('setDate_raw', DateInfo)
-    endDate = ReadProxy('endDate_raw', DateInfo)
+    setDate = ReadProxy('setDate_raw', DateTimeInfo)
+    endDate = ReadProxy('endDate_raw', DateTimeInfo)
 
     # Extended data
     character_id = Column(ForeignKey('rbDiseaseCharacter.id'), index=True)
