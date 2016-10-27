@@ -45,10 +45,6 @@ class OrganisationModelManager(BaseModelManager):
             item.Address = ''
         if item.phone is None:
             item.phone = ''
-        item.isHospital = False
-        item.isInsurer = False
-        item.isLPU = False
-        item.isStationary = False
         item.obsoleteInfisCode = ''
         item.OKVED = ''
         item.INN = ''

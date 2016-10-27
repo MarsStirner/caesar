@@ -99,7 +99,6 @@ class PersonModelManager(BaseModelManager):
         item.INN = ''
         item.code = ''
         item.federalCode = ''
-        item.regionalCode = ''
         item.office = ''
         item.office2 = ''
         item.ambPlan = 0
@@ -122,9 +121,10 @@ class PersonModelManager(BaseModelManager):
 
     def validate(self, data):
         new_password = data.get('new_password')
-        reg = re.compile(u"[a-zA-Zа-яёА-ЯЁ0-9]*")
-        if not new_password or len(new_password) < 8 or reg.match(new_password).group() < len(new_password):
-            raise ApiException(500, u'Пароль должен содержать не менее 8 буквенно-цифровых символов.')
+        if new_password:
+            reg = re.compile(u"[a-zA-Zа-яёА-ЯЁ0-9]*")
+            if not new_password or len(new_password) < 8 or reg.match(new_password).group() < len(new_password):
+                raise ApiException(500, u'Пароль должен содержать не менее 8 буквенно-цифровых символов.')
 
 
     def update(self, item_id, data, parent_obj=None):
