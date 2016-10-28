@@ -5,12 +5,13 @@
                 <input id="login" type="text" class="form-control" placeholder="Логин" ng-model="model.login">
             </div>
             <div class="form-group col-sm-3">
-                <label for="password" class="control-label">Новый пароль</label>
-                <input id="password" name="password" type="password" ng-trim="false"  ng-pattern="/^[a-zA-Zа-яёА-ЯЁ0-9][a-zA-Zа-яёА-ЯЁ0-9]*$/" class="form-control" placeholder="Пароль" ng-model="model.new_password">
+                <label for="password" class="control-label"><span class="text-danger" ng-show="model.id===null">* </span>Новый пароль</label>
+                <input id="password" name="password" type="password" ng-trim="false"
+                       class="form-control" placeholder="Пароль" ng-model="model.new_password">
             </div>
             <div class="form-group col-sm-5">
                 <div class="row">
-                    <div style="margin-top:3em; color:red!important; font-size:80%!important;" ng-show="forms.CRD.password.$error.pattern || model.new_password.length < 8">* Пароль должен содержать не менее 8 буквенно-цифровых символов</div>
+                    <div style="margin-top:3em; color:red!important; font-size:80%!important;" ng-show="saveDisabledBecauseOfPassword">* Пароль должен содержать не менее 8 буквенно-цифровых символов</div>
                 </div>
             </div>
         </div>
