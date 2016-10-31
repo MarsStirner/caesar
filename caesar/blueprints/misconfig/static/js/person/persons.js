@@ -103,7 +103,7 @@ WebMis20
                 $scope.saveDisabledBecauseOfPassword = $scope.model.id === null;
             }
             else if ( n!== undefined ){
-                $scope.saveDisabledBecauseOfPassword = n.length < 8 || !/^[a-zA-Zа-яёА-ЯЁ0-9][a-zA-Zа-яёА-ЯЁ0-9]*$/.test(n);
+                $scope.saveDisabledBecauseOfPassword = !/^(?=.*[a-zA-Zа-яёА-ЯЁ])(?=.*[0-9])(?!.*[^a-zA-Zа-яёА-ЯЁ0-9])(?=.{8,})/.test(n);
             }
         });
 
