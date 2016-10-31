@@ -60,12 +60,6 @@ WebMis20
             });
 
         };
-        $scope.forms = {};
-        $scope.ableToSave = true;
-        $scope.$watch('forms.CRD.password.$error.pattern', function(n, o){
-            $scope.ableToSave = n;
-        });
-
         $scope.formatOrgName = function (org) {
             return org && org.short_name;
         };
@@ -102,5 +96,16 @@ WebMis20
                 });
         };
         $scope.init();
+
+        $scope.saveDisabledBecauseOfPassword = $scope.model.id === null;
+        $scope.$watch('model.new_password', function(n, o) {
+            if ( n!==undefined && n.length==0){
+                $scope.saveDisabledBecauseOfPassword = $scope.model.id === null;
+            }
+            else if ( n!== undefined ){
+                $scope.saveDisabledBecauseOfPassword = n.length < 8 || !/^[a-zA-Zа-яёА-ЯЁ0-9][a-zA-Zа-яёА-ЯЁ0-9]*$/.test(n);
+            }
+        });
+
 }])
 ;
