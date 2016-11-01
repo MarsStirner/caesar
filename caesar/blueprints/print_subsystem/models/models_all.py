@@ -2,8 +2,11 @@
 
 import calendar
 import jinja2
+import requests
+import datetime
 
 from collections import defaultdict
+from werkzeug.utils import cached_property
 from flask import g
 from sqlalchemy import Column, Integer, String, Unicode, DateTime, ForeignKey, Date, Float, or_, Boolean, Text, \
     SmallInteger, Time, Index, BigInteger, Enum, Table, BLOB, UnicodeText
@@ -13,7 +16,10 @@ from nemesis.models.enums import AllergyPower
 from ..config import MODULE_NAME
 from ..lib.html import convenience_HtmlRip, replace_first_paragraph
 from ..lib.num_to_text_converter import NumToTextConverter
-from models_utils import *
+from models_utils import DateTimeInfo, formatNameInt, formatShortNameInt, code128C, formatSex, \
+    DummyProperty, DateInfo, Query, formatMonthsWeeks, formatDays, formatYears, formatYearsMonths, TimeInfo, \
+    get_model_by_name, calcAgeTuple
+from caesar.blueprints.print_subsystem.models.rbinfo import Info, RBInfo
 from kladr_models import Kladr, Street
 from ..database import Base, metadata
 from sqlalchemy.dialects.mysql.base import MEDIUMBLOB
@@ -36,38 +42,6 @@ class ConfigVariables(Base):
 
     def __unicode__(self):
         return self.code
-
-
-class Info(Base):
-    u"""Базовый класс для представления объектов при передаче в шаблоны печати"""
-    __abstract__ = True
-
-    def __cmp__(self, x):
-        ss = unicode(self)
-        sx = unicode(x)
-        if ss > sx:
-            return 1
-        elif ss < sx:
-            return -1
-        else:
-            return 0
-
-    def __add__(self, x):
-        return unicode(self) + unicode(x)
-
-    def __radd__(self, x):
-        return unicode(x) + unicode(self)
-
-
-class RBInfo(Info):
-    __abstract__ = True
-    
-    def __init__(self):
-        self.code = ""
-        self.name = ""
-
-    def __unicode__(self):
-        return self.name
 
 
 class Account(Info):
@@ -222,6 +196,11 @@ class Action(Info):
     #         self._price = CContractTariffCache.getPrice(tariffList, serviceId, tariffCategoryId)
     #     return self._price
 
+    @cached_property
+    def diag_info(self):
+        from .diagnosis import ActionDiagnosesInfo
+        return ActionDiagnosesInfo(self)
+
     @property
     def begDate(self):
         return DateTimeInfo(self.begDate_raw)
@@ -333,7 +312,7 @@ class Action(Info):
     #         service_id_list = [ats.service_id for ats in services
     #                            if ats.begDate <= event_date <= (ats.endDate or cur_date)]
     #         contract = self.contract
-    #         query = g.printing_session.query(ContractTariff).filter(
+    #         query = Query(ContractTariff).filter(
     #             ContractTariff.master_id == contract.id,
     #             ContractTariff.service_id.in_(service_id_list),
     #             ContractTariff.deleted == 0,
@@ -642,7 +621,7 @@ class ActionProperty_FDRecord(ActionProperty__ValueType):
 
     @property
     def value(self):
-        return g.printing_session.query(Fdrecord).filter(Fdrecord.id == self.value_).first().get_value()
+        return Query(Fdrecord).filter(Fdrecord.id == self.value_).first().get_value()
 
 
 class ActionProperty_HospitalBed(ActionProperty__ValueType):
@@ -731,7 +710,7 @@ class ActionProperty_AnalysisStatus(ActionProperty_Integer_Base):
 
     @property
     def value(self):
-        return g.printing_session.query(rbAnalysisStatus).get(self.value_) if self.value_ else None
+        return Query(rbAnalysisStatus).get(self.value_) if self.value_ else None
 
     @value.setter
     def value(self, val):
@@ -743,7 +722,7 @@ class ActionProperty_OperationType(ActionProperty_Integer_Base):
 
     @property
     def value(self):
-        return g.printing_session.query(rbOperationType).get(self.value_) if self.value_ else None
+        return Query(rbOperationType).get(self.value_) if self.value_ else None
 
     @value.setter
     def value(self, val):
@@ -867,12 +846,12 @@ class ActionProperty_Table(ActionProperty_Integer_Base):
         table_code = self.property_object.type.valueDomain
         trfu_tables = {"trfuOrderIssueResult": trfuOrderIssueResult, "trfuLaboratoryMeasure": trfuLaboratoryMeasure,
                        "trfuFinalVolume": trfuFinalVolume}
-        table = g.printing_session.query(rbAPTable).filter(rbAPTable.code == table_code).first()
+        table = Query(rbAPTable).filter(rbAPTable.code == table_code).first()
         field_names = [field.name for field in table.fields if field.fieldName != 'stickerUrl']
         table_filed_names = [field.fieldName for field in table.fields if field.fieldName != 'stickerUrl']
         value_table_name = table.tableName
         master_field = table.masterField
-        values = g.printing_session.query(trfu_tables[value_table_name]).filter("{0}.{1} = {2}".format(
+        values = Query(trfu_tables[value_table_name]).filter("{0}.{1} = {2}".format(
             value_table_name,
             master_field,
             self.value_)
@@ -910,7 +889,7 @@ class ActionProperty_RLS(ActionProperty_Integer_Base):
 
     @property
     def value(self):
-        return g.printing_session.query(v_Nomen).get(self.value_).first() if self.value_ else None
+        return Query(v_Nomen).get(self.value_).first() if self.value_ else None
     property_object = relationship('ActionProperty', backref='_value_RLS')
 
 
@@ -919,10 +898,10 @@ class ActionProperty_ReferenceRb(ActionProperty_Integer_Base):
     @property
     def value(self):
         if not hasattr(self, 'table_name'):
-            domain = g.printing_session.query(ActionProperty).get(self.id).type.valueDomain
+            domain = Query(ActionProperty).get(self.id).type.valueDomain
             self.table_name = domain.split(';')[0]
         model = get_model_by_name(self.table_name)
-        return g.printing_session.query(model).get(self.value_)
+        return Query(model).get(self.value_)
 
     property_object = relationship('ActionProperty', backref='_value_ReferenceRb')
 
@@ -938,7 +917,7 @@ class ActionProperty_ExtReferenceRb(ActionProperty__ValueType):
     def value(self):
         from nemesis.app import app
         if not hasattr(self, 'table_name'):
-            domain = g.printing_session.query(ActionProperty).get(self.id).type.valueDomain
+            domain = Query(ActionProperty).get(self.id).type.valueDomain
             self.table_name = domain.split(';')[0]
         try:
             response = requests.get(u'{0}v1/{1}/code/{2}'.format(app.config['VESTA_URL'], self.table_name, self.value_))
@@ -1060,6 +1039,7 @@ class Actiontype(Info):
     nomenclatureService = relationship(u'rbService', foreign_keys='Actiontype.nomenclativeService_id')
     property_types = relationship(u'Actionpropertytype')
     group = relationship(u'Actiontype', remote_side=[id])
+    diagnosis_types = relationship(u'rbDiagnosisTypeN', secondary='ActionType_DiagnosisType')
 
     def get_property_type_by_name(self, name):
         for property_type in self.property_types:
@@ -1733,7 +1713,7 @@ class Client(Info):
     def prescriptions(self):
         from .prescriptions import MedicalPrescription
 
-        return g.printing_session.query(MedicalPrescription).join(Action, Event).filter(Event.client_id == self.id).all()
+        return Query(MedicalPrescription).join(Action, Event).filter(Event.client_id == self.id).all()
 
     def __unicode__(self):
         return self.formatShortNameInt(self.lastName, self.firstName, self.patrName)
@@ -1884,7 +1864,7 @@ class Clientattach(Info):
             return self.getClientDocument()
 
     def getClientDocument(self):
-        documents = g.printing_session.query(Clientdocument).filter(Clientdocument.clientId == self.client_id).\
+        documents = Query(Clientdocument).filter(Clientdocument.clientId == self.client_id).\
             filter(Clientdocument.deleted == 0).all()
         documents = [document for document in documents if document.documentType and document.documentType.group.code == "1"]
         return documents[-1]
@@ -2286,7 +2266,7 @@ class Clientsocstatus(Info):
             return self.getClientDocument()
 
     def getClientDocument(self):
-        documents = g.printing_session.query(Clientdocument).filter(Clientdocument.clientId == self.client_id).\
+        documents = Query(Clientdocument).filter(Clientdocument.clientId == self.client_id).\
             filter(Clientdocument.deleted == 0).all()
         documents = [document for document in documents if document.documentType and
                      document.documentType.group.code == "1"]
@@ -2457,106 +2437,6 @@ class Couponstransferquote(Info):
     rbTransferDateType = relationship(u'rbTransferDateType')
 
 
-class Diagnosis(Info):
-    __tablename__ = u'Diagnosis'
-
-    id = Column(Integer, primary_key=True)
-    createDatetime = Column(DateTime, nullable=False, default=datetime.datetime.now)
-    createPerson_id = Column(Integer, index=True)
-    modifyDatetime = Column(DateTime, nullable=False)
-    modifyPerson_id = Column(Integer, index=True)
-    deleted = Column(Integer, nullable=False, server_default=u"'0'", default=0)
-    client_id = Column(ForeignKey('Client.id'), index=True, nullable=False)
-    diagnosisType_id = Column(ForeignKey('rbDiagnosisType.id'), index=True, nullable=False)
-    character_id = Column(ForeignKey('rbDiseaseCharacter.id'), index=True)
-    MKB_ = Column('MKB', String(8), ForeignKey('MKB.DiagID'), index=True)
-    MKBEx = Column(String(8), ForeignKey('MKB.DiagID'), index=True)
-    dispanser_id = Column(ForeignKey('rbDispanser.id'), index=True)
-    traumaType_id = Column(ForeignKey('rbTraumaType.id'), index=True)
-    setDate = Column(Date)
-    endDate = Column(Date)
-    mod_id = Column(ForeignKey('Diagnosis.id'), index=True)
-    person_id = Column(ForeignKey('Person.id'), index=True)
-    # diagnosisName = Column(String(64), nullable=False)
-
-    person = relationship('Person', foreign_keys=[person_id], lazy=False, innerjoin=True)
-    client = relationship('Client')
-    diagnosisType = relationship('rbDiagnosisType', lazy=False, innerjoin=True)
-    character = relationship('rbDiseaseCharacter', lazy=False)
-    MKB = relationship('Mkb', foreign_keys=[MKB_])
-    mkb = relationship('Mkb', foreign_keys=[MKB_])
-    mkb_ex = relationship('Mkb', foreign_keys=[MKBEx])
-    dispanser = relationship('rbDispanser', lazy=False)
-    mod = relationship('Diagnosis', remote_side=[id])
-    traumaType = relationship('rbTraumaType', lazy=False)
-
-    def __int__(self):
-        return self.id
-
-    def __json__(self):
-        return {
-            'id': self.id,
-            'diagnosisType': self.diagnosisType,
-            'character': self.character
-        }
-
-
-class Diagnostic(Info):
-    __tablename__ = u'Diagnostic'
-
-    id = Column(Integer, primary_key=True)
-    createDatetime = Column(DateTime, nullable=False, default=datetime.datetime.now)
-    createPerson_id = Column(Integer, index=True)
-    modifyDatetime = Column(DateTime, nullable=False)
-    modifyPerson_id = Column(Integer, index=True)
-    deleted = Column(Integer, nullable=False, server_default=u"'0'", default=0)
-    event_id = Column(ForeignKey('Event.id'), nullable=False, index=True)
-    diagnosis_id = Column(ForeignKey('Diagnosis.id'), index=True)
-    diagnosisType_id = Column(ForeignKey('rbDiagnosisType.id'), index=True, nullable=False)
-    character_id = Column(ForeignKey('rbDiseaseCharacter.id'), index=True)
-    stage_id = Column(ForeignKey('rbDiseaseStage.id'), index=True)
-    phase_id = Column(ForeignKey('rbDiseasePhases.id'), index=True)
-    dispanser_id = Column(ForeignKey('rbDispanser.id'), index=True)
-    sanatorium = Column(Integer, nullable=False)
-    hospital = Column(Integer, nullable=False)
-    traumaType_id = Column(ForeignKey('rbTraumaType.id'), index=True)
-    speciality_id = Column(Integer, nullable=False, index=True)
-    person_id = Column(ForeignKey('Person.id'), index=True)
-    healthGroup_id = Column(ForeignKey('rbHealthGroup.id'), index=True)
-    result_id = Column(ForeignKey('rbResult.id'), index=True)
-    setDate = Column(DateTime, nullable=False)
-    endDate = Column(DateTime)
-    notes = Column(Text, nullable=False, default='')
-    rbAcheResult_id = Column(ForeignKey('rbAcheResult.id'), index=True)
-    version = Column(Integer, nullable=False, default=0)
-    action_id = Column(Integer, ForeignKey('Action.id'), index=True)
-    diagnosis_description = Column(Text)
-
-    rbAcheResult = relationship(u'rbAcheResult', innerjoin=True)
-    result = relationship(u'rbResult', innerjoin=True)
-    person = relationship('Person', foreign_keys=[person_id])
-    event = relationship('Event', foreign_keys='Diagnostic.event_id', innerjoin=True)
-    diagnoses = relationship(
-        'Diagnosis', innerjoin=True, lazy=False, uselist=True,
-        primaryjoin='and_(Diagnostic.diagnosis_id == Diagnosis.id, Diagnosis.deleted == 0)'
-    )
-    diagnosis = relationship('Diagnosis')
-    diagnosisType = relationship('rbDiagnosisType', lazy=False, innerjoin=True)
-    character = relationship('rbDiseaseCharacter')
-    stage = relationship('rbDiseaseStage', lazy=False)
-    phase = relationship('rbDiseasePhases', lazy=False)
-    dispanser = relationship('rbDispanser')
-    traumaType = relationship('rbTraumaType')
-    healthGroup = relationship('rbHealthGroup', lazy=False)
-    action = relationship('Action')
-
-    def __int__(self):
-        return self.id
-
-    def __unicode__(self):
-        return self.diagnosis.mkb + ', ' + self.diagnosisType
-
-
 class Drugchart(Info):
     __tablename__ = u'DrugChart'
 
@@ -2702,17 +2582,8 @@ class Event(Info):
     typeAsset = relationship(u'rbEmergencyTypeAsset')
     client = relationship(u'Client')
     visits = relationship(u'Visit')
-    diagnostics = relationship(
-        u'Diagnostic', lazy=True, innerjoin=True,
-        primaryjoin="and_(Event.id == Diagnostic.event_id, Diagnostic.deleted == 0)"
-    )
-    diagnosises = relationship(
-        u'Diagnosis',
-        secondary=Diagnostic.__table__,
-        primaryjoin='and_(Diagnostic.event_id == Event.id, Diagnostic.deleted == 0)',
-        secondaryjoin='and_(Diagnostic.diagnosis_id == Diagnosis.id, Diagnosis.deleted == 0)',
-        uselist=True
-    )
+    diagnostics = DummyProperty(list, u'Поле diagnostics у обращения не реализовано')
+    diagnosises = DummyProperty(list, u'Поле diagnosises у обращения не реализовано')
 
     @property
     def setDate(self):
@@ -2741,7 +2612,7 @@ class Event(Info):
     @property
     def orgStructure(self):
         if self.eventType.requestType.code == 'policlinic' and self.orgStructure_id:
-            return g.printing_session.query(Orgstructure).get(self.orgStructure_id)
+            return Query(Orgstructure).get(self.orgStructure_id)
         elif self.eventType.requestType.code in ('hospital', 'clinic', 'stationary'):
             movings = [action for action in self.actions if (action.endDate.datetime is None and
                                                              action.actionType.flatCode == 'moving')]
@@ -2819,7 +2690,7 @@ class Event(Info):
 
     @property
     def departmentManager(self):
-        persons = g.printing_session.query(Person).filter(Person.orgStructure_id == self.orgStructure.id).all() if self.orgStructure else []
+        persons = Query(Person).filter(Person.orgStructure_id == self.orgStructure.id).all() if self.orgStructure else []
         if persons:
             for person in persons:
                 if person.post and person.post.flatCode == u'departmentManager':
@@ -2835,7 +2706,7 @@ class Event(Info):
     def prescriptions(self):
         from .prescriptions import MedicalPrescription
 
-        return g.printing_session.query(MedicalPrescription).join(Action).filter(Action.event_id == self.id).all()
+        return Query(MedicalPrescription).join(Action).filter(Action.event_id == self.id).all()
 
     def __unicode__(self):
         return unicode(self.eventType)
@@ -3237,7 +3108,7 @@ class Mkb(Info):
     def descr(self):
         mainCode = self.DiagID[:5]
         subclass = self.DiagID[5:]
-        record = g.printing_session.query(Mkb).filter(Mkb.DiagID == mainCode).first()
+        record = Query(Mkb).filter(Mkb.DiagID == mainCode).first()
         result = self.DiagID
         if record:
             result = record.DiagName
@@ -6682,9 +6553,10 @@ class rbPrintTemplateMeta(Info):
     id = Column(Integer, primary_key=True)
     template_id = Column(ForeignKey('rbPrintTemplate.id'), nullable=False, index=True)
     type = Column(Enum(
-        u'Integer', u'Float', u'String', u'Boolean', u'Date', u'Time',
-        u'List', u'Multilist',
-        u'RefBook', u'Organisation', u'OrgStructure', u'Person', u'Service', u'SpecialVariable'
+        u'Integer', u'Float', u'String', u'Boolean', u'Date', u'Time', u'List', u'Multilist',
+        u'RefBook', u'Organisation', u'OrgStructure', u'Person', u'Service', u'SpecialVariable',
+        u'MKB', u'Area', u'MultiRefBook', u'MultiOrganisation', u'MultiOrgStructure', u'MultiPerson',
+        u'MultiService', u'MultiMKB', u'MultiArea', u'RefBook.name'
     ), nullable=False)
     name = Column(String(128), nullable=False)
     title = Column(String, nullable=False)

@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 import struct
 import datetime
-import requests
-
-from config import VESTA_URL
 
 
 def get_model_by_name(name):
@@ -237,3 +234,38 @@ def formatDate(time):
 
 def formatTime(time):
     return unicode(time.strftime('%H:%M')) if time else ''
+
+
+def Query(cls):
+    from flask import g
+    return g.printing_session.query(cls)
+
+
+class ReadProxy(object):
+    def __init__(self, field_name, wrapper_factory, *args, **kwargs):
+        self.field_name = field_name
+        self.wrapper_factory = wrapper_factory
+        self.args = args
+        self.kwargs = kwargs
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        return self.wrapper_factory(
+            getattr(instance, self.field_name),
+            *self.args, **self.kwargs
+        )
+
+
+def DummyProperty(base_class, message):
+    class DummyClass(base_class):
+        def __unicode__(self):
+            return message
+
+    class DummyEmitter(object):
+        def __get__(self, instance, owner):
+            if instance is None:
+                return DummyClass
+            return DummyClass()
+
+    return DummyEmitter
