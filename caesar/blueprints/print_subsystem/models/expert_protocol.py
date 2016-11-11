@@ -2,7 +2,7 @@
 
 from sqlalchemy import Column, Unicode, ForeignKey, DateTime, Text
 from sqlalchemy import Integer
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from ..database import Base
 from nemesis.models.utils import UUIDColumn
 
@@ -187,10 +187,24 @@ class rbMeasureScheduleType(Base):
 
 class rbMeasureStatus(Base):
     __tablename__ = u'rbMeasureStatus'
-    _table_description = u'Типы статусов мероприятий'
 
     id = Column(Integer, primary_key=True)
     code = Column(Unicode(32), index=True, nullable=False)
+    name = Column(Unicode(64), nullable=False)
+
+    def __json__(self):
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name': self.name
+        }
+
+
+class rbMeasureCancelReason(Base):
+    __tablename__ = u'rbMeasureCancelReason'
+
+    id = Column(Integer, primary_key=True)
+    code = Column(Unicode(16), index=True, nullable=False)
     name = Column(Unicode(64), nullable=False)
 
     def __json__(self):
@@ -220,13 +234,19 @@ class EventMeasure(Base):
     appointmentAction_id = Column(Integer, ForeignKey('Action.id'), index=True)
     resultAction_id = Column(Integer, ForeignKey('Action.id'), index=True)
     is_actual = Column(Integer, server_default="'1'")
+    cancelReason_id = Column(Integer, ForeignKey('rbMeasureCancelReason.id'))
 
     event = relationship('Event')
     _scheme_measure = relationship('ExpertSchemeMeasureAssoc')
     _measure = relationship('Measure')
     source_action = relationship('Action', foreign_keys=[sourceAction_id])
-    result_action = relationship('Action', foreign_keys=[resultAction_id])
-    appointment_action = relationship('Action', foreign_keys=[appointmentAction_id])
+    result_action = relationship('Action', foreign_keys=[resultAction_id],
+        backref=backref('em_result', uselist=False))
+    appointment_action = relationship('Action', foreign_keys=[appointmentAction_id],
+        backref=backref('em_appointment', uselist=False))
+    create_person = relationship('Person', foreign_keys=[createPerson_id])
+    modify_person = relationship('Person', foreign_keys=[modifyPerson_id])
+    cancel_reason = relationship('rbMeasureCancelReason')
 
     @property
     def scheme_measure(self):
