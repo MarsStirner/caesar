@@ -58,6 +58,16 @@ class HTMLRipper(HTMLParser, object):
         ripper.feed(data)
         return ripper.to_string_no_html()
 
+    @staticmethod
+    def gentlest_rip(data):
+        """Вспомогательная функция вычищения тэгов. Убирает только stripout_tags."""
+        ripper = HTMLRipper()
+        ripper.allowed_tags = None
+        ripper.disallowed_tags = []
+        ripper.style_function = lambda x: x
+        ripper.feed(data)
+        return ripper.to_string_no_html()
+
     def __init__(self, family = 'Times New Roman', size = 12):
         """\param family: font-family style attribute
         \param size: font-size style attribute

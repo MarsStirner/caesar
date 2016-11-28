@@ -7,43 +7,11 @@ from jinja2 import TemplateSyntaxError
 from caesar.blueprints.print_subsystem.lib.internals import RenderTemplateException
 from caesar.blueprints.print_subsystem.models.models_all import rbPrintTemplate
 from internals import renderTemplate
+from html import HTMLRipper
+
 
 __author__ = 'mmalkov'
 
-
-# def printTeleMed(widget, clientInfo, eventInfo, context, act_context, data, actionsInfo, unloadingType, person):
-#     templates = getPrintTemplates(context)
-#     templatesInfo = templates
-#     def tryApply(templateInfo):
-#         try:
-#             return applyTemplateNoPrint(templateInfo[1], data)
-#         except:
-#             return (u'', u'',
-#                 CPageFormat(pageSize=CPageFormat.A4, orientation=CPageFormat.Portrait, leftMargin=5, topMargin=5, rightMargin=5,  bottomMargin=5),
-#                 {})
-#     def tryApply_actions(index):
-#         data['action'] = actionsInfo[index]
-#         templatesInfo.extend(getPrintTemplates(act_context[index]))
-#         return map(tryApply, getPrintTemplates(act_context[index]))
-#
-#     allRendered = map(tryApply, templates)
-#     map(lambda index: allRendered.extend(tryApply_actions(index)), xrange(len(act_context)))
-#     allHtml = u"\n<br style='page-break-after: always;'>\n".join(map(lambda item: item[0], allRendered))
-#     allCanvases = {}
-#     map(lambda item: allCanvases.update(item[3]), allRendered)
-#
-#     reportView = CReportViewDialog(widget)
-#
-#     reportView.setText(allHtml)
-#     reportView.setCanvases(allCanvases)
-#     reportView.setPageFormat(CPageFormat(pageSize=CPageFormat.A4, orientation=CPageFormat.Portrait, leftMargin=5, topMargin=5, rightMargin=5,  bottomMargin=5))
-#     #templatesInfo.extend(templates)
-#     if unloadingType == u"TeleMed":
-#         reportView.setWindowTitle(u"Телемедицинская консультация")
-#         reportView.saveAsFile()
-#     elif unloadingType == u"EMK":
-#         reportView.setWindowTitle(u"Выгрузка в ЭМК")
-#         reportView.saveAsTelemedFile(clientInfo, eventInfo, templatesInfo, person)
 
 simple_logger = logging.getLogger('simple')
 
@@ -79,3 +47,39 @@ def applyTemplate(templateId, data):
             'template_name': template_data.name,
             'trace': tb,
         })
+
+
+def applyInnerTemplate(context, code, data):
+    u"""Рендерит вложенный шаблон печати по context и code с данными data.
+    Используется через тег include_rb_template, который добавляется в
+    расширении IncludeRbTemplateExtension."""
+    if data is None:
+        data = {}
+    template_data = g.printing_session.query(rbPrintTemplate).filter(
+        rbPrintTemplate.context == context,
+        rbPrintTemplate.code == code
+    ).first()
+    if not template_data:
+        return u'Не найден шаблон по context={0} и code={1}'.format(context, code)
+    try:
+        template_string = renderTemplate(template_data.templateText, data)
+    except TemplateSyntaxError, e:
+        logging.error(u'syntax error in template id = %s', template_data.id, exc_info=True)
+        raise RenderTemplateException(e.message, {
+            'type': RenderTemplateException.Type.syntax,
+            'template_name': template_data.name,
+            'lineno': e.lineno
+        })
+    except Exception, e:
+        logging.critical(u'erroneous template id = %s', template_data.id, exc_info=True)
+        tb = traceback.format_exc()
+        if isinstance(tb, str):
+            tb = tb.decode('utf-8')
+        raise RenderTemplateException(e.message, {
+            'type': RenderTemplateException.Type.other,
+            'template_name': template_data.name,
+            'trace': tb,
+        })
+
+    template_string = HTMLRipper.gentlest_rip(template_string)
+    return template_string
