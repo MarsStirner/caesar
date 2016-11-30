@@ -16,7 +16,7 @@ from ..models.expert_protocol import EventMeasure
 from nemesis.lib.const import (STATIONARY_ORG_STRUCT_STAY_CODE, STATIONARY_HOSP_BED_CODE, STATIONARY_MOVING_CODE,
     STATIONARY_HOSP_LENGTH_CODE, STATIONARY_ORG_STRUCT_TRANSFER_CODE, STATIONARY_LEAVED_CODE)
 from nemesis.models.enums import ActionStatus
-from gui import applyTemplate
+from gui import applyTemplate, applyExternTemplate
 from specialvars import SpecialVariable
 from nemesis.lib.data_ctrl.accounting.invoice import InvoiceController
 from nemesis.lib.data_ctrl.accounting.service import ServiceController
@@ -487,3 +487,10 @@ class Print_Template(object):
         return {
             'ttj_records': ttj_records
         }
+
+    def fill_extern_template(self, doc):
+        context_type = doc['context_type']
+        template_text = doc['template_text']
+        template_name = doc['template_name']
+        context_data = self.get_context(context_type, doc)
+        return applyExternTemplate(template_name, template_text, context_data)

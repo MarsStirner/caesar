@@ -48,6 +48,26 @@ def index():
 
 
 @public_endpoint
+@module.route('/fill_template', methods=["GET"])
+@crossdomain('*', methods=['GET'], headers='Content-Type')
+def fill_template_get():
+    data = request.get_json()
+    doc = data['doc']
+    try:
+        filled_template = Print_Template().fill_extern_template(doc)
+    except RenderTemplateException, e:
+        raise e
+    except Exception, e:
+        logging.critical('error in rendering', exc_info=True)
+        raise RenderTemplateException(e.message, {
+            'type': RenderTemplateException.Type.other,
+            'template_name': '',
+            'trace': unicode(traceback.format_exc(), 'utf-8')
+        })
+    return filled_template
+
+
+@public_endpoint
 @module.route('/print_template', methods=["POST", "OPTIONS"])
 @crossdomain('*', methods=['POST', 'OPTIONS'], headers='Content-Type')
 def print_templates_post():

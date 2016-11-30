@@ -79,3 +79,27 @@ def applyTemplate(templateId, data):
             'template_name': template_data.name,
             'trace': tb,
         })
+
+
+def applyExternTemplate(template_name, templateText, data):
+    try:
+        return renderTemplate(templateText, data)
+    except TemplateSyntaxError, e:
+        simple_logger.critical(u'Синтаксическая ошибка в шаблоне "%s"', template_name, exc_info=True)
+        logging.error(u'syntax error in template "%s"', template_name, exc_info=True)
+        raise RenderTemplateException(e.message, {
+            'type': RenderTemplateException.Type.syntax,
+            'template_name': template_name,
+            'lineno': e.lineno
+        })
+    except Exception, e:
+        simple_logger.critical(u'Ошибка при генерации шаблона "%s"', template_name, exc_info=True)
+        logging.critical(u'erroneous template "%s"', template_name, exc_info=True)
+        tb = traceback.format_exc()
+        if isinstance(tb, str):
+            tb = tb.decode('utf-8')
+        raise RenderTemplateException(e.message, {
+            'type': RenderTemplateException.Type.other,
+            'template_name': template_name,
+            'trace': tb,
+        })
