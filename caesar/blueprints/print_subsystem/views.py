@@ -48,8 +48,8 @@ def index():
 
 
 @public_endpoint
-@module.route('/fill_template', methods=["GET"])
-@crossdomain('*', methods=['GET'], headers='Content-Type')
+@module.route('/fill_template', methods=["POST"])
+@crossdomain('*', methods=['POST'], headers='Content-Type')
 def fill_template_get():
     data = request.get_json()
     doc = data['doc']
