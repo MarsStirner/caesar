@@ -9,6 +9,7 @@ from nemesis.app import app
 
 from context import CTemplateContext
 from html import escape, escapenl, HTMLRipper, date_toString, time_toString, addDays
+from include_rb_template_extension import IncludeRbTemplateExtension
 from flask import url_for
 
 __author__ = 'mmalkov'
@@ -34,7 +35,10 @@ def make_jinja_environment():
     env = Environment(
         loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), '../templates/print_subsystem')),
         finalize=finalizer,
+        extensions=[IncludeRbTemplateExtension]
     )
+    from gui import applyInnerTemplate
+    env.applyInnerTemplate = applyInnerTemplate
     env.filters.update({
         'datetime_format': do_datetime_format,
         'datetime_combine': do_datetime_combine,
@@ -85,9 +89,9 @@ def renderTemplate(template, data, render=1):
             env = make_jinja_environment()
             macros = "{% import '_macros.html' as macros %}"
             result = env.from_string(macros+template, globals=global_vars).render(context)
-        except Exception:
+        except Exception, e:
             print "ERROR: template.render(data)"
-            raise
+            raise e
     else:
         result = u"<HTML><HEAD></HEAD><BODY>Не удалось выполнить шаблон</BODY></HTML>"
     # canvases = execContext.getCanvases()
