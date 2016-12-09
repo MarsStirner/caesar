@@ -6,12 +6,15 @@ import requests
 import datetime
 
 from collections import defaultdict
+
+from flask.ext.login import current_user
 from werkzeug.utils import cached_property
 from flask import g
 from sqlalchemy import Column, Integer, String, Unicode, DateTime, ForeignKey, Date, Float, or_, Boolean, Text, \
     SmallInteger, Time, Index, BigInteger, Enum, Table, BLOB, UnicodeText
 from sqlalchemy.orm import relationship, backref, reconstructor
 
+from nemesis.lib.vesta_props import VestaProperty
 from nemesis.models.enums import AllergyPower
 from ..config import MODULE_NAME
 from ..lib.html import convenience_HtmlRip, replace_first_paragraph
@@ -234,6 +237,18 @@ class Action(Info):
             return self.self_contract
         elif self.event:
             return self.event.contract
+
+    @property
+    def propsByCode(self):
+        return dict(
+            (prop.type.code, prop)
+            for prop in self.properties
+            if prop.type.code
+        )
+
+    def get_prop_value(self, prop_name, default=None):
+        prop = self.propsByCode.get(prop_name)
+        return prop.value if prop else default
 
     def get_property_by_code(self, code):
         for property in self.properties:
@@ -6626,3 +6641,88 @@ class rbHospitalisationOrder(Info):
             'code': self.code,
             'name': self.name,
         }
+
+
+class rbFisherKTGRate(Info):
+    __tablename__ = 'rbFisherKTGRate'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    code = Column(Unicode(32), nullable=False)
+    name = Column(Unicode(128), nullable=False)
+
+    def __json__(self):
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name': self.name
+        }
+
+    def __int__(self):
+        return self.id
+
+
+class RisarFetusState_heartbeats(Info):
+    __tablename__ = u'RisarFetusState_heartbeats'
+
+    id = Column(Integer, primary_key=True)
+    fetus_state_id = Column(ForeignKey('RisarFetusState.id'), index=True)
+    fetus_state = relationship('RisarFetusState')
+    heartbeat_code = Column(String(250))
+    heartbeat = VestaProperty('heartbeat_code', 'rbRisarFetus_Heartbeat')
+
+
+def safe_current_user_id():
+    try:
+        user_id = int(current_user.get_id()) if current_user else None
+    except (ValueError, TypeError):
+        user_id = None
+    return user_id
+
+class RisarFetusState(Info):
+    __tablename__ = u'RisarFetusState'
+
+    id = Column(Integer, primary_key=True)
+    action_id = Column(ForeignKey('Action.id'), index=True)
+    action = relationship('Action')
+
+    createDatetime = Column(DateTime, nullable=False, default=datetime.datetime.now)
+    createPerson_id = Column(Integer, index=True, default=safe_current_user_id)
+    modifyDatetime = Column(DateTime, nullable=False, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+    modifyPerson_id = Column(Integer, index=True, default=safe_current_user_id, onupdate=safe_current_user_id)
+    deleted = Column(Integer, nullable=False, server_default=u"'0'")
+
+    position_code = Column(String(250))
+    position_2_code = Column(String(250))
+    type_code = Column(String(250))
+    presenting_part_code = Column(String(250))
+    delay_code = Column(String(250))
+    basal_code = Column(String(250))
+    variability_range_code = Column(String(250))
+    frequency_per_minute_code = Column(String(250))
+    acceleration_code = Column(String(250))
+    deceleration_code = Column(String(250))
+
+    position = VestaProperty('position_code', 'rbRisarFetus_Position')
+    position_2 = VestaProperty('position_2_code', 'rbRisarFetus_Position_2')
+    type = VestaProperty('type_code', 'rbRisarFetus_Type')
+    presenting_part = VestaProperty('presenting_part_code', 'rbRisarPresenting_Part')
+    delay = VestaProperty('delay_code', 'rbRisarFetus_Delay')
+    basal = VestaProperty('basal_code', 'rbRisarBasal')
+    variability_range = VestaProperty('variability_range_code', 'rbRisarVariabilityRange')
+    frequency_per_minute = VestaProperty('frequency_per_minute_code', 'rbRisarFrequencyPerMinute')
+    acceleration = VestaProperty('acceleration_code', 'rbRisarAcceleration')
+    deceleration = VestaProperty('deceleration_code', 'rbRisarDeceleration')
+
+    heart_rate = Column(Integer, nullable=True)
+    ktg_input = Column(Boolean, nullable=False, server_default=u"'0'", default=0)
+    fisher_ktg_points = Column(Integer)
+    fisher_ktg_rate_id = Column(ForeignKey('rbFisherKTGRate.id'))
+
+    fisher_ktg_rate = relationship('rbFisherKTGRate')
+
+    @property
+    def heartbeat(self):
+        q = g.printing_session.query(RisarFetusState_heartbeats).filter(
+            RisarFetusState_heartbeats.fetus_state == self,
+        )
+        return map(lambda x: x.heartbeat, list(q))

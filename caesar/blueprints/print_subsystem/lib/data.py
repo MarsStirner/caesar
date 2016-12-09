@@ -4,6 +4,7 @@ import datetime
 from flask import g
 from sqlalchemy import func, and_
 from caesar.blueprints.print_subsystem.models.schedule import Schedule
+from caesar.blueprints.print_subsystem.models.risar_card import AbstractCard
 from caesar.blueprints.print_subsystem.lib.utils import get_action
 
 from nemesis.lib.utils import string_to_datetime, safe_date, safe_int, format_money
@@ -16,7 +17,7 @@ from ..models.expert_protocol import EventMeasure
 from nemesis.lib.const import (STATIONARY_ORG_STRUCT_STAY_CODE, STATIONARY_HOSP_BED_CODE, STATIONARY_MOVING_CODE,
     STATIONARY_HOSP_LENGTH_CODE, STATIONARY_ORG_STRUCT_TRANSFER_CODE, STATIONARY_LEAVED_CODE)
 from nemesis.models.enums import ActionStatus
-from gui import applyTemplate
+from gui import applyTemplate, applyExternTemplate
 from specialvars import SpecialVariable
 from nemesis.lib.data_ctrl.accounting.invoice import InvoiceController
 from nemesis.lib.data_ctrl.accounting.service import ServiceController
@@ -227,7 +228,8 @@ class Print_Template(object):
 
     def get_context(self, context_type, data):
         context = dict(data['context'])
-        self.update_context(data['id'], context)
+        if 'id' in data:
+            self.update_context(data['id'], context)
         if 'special_variables' in context:
             # Я надеюсь, что нам не придётся этим пользоваться
             ext = {}
@@ -236,11 +238,11 @@ class Print_Template(object):
             del context['special_variables']
             context.update(ext)
         currentOrganisation = g.printing_session.query(Organisation).get(context['currentOrganisation']) if \
-            context['currentOrganisation'] else ""
+            context.get('currentOrganisation') else ""
         currentOrgStructure = g.printing_session.query(Orgstructure).get(context['currentOrgStructure']) if \
-            context['currentOrgStructure'] else ""
+            context.get('currentOrgStructure') else ""
         currentPerson = g.printing_session.query(Person).get(context['currentPerson']) if \
-            context['currentPerson'] else ""
+            context.get('currentPerson') else ""
 
         context.update({
             'currentOrganisation': currentOrganisation,
@@ -248,7 +250,8 @@ class Print_Template(object):
             'currentPerson': currentPerson,
             'SpecialVariable': SpecialVariable
         })
-
+        if 'event_id' in data:
+            context['event_id'] = data['event_id']
         context_func = getattr(self, 'context_%s' % context_type, None)
         if context_func and callable(context_func):
             context.update(context_func(context))
@@ -487,3 +490,18 @@ class Print_Template(object):
         return {
             'ttj_records': ttj_records
         }
+
+    def fill_extern_template(self, doc):
+        context_type = doc['context_type']
+        template_text = doc['template_text']
+        template_name = doc['template_name']
+        context_data = self.get_context(context_type, doc)
+        return applyExternTemplate(template_name, template_text, context_data)
+
+    def context_risar_exchange_card(self, data):
+        if 'event_id' not in data:
+            raise
+        event_id = data['event_id']
+
+        card = AbstractCard.get_by_id(event_id)
+        return {'card': card}
