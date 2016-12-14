@@ -16,6 +16,7 @@ from sqlalchemy.orm import relationship, backref, reconstructor
 
 from nemesis.lib.vesta_props import VestaProperty
 from nemesis.models.enums import AllergyPower
+from nemesis.lib.const import COMP_POLICY_CODES, VOL_POLICY_CODES
 from ..config import MODULE_NAME
 from ..lib.html import convenience_HtmlRip, replace_first_paragraph
 from ..lib.num_to_text_converter import NumToTextConverter
@@ -188,6 +189,7 @@ class Action(Info):
     )
     self_contract = relationship('Contract')
     bbt_response = relationship(u'BbtResponse', uselist=False)
+    action_number = relationship('ActionNumbers', backref='action', uselist=False)
 
     # def getPrice(self, tariffCategoryId=None):
     #     if self.price is None:
@@ -992,6 +994,28 @@ class Actiontemplate(Info):
     action_id = Column(Integer, index=True)
 
 
+class ActionNumbers(Info):
+    __tablename__ = u'ActionNumbers'
+
+    id = Column(Integer, primary_key=True)
+    action_id = Column(Integer, ForeignKey('Action.id'), nullable=False)
+    entity_type = Column(Enum('HOSP_APNT_TU'), nullable=False)
+    number = Column(String(191), nullable=False)
+    prefix = Column(String(32))
+    postfix = Column(String(32))
+    date = Column(Date)
+
+    def __json__(self):
+        return {
+            'id': self.id,
+            'action_id': self.action_id,
+            'entity_type': self.entity_type,
+            'prefix': self.prefix,
+            'postfix': self.postfix,
+            'date': self.date
+        }
+
+
 t_ActionTissue = Table(
     u'ActionTissue', metadata,
     Column(u'action_id', ForeignKey('Action.id'), primary_key=True, nullable=False, index=True),
@@ -1649,13 +1673,13 @@ class Client(Info):
     @property
     def compulsoryPolicy(self):
         for policy in self.policies:
-            if not policy.policyType or u"ОМС" in policy.policyType.name:
+            if not policy.policyType or policy.policyType.code in COMP_POLICY_CODES:
                 return policy
 
     @property
     def voluntaryPolicy(self):
         for policy in self.policies:
-            if policy.policyType and policy.policyType.name.startswith(u"ДМС"):
+            if policy.policyType and policy.policyType.code in VOL_POLICY_CODES:
                 return policy
 
     @property
