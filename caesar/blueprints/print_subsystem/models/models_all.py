@@ -6750,3 +6750,39 @@ class RisarFetusState(Info):
             RisarFetusState_heartbeats.fetus_state == self,
         )
         return map(lambda x: x.heartbeat, list(q))
+
+
+class rbProfMedHelp(RBInfo):
+    __tablename__ = "rbProfMedHelp"
+
+    id = Column(Integer, primary_key=True)
+    code = Column(String(16), nullable=False)
+    name = Column(String(255), nullable=False)
+
+    def __unicode__(self):
+        return self.name
+
+    def __json__(self):
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name': self.name
+        }
+
+
+class rbConditionMedHelp(RBInfo):
+    __tablename__ = "rbConditionMedHelp"
+
+    id = Column(Integer, primary_key=True)
+    code = Column(String(16), nullable=False)
+    name = Column(String(255), nullable=False)
+
+    def __unicode__(self):
+        return self.name
+
+    def __json__(self):
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name': self.name
+        }
