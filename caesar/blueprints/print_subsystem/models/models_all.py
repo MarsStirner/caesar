@@ -999,11 +999,13 @@ class ActionNumbers(Info):
 
     id = Column(Integer, primary_key=True)
     action_id = Column(Integer, ForeignKey('Action.id'), nullable=False)
-    entity_type = Column(Enum('HOSP_APNT_TU'), nullable=False)
+    numberType_id = Column(Integer, ForeignKey('rbActionNumberType.id'), nullable=False)
     number = Column(String(191), nullable=False)
     prefix = Column(String(32))
     postfix = Column(String(32))
     date = Column(Date)
+
+    number_type = relationship('rbActionNumberType')
 
     def __json__(self):
         return {
@@ -1013,6 +1015,40 @@ class ActionNumbers(Info):
             'prefix': self.prefix,
             'postfix': self.postfix,
             'date': self.date
+        }
+
+
+class rbActionNumberKind(RBInfo):
+    __tablename__ = u'rbActionNumberKind'
+
+    id = Column(Integer, primary_key=True)
+    code = Column(String(16), nullable=False)
+    name = Column(String(64), nullable=False)
+
+    def __json__(self):
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name': self.name,
+        }
+
+
+class rbActionNumberType(RBInfo):
+    __tablename__ = u'rbActionNumberType'
+
+    id = Column(Integer, primary_key=True)
+    code = Column(String(16), nullable=False)
+    name = Column(String(64), nullable=False)
+    kind_id = Column(Integer, ForeignKey('rbActionNumberKind.id'), nullable=False)
+
+    kind = relationship('rbActionNumberKind')
+
+    def __json__(self):
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name': self.name,
+            'kind_id': self.kind_id
         }
 
 
