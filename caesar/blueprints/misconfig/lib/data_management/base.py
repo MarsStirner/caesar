@@ -92,6 +92,8 @@ class BaseModelManager(object):
         order = kwargs.get('order')
         if order:
             query = query.order_by(*order)
+        elif hasattr(self._model, 'id'):
+            query = query.order_by(self._model.id)
         options = kwargs.get('options')
         if options:
             query = query.options(
@@ -111,6 +113,8 @@ class BaseModelManager(object):
         order = kwargs.get('order')
         if order:
             query = query.order_by(*order)
+        elif hasattr(self._model, 'id'):
+            query = query.order_by(self._model.id)
         options = kwargs.get('options')
         if options:
             query = query.options(
