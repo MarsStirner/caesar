@@ -172,7 +172,7 @@ class HTMLRipper(HTMLParser, object):
         """Обработка текста внутри тэгов"""
         if len(self.__current_element) > 0:
             if not self.__current_element[-1] in self.disallowed_tags:
-                self.__guts.append(ch.rstrip())
+                self.__guts.append(ch)
 
     def to_string(self):
         """Приведение к плоскому виду (строке)"""
