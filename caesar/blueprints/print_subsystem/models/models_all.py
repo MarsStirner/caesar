@@ -481,8 +481,24 @@ class ActionProperty(Info):
     def pl_price(self, value):
         self._pl_price = value
 
-    #     if self.type.typeName == "Table":
-    #         return values[0].get_value(self.type.valueDomain) if values else ""
+    def check_value_norm(self):
+        """Попадает ли значение свойства в заданные нормы.
+
+        -1: меньше нормы, 0: в норме, 1: больше нормы
+        """
+        if self.type.norm:
+            min_, max_ = self.type.parse_norm()
+            if (min_ is not None or max_ is not None) and self.value is not None:
+                try:
+                    val = float(self.value)
+                except ValueError:
+                    return 0
+                if min_ is not None and val < min_:
+                    return -1
+                elif max_ is not None and val > max_:
+                    return 1
+                else:
+                    return 0
 
     def __nonzero__(self):
         return bool(self.value_object is not None and (self.value or self.value == 0))
@@ -492,8 +508,6 @@ class ActionProperty(Info):
             return ', '.join([unicode(item) for item in self.value])
         else:
             return unicode(self.value)
-    # image = property(lambda self: self._property.getImage())
-    # imageUrl = property(_getImageUrl)
 
 
 class Actionpropertytemplate(Info):
@@ -570,6 +584,22 @@ class Actionpropertytype(Info):
         elif type_name == "FlatDirectory":
             return 'FDRecord'
         return type_name
+
+    def parse_norm(self):
+        try:
+            # "0 - 100.0"
+            min_, max_ = [float(v.strip().replace(',', '.')) for v in self.norm.split('-')]
+        except:
+            try:
+                # "< 100"
+                min_, max_ = None, float(self.norm.split('<')[1].strip().replace(',', '.'))
+            except:
+                try:
+                    # "> 100"
+                    min_, max_ = float(self.norm.split('>')[1].strip().replace(',', '.')), None
+                except:
+                    return None, None
+        return min_, max_
 
 
 class ActionProperty__ValueType(Info):
