@@ -8,8 +8,8 @@
         <li>Связь сотрудника с уровнями курирования</li>
     </ul>
     <div class="row">
-        <div class="col-md-3 topped" data-spy="affix">
-            <div class="panel panel-primary">
+        <div class="col-md-3" ng-show="isFilterEnabled()">
+            <div class="panel panel-primary" data-spy="affix">
                 <div class="panel-heading">
                     <h3 class="panel-title">Фильтр</h3>
                 </div>
@@ -45,7 +45,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-9 pull-right">
+        <div class="col-md-[[ isFilterEnabled() ? 9 : 12 ]]">
             <table class="table table-condensed">
                 <thead>
                     <tr>
@@ -100,7 +100,7 @@
                     </td>
                     <td>
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-12">
                                 <div class="btn-group btn-group-sm">
                                     <button type="button" class="btn btn-primary" ng-click="startEditing(key)" ng-if="!inEditState(key)">Редактировать</button>
                                     <button type="button" class="btn btn-success" ng-click="finishEditing(key)" ng-if="inEditState(key)">Сохранить</button>
@@ -114,6 +114,21 @@
             </table>
         </div>
     </div>
+
+    <div class="row">
+        <div class="[[ isFilterEnabled() ? 'col-md-offset-3' : '' ]] col-md-1">
+            <button type="button" title="[[ isFilterEnabled() ? 'Скрыть' : 'Показать' ]] фильтр" ng-click="toggleFilter()"
+                class="btn btn-primary">
+                <i class="fa fa-filter"></i>
+            </button>
+        </div>
+        <div class="col-md-[[ isFilterEnabled() ? 7 : 9 ]]">
+            <pagination ng-model="pager.current_page" total-items="pager.pages" items-per-page="1"
+                max-size="pager.max_pages" ng-change="onPageChanged()" ng-show="pager.pages > 1" boundary-links="true"
+                class="pagination pagination-sm pagination-nomargin">
+            </pagination>
+        </div>
+    </div>
 </div>
 {% endblock %}
 {##}
@@ -123,9 +138,6 @@
         @media (max-width: 768px) {
             .affix {
                 position: static!important;
-            }
-            .topped {
-                margin-top:100px!important;
             }
         }
     </style>

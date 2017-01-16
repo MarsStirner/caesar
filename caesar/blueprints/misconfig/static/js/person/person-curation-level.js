@@ -4,6 +4,7 @@ WebMis20
 .controller('PersonCurationConfigCtrl', ['$scope', '$controller', 'Person',
         function ($scope, $controller, Person) {
     $controller('MisConfigBaseCtrl', {$scope: $scope});
+    $scope.setViewParams({paginate: true});
     $scope.EntityClass = Person;
     $scope.model = {};
     $scope.startEditing = function (key) {
@@ -41,17 +42,6 @@ WebMis20
     $scope.alertCurationDublVisible = function (key) {
         return $scope.model[key].curationDubl;
     };
-    var setData = function (items) {
-        $scope.model = {};
-        angular.forEach(items, function (person, key) {
-            $scope.model[key] = {
-                person: person,
-                editing: false,
-                newCuration: null,
-                curationDubl: false
-            };
-        });
-    };
     $scope.fltCurLevel = function () {
         return function (level) {
             return level['code'] !== "0";
@@ -70,20 +60,16 @@ WebMis20
             return [{id: 0, code: "0", name: 'без уровня курирования'}];
         }
     };
-    $scope.refreshData = function () {
-        var args = {
-            with_profiles: true,
-            with_curations: true,
-            fio: $scope.flt.model.fio || undefined,
-            speciality_id: safe_traverse($scope.flt.model, ['speciality', 'id']),
-            post_id: safe_traverse($scope.flt.model, ['post', 'id']),
-            curation_levels_ids: angular.toJson(_.pluck($scope.flt.model.curation_levels, 'id'))
-        };
-        $scope._refreshData(args).then(setData);
+    $scope.onPageChanged = function () {
+        $scope.refreshData();
     };
-    Person.instantiateAll({ with_curations: true}).then(function (persons) {
+
+    var setData = function (paged_data) {
         $scope.model = {};
-        angular.forEach(persons, function (person, key) {
+        $scope.item_list = paged_data.items;
+        $scope.pager.record_count = paged_data.count;
+        $scope.pager.pages = paged_data.total_pages;
+        angular.forEach(paged_data.items, function (person, key) {
             $scope.model[key] = {
                 person: person,
                 editing: false,
@@ -91,6 +77,26 @@ WebMis20
                 curationDubl: false
             };
         });
-    });
+    };
+    $scope.refreshData = function () {
+        var args = {
+            with_profiles: true,
+            with_curations: true,
+            paginate: true,
+            page: $scope.pager.current_page,
+            per_page: $scope.pager.per_page,
+            fio: $scope.flt.model.fio || undefined,
+            speciality_id: safe_traverse($scope.flt.model, ['speciality', 'id']),
+            post_id: safe_traverse($scope.flt.model, ['post', 'id']),
+            curation_levels_ids: angular.toJson(_.pluck($scope.flt.model.curation_levels, 'id'))
+        };
+        $scope._refreshData(args).then(setData);
+    };
+    $scope.init = function () {
+        $scope.toggleFilter();
+        $scope.refreshData();
+    };
+
+    $scope.init();
 }])
 ;
