@@ -1672,7 +1672,12 @@ class Client(Info):
                 new_day = min(bd.day, calendar.monthrange(bd.year+add_year, new_month)[1])
                 fmonth_date = datetime.date(bd.year+add_year, new_month, new_day)
             else:
-                fmonth_date = bd
+                new_m = bd.month - 1
+                new_y = date.year
+                if new_m == 0:
+                    new_m = 12
+                    new_y -= 1
+                fmonth_date = datetime.date(new_y, new_m, bd.day)
             return formatMonthsWeeks(months, (date-fmonth_date).days/7)
         else:
             return formatDays(days)
