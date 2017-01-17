@@ -5623,6 +5623,7 @@ class rbPrintTemplate(Info):
     dpdAgreement = Column(Integer, nullable=False, server_default=u"'0'")
     render = Column(Integer, nullable=False, server_default=u"'0'")
     templateText = Column(String, nullable=False)
+    deleted = Column(Integer, nullable=False)
 
     meta_data = relationship('rbPrintTemplateMeta', lazy=False, order_by='rbPrintTemplateMeta.id')
 
