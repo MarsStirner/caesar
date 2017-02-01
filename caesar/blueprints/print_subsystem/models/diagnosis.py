@@ -33,7 +33,7 @@ def get_client_diagnostics(client, beg_date, end_date=None, including_closed=Fal
         Diagnosis.client == client,
         Diagnosis.deleted == 0,
         Diagnostic.deleted == 0,
-        Diagnostic.setDate >= beg_date
+        Diagnostic.setDate_raw >= beg_date
     )
     if end_date is not None:
         query = query.filter(
