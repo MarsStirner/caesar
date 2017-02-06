@@ -6774,7 +6774,8 @@ class RisarFetusState(Info):
     deceleration = VestaProperty('deceleration_code', 'rbRisarDeceleration')
 
     heart_rate = Column(Integer, nullable=True)
-    ktg_input = Column(Boolean, nullable=False, server_default=u"'0'", default=0)
+    ktg_input = Column(Integer, nullable=False, server_default=u"'0'", default=0)
+    stv_evaluation = Column(Float(asdecimal=True))
     fisher_ktg_points = Column(Integer)
     fisher_ktg_rate_id = Column(ForeignKey('rbFisherKTGRate.id'))
 
