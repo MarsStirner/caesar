@@ -3563,7 +3563,7 @@ class Person(Info):
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     code = Column(String(12), nullable=False)
     federalCode = Column(Unicode(255), nullable=False)
-    regionalCode = Column(String(16), nullable=False)
+    regionalCode = Column(String(64), nullable=False)
     lastName = Column(Unicode(30), nullable=False)
     firstName = Column(Unicode(30), nullable=False)
     patrName = Column(Unicode(30), nullable=False)
@@ -4649,7 +4649,7 @@ class rbActivity(Info):
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
     name = Column(String(64), nullable=False, index=True)
-    regionalCode = Column(String(8), nullable=False, index=True)
+    regionalCode = Column(String(64), nullable=False, index=True)
 
 
 class rbAgreementType(Info):
@@ -4847,7 +4847,7 @@ class rbDocumentType(RBInfo):
 
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
-    regionalCode = Column(String(16), nullable=False)
+    regionalCode = Column(String(64), nullable=False)
     name = Column(Unicode(64), nullable=False, index=True)
     group_id = Column(Integer, ForeignKey('rbDocumentTypeGroup.id'), nullable=False, index=True)
     serial_format = Column(Integer, nullable=False)
@@ -4996,7 +4996,7 @@ class rbEventProfile(Info):
 
     id = Column(Integer, primary_key=True)
     code = Column(String(16), nullable=False, index=True)
-    regionalCode = Column(String(16), nullable=False, index=True)
+    regionalCode = Column(String(64), nullable=False, index=True)
     name = Column(String(64), nullable=False, index=True)
 
 
@@ -5184,7 +5184,7 @@ class rbMedicalAidProfile(Info):
 
     id = Column(Integer, primary_key=True)
     code = Column(String(16), nullable=False, index=True)
-    regionalCode = Column(String(16), nullable=False)
+    regionalCode = Column(String(64), nullable=False)
     name = Column(String(64), nullable=False)
 
 
@@ -5203,7 +5203,7 @@ class rbMedicalAidUnit(Info):
     code = Column(String(10), nullable=False, index=True)
     name = Column(String(64), nullable=False, index=True)
     descr = Column(String(64), nullable=False)
-    regionalCode = Column(String(1), nullable=False)
+    regionalCode = Column(String(64), nullable=False)
 
 
 class rbMedicalKind(Info):
@@ -5236,7 +5236,7 @@ class rbMesSpecification(RBInfo):
 
     id = Column(Integer, primary_key=True)
     code = Column(String(16), nullable=False, index=True)
-    regionalCode = Column(String(16), nullable=False)
+    regionalCode = Column(String(64), nullable=False)
     name = Column(Unicode(64), nullable=False)
     done = Column(Integer, nullable=False)
 
@@ -5364,7 +5364,7 @@ class rbPost(RBInfo):
     id = Column(Integer, primary_key=True)
     code = Column(String(8), nullable=False, index=True)
     name = Column(Unicode(64), nullable=False, index=True)
-    regionalCode = Column(String(8), nullable=False)
+    regionalCode = Column(String(64), nullable=False)
     key = Column(String(6), nullable=False, index=True)
     high = Column(String(6), nullable=False)
     flatCode = Column(String(65), nullable=False)
@@ -5441,7 +5441,7 @@ class rbResult(RBInfo):
     code = Column(String(8), nullable=False, index=True)
     name = Column(Unicode(64), nullable=False, index=True)
     continued = Column(Integer, nullable=False)
-    regionalCode = Column(String(8), nullable=False)
+    regionalCode = Column(String(64), nullable=False)
 
 
 class rbScene(RBInfo):
@@ -5621,7 +5621,7 @@ class rbSocStatusType(Info):
     name = Column(String(250), nullable=False, index=True)
     socCode = Column(String(8), nullable=False, index=True)
     TFOMSCode = Column(Integer)
-    regionalCode = Column(String(8), nullable=False)
+    regionalCode = Column(String(64), nullable=False)
 
     classes = relationship(u'rbSocStatusClass', secondary=Rbsocstatusclasstypeassoc)
 
@@ -5659,7 +5659,7 @@ class rbSpeciality(RBInfo):
     age_eu = Column(Integer)
     age_ec = Column(SmallInteger)
     mkbFilter = Column(String(32), nullable=False)
-    regionalCode = Column(String(16), nullable=False)
+    regionalCode = Column(String(64), nullable=False)
     quotingEnabled = Column(Integer, server_default=u"'0'")
 
 
@@ -5731,7 +5731,7 @@ class rbTempInvalidReason(Info):
     primary = Column(Integer, nullable=False)
     prolongate = Column(Integer, nullable=False)
     restriction = Column(Integer, nullable=False)
-    regionalCode = Column(String(3), nullable=False)
+    regionalCode = Column(String(64), nullable=False)
 
 
 class rbTempInvalidRegime(Info):
@@ -6774,7 +6774,8 @@ class RisarFetusState(Info):
     deceleration = VestaProperty('deceleration_code', 'rbRisarDeceleration')
 
     heart_rate = Column(Integer, nullable=True)
-    ktg_input = Column(Boolean, nullable=False, server_default=u"'0'", default=0)
+    ktg_input = Column(Integer, nullable=False, server_default=u"'0'", default=0)
+    stv_evaluation = Column(Float(asdecimal=True))
     fisher_ktg_points = Column(Integer)
     fisher_ktg_rate_id = Column(ForeignKey('rbFisherKTGRate.id'))
 
