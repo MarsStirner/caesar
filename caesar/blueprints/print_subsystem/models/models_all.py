@@ -4124,9 +4124,10 @@ class TakenTissueJournal(Info):
     )
 
     id = Column(Integer, primary_key=True)
-    client_id = Column(ForeignKey('Client.id'), nullable=False, index=True)
+    event_id = Column(ForeignKey('Client.id'))
+    client_id = Column(ForeignKey('Client.id'))
     tissueType_id = Column(ForeignKey('rbTissueType.id'), nullable=False, index=True)
-    externalId = Column(String(30), nullable=False)
+    externalId = Column(String(30))
     amount = Column(Integer, nullable=False, server_default=u"'0'")
     unit_id = Column(ForeignKey('rbUnit.id'), index=True)
     datetimeTaken = Column(DateTime, nullable=False)
@@ -4137,6 +4138,7 @@ class TakenTissueJournal(Info):
     testTubeType_id = Column(ForeignKey('rbTestTubeType.id'), index=True)
     statusCode = Column("status", Integer, nullable=False, server_default=u"'0'")
 
+    event = relationship(u'Event')
     client = relationship(u'Client')
     execPerson = relationship(u'Person')
     tissueType = relationship(u'rbTissueType')
