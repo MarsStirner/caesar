@@ -4,8 +4,8 @@ import datetime
 
 
 def get_model_by_name(name):
-    from caesar.blueprints.print_subsystem.models import models_all, schedule
-    for mod in (models_all, schedule):
+    from caesar.blueprints.print_subsystem.models import models_all, schedule, expert_protocol, diagnosis
+    for mod in (models_all, schedule, expert_protocol, diagnosis):
         if hasattr(mod, name):
             return getattr(mod, name)
     return None
