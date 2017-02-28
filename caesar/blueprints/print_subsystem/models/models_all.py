@@ -570,6 +570,7 @@ class Actionpropertytype(Info):
     createPerson_id = Column(Integer)
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer)
+    notLoadableWithTemplate = Column(SmallInteger)
 
     unit = relationship('rbUnit', lazy=False)
     test = relationship('rbTest')
