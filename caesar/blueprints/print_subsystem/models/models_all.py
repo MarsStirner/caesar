@@ -3265,6 +3265,7 @@ class Orgstructure(Info):
     inheritGaps = Column(Integer, nullable=False, server_default=u"'0'")
     uuid_id = Column(Integer, nullable=False, index=True, server_default=u"'0'")
     show = Column(Integer, nullable=False, server_default=u"'1'")
+    uuid = Column(UUIDColumn(), nullable=False)
 
     parent = relationship(u'Orgstructure', lazy="immediate", remote_side=[id])
     organisation = relationship(u'Organisation')
