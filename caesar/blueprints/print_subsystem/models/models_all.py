@@ -4126,7 +4126,7 @@ class TakenTissueJournal(Info):
     )
 
     id = Column(Integer, primary_key=True)
-    event_id = Column(ForeignKey('Client.id'))
+    event_id = Column(ForeignKey('Event.id'))
     client_id = Column(ForeignKey('Client.id'))
     tissueType_id = Column(ForeignKey('rbTissueType.id'), nullable=False, index=True)
     externalId = Column(String(30))
