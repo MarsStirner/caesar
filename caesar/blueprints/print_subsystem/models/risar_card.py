@@ -174,7 +174,7 @@ class MotherAnamnesis(BaseEvent):
         blood_type = self._event.client.bloodType
         return {
             'group': blood_type and blood_type.name.split('Rh')[0],
-            'rh': blood_type and 'Rh({})'.format(blood_type.name.split('Rh')[1]),
+            'rh': blood_type and u'Rh({})'.format(blood_type.name.split('Rh')[1]),
         }
 
 
@@ -188,7 +188,7 @@ class FatherAnamnesis(BaseEvent):
         blood_type = self.action.get_prop_value('blood_type')
         return {
             'group': blood_type and blood_type.name.split('Rh')[0],
-            'rh': blood_type and 'Rh({})'.format(blood_type.name.split('Rh')[1]),
+            'rh': blood_type and u'Rh({})'.format(blood_type.name.split('Rh')[1]),
         }
 
 
