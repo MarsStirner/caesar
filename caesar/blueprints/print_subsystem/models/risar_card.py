@@ -138,6 +138,10 @@ class RepeatedInspection(BaseInspection):
     pass
 
 
+class PCInspection(BaseInspection):
+    pass
+
+
 class Epicrisis(BaseEvent):
     @lazy
     def action(self):
@@ -280,23 +284,27 @@ class PregnancyCard(AbstractCard):
     @lazy
     def primary_inspection(self):
         for checkup in self.checkups:
-            if checkup.actionType.flatCode in (first_inspection_flat_code, pc_inspection_flat_code):
+            if checkup.actionType.flatCode == first_inspection_flat_code:
                 return PrimaryInspection(checkup)
 
     @lazy
     def latest_inspection(self):
         if self.checkups:
             checkup = self.checkups[-1]
-            if checkup.actionType.flatCode in (first_inspection_flat_code, pc_inspection_flat_code):
+            if checkup.actionType.flatCode == first_inspection_flat_code:
                 return PrimaryInspection(checkup)
             elif checkup.actionType.flatCode == second_inspection_flat_code:
                 return RepeatedInspection(checkup)
+            elif checkup.actionType.flatCode == pc_inspection_flat_code:
+                return PCInspection(checkup)
 
     @lazy
     def latest_rep_inspection(self):
         for checkup in reversed(self.checkups):
             if checkup.actionType.flatCode == second_inspection_flat_code:
                 return RepeatedInspection(checkup)
+            elif checkup.actionType.flatCode == pc_inspection_flat_code:
+                return PCInspection(checkup)
 
     @lazy
     def prev_pregnancies_features(self):
