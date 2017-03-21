@@ -138,6 +138,10 @@ class RepeatedInspection(BaseInspection):
     pass
 
 
+class PCInspection(BaseInspection):
+    pass
+
+
 class Epicrisis(BaseEvent):
     @lazy
     def action(self):
@@ -174,7 +178,7 @@ class MotherAnamnesis(BaseEvent):
         blood_type = self._event.client.bloodType
         return {
             'group': blood_type and blood_type.name.split('Rh')[0],
-            'rh': blood_type and 'Rh({})'.format(blood_type.name.split('Rh')[1]),
+            'rh': blood_type and u'Rh({})'.format(blood_type.name.split('Rh')[1]),
         }
 
 
@@ -188,7 +192,7 @@ class FatherAnamnesis(BaseEvent):
         blood_type = self.action.get_prop_value('blood_type')
         return {
             'group': blood_type and blood_type.name.split('Rh')[0],
-            'rh': blood_type and 'Rh({})'.format(blood_type.name.split('Rh')[1]),
+            'rh': blood_type and u'Rh({})'.format(blood_type.name.split('Rh')[1]),
         }
 
 
@@ -280,23 +284,27 @@ class PregnancyCard(AbstractCard):
     @lazy
     def primary_inspection(self):
         for checkup in self.checkups:
-            if checkup.actionType.flatCode in (first_inspection_flat_code, pc_inspection_flat_code):
+            if checkup.actionType.flatCode == first_inspection_flat_code:
                 return PrimaryInspection(checkup)
 
     @lazy
     def latest_inspection(self):
         if self.checkups:
             checkup = self.checkups[-1]
-            if checkup.actionType.flatCode in (first_inspection_flat_code, pc_inspection_flat_code):
+            if checkup.actionType.flatCode == first_inspection_flat_code:
                 return PrimaryInspection(checkup)
             elif checkup.actionType.flatCode == second_inspection_flat_code:
                 return RepeatedInspection(checkup)
+            elif checkup.actionType.flatCode == pc_inspection_flat_code:
+                return PCInspection(checkup)
 
     @lazy
     def latest_rep_inspection(self):
         for checkup in reversed(self.checkups):
             if checkup.actionType.flatCode == second_inspection_flat_code:
                 return RepeatedInspection(checkup)
+            elif checkup.actionType.flatCode == pc_inspection_flat_code:
+                return PCInspection(checkup)
 
     @lazy
     def prev_pregnancies_features(self):
