@@ -24,7 +24,6 @@ from nemesis.lib.data_ctrl.accounting.service import ServiceController
 from nemesis.lib.data_ctrl.accounting.utils import (calc_invoice_sum_wo_discounts, check_invoice_closed,
     check_invoice_can_add_discounts)
 from caesar.blueprints.print_subsystem.lib.num_to_text_converter import NumToTextConverter
-from ..models.accounting import Service, Invoice
 from .model_provider import PrintingModelProvider
 
 
@@ -42,9 +41,9 @@ def current_patient_orgStructure(event_id):
         first()
 
 
-def get_patient_location(event, dt=None):
+def get_patient_location(event, dt=None, finished_moving=False):
     if event.is_stationary:
-        query = _get_stationary_location_query(event, dt)
+        query = _get_stationary_location_query(event, dt, finished_moving)
         query = query.with_entities(
             Orgstructure
         )
@@ -54,8 +53,8 @@ def get_patient_location(event, dt=None):
     return current_os
 
 
-def _get_stationary_location_query(event, dt=None):
-    query = _get_moving_query(event, dt, False)
+def _get_stationary_location_query(event, dt=None, finished_moving=False):
+    query = _get_moving_query(event, dt, finished_moving)
     query = query.join(
         ActionProperty
     ).join(

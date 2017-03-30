@@ -2665,9 +2665,9 @@ class Event(Info):
             return movings[-1][('orgStructStay',)].value if movings else None
         return None
 
-    def getPatientLocation(self, dt=None):
+    def getPatientLocation(self, dt=None, finished_moving=False):
         from ..lib.data import get_patient_location
-        return get_patient_location(self, dt)
+        return get_patient_location(self, dt, finished_moving)
 
     @property
     def hospLength(self):
@@ -2736,12 +2736,12 @@ class Event(Info):
 
     @property
     def departmentManager(self):
-        persons = Query(Person).filter(Person.orgStructure_id == self.orgStructure.id).all() if self.orgStructure else []
-        if persons:
-            for person in persons:
-                if person.post and person.post.flatCode == u'departmentManager':
-                    return person
-        return None
+        os = self.getPatientLocation(finished_moving=None)
+        if os:
+            return Query(Person).join(rbPost).filter(
+                Person.orgStructure_id == os.id,
+                rbPost.flatCode == u'departmentManager'
+            ).first()
 
     @property
     def date(self):
