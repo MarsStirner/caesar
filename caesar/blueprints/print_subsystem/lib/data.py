@@ -24,7 +24,6 @@ from nemesis.lib.data_ctrl.accounting.service import ServiceController
 from nemesis.lib.data_ctrl.accounting.utils import (calc_invoice_sum_wo_discounts, check_invoice_closed,
     check_invoice_can_add_discounts)
 from caesar.blueprints.print_subsystem.lib.num_to_text_converter import NumToTextConverter
-from ..models.accounting import Service, Invoice
 from .model_provider import PrintingModelProvider
 
 

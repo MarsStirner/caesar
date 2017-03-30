@@ -2,15 +2,17 @@
 import datetime
 import re
 import os
-from caesar.blueprints.print_subsystem.models.models_utils import code128C_any, code128C
 
 from jinja2 import FileSystemLoader
 from jinja2.environment import Environment
-from nemesis.app import app
-
-from context import CTemplateContext
-from html import escape, escapenl, HTMLRipper, date_toString, time_toString, addDays
 from flask import url_for
+
+from caesar.blueprints.print_subsystem.lib.context import CTemplateContext
+from caesar.blueprints.print_subsystem.lib.html import escape, escapenl, HTMLRipper, date_toString, \
+    time_toString, addDays
+from caesar.blueprints.print_subsystem.models.models_utils import code128C_any
+from caesar.blueprints.print_subsystem.lib.utils import get_patient_by_id
+from nemesis.app import app
 
 __author__ = 'mmalkov'
 
@@ -66,7 +68,8 @@ def renderTemplate(template, data, render=1):
         'setTopMargin': setTopMargin,
         'setRightMargin': setRightMargin,
         'setBottomMargin': setBottomMargin,
-        're_search_groups': re_search_groups
+        're_search_groups': re_search_groups,
+        'get_patient_by_id': get_patient_by_id
     }
 
     execContext = CTemplateContext(global_vars, data)
