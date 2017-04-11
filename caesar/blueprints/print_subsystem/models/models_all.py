@@ -394,6 +394,7 @@ class ActionProperty(Info):
     isAssigned = Column(Boolean, nullable=False, server_default=u"'0'")
     evaluation = Column(Integer, default=None)
     version = Column(Integer, nullable=False, server_default=u"'0'")
+    note = Column(Text)
 
     action = relationship(u'Action')
     type = relationship(u'Actionpropertytype')
@@ -571,6 +572,7 @@ class Actionpropertytype(Info):
     modifyDatetime = Column(DateTime, nullable=False)
     modifyPerson_id = Column(Integer)
     notLoadableWithTemplate = Column(SmallInteger)
+    noteMandatory = Column(SmallInteger, nullable=False, server_default=u"'0'")
 
     unit = relationship('rbUnit', lazy=False)
     test = relationship('rbTest')
@@ -1067,6 +1069,7 @@ class Actiontype(Info):
     testTubeType_id = Column(Integer, index=True)
     jobType_id = Column(Integer, index=True)
     mnem = Column(String(32), server_default=u"''")
+    noteMandatory = Column(SmallInteger, nullable=False, server_default=u"'0'")
 
     service = relationship(u'rbService', foreign_keys='Actiontype.service_id')
     services = relationship(u'ActiontypeService')
