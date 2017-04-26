@@ -7,7 +7,8 @@ WebMis20
     };
     rbService.inheritsFrom(SimpleRb);
     rbService.initialize({
-        fields: rbService.getFields().concat(['beg_date', 'end_date', 'is_complex', 'subservice_assoc']),
+        fields: rbService.getFields().concat(['beg_date', 'end_date', 'is_complex', 'subservice_assoc',
+            'max_sub_services']),
         base_url: '{0}rbService/'.format(rbService.getBaseUrl())
     }, rbService);
     rbService.prototype.getNewGroupItem = function () {
