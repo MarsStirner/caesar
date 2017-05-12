@@ -1505,7 +1505,7 @@ class Client(Info):
     blood_history = relationship(
         u'Bloodhistory',
         backref=backref('client'),
-        order_by='desc(Bloodhistory.bloodDate)'
+        order_by='desc(Bloodhistory.bloodDate), desc(Bloodhistory.id)'
     )
     socStatuses = relationship(u'Clientsocstatus',
                                primaryjoin="and_(Clientsocstatus.deleted == 0,Clientsocstatus.client_id==Client.id,"
