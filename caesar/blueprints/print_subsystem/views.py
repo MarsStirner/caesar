@@ -11,7 +11,8 @@ from jinja2 import TemplateNotFound
 from app import module
 from nemesis.lib.utils import jsonify, crossdomain, public_endpoint
 from caesar.blueprints.print_subsystem.lib.internals import RenderTemplateException
-from caesar.blueprints.print_subsystem.models.models_all import rbPrintTemplate
+from caesar.blueprints.print_subsystem.models.models_all import rbPrintTemplate, \
+    rbPrintTemplateCE_Assoc
 from lib.data import Print_Template
 
 
@@ -120,18 +121,25 @@ def fonts(filename=None):
 @public_endpoint
 @crossdomain('*', methods=['GET'])
 def api_templates(context=None):
-    # Не пора бы нам от этой ерунды избавиться?
-    # Неа, нам нужно подключение к разным БД (http://stackoverflow.com/questions/7923966/flask-sqlalchemy-with-dynamic-database-connections)
-    # А в Гиппократе всё работает. Там те же две БД.
     if not context:
         return jsonify(None)
     templates = Query(rbPrintTemplate).filter(
         rbPrintTemplate.context == context,
         rbPrintTemplate.deleted == 0
+    ).union(
+        Query(rbPrintTemplate).join(
+            rbPrintTemplateCE_Assoc, rbPrintTemplateCE_Assoc.template_id == rbPrintTemplate.id
+        ).filter(
+            rbPrintTemplateCE_Assoc.context == context,
+            rbPrintTemplate.deleted == 0
+        )
     )
-    return jsonify([{
-        'id': t.id,
-        'code': t.code,
-        'name': t.name,
-        'meta': t.meta_data,
-    } for t in templates])
+    res = []
+    for t in templates:
+        res.append({
+            'id': t.id,
+            'code': t.code,
+            'name': t.name,
+            'meta': t.meta_data,
+        })
+    return jsonify(res)

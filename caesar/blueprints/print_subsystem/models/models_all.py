@@ -5366,6 +5366,22 @@ class rbPrintTemplate(Info):
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
 
     meta_data = relationship('rbPrintTemplateMeta', lazy=False, order_by='rbPrintTemplateMeta.id')
+    additional_templates = relationship(
+        'rbPrintTemplate',
+        secondary='rbPrintTemplateCE',
+        primaryjoin='and_(rbPrintTemplate.context==rbPrintTemplateCE.c.context)',
+        secondaryjoin='and_(rbPrintTemplateCE.c.template_id==rbPrintTemplate.id)'
+    )
+
+
+class rbPrintTemplateCE_Assoc(Info):
+    __tablename__ = u'rbPrintTemplateCE'
+
+    id = Column(Integer, primary_key=True)
+    context = Column(String(64), nullable=False)
+    template_id = Column(ForeignKey('rbPrintTemplate.id'), nullable=False)
+
+    template = relationship('rbPrintTemplate')
 
 
 class rbQuotaStatus(Info):

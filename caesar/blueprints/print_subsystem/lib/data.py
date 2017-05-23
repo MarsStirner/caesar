@@ -476,3 +476,11 @@ class Print_Template(object):
         return {
             'ttj_records': ttj_records
         }
+
+    def context_event_list(self, data):
+        event_ids = data.get('event_id_list')
+        event_list = Query(Event).filter(Event.id.in_(event_ids)).all()
+        return {
+            'event_list': event_list
+        }
+
