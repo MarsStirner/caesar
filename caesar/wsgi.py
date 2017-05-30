@@ -26,7 +26,7 @@ def general_menu():
         link='index',
         title=u'Главная страница',
         homepage=True,
-        visible=(not UserProfileManager.has_ui_registrator_cut())
+        visible=(not UserProfileManager.has_ui_adm_nurse())
     ), dict(
         link='misconfig.index_html',
         title=u'Настройки МИС',

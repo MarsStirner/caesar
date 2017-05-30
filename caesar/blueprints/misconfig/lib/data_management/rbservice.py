@@ -14,6 +14,7 @@ class RbServiceModelManager(SimpleRefBookModelManager):
             FieldConverter(FCType.basic, 'begDate', safe_date, 'beg_date'),
             FieldConverter(FCType.basic, 'endDate', safe_date, 'end_date'),
             FieldConverter(FCType.basic, 'isComplex', safe_int, 'is_complex', safe_bool),
+            FieldConverter(FCType.basic, 'maxSubServices', safe_int, 'max_sub_services'),
             FieldConverter(
                 FCType.relation,
                 'subservice_assoc', (self.handle_manytomany_assoc_obj, ),
