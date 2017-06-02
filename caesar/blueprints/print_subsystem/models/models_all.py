@@ -5,8 +5,6 @@ import jinja2
 import requests
 import datetime
 
-from collections import defaultdict
-
 from flask.ext.login import current_user
 from werkzeug.utils import cached_property
 from flask import g
@@ -14,6 +12,8 @@ from sqlalchemy import Column, Integer, String, Unicode, DateTime, ForeignKey, D
     SmallInteger, Time, Index, BigInteger, Enum, Table, BLOB, UnicodeText
 from sqlalchemy.orm import relationship, backref, reconstructor
 
+from caesar.blueprints.print_subsystem.lib.risar_config import risar_anamnesis_pregnancy
+from hippocrates.blueprints.risar.lib.prev_children import get_previous_children
 from nemesis.lib.vesta_props import VestaProperty
 from nemesis.models.enums import AllergyPower
 from nemesis.lib.const import COMP_POLICY_CODES, VOL_POLICY_CODES
@@ -317,6 +317,13 @@ class Action(Info):
     @property
     def nomenclatureService(self):
         return self.actionType.nomenclatureService if self.actionType else None
+
+    @property
+    def previous_children(self):
+        if self.flatCode == risar_anamnesis_pregnancy:
+            return get_previous_children(self)
+        else:
+            return []
 
     # @property
     # def tariff(self):
