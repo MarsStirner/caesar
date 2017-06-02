@@ -11,6 +11,10 @@ WebMis20
             list: '{{ config.SCANSERVER_URL + 'scanners' }}',
             scan: '{{ config.SCANSERVER_URL + 'scan' }}'
         },
+        scanserver: {
+            list: '{{ config.SCANSERVER_URL + 'scanners' }}',
+            scan: '{{ config.SCANSERVER_URL + 'scan' }}'
+        },
     },
     settings: {
         'user_idle_timeout': {{ settings.getInt('Auth.UserIdleTimeout', 15 * 60) }},
