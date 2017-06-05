@@ -13,7 +13,6 @@ from sqlalchemy import Column, Integer, String, Unicode, DateTime, ForeignKey, D
 from sqlalchemy.orm import relationship, backref, reconstructor
 
 from caesar.blueprints.print_subsystem.lib.risar_config import risar_anamnesis_pregnancy
-from hippocrates.blueprints.risar.lib.prev_children import get_previous_children
 from nemesis.lib.vesta_props import VestaProperty
 from nemesis.models.enums import AllergyPower
 from nemesis.lib.const import COMP_POLICY_CODES, VOL_POLICY_CODES
@@ -321,7 +320,11 @@ class Action(Info):
     @property
     def previous_children(self):
         if self.flatCode == risar_anamnesis_pregnancy:
-            return get_previous_children(self)
+            return Query(RisarPreviousPregnancy_Children).filter(
+                RisarPreviousPregnancy_Children.action == self
+                ).order_by(
+                    RisarPreviousPregnancy_Children.id
+                ).all()
         else:
             return []
 
@@ -6745,6 +6748,7 @@ def safe_current_user_id():
         user_id = None
     return user_id
 
+
 class RisarFetusState(Info):
     __tablename__ = u'RisarFetusState'
 
@@ -6830,3 +6834,31 @@ class rbConditionMedHelp(RBInfo):
             'code': self.code,
             'name': self.name
         }
+
+
+class RisarPreviousPregnancy_Children(Info):
+    __tablename__ = 'RisarPreviousPregnancy_Children'
+
+    id = Column(Integer, primary_key=True)
+    action_id = Column(ForeignKey('Action.id'))
+    date = Column(Date)
+    time = Column(Time)
+    sex = Column(Integer)
+    weight = Column(Float)
+    length = Column(Float)
+    maturity_rate_code = Column(String(250))
+    apgar_score_1 = Column(Integer)
+    apgar_score_5 = Column(Integer)
+    apgar_score_10 = Column(Integer)
+    alive = Column(Integer)
+    death_reason = Column(String(1024))
+    died_at_code = Column(String(250))
+    abnormal_development = Column(Integer)
+    neurological_disorders = Column(Integer)
+
+    action = relationship('Action')
+    maturity_rate = VestaProperty('maturity_rate_code', 'rbRisarMaturity_Rate')
+    died_at = VestaProperty('died_at_code', 'rbRisarDiedAt')
+
+    def __json__(self):
+        return {'id': self.id}
