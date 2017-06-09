@@ -3252,6 +3252,7 @@ class Orgstructure(Info):
     organisation_id = Column(Integer, ForeignKey('Organisation.id'), nullable=False, index=True)
     code = Column(Unicode(255), nullable=False)
     name = Column(Unicode(255), nullable=False)
+    shortName = Column(Unicode(255), nullable=False)
     parent_id = Column(Integer, ForeignKey('OrgStructure.id'), index=True)
     type = Column(Integer, nullable=False, server_default=u"'0'")
     net_id = Column(Integer, ForeignKey('rbNet.id'), index=True)
@@ -3274,6 +3275,10 @@ class Orgstructure(Info):
     parent = relationship(u'Orgstructure', lazy="immediate", remote_side=[id])
     organisation = relationship(u'Organisation')
     Net = relationship(u'rbNet')
+
+    @property
+    def name(self):
+        return self.shortName
 
     def getNet(self):
         if self.Net is None:
