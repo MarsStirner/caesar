@@ -1312,6 +1312,31 @@ class Addresshouse(Info):
     corpus = Column(String(8), nullable=False)
 
 
+class AmbulanceCard(Info):
+    __tablename__ = u'AmbulanceCard'
+
+    id = Column(Integer, primary_key=True)
+    client_id = Column(Integer, ForeignKey('Client.id'), nullable=False)
+    createPerson_id = Column(Integer, index=True)
+    modifyPerson_id = Column(ForeignKey('Person.id'), index=True)
+    deleted = Column(Integer, nullable=False, server_default=u"'0'")
+    createDatetime = Column(DateTime, nullable=False, default=datetime.datetime.now)
+    modifyDatetime = Column(DateTime, nullable=False, default=datetime.datetime.now,
+                               onupdate=datetime.datetime.now)
+    generatedId = Column(String(30), nullable=False, server_default="''")
+    modifyPerson = relationship(u'Person')
+
+    def __json__(self):
+        return {
+            'id': self.id,
+            'client_id': self.client_id,
+            'generated_id': self.generatedId,
+            'deleted': self.deleted,
+            'create_datetime': self.createDatetime,
+            'modify_datetime': self.modifyDatetime
+        }
+
+
 class Applock(Info):
     __tablename__ = u'AppLock'
 
@@ -1566,8 +1591,8 @@ class Client(Info):
     uuid_id = Column(Integer, nullable=False, index=True, server_default=u"'0'")
     uuid = Column(UUIDColumn(), nullable=False)
 
-    client_attachments = relationship(u'Clientattach', primaryjoin='and_(Clientattach.client_id==Client.id, Clientattach.deleted==0)',
-                                      order_by="desc(Clientattach.id)")
+    client_attachments = relationship(u'ClientAttach', primaryjoin='and_(ClientAttach.client_id==Client.id, ClientAttach.deleted==0)',
+                                      order_by="desc(ClientAttach.id)")
     blood_history = relationship(
         u'Bloodhistory',
         backref=backref('client'),
@@ -1605,6 +1630,16 @@ class Client(Info):
                     'ScheduleClientTicket.deleted == 0, '
                     'ScheduleClientTicket.client_id == Client.id)',
         innerjoin=True
+    )
+
+    amb_card = relationship(
+        u'AmbulanceCard',
+        primaryjoin='and_('
+                    'AmbulanceCard.client_id==Client.id, '
+                    'AmbulanceCard.deleted==0)',
+        order_by="desc(AmbulanceCard.id)",
+        uselist=False,
+        backref='client'
     )
 
     @property
@@ -1863,14 +1898,14 @@ class Clientallergy(Info):
         return self.name
 
 
-class Clientattach(Info):
+class ClientAttach(Info):
     __tablename__ = u'ClientAttach'
 
     id = Column(Integer, primary_key=True)
     createDatetime = Column(DateTime, nullable=False)
     createPerson_id = Column(Integer, index=True)
     modifyDatetime = Column(DateTime, nullable=False)
-    modifyPerson_id = Column(Integer, index=True)
+    modifyPerson_id = Column(ForeignKey('Person.id'), index=True)
     deleted = Column(Integer, nullable=False, server_default=u"'0'")
     client_id = Column(ForeignKey('Client.id'), nullable=False, index=True)
     attachType_id = Column(ForeignKey('rbAttachType.id'), nullable=False, index=True)
@@ -1879,12 +1914,21 @@ class Clientattach(Info):
     begDate = Column(Date, nullable=False)
     endDate = Column(Date)
     document_id = Column(ForeignKey('ClientDocument.id'), index=True)
+    person_id = Column(ForeignKey('Person.id'), index=True,)
+    amb_card_id = Column(ForeignKey('AmbulanceCard.id'), index=True)
 
     client = relationship(u'Client')
     self_document = relationship(u'Clientdocument')
     org = relationship(u'Organisation')
     orgStructure = relationship(u'Orgstructure')
     attachType = relationship(u'rbAttachType')
+
+    modifyPerson = relationship(u'Person', foreign_keys=[modifyPerson_id])
+    person = relationship(u'Person', foreign_keys=[person_id])
+    amb_card = relationship(u'AmbulanceCard',
+                               primaryjoin='and_(ClientAttach.amb_card_id==AmbulanceCard.id,'
+                                           'ClientAttach.deleted == 0)',
+                               backref='client_attaches')
 
     @property
     def code(self):
