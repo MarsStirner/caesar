@@ -484,3 +484,22 @@ class Print_Template(object):
             'event_list': event_list
         }
 
+    def context_action_list(self, data):
+        action_ids = []
+        action_list = []
+        selected_aps = {}
+
+        if 'action_id_dict' in data:
+            action_id_dict = data.get('action_id_dict')
+            selected_aps = {safe_int(k): v for k, v in action_id_dict.items()}
+            action_ids = action_id_dict.keys()
+        elif 'action_id_list' in data:
+            action_ids = data.get('action_id_list')
+
+        if action_ids:
+            action_list = Query(Action).filter(Action.id.in_(action_ids)).all()
+
+        return {
+            'action_list': action_list,
+            'selected_aps': selected_aps,
+        }
