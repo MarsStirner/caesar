@@ -370,7 +370,9 @@ class Action(Info):
             yield property
 
     def __getitem__(self, key):
-        if isinstance(key, basestring):
+        if isinstance(key, basestring) and hasattr(key, self):
+            return getattr(self, key)
+        elif isinstance(key, basestring):
             return self.get_property_by_name(unicode(key))
         elif isinstance(key, tuple):
             return self.get_property_by_code(unicode(key[0]))
