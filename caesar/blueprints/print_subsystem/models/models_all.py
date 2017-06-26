@@ -1328,6 +1328,16 @@ class AmbulanceCard(Info):
     generatedId = Column(String(30), nullable=False, server_default="''")
     modifyPerson = relationship(u'Person')
 
+    @property
+    def sorted_client_attaches(self):
+        return sorted(self.client_attaches, key=lambda x: x.begDate)
+
+    @property
+    def last_person(self):
+        sca = self.sorted_client_attaches
+        if sca:
+            return sca[-1].person
+
     def __json__(self):
         return {
             'id': self.id,
